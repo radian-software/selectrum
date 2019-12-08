@@ -21,6 +21,10 @@
 ;; variable declarations in each section, run M-x occur with the
 ;; following query: ^;;;;* \|^(
 
+;;;; Libraries
+
+(require 'seq)
+
 ;;;; User options
 
 (defgroup selectrum nil
@@ -67,9 +71,26 @@ This is used to prevent point from moving into the candidates.")
 ;;;; Hook functions
 
 (defun selectrum--minibuffer-post-command-hook ()
-  "Clean things up after a user command in the minibuffer."
+  "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
-  (goto-char (min (point) selectrum--end-of-input-marker)))
+  (goto-char (min (point) selectrum--end-of-input-marker))
+  (save-excursion
+    (let ((inhibit-read-only t)
+          (input (buffer-substring selectrum--start-of-input-marker
+                                   selectrum--end-of-input-marker))
+          (bound (marker-position selectrum--end-of-input-marker)))
+      (delete-region bound (point-max))
+      (dolist (candidate (seq-take
+                          (seq-filter
+                           (apply-partially
+                            selectrum-candidate-filter-function
+                            input)
+                           selectrum--sorted-candidates)
+                          selectrum-num-candidates-displayed))
+        (insert "\n" candidate))
+      (add-text-properties bound (point-max) '(read-only t))
+      (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
+      (set-marker-insertion-type selectrum--end-of-input-marker t))))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
@@ -83,19 +104,15 @@ CANDIDATES is the list of strings that was passed to
 `selectrum-read'."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
+  (setq selectrum--start-of-input-marker (point-marker))
+  (setq selectrum--end-of-input-marker (point-marker))
+  (set-marker-insertion-type selectrum--end-of-input-marker t)
+  (setq selectrum--sorted-candidates
+        (sort (copy-list candidates) selectrum-candidate-sort-function))
   (add-hook
    'post-command-hook
    #'selectrum--minibuffer-post-command-hook
-   nil 'local)
-  (save-excursion
-    (let ((start (point)))
-      (dolist (candidate candidates)
-        (insert "\n" candidate))
-      (add-text-properties
-       start (point) '(read-only t))))
-  (setq selectrum--start-of-input-marker (point-marker))
-  (setq selectrum--end-of-input-marker (point-marker))
-  (set-marker-insertion-type selectrum--end-of-input-marker t))
+   nil 'local))
 
 ;;;; Main entry point
 
@@ -107,7 +124,7 @@ Return the selected string."
                       "guava" "honeyberry" "juniper" "kiwi" "lemon" "mango")))
   (minibuffer-with-setup-hook
       (apply-partially #'selectrum--minibuffer-setup-hook candidates)
-    (read-from-minibuffer prompt)))
+    (read-from-minibuffer prompt nil nil nil t)))
 
 ;;;; Closing remarks
 
