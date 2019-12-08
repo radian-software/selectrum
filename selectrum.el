@@ -23,6 +23,7 @@
 
 ;;;; Libraries
 
+(require 'map)
 (require 'seq)
 
 ;;;; User options
@@ -52,6 +53,31 @@ non-nil if the first should sort before the second, like
 `string-lessp'."
   :type 'function)
 
+(defcustom selectrum-minibuffer-bindings
+  '(("<up>" . selectrum-previous-candidate)
+    ("<down>" . selectrum-next-candidate))
+  "Keybindings enabled in minibuffer. This is not a keymap.
+Rather it is an alist that is converted into a keymap just before
+entering the minibuffer. The keys are strings and the values are
+command symbols."
+  :type '(alist
+          :key-type string
+          :value-type function))
+
+;;;;; Faces
+
+(defface selectrum-current-candidate
+  '((t :inherit highlight))
+  "Face used to highlight the currently selected candidate.")
+
+;;;; Utility functions
+
+(defun selectrum--clamp (x lower upper)
+  "Constrain X to be between LOWER and UPPER inclusive.
+If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
+return X."
+  (min (max x lower) upper))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -63,10 +89,20 @@ This is used to prevent point from moving into the prompt.")
 This is used to prevent point from moving into the candidates.")
 
 (defvar selectrum--sorted-candidates nil
-  "List of sorted candidates to be displayed.")
+  "List of sorted candidates to be displayed.
+This only needs to be computed once per use of Selectrum.")
+
+(defvar selectrum--filtered-candidates nil
+  "List of sorted *and* filtered candidates to be displayed.
+This only needs to be computed every time the user input changes.")
 
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
+
+(defvar selectrum--previous-input-string nil
+  "Previous user input string in the minibuffer.
+Used to check if the user input has changed and candidates need
+to be re-filtered.")
 
 ;;;; Hook functions
 
@@ -79,18 +115,38 @@ This is used to prevent point from moving into the candidates.")
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker)))
-      (delete-region bound (point-max))
-      (dolist (candidate (seq-take
-                          (seq-filter
-                           (apply-partially
-                            selectrum-candidate-filter-function
-                            input)
-                           selectrum--sorted-candidates)
-                          selectrum-num-candidates-displayed))
-        (insert "\n" candidate))
-      (add-text-properties bound (point-max) '(read-only t))
-      (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
-      (set-marker-insertion-type selectrum--end-of-input-marker t))))
+      (unless (equal input selectrum--previous-input-string)
+        (setq selectrum--previous-input-string input)
+        (setq selectrum--filtered-candidates
+              ;; This could be made faster although significantly more
+              ;; complicated by only doing the filtering as needed to
+              ;; show the candidates being displayed.
+              (seq-filter
+               (apply-partially
+                selectrum-candidate-filter-function
+                input)
+               selectrum--sorted-candidates))
+        (setq selectrum--current-candidate-index
+              (and (> (length selectrum--filtered-candidates) 0)
+                   0)))
+      (let ((first-index-displayed
+             (and (> (length selectrum--filtered-candidates) 0)
+                  (selectrum--clamp
+                   (- selectrum--current-candidate-index
+                      (/ selectrum-num-candidates-displayed 2))
+                   0
+                   (- (length selectrum--filtered-candidates)
+                      selectrum-num-candidates-displayed)))))
+        (delete-region bound (point-max))
+        (dolist (candidate (seq-take
+                            (nthcdr
+                             first-index-displayed
+                             selectrum--filtered-candidates)
+                            selectrum-num-candidates-displayed))
+          (insert "\n" candidate))
+        (add-text-properties bound (point-max) '(read-only t))
+        (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
+        (set-marker-insertion-type selectrum--end-of-input-marker t)))))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
@@ -108,11 +164,31 @@ CANDIDATES is the list of strings that was passed to
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
-        (sort (copy-list candidates) selectrum-candidate-sort-function))
+        (seq-sort selectrum-candidate-sort-function candidates))
+  ;; Make sure to trigger an "user input changed" event, so that
+  ;; filtering happens and an index is assigned.
+  (setq selectrum--previous-input-string nil)
   (add-hook
    'post-command-hook
    #'selectrum--minibuffer-post-command-hook
    nil 'local))
+
+;;;; Minibuffer commands
+
+(defun selectrum-previous-candidate ()
+  "Move selection to previous candidate, unless at beginning already."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index
+          (max 0 (1- selectrum--current-candidate-index)))))
+
+(defun selectrum-next-candidate ()
+  "Move selection to next candidate, unless at end already."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index
+          (min (1- (length selectrum--filtered-candidates))
+               (1+ selectrum--current-candidate-index)))))
 
 ;;;; Main entry point
 
@@ -122,9 +198,14 @@ Return the selected string."
   (interactive
    (list "Prompt: " '("apple" "banana" "carrot" "date" "egg" "fig"
                       "guava" "honeyberry" "juniper" "kiwi" "lemon" "mango")))
-  (minibuffer-with-setup-hook
-      (apply-partially #'selectrum--minibuffer-setup-hook candidates)
-    (read-from-minibuffer prompt nil nil nil t)))
+  (let ((keymap (make-sparse-keymap)))
+    (map-do
+     (lambda (key cmd)
+       (define-key keymap (kbd key) cmd))
+     selectrum-minibuffer-bindings)
+    (minibuffer-with-setup-hook
+        (apply-partially #'selectrum--minibuffer-setup-hook candidates)
+      (read-from-minibuffer prompt nil keymap nil t))))
 
 ;;;; Closing remarks
 
