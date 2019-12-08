@@ -55,7 +55,8 @@ non-nil if the first should sort before the second, like
 
 (defcustom selectrum-minibuffer-bindings
   '(("<up>" . selectrum-previous-candidate)
-    ("<down>" . selectrum-next-candidate))
+    ("<down>" . selectrum-next-candidate)
+    ("RET" . selectrum-select-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
@@ -130,20 +131,30 @@ to be re-filtered.")
               (and (> (length selectrum--filtered-candidates) 0)
                    0)))
       (let ((first-index-displayed
-             (and (> (length selectrum--filtered-candidates) 0)
-                  (selectrum--clamp
-                   (- selectrum--current-candidate-index
-                      (/ selectrum-num-candidates-displayed 2))
-                   0
-                   (- (length selectrum--filtered-candidates)
-                      selectrum-num-candidates-displayed)))))
+             (if selectrum--current-candidate-index
+                 (selectrum--clamp
+                  (- selectrum--current-candidate-index
+                     (/ selectrum-num-candidates-displayed 2))
+                  0
+                  (max (- (length selectrum--filtered-candidates)
+                          selectrum-num-candidates-displayed)
+                       0))
+               0)))
         (delete-region bound (point-max))
-        (dolist (candidate (seq-take
-                            (nthcdr
-                             first-index-displayed
-                             selectrum--filtered-candidates)
-                            selectrum-num-candidates-displayed))
-          (insert "\n" candidate))
+        (let ((highlighted-index (and selectrum--current-candidate-index
+                                      (- selectrum--current-candidate-index
+                                         first-index-displayed))))
+          (seq-map-indexed
+           (lambda (candidate index)
+             (when (equal index highlighted-index)
+               (setq candidate (propertize
+                                candidate 'face 'selectrum-current-candidate)))
+             (insert "\n" candidate))
+           (seq-take
+            (nthcdr
+             first-index-displayed
+             selectrum--filtered-candidates)
+            selectrum-num-candidates-displayed)))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)))))
@@ -190,6 +201,21 @@ CANDIDATES is the list of strings that was passed to
           (min (1- (length selectrum--filtered-candidates))
                (1+ selectrum--current-candidate-index)))))
 
+(defun selectrum-select-current-candidate ()
+  "Exit minibuffer, picking the currently selected candidate.
+If there are no candidates, return the current user input."
+  (interactive)
+  (let ((value (if selectrum--current-candidate-index
+                   (nth selectrum--current-candidate-index
+                        selectrum--filtered-candidates)
+                 (buffer-substring
+                  selectrum--start-of-input-marker
+                  selectrum--end-of-input-marker))))
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert value))
+    (exit-minibuffer)))
+
 ;;;; Main entry point
 
 (defun selectrum-read (prompt candidates)
@@ -197,7 +223,10 @@ CANDIDATES is the list of strings that was passed to
 Return the selected string."
   (interactive
    (list "Prompt: " '("apple" "banana" "carrot" "date" "egg" "fig"
-                      "guava" "honeyberry" "juniper" "kiwi" "lemon" "mango")))
+                      "guava" "honeyberry" "juniper" "kiwi" "lemon" "mango"
+                      "apricot" "blackberry" "avocado" "blueberry"
+                      "breadfruit" "cantaloupe" "clementine" "cherry"
+                      "durian")))
   (let ((keymap (make-sparse-keymap)))
     (map-do
      (lambda (key cmd)
