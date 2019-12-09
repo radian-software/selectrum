@@ -54,9 +54,13 @@ non-nil if the first should sort before the second, like
   :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
-  '(([remap previous-line] . selectrum-previous-candidate)
-    ([remap next-line]     . selectrum-next-candidate)
-    ([remap newline]       . selectrum-select-current-candidate))
+  '(([remap previous-line]       . selectrum-previous-candidate)
+    ([remap next-line]           . selectrum-next-candidate)
+    ([remap newline]             . selectrum-select-current-candidate)
+    ([remap scroll-down-command] . selectrum-previous-page)
+    ([remap scroll-up-command]   . selectrum-next-page)
+    ([remap beginning-of-buffer] . selectrum-goto-beginning)
+    ([remap end-of-buffer]       . selectrum-goto-end))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
@@ -170,8 +174,11 @@ to be re-filtered.")
       (let ((first-index-displayed
              (if selectrum--current-candidate-index
                  (selectrum--clamp
-                  (- selectrum--current-candidate-index
-                     (/ selectrum-num-candidates-displayed 2))
+                  ;; Adding one here makes it look slightly better, as
+                  ;; there are guaranteed to be more candidates shown
+                  ;; below the selection than above.
+                  (1+ (- selectrum--current-candidate-index
+                         (/ selectrum-num-candidates-displayed 2)))
                   0
                   (max (- (length selectrum--filtered-candidates)
                           selectrum-num-candidates-displayed)
@@ -238,6 +245,36 @@ CANDIDATES is the list of strings that was passed to
           (min (1- (length selectrum--filtered-candidates))
                (1+ selectrum--current-candidate-index)))))
 
+(defun selectrum-previous-page ()
+  "Move selection upwards by one page, unless at beginning already."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index
+          (max 0 (- selectrum--current-candidate-index
+                    selectrum-num-candidates-displayed)))))
+
+(defun selectrum-next-page ()
+  "Move selection downwards by one page, unless at end already."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index
+          (min (1- (length selectrum--filtered-candidates))
+               (+ selectrum--current-candidate-index
+                  selectrum-num-candidates-displayed)))))
+
+(defun selectrum-goto-beginning ()
+  "Move selection to first candidate."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index 0)))
+
+(defun selectrum-goto-end ()
+  "Move selection to last candidate."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (setq selectrum--current-candidate-index
+          (1- (length selectrum--filtered-candidates)))))
+
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input."
@@ -267,7 +304,9 @@ Return the selected string."
   (let ((keymap (make-sparse-keymap)))
     (map-do
      (lambda (key cmd)
-       (define-key keymap (kbd key) cmd))
+       (when (stringp key)
+         (setq key (kbd key)))
+       (define-key keymap key cmd))
      selectrum-minibuffer-bindings)
     (minibuffer-with-setup-hook
         (apply-partially #'selectrum--minibuffer-setup-hook candidates)
