@@ -23,6 +23,9 @@
 
 ;;;; Libraries
 
+(eval-when-compile
+  (require 'cl-macs))
+
 (require 'map)
 (require 'seq)
 
@@ -229,7 +232,7 @@ to be re-filtered.")
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
 
-(defun selectrum--minibuffer-setup-hook (candidates)
+(cl-defun selectrum--minibuffer-setup-hook (candidates &key default-candidate)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'."
@@ -240,6 +243,13 @@ CANDIDATES is the list of strings that was passed to
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
         (funcall selectrum-candidate-sort-function candidates))
+  ;; If default is provided, sort it at the beginning instead of doing
+  ;; Ivy's weird thing where the default selection isn't the first
+  ;; element.
+  (when default-candidate
+    (setq selectrum--sorted-candidates
+          (cons default-candidate
+                (delete default-candidate selectrum--sorted-candidates))))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; filtering happens and an index is assigned.
   (setq selectrum--previous-input-string nil)
@@ -312,7 +322,7 @@ If there are no candidates, return the current user input."
 
 ;;;; Main entry point
 
-(defun selectrum-read (prompt candidates)
+(cl-defun selectrum-read (prompt candidates &key default-candidate)
   "Prompt user to select one of CANDIDATES, list of strings.
 Return the selected string."
   (interactive
@@ -329,7 +339,10 @@ Return the selected string."
        (define-key keymap key cmd))
      selectrum-minibuffer-bindings)
     (minibuffer-with-setup-hook
-        (apply-partially #'selectrum--minibuffer-setup-hook candidates)
+        (lambda ()
+          (selectrum--minibuffer-setup-hook
+           candidates
+           :default-candidate default-candidate))
       (read-from-minibuffer prompt nil keymap nil t))))
 
 (defun selectrum-completing-read
@@ -337,7 +350,9 @@ Return the selected string."
             predicate require-match initial-input
             hist def inherit-input-method)
   "Read choice using Selectrum. Can be used as `completing-read-function'."
-  (selectrum-read prompt (selectrum--normalize-collection collection predicate)))
+  (selectrum-read
+   prompt (selectrum--normalize-collection collection predicate)
+   :default-candidate (or (car-safe def) def)))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
