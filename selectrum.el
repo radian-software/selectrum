@@ -44,7 +44,7 @@ for the prompt line, assuming no multiline text."
   "Default value of `selectrum-candidate-filter-function'.
 Return only candidates that contain the input as a substring."
   (let ((regexp (regexp-quote input)))
-    (seq-filter
+    (cl-remove-if-not
      (lambda (candidate)
        (string-match-p regexp candidate))
      candidates)))
@@ -105,6 +105,15 @@ If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
 return X."
   (min (max x lower) upper))
 
+(defun selectrum--map-destructive (func lst)
+  "Apply FUNC to each element of LST, returning the new list.
+Modify the original list destructively, instead of allocating a
+new one."
+  (prog1 lst
+    (while lst
+      (setcar lst (funcall func (car lst)))
+      (setq lst (cdr lst)))))
+
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or cons cells, an obarray, a
@@ -116,10 +125,11 @@ If PREDICATE is non-nil, then it filters the collection as in
   (cond
    ((listp collection)
     (when predicate
-      (setq collection (seq-filter predicate collection)))
-    (seq-map (lambda (elt)
-               (or (car-safe elt) elt))
-             collection))
+      (setq collection (cl-remove-if-not predicate collection)))
+    (selectrum--map-destructive
+     (lambda (elt)
+       (or (car-safe elt) elt))
+     collection))
    ((hash-table-p collection)
     (let ((lst nil))
       (maphash
