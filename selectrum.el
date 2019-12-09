@@ -91,6 +91,12 @@ command symbols."
           :key-type string
           :value-type function))
 
+(defcustom selectrum-candidate-selected-hook nil
+  "Normal hook run when the user selects a candidate.
+It gets the same arguments as `selectrum-read' got, prepended
+with the string the user selected."
+  :type 'hook)
+
 ;;;;; Faces
 
 (defface selectrum-current-candidate
@@ -329,7 +335,7 @@ If there are no candidates, return the current user input."
 
 ;;;; Main entry point
 
-(cl-defun selectrum-read (prompt candidates &key default-candidate)
+(cl-defun selectrum-read (prompt candidates &rest args &key default-candidate)
   "Prompt user to select one of CANDIDATES, list of strings.
 Return the selected string."
   (let ((keymap (make-sparse-keymap)))
@@ -344,7 +350,12 @@ Return the selected string."
           (selectrum--minibuffer-setup-hook
            candidates
            :default-candidate default-candidate))
-      (read-from-minibuffer prompt nil keymap nil t))))
+      (let ((selected (read-from-minibuffer prompt nil keymap nil t)))
+        (prog1 selected
+          (apply
+           #'run-hook-with-args
+           'selectrum-candidate-selected-hook
+           selected prompt candidates args))))))
 
 (defun selectrum-completing-read
     (prompt collection &optional
