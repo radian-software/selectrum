@@ -322,12 +322,6 @@ If there are no candidates, return the current user input."
 (cl-defun selectrum-read (prompt candidates &key default-candidate)
   "Prompt user to select one of CANDIDATES, list of strings.
 Return the selected string."
-  (interactive
-   (list "Prompt: " '("apple" "banana" "carrot" "date" "egg" "fig"
-                      "guava" "honeyberry" "juniper" "kiwi" "lemon" "mango"
-                      "apricot" "blackberry" "avocado" "blueberry"
-                      "breadfruit" "cantaloupe" "clementine" "cherry"
-                      "durian")))
   (let ((keymap (make-sparse-keymap)))
     (map-do
      (lambda (key cmd)
