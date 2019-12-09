@@ -54,9 +54,9 @@ non-nil if the first should sort before the second, like
   :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
-  '(("<up>" . selectrum-previous-candidate)
-    ("<down>" . selectrum-next-candidate)
-    ("RET" . selectrum-select-current-candidate))
+  '(([remap previous-line] . selectrum-previous-candidate)
+    ([remap next-line]     . selectrum-next-candidate)
+    ([remap newline]       . selectrum-select-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
@@ -78,6 +78,43 @@ command symbols."
 If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
 return X."
   (min (max x lower) upper))
+
+(defun selectrum--normalize-collection (collection &optional predicate)
+  "Normalize COLLECTION into a list of strings.
+COLLECTION may be a list of strings or cons cells, an obarray, a
+hash table, or a function, as per the docstring of
+`try-completion'.
+
+If PREDICATE is non-nil, then it filters the collection as in
+`try-completion'."
+  (cond
+   ((listp collection)
+    (when predicate
+      (setq collection (seq-filter predicate collection)))
+    (cl-return (seq-map (lambda (elt)
+                          (or (car-safe elt) elt))
+                        collection)))
+   ((hash-table-p collection)
+    (let ((lst nil))
+      (maphash
+       (lambda (key val)
+         (when (and (or (symbolp key)
+                        (stringp key))
+                    (or (null predicate)
+                        (funcall predicate key val)))
+           (push key lst))))))
+   ((obarrayp collection)
+    (let ((lst nil))
+      (mapatoms
+       (lambda (elt)
+         (when (or (null predicate)
+                   (funcall predicate elt))
+           (push (symbol-name elt) lst))))
+      lst))
+   ((functionp collection)
+    (funcall collection "" predicate t))
+   (t
+    (error "Unsupported collection type %S" (type-of collection)))))
 
 ;;;; Minibuffer state
 
@@ -175,7 +212,7 @@ CANDIDATES is the list of strings that was passed to
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
-        (seq-sort selectrum-candidate-sort-function candidates))
+        (sort candidates selectrum-candidate-sort-function))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; filtering happens and an index is assigned.
   (setq selectrum--previous-input-string nil)
@@ -235,6 +272,30 @@ Return the selected string."
     (minibuffer-with-setup-hook
         (apply-partially #'selectrum--minibuffer-setup-hook candidates)
       (read-from-minibuffer prompt nil keymap nil t))))
+
+(defun selectrum-completing-read
+    (prompt collection &optional
+            predicate require-match initial-input
+            hist def inherit-input-method)
+  "Read choice using Selectrum. Can be used as `completing-read-function'."
+  (selectrum-read prompt (selectrum--normalize-collection collection predicate)))
+
+(defvar selectrum--old-completing-read-function nil
+  "Previous value of `completing-read-function'.")
+
+(define-minor-mode selectrum-mode
+  "Minor mode to use Selectrum for `completing-read'."
+  :global t
+  (if selectrum-mode
+      (progn
+        (setq selectrum--old-completing-read-function
+              (default-value 'completing-read-function))
+        (setq-default completing-read-function
+                      #'selectrum-completing-read))
+    (when (equal (default-value 'completing-read-function)
+                 #'selectrum-completing-read)
+      (setq-default completing-read-function
+                    selectrum--old-completing-read-function))))
 
 ;;;; Closing remarks
 
