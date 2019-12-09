@@ -40,17 +40,39 @@ The height of the minibuffer will be this number of rows plus one
 for the prompt line, assuming no multiline text."
   :type 'number)
 
-(defcustom selectrum-candidate-filter-function #'string-prefix-p
-  "Function used to check if candidate should be displayed.
-Receives two arguments, the user input and the candidate, both as
-strings. Returns non-nil if the candidate matches the input."
+(defun selectrum-default-candidate-filter-function (input candidates)
+  "Default value of `selectrum-candidate-filter-function'.
+Return only candidates that contain the input as a substring."
+  (let ((regexp (regexp-quote input)))
+    (seq-filter
+     (lambda (candidate)
+       (string-match-p regexp candidate))
+     candidates)))
+
+(defcustom selectrum-candidate-filter-function
+  #'selectrum-default-candidate-filter-function
+  "Function used to check which candidates should be displayed.
+Receive two arguments, the user input (a string) and the list of
+candidates (strings). Return a filtered list of candidates. Do
+not modify the input list."
   :type 'function)
 
-(defcustom selectrum-candidate-sort-function #'string-lessp
+(defun selectrum-default-candidate-sort-function (candidates)
+  "Default value of `selectrum-candidate-sort-function'.
+Sort first by length and then alphabetically."
+  (sort candidates
+        (lambda (c1 c2)
+          (or (< (length c1)
+                 (length c2))
+              (and (= (length c1)
+                      (length c2))
+                   (string-lessp c1 c2))))))
+
+(defcustom selectrum-candidate-sort-function
+  #'selectrum-default-candidate-sort-function
   "Function used to sort candidates.
-Receives two arguments, both candidates as strings. Returns
-non-nil if the first should sort before the second, like
-`string-lessp'."
+Receive one argument, the list of candidates. Return a sorted
+list. May modify the input list."
   :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
@@ -162,12 +184,10 @@ to be re-filtered.")
         (setq selectrum--filtered-candidates
               ;; This could be made faster although significantly more
               ;; complicated by only doing the filtering as needed to
-              ;; show the candidates being displayed.
-              (seq-filter
-               (apply-partially
-                selectrum-candidate-filter-function
-                input)
-               selectrum--sorted-candidates))
+              ;; show the candidates being displayed. The API would
+              ;; also be more complex.
+              (funcall selectrum-candidate-filter-function
+                       input selectrum--sorted-candidates))
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--filtered-candidates) 0)
                    0)))
@@ -219,7 +239,7 @@ CANDIDATES is the list of strings that was passed to
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
-        (sort candidates selectrum-candidate-sort-function))
+        (funcall selectrum-candidate-sort-function candidates))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; filtering happens and an index is assigned.
   (setq selectrum--previous-input-string nil)
@@ -322,6 +342,7 @@ Return the selected string."
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
 
+;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
   :global t
