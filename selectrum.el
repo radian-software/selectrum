@@ -117,9 +117,9 @@ If PREDICATE is non-nil, then it filters the collection as in
    ((listp collection)
     (when predicate
       (setq collection (seq-filter predicate collection)))
-    (cl-return (seq-map (lambda (elt)
-                          (or (car-safe elt) elt))
-                        collection)))
+    (seq-map (lambda (elt)
+               (or (car-safe elt) elt))
+             collection))
    ((hash-table-p collection)
     (let ((lst nil))
       (maphash
