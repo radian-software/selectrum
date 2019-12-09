@@ -23,9 +23,6 @@
 
 ;;;; Libraries
 
-(eval-when-compile
-  (require 'cl-macs))
-
 (require 'map)
 (require 'seq)
 
