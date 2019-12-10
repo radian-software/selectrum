@@ -23,6 +23,7 @@
 
 ;;;; Libraries
 
+(require 'cl-lib)
 (require 'map)
 (require 'seq)
 
@@ -30,17 +31,20 @@
 
 (defface selectrum-current-candidate
   '((t :inherit highlight))
-  "Face used to highlight the currently selected candidate.")
+  "Face used to highlight the currently selected candidate."
+  :group 'selectrum-faces)
 
 (defface selectrum-primary-highlight
   '((t :weight bold))
-  "Face used to highlight the parts of candidates that match the input.")
+  "Face used to highlight the parts of candidates that match the input."
+  :group 'selectrum-faces)
 
 (defface selectrum-secondary-highlight
   '((t :inherit selectrum-primary-highlight :underline t))
   "Additional face used to highlight parts of candidates.
 May be used to highlight parts of candidates that match specific
-parts of the input.")
+parts of the input."
+  :group 'selectrum-faces)
 
 ;;;; User options
 
@@ -58,7 +62,8 @@ for the prompt line, assuming no multiline text."
 
 (defun selectrum-default-candidate-filter-function (input candidates)
   "Default value of `selectrum-candidate-filter-function'.
-Return only candidates that contain the input as a substring."
+Return only candidates that contain the input as a substring.
+INPUT is a string, CANDIDATES is a list of strings."
   (let ((regexp (regexp-quote input)))
     (cl-remove-if-not
      (lambda (candidate)
@@ -75,7 +80,8 @@ not modify the input list."
 
 (defun selectrum-default-candidate-sort-function (candidates)
   "Default value of `selectrum-candidate-sort-function'.
-Sort first by length and then alphabetically."
+Sort first by length and then alphabetically. CANDIDATES is a
+list of strings."
   (sort candidates
         (lambda (c1 c2)
           (or (< (length c1)
@@ -94,7 +100,8 @@ list. May modify the input list."
 (defun selectrum-default-candidate-highlight-function (input candidates)
   "Default value of `selectrum-candidate-highlight-function'.
 Highlight the substring match with
-`selectrum-primary-highlight'."
+`selectrum-primary-highlight'. INPUT is a string, CANDIDATES is a
+list of strings."
   (let ((regexp (regexp-quote input)))
     (save-match-data
       (mapcar
@@ -115,7 +122,8 @@ Receive two arguments, the input string and the list of
 candidates (strings) that are going to be displayed (length at
 most `selectrum-num-candidates-displayed'). Return a list of
 propertized candidates. Do not modify the input list or
-strings.")
+strings."
+  :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
   '(([remap previous-line]       . selectrum-previous-candidate)
@@ -182,7 +190,8 @@ If PREDICATE is non-nil, then it filters the collection as in
                         (stringp key))
                     (or (null predicate)
                         (funcall predicate key val)))
-           (push key lst))))))
+           (push key lst)))
+       collection)))
    ((obarrayp collection)
     (let ((lst nil))
       (mapatoms
@@ -330,7 +339,8 @@ to be re-filtered.")
 (cl-defun selectrum--minibuffer-setup-hook (candidates &key default-candidate)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
-`selectrum-read'."
+`selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
+list and sorted first."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq selectrum--start-of-input-marker (point-marker))
@@ -418,8 +428,11 @@ If there are no candidates, return the current user input."
 ;;;; Main entry point
 
 (cl-defun selectrum-read (prompt candidates &rest args &key default-candidate)
-  "Prompt user to select one of CANDIDATES, list of strings.
-Return the selected string."
+  "Prompt user with PROMPT to select one of CANDIDATES, list of strings.
+Return the selected string. PROMPT should generally end in a
+colon and space. Additional keyword ARGS are accepted.
+DEFAULT-CANDIDATE, if provided, is added to the list and
+presented at the top."
   (let ((keymap (make-sparse-keymap)))
     (map-do
      (lambda (key cmd)
@@ -441,9 +454,10 @@ Return the selected string."
 
 (defun selectrum-completing-read
     (prompt collection &optional
-            predicate require-match initial-input
-            hist def inherit-input-method)
-  "Read choice using Selectrum. Can be used as `completing-read-function'."
+            predicate _require-match _initial-input
+            _hist def _inherit-input-method)
+  "Read choice using Selectrum. Can be used as `completing-read-function'.
+For PROMPT, COLLECTION, PREDICATE, and DEF, see `completing-read'."
   (selectrum-read
    prompt (selectrum--normalize-collection collection predicate)
    :default-candidate (or (car-safe def) def)))
@@ -459,7 +473,8 @@ Installing this function in `read-buffer-function' makes sure the
 buffers are sorted in the default order (most to least recently
 used) rather than in whatever order is defined by
 `selectrum-candidate-sort-function', which is likely to be less
-appropriate."
+appropriate. For PROMPT, DEF, REQUIRE-MATCH, and PREDICATE, see
+`read-buffer'."
   (let ((selectrum-candidate-sort-function #'identity)
         (read-buffer-function nil))
     (read-buffer prompt def require-match predicate)))
