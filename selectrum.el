@@ -255,8 +255,29 @@ to be re-filtered.")
                   (max (- (length selectrum--filtered-candidates)
                           selectrum-num-candidates-displayed)
                        0))
-               0)))
+               0))
+            ;; Hack in some behavior where if the input matches a
+            ;; candidate exactly then we pretend like it was sorted
+            ;; first, without actually building a new list (which
+            ;; would be super slow).
+            (index-with-exact-match
+             (cl-position input selectrum--filtered-candidates :test #'equal)))
         (delete-region bound (point-max))
+        ;; If we've got an exact match, we want to emulate moving that
+        ;; match to the beginning of the list. First observe that if
+        ;; the exact match is before our display window, it doesn't
+        ;; affect anything. So we restrict our attention to the case
+        ;; where the exact match is in or after our display window. In
+        ;; that case we have two more cases: either we're displaying
+        ;; the exact match (i.e. we display index 0) or we don't. In
+        ;; the case of displaying it, we'll push it at the beginning
+        ;; of our list later. In the case of not displaying it, our
+        ;; candidates are pushed downwards by one, so we should adjust
+        ;; the index by one.
+        (when (and index-with-exact-match
+                   (>= index-with-exact-match first-index-displayed)
+                   (> first-index-displayed 0))
+          (cl-decf first-index-displayed))
         (let* ((highlighted-index (and selectrum--current-candidate-index
                                        (- selectrum--current-candidate-index
                                           first-index-displayed)))
@@ -265,7 +286,24 @@ to be re-filtered.")
                  (nthcdr
                   first-index-displayed
                   selectrum--filtered-candidates)
-                 selectrum-num-candidates-displayed)))
+                 ;; Grab one more than needed so that if an exact
+                 ;; match with the user input appears, we can remove
+                 ;; it to put at the beginning, and still have enough
+                 ;; candidates.
+                 (1+ selectrum-num-candidates-displayed))))
+          ;; See discussion above.
+          (when (and index-with-exact-match
+                     (>= index-with-exact-match first-index-displayed)
+                     (= first-index-displayed 0))
+            (setq displayed-candidates (delete input displayed-candidates))
+            ;; The use of `nth' could be replaced for performance. We
+            ;; don't want to just push the input directly as that
+            ;; would lose text properties.
+            (push (nth index-with-exact-match selectrum--filtered-candidates)
+                  displayed-candidates)
+            (setq displayed-candidates
+                  (seq-take displayed-candidates
+                            selectrum-num-candidates-displayed)))
           (seq-map-indexed
            (lambda (candidate index)
              (when (equal index highlighted-index)
