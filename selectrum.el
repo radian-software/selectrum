@@ -160,14 +160,16 @@ new one."
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or cons cells, an obarray, a
 hash table, or a function, as per the docstring of
-`try-completion'.
+`try-completion'. The returned list may be mutated without
+damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
 `try-completion'."
   (cond
    ((listp collection)
-    (when predicate
-      (setq collection (cl-remove-if-not predicate collection)))
+    (if predicate
+        (setq collection (cl-remove-if-not predicate collection))
+      (setq collection (copy-sequence collection)))
     (selectrum--map-destructive
      (lambda (elt)
        (or (car-safe elt) elt))
