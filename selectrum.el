@@ -449,6 +449,22 @@ Return the selected string."
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
 
+(defun selectrum-read-buffer (prompt &optional def require-match predicate)
+  "Read buffer using Selectrum. Can be used as `read-buffer-function'.
+Actually, as long as `selectrum-completing-read' is installed in
+`completing-read-function', `read-buffer' already uses Selectrum.
+Installing this function in `read-buffer-function' makes sure the
+buffers are sorted in the default order (most to least recently
+used) rather than in whatever order is defined by
+`selectrum-candidate-sort-function', which is likely to be less
+appropriate."
+  (let ((selectrum-candidate-sort-function #'identity)
+        (read-buffer-function nil))
+    (read-buffer prompt def require-match predicate)))
+
+(defvar selectrum--old-read-buffer-function nil
+  "Previous value of `read-buffer-function'.")
+
 ;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
@@ -458,11 +474,19 @@ Return the selected string."
         (setq selectrum--old-completing-read-function
               (default-value 'completing-read-function))
         (setq-default completing-read-function
-                      #'selectrum-completing-read))
+                      #'selectrum-completing-read)
+        (setq selectrum--old-read-buffer-function
+              (default-value 'read-buffer-function))
+        (setq-default read-buffer-function
+                      #'selectrum-read-buffer))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
-                    selectrum--old-completing-read-function))))
+                    selectrum--old-completing-read-function))
+    (when (equal (default-value 'read-buffer-function)
+                 #'selectrum-read-buffer)
+      (setq-default read-buffer-function
+                    selectrum--old-read-buffer-function))))
 
 ;;;; Closing remarks
 
