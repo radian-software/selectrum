@@ -263,6 +263,7 @@ to be re-filtered.")
             (index-with-exact-match
              (cl-position input selectrum--filtered-candidates :test #'equal)))
         (delete-region bound (point-max))
+        (goto-char (point-max))
         ;; If we've got an exact match, we want to emulate moving that
         ;; match to the beginning of the list. First observe that if
         ;; the exact match is before our display window, it doesn't
