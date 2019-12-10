@@ -32,6 +32,16 @@
   '((t :inherit highlight))
   "Face used to highlight the currently selected candidate.")
 
+(defface selectrum-primary-highlight
+  '((t :weight bold))
+  "Face used to highlight the parts of candidates that match the input.")
+
+(defface selectrum-secondary-highlight
+  '((t :inherit selectrum-primary-highlight :underline t))
+  "Additional face used to highlight parts of candidates.
+May be used to highlight parts of candidates that match specific
+parts of the input.")
+
 ;;;; User options
 
 (defgroup selectrum nil
@@ -80,6 +90,32 @@ Sort first by length and then alphabetically."
 Receive one argument, the list of candidates. Return a sorted
 list. May modify the input list."
   :type 'function)
+
+(defun selectrum-default-candidate-highlight-function (input candidates)
+  "Default value of `selectrum-candidate-highlight-function'.
+Highlight the substring match with
+`selectrum-primary-highlight'."
+  (let ((regexp (regexp-quote input)))
+    (save-match-data
+      (mapcar
+       (lambda (candidate)
+         (when (string-match regexp candidate)
+           (setq candidate (copy-sequence candidate))
+           (put-text-property
+            (match-beginning 0) (match-end 0)
+            'face 'selectrum-primary-highlight
+            candidate))
+         candidate)
+       candidates))))
+
+(defcustom selectrum-candidate-highlight-function
+  #'selectrum-default-candidate-highlight-function
+  "Function used to highlight matched candidates.
+Receive two arguments, the input string and the list of
+candidates (strings) that are going to be displayed (length at
+most `selectrum-num-candidates-displayed'). Return a list of
+propertized candidates. Do not modify the input list or
+strings.")
 
 (defcustom selectrum-minibuffer-bindings
   '(([remap previous-line]       . selectrum-previous-candidate)
@@ -221,20 +257,25 @@ to be re-filtered.")
                        0))
                0)))
         (delete-region bound (point-max))
-        (let ((highlighted-index (and selectrum--current-candidate-index
-                                      (- selectrum--current-candidate-index
-                                         first-index-displayed))))
+        (let* ((highlighted-index (and selectrum--current-candidate-index
+                                       (- selectrum--current-candidate-index
+                                          first-index-displayed)))
+               (displayed-candidates
+                (seq-take
+                 (nthcdr
+                  first-index-displayed
+                  selectrum--filtered-candidates)
+                 selectrum-num-candidates-displayed)))
           (seq-map-indexed
            (lambda (candidate index)
              (when (equal index highlighted-index)
                (setq candidate (propertize
                                 candidate 'face 'selectrum-current-candidate)))
              (insert "\n" candidate))
-           (seq-take
-            (nthcdr
-             first-index-displayed
-             selectrum--filtered-candidates)
-            selectrum-num-candidates-displayed)))
+           (funcall
+            selectrum-candidate-highlight-function
+            input
+            displayed-candidates)))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)))))
