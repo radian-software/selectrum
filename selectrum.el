@@ -26,6 +26,12 @@
 (require 'map)
 (require 'seq)
 
+;;;; Faces
+
+(defface selectrum-current-candidate
+  '((t :inherit highlight))
+  "Face used to highlight the currently selected candidate.")
+
 ;;;; User options
 
 (defgroup selectrum nil
@@ -96,12 +102,6 @@ command symbols."
 It gets the same arguments as `selectrum-read' got, prepended
 with the string the user selected."
   :type 'hook)
-
-;;;;; Faces
-
-(defface selectrum-current-candidate
-  '((t :inherit highlight))
-  "Face used to highlight the currently selected candidate.")
 
 ;;;; Utility functions
 
