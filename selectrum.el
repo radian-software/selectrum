@@ -192,7 +192,9 @@ If PREDICATE is non-nil, then it filters the collection as in
                         (funcall predicate key val)))
            (push key lst)))
        collection)))
-   ((obarrayp collection)
+   ;; Use `vectorp' instead of `obarrayp' because the latter isn't
+   ;; defined in Emacs 25.
+   ((vectorp collection)
     (let ((lst nil))
       (mapatoms
        (lambda (elt)
@@ -316,16 +318,17 @@ to be re-filtered.")
             (setq displayed-candidates
                   (seq-take displayed-candidates
                             selectrum-num-candidates-displayed)))
-          (seq-map-indexed
-           (lambda (candidate index)
-             (when (equal index highlighted-index)
-               (setq candidate (propertize
-                                candidate 'face 'selectrum-current-candidate)))
-             (insert "\n" candidate))
-           (funcall
-            selectrum-candidate-highlight-function
-            input
-            displayed-candidates)))
+          (let ((index 0))
+            (dolist (candidate (funcall
+                                selectrum-candidate-highlight-function
+                                input
+                                displayed-candidates))
+              (when (equal index highlighted-index)
+                (setq candidate (propertize
+                                 candidate
+                                 'face 'selectrum-current-candidate)))
+              (insert "\n" candidate)
+              (cl-incf index))))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)))))
@@ -434,7 +437,9 @@ colon and space. Additional keyword ARGS are accepted.
 DEFAULT-CANDIDATE, if provided, is added to the list and
 presented at the top."
   (let ((keymap (make-sparse-keymap)))
-    (map-do
+    ;; Use `map-apply' instead of `map-do' as the latter is not
+    ;; available in Emacs 25.
+    (map-apply
      (lambda (key cmd)
        (when (stringp key)
          (setq key (kbd key)))
