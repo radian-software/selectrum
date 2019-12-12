@@ -314,10 +314,10 @@ to be re-filtered.")
             ;; don't want to just push the input directly as that
             ;; would lose text properties.
             (push (nth index-with-exact-match selectrum--filtered-candidates)
-                  displayed-candidates)
-            (setq displayed-candidates
-                  (seq-take displayed-candidates
-                            selectrum-num-candidates-displayed)))
+                  displayed-candidates))
+          (setq displayed-candidates
+                (seq-take displayed-candidates
+                          selectrum-num-candidates-displayed))
           (let ((index 0))
             (dolist (candidate (funcall
                                 selectrum-candidate-highlight-function
