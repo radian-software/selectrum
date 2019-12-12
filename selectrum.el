@@ -228,6 +228,9 @@ This only needs to be computed every time the user input changes.")
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
+(defvar selectrum--current-candidate nil
+  "Value of currently selected cadndiate, or nil if no candidates.")
+
 (defvar selectrum--previous-input-string nil
   "Previous user input string in the minibuffer.
 Used to check if the user input has changed and candidates need
@@ -319,11 +322,15 @@ to be re-filtered.")
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
           (let ((index 0))
+            ;; Reset this in case there are no candidates so it
+            ;; doesn't get set to any candidate below.
+            (setq selectrum--current-candidate nil)
             (dolist (candidate (funcall
                                 selectrum-candidate-highlight-function
                                 input
                                 displayed-candidates))
               (when (equal index highlighted-index)
+                (setq selectrum--current-candidate candidate)
                 (setq candidate (propertize
                                  candidate
                                  'face 'selectrum-current-candidate)))
@@ -417,12 +424,10 @@ list and sorted first."
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input."
   (interactive)
-  (let ((value (if selectrum--current-candidate-index
-                   (nth selectrum--current-candidate-index
-                        selectrum--filtered-candidates)
-                 (buffer-substring
-                  selectrum--start-of-input-marker
-                  selectrum--end-of-input-marker))))
+  (let ((value (or selectrum--current-candidate
+                   (buffer-substring
+                    selectrum--start-of-input-marker
+                    selectrum--end-of-input-marker))))
     (let ((inhibit-read-only t))
       (erase-buffer)
       (insert value))
