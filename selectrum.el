@@ -75,7 +75,8 @@ INPUT is a string, CANDIDATES is a list of strings."
   "Function used to check which candidates should be displayed.
 Receive two arguments, the user input (a string) and the list of
 candidates (strings). Return a filtered list of candidates. Do
-not modify the input list."
+not modify the input list. The returned list may be modified, so
+a copy of the input must be made."
   :type 'function)
 
 (defun selectrum-default-candidate-sort-function (candidates)
@@ -94,7 +95,8 @@ list of strings."
   #'selectrum-default-candidate-sort-function
   "Function used to sort candidates.
 Receive one argument, the list of candidates. Return a sorted
-list. May modify the input list."
+list. May modify the input list. The returned list may be
+modified."
   :type 'function)
 
 (defun selectrum-default-candidate-highlight-function (input candidates)
@@ -164,6 +166,23 @@ new one."
       (setcar lst (funcall func (car lst)))
       (setq lst (cdr lst)))))
 
+(defun selectrum--move-to-front-destructive (elt lst)
+  "Move all instances of ELT to front of LST, if present.
+Make comparisons using `equal'. Modify the input list
+destructively and return the modified list."
+  (let* ((elts nil)
+         ;; All problems in computer science are solved by an
+         ;; additional layer of indirection.
+         (lst (cons (make-symbol "dummy") lst))
+         (link lst))
+    (while (cdr link)
+      (if (equal elt (cadr link))
+          (progn
+            (push elt elts)
+            (setcdr link (cddr link)))
+        (setq link (cdr link))))
+    (nconc (nreverse elts) (cdr lst))))
+
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or cons cells, an obarray, a
@@ -228,9 +247,6 @@ This only needs to be computed every time the user input changes.")
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
-(defvar selectrum--current-candidate nil
-  "Value of currently selected cadndiate, or nil if no candidates.")
-
 (defvar selectrum--previous-input-string nil
   "Previous user input string in the minibuffer.
 Used to check if the user input has changed and candidates need
@@ -254,8 +270,10 @@ to be re-filtered.")
               ;; complicated by only doing the filtering as needed to
               ;; show the candidates being displayed. The API would
               ;; also be more complex.
-              (funcall selectrum-candidate-filter-function
-                       input selectrum--sorted-candidates))
+              (selectrum--move-to-front-destructive
+               input
+               (funcall selectrum-candidate-filter-function
+                        input selectrum--sorted-candidates)))
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--filtered-candidates) 0)
                    0)))
@@ -271,30 +289,9 @@ to be re-filtered.")
                   (max (- (length selectrum--filtered-candidates)
                           selectrum-num-candidates-displayed)
                        0))
-               0))
-            ;; Hack in some behavior where if the input matches a
-            ;; candidate exactly then we pretend like it was sorted
-            ;; first, without actually building a new list (which
-            ;; would be super slow).
-            (index-with-exact-match
-             (cl-position input selectrum--filtered-candidates :test #'equal)))
+               0)))
         (delete-region bound (point-max))
         (goto-char (point-max))
-        ;; If we've got an exact match, we want to emulate moving that
-        ;; match to the beginning of the list. First observe that if
-        ;; the exact match is before our display window, it doesn't
-        ;; affect anything. So we restrict our attention to the case
-        ;; where the exact match is in or after our display window. In
-        ;; that case we have two more cases: either we're displaying
-        ;; the exact match (i.e. we display index 0) or we don't. In
-        ;; the case of displaying it, we'll push it at the beginning
-        ;; of our list later. In the case of not displaying it, our
-        ;; candidates are pushed downwards by one, so we should adjust
-        ;; the index by one.
-        (when (and index-with-exact-match
-                   (>= index-with-exact-match first-index-displayed)
-                   (> first-index-displayed 0))
-          (cl-decf first-index-displayed))
         (let* ((highlighted-index (and selectrum--current-candidate-index
                                        (- selectrum--current-candidate-index
                                           first-index-displayed)))
@@ -303,34 +300,16 @@ to be re-filtered.")
                  (nthcdr
                   first-index-displayed
                   selectrum--filtered-candidates)
-                 ;; Grab one more than needed so that if an exact
-                 ;; match with the user input appears, we can remove
-                 ;; it to put at the beginning, and still have enough
-                 ;; candidates.
-                 (1+ selectrum-num-candidates-displayed))))
-          ;; See discussion above.
-          (when (and index-with-exact-match
-                     (>= index-with-exact-match first-index-displayed)
-                     (= first-index-displayed 0))
-            (setq displayed-candidates (delete input displayed-candidates))
-            ;; The use of `nth' could be replaced for performance. We
-            ;; don't want to just push the input directly as that
-            ;; would lose text properties.
-            (push (nth index-with-exact-match selectrum--filtered-candidates)
-                  displayed-candidates))
+                 selectrum-num-candidates-displayed)))
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
           (let ((index 0))
-            ;; Reset this in case there are no candidates so it
-            ;; doesn't get set to any candidate below.
-            (setq selectrum--current-candidate nil)
             (dolist (candidate (funcall
                                 selectrum-candidate-highlight-function
                                 input
                                 displayed-candidates))
               (when (equal index highlighted-index)
-                (setq selectrum--current-candidate candidate)
                 (setq candidate (propertize
                                  candidate
                                  'face 'selectrum-current-candidate)))
@@ -424,10 +403,12 @@ list and sorted first."
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input."
   (interactive)
-  (let ((value (or selectrum--current-candidate
-                   (buffer-substring
-                    selectrum--start-of-input-marker
-                    selectrum--end-of-input-marker))))
+  (let ((value (if selectrum--current-candidate-index
+                   (nth selectrum--current-candidate-index
+                        selectrum--filtered-candidates)
+                 (buffer-substring
+                  selectrum--start-of-input-marker
+                  selectrum--end-of-input-marker))))
     (let ((inhibit-read-only t))
       (erase-buffer)
       (insert value))
