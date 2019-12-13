@@ -135,7 +135,8 @@ strings."
     ([remap scroll-up-command]   . selectrum-next-page)
     ([remap beginning-of-buffer] . selectrum-goto-beginning)
     ([remap end-of-buffer]       . selectrum-goto-end)
-    ("C-j"                       . selectrum-submit-exact-input))
+    ("C-j"                       . selectrum-submit-exact-input)
+    ("TAB"                       . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
@@ -443,6 +444,15 @@ ignores the currently selected candidate, if one exists."
         (erase-buffer)
         (insert value))
       (exit-minibuffer))))
+
+(defun selectrum-insert-current-candidate ()
+  "Insert current candidate into user input area."
+  (interactive)
+  (when selectrum--current-candidate-index
+    (delete-region selectrum--start-of-input-marker
+                   selectrum--end-of-input-marker)
+    (insert (nth selectrum--current-candidate-index
+                 selectrum--filtered-candidates))))
 
 ;;;; Main entry point
 
