@@ -134,7 +134,8 @@ strings."
     ([remap scroll-down-command] . selectrum-previous-page)
     ([remap scroll-up-command]   . selectrum-next-page)
     ([remap beginning-of-buffer] . selectrum-goto-beginning)
-    ([remap end-of-buffer]       . selectrum-goto-end))
+    ([remap end-of-buffer]       . selectrum-goto-end)
+    ("C-j"                       . selectrum-submit-exact-input))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
@@ -252,6 +253,11 @@ This only needs to be computed every time the user input changes.")
 Used to check if the user input has changed and candidates need
 to be re-filtered.")
 
+(defvar selectrum--match-required-p nil
+  "Non-nil if the user must select one of the candidates.
+Equivalently, nil if the user is allowed to submit their own
+input that does not match any of the displayed candidates.")
+
 ;;;; Hook functions
 
 (defun selectrum--minibuffer-post-command-hook ()
@@ -325,14 +331,21 @@ to be re-filtered.")
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
 
-(cl-defun selectrum--minibuffer-setup-hook (candidates &key default-candidate)
+(cl-defun selectrum--minibuffer-setup-hook
+    (candidates &key default-candidate initial-input require-match)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first."
+list and sorted first. INITIAL-INPUT, if provided, is inserted
+into the user input area to start with. REQUIRE-MATCH, if
+non-nil, means the user has to select one of the candidates
+provided, rather than providing one of their own."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
+  (setq selectrum--match-required-p require-match)
   (setq selectrum--start-of-input-marker (point-marker))
+  (when initial-input
+    (insert initial-input))
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
@@ -401,27 +414,50 @@ list and sorted first."
 
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
-If there are no candidates, return the current user input."
+If there are no candidates, return the current user input, unless
+a match is required, in which case do nothing."
   (interactive)
-  (let ((value (if selectrum--current-candidate-index
-                   (nth selectrum--current-candidate-index
-                        selectrum--filtered-candidates)
-                 (buffer-substring
+  (when (or selectrum--current-candidate-index
+            (not selectrum--match-required-p))
+    (let ((value (if selectrum--current-candidate-index
+                     (nth selectrum--current-candidate-index
+                          selectrum--filtered-candidates)
+                   (buffer-substring
+                    selectrum--start-of-input-marker
+                    selectrum--end-of-input-marker))))
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert value))
+      (exit-minibuffer))))
+
+(defun selectrum-submit-exact-input ()
+  "Exit minibuffer, using the current user input.
+This differs from `selectrum-select-current-candidate' in that it
+ignores the currently selected candidate, if one exists."
+  (interactive)
+  (unless selectrum--match-required-p
+    (let ((value (buffer-substring
                   selectrum--start-of-input-marker
-                  selectrum--end-of-input-marker))))
-    (let ((inhibit-read-only t))
-      (erase-buffer)
-      (insert value))
-    (exit-minibuffer)))
+                  selectrum--end-of-input-marker)))
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert value))
+      (exit-minibuffer))))
 
 ;;;; Main entry point
 
-(cl-defun selectrum-read (prompt candidates &rest args &key default-candidate)
+(cl-defun selectrum-read
+    (prompt candidates &rest args &key
+            default-candidate initial-input require-match)
   "Prompt user with PROMPT to select one of CANDIDATES, list of strings.
 Return the selected string. PROMPT should generally end in a
 colon and space. Additional keyword ARGS are accepted.
 DEFAULT-CANDIDATE, if provided, is added to the list and
-presented at the top."
+presented at the top. INITIAL-INPUT, if provided, is inserted
+into the user input area initially (with point at the end).
+REQUIRE-MATCH, if non-nil, means the user must select one of the
+listed candidates (so, for example,
+`selectrum-submit-exact-input' has no effect)."
   (let ((keymap (make-sparse-keymap)))
     ;; Use `map-apply' instead of `map-do' as the latter is not
     ;; available in Emacs 25.
@@ -435,7 +471,9 @@ presented at the top."
         (lambda ()
           (selectrum--minibuffer-setup-hook
            candidates
-           :default-candidate default-candidate))
+           :default-candidate default-candidate
+           :initial-input initial-input
+           :require-match require-match))
       (let ((selected (read-from-minibuffer prompt nil keymap nil t)))
         (prog1 selected
           (apply
@@ -445,13 +483,18 @@ presented at the top."
 
 (defun selectrum-completing-read
     (prompt collection &optional
-            predicate _require-match _initial-input
+            predicate require-match _initial-input
             _hist def _inherit-input-method)
   "Read choice using Selectrum. Can be used as `completing-read-function'.
-For PROMPT, COLLECTION, PREDICATE, and DEF, see `completing-read'."
+For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, and DEF, see
+`completing-read'."
   (selectrum-read
    prompt (selectrum--normalize-collection collection predicate)
-   :default-candidate (or (car-safe def) def)))
+   ;; Don't pass `initial-input'. We use it internally but it's
+   ;; deprecated in `completing-read' and doesn't work well with the
+   ;; Selectrum paradigm except in specific cases that we control.
+   :default-candidate (or (car-safe def) def)
+   :require-match require-match))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
