@@ -25,7 +25,9 @@
 
 (require 'cl-lib)
 (require 'map)
+(require 'regexp-opt)
 (require 'seq)
+(require 'subr-x)
 
 ;;;; Faces
 
@@ -621,6 +623,62 @@ PREDICATE, see `read-file-name'."
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
 
+(defun selectrum--trailing-components (n path)
+  "Take at most N trailing components of PATH.
+For large enough N, return PATH unchanged."
+  (let* ((n (min n (1+ (cl-count ?/ path))))
+         (regexp (concat (string-join (make-list n "[^/]*") "/") "$")))
+    (save-match-data
+      (string-match regexp path)
+      (match-string 0 path))))
+
+(defun selectrum-read-library-name ()
+  "Read and return a library name.
+Similar to `read-library-name' except it handles `load-path'
+shadows correctly."
+  (eval-and-compile
+    (require 'find-func))
+  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
+        (table (make-hash-table :test #'equal))
+        (lst nil))
+    (dolist (dir (or find-function-source-path load-path))
+      (condition-case _
+          (mapc
+           (lambda (entry)
+             (unless (string-match-p "^\\.\\.?$" entry)
+               (let ((base (file-name-base entry)))
+                 (puthash base (cons entry (gethash base table)) table))))
+           (directory-files dir 'full suffix-regexp 'nosort))
+        (file-error)))
+    (maphash
+     (lambda (_ paths)
+       (setq paths (seq-uniq paths))
+       (cl-block nil
+         (let ((num-components 1)
+               (max-components (apply #'max (mapcar (lambda (path)
+                                                      (1+ (cl-count ?/ path)))
+                                                    paths))))
+           (while t
+             (let ((abbrev-paths
+                    (seq-uniq
+                     (mapcar (lambda (path)
+                               (propertize
+                                (file-name-sans-extension
+                                 (selectrum--trailing-components
+                                  num-components path))
+                                'selectrum--full-path
+                                path))
+                             paths))))
+               (when (or (= num-components max-components)
+                         (= (length paths) (length abbrev-paths)))
+                 (setq lst (nconc abbrev-paths lst))
+                 (cl-return)))
+             (cl-incf num-components)))))
+     table)
+    (get-text-property
+     0 'selectrum--full-path
+     (selectrum-read "Library name: " lst :require-match t))))
+
 ;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
@@ -638,7 +696,9 @@ PREDICATE, see `read-file-name'."
         (setq selectrum--old-read-file-name-function
               (default-value 'read-file-name-function))
         (setq-default read-file-name-function
-                      #'selectrum-read-file-name))
+                      #'selectrum-read-file-name)
+        (advice-add #'read-library-name :override
+                    #'selectrum-read-library-name))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
@@ -650,7 +710,8 @@ PREDICATE, see `read-file-name'."
     (when (equal (default-value 'read-file-name-function)
                  #'selectrum-read-file-name)
       (setq-default read-file-name-function
-                    selectrum--old-read-file-name-function))))
+                    selectrum--old-read-file-name-function))
+    (advice-remove #'read-library-name #'selectrum-read-library-name)))
 
 ;;;; Closing remarks
 
