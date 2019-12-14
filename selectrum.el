@@ -60,8 +60,8 @@ The height of the minibuffer will be this number of rows plus one
 for the prompt line, assuming no multiline text."
   :type 'number)
 
-(defun selectrum-default-candidate-filter-function (input candidates)
-  "Default value of `selectrum-candidate-filter-function'.
+(defun selectrum-default-candidate-refine-function (input candidates)
+  "Default value of `selectrum-refine-candidates-function'.
 Return only candidates that contain the input as a substring.
 INPUT is a string, CANDIDATES is a list of strings."
   (let ((regexp (regexp-quote input)))
@@ -70,17 +70,19 @@ INPUT is a string, CANDIDATES is a list of strings."
        (string-match-p regexp candidate))
      candidates)))
 
-(defcustom selectrum-candidate-filter-function
-  #'selectrum-default-candidate-filter-function
-  "Function used to check which candidates should be displayed.
-Receive two arguments, the user input (a string) and the list of
-candidates (strings). Return a filtered list of candidates. Do
-not modify the input list. The returned list may be modified, so
-a copy of the input must be made."
+(defcustom selectrum-refine-candidates-function
+  #'selectrum-default-candidate-refine-function
+  "Function used to decide which candidates should be displayed.
+Receives two arguments, the user input (a string) and the list of
+candidates (strings) as returned by
+`selectrum-preprocess-candidates-function'. Returns a new list of
+candidates. Should not modify the input list. The returned list
+may be modified by Selectrum, so a copy of the input should be
+made."
   :type 'function)
 
-(defun selectrum-default-candidate-sort-function (candidates)
-  "Default value of `selectrum-candidate-sort-function'.
+(defun selectrum-default-candidate-preprocess-function (candidates)
+  "Default value of `selectrum-preprocess-candidates-function'.
 Sort first by length and then alphabetically. CANDIDATES is a
 list of strings."
   (sort candidates
@@ -91,16 +93,16 @@ list of strings."
                       (length c2))
                    (string-lessp c1 c2))))))
 
-(defcustom selectrum-candidate-sort-function
-  #'selectrum-default-candidate-sort-function
-  "Function used to sort candidates.
-Receive one argument, the list of candidates. Return a sorted
-list. May modify the input list. The returned list may be
-modified."
+(defcustom selectrum-preprocess-candidates-function
+  #'selectrum-default-candidate-preprocess-function
+  "Function used to preprocess the list of candidates.
+Receive one argument, the list of candidates. Return a new list.
+May modify the input list. The returned list may be modified by
+Selectrum."
   :type 'function)
 
 (defun selectrum-default-candidate-highlight-function (input candidates)
-  "Default value of `selectrum-candidate-highlight-function'.
+  "Default value of `selectrum-highlight-candidates-function'.
 Highlight the substring match with
 `selectrum-primary-highlight'. INPUT is a string, CANDIDATES is a
 list of strings."
@@ -117,7 +119,7 @@ list of strings."
          candidate)
        candidates))))
 
-(defcustom selectrum-candidate-highlight-function
+(defcustom selectrum-highlight-candidates-function
   #'selectrum-default-candidate-highlight-function
   "Function used to highlight matched candidates.
 Receive two arguments, the input string and the list of
@@ -239,12 +241,19 @@ This is used to prevent point from moving into the prompt.")
 This is used to prevent point from moving into the candidates.")
 
 (defvar selectrum--sorted-candidates nil
-  "List of sorted candidates to be displayed.
-This only needs to be computed once per use of Selectrum.")
+  "Preprocessed list of candidates.
+This is derived from the collection passed to `selectrum-read'
+just once, and is subsequently passed to
+`selectrum-preprocess-candidates-function' every time the user
+input changes in order to generate
+`selectrum--refined-candidates'.")
 
-(defvar selectrum--filtered-candidates nil
-  "List of sorted *and* filtered candidates to be displayed.
-This only needs to be computed every time the user input changes.")
+(defvar selectrum--refined-candidates nil
+  "Refined list of candidates to be displayed.
+This is derived from `selectrum--preprocessed-candidates' by
+`selectrum-refine-candidates-function' every time the user input
+changes, and is subsequently passed to
+`selectrum-highlight-candidates-function'.")
 
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
@@ -259,6 +268,9 @@ to be re-filtered.")
 Equivalently, nil if the user is allowed to submit their own
 input that does not match any of the displayed candidates.")
 
+(defvar selectrum--default-candidate nil
+  "Default candidate, or nil if none given.")
+
 ;;;; Hook functions
 
 (defun selectrum--minibuffer-post-command-hook ()
@@ -272,17 +284,15 @@ input that does not match any of the displayed candidates.")
           (bound (marker-position selectrum--end-of-input-marker)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
-        (setq selectrum--filtered-candidates
-              ;; This could be made faster although significantly more
-              ;; complicated by only doing the filtering as needed to
-              ;; show the candidates being displayed. The API would
-              ;; also be more complex.
+        (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input
-               (funcall selectrum-candidate-filter-function
-                        input selectrum--sorted-candidates)))
+               (selectrum--move-to-front-destructive
+                selectrum--default-candidate
+                (funcall selectrum-refine-candidates-function
+                         input selectrum--sorted-candidates))))
         (setq selectrum--current-candidate-index
-              (and (> (length selectrum--filtered-candidates) 0)
+              (and (> (length selectrum--refined-candidates) 0)
                    0)))
       (let ((first-index-displayed
              (if selectrum--current-candidate-index
@@ -293,7 +303,7 @@ input that does not match any of the displayed candidates.")
                   (1+ (- selectrum--current-candidate-index
                          (/ selectrum-num-candidates-displayed 2)))
                   0
-                  (max (- (length selectrum--filtered-candidates)
+                  (max (- (length selectrum--refined-candidates)
                           selectrum-num-candidates-displayed)
                        0))
                0)))
@@ -306,14 +316,14 @@ input that does not match any of the displayed candidates.")
                 (seq-take
                  (nthcdr
                   first-index-displayed
-                  selectrum--filtered-candidates)
+                  selectrum--refined-candidates)
                  selectrum-num-candidates-displayed)))
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
           (let ((index 0))
             (dolist (candidate (funcall
-                                selectrum-candidate-highlight-function
+                                selectrum-highlight-candidates-function
                                 input
                                 displayed-candidates))
               (when (equal index highlighted-index)
@@ -350,16 +360,11 @@ provided, rather than providing one of their own."
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--sorted-candidates
-        (funcall selectrum-candidate-sort-function candidates))
-  ;; If default is provided, sort it at the beginning instead of doing
-  ;; Ivy's weird thing where the default selection isn't the first
-  ;; element.
-  (when default-candidate
-    (setq selectrum--sorted-candidates
-          (cons default-candidate
-                (delete default-candidate selectrum--sorted-candidates))))
+        (funcall selectrum-preprocess-candidates-function candidates))
+  (setq selectrum--default-candidate default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
-  ;; filtering happens and an index is assigned.
+  ;; candidate refinement happens in `post-command-hook' and an index
+  ;; is assigned.
   (setq selectrum--previous-input-string nil)
   (add-hook
    'post-command-hook
@@ -380,7 +385,7 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (min (1- (length selectrum--filtered-candidates))
+          (min (1- (length selectrum--refined-candidates))
                (1+ selectrum--current-candidate-index)))))
 
 (defun selectrum-previous-page ()
@@ -396,7 +401,7 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (min (1- (length selectrum--filtered-candidates))
+          (min (1- (length selectrum--refined-candidates))
                (+ selectrum--current-candidate-index
                   selectrum-num-candidates-displayed)))))
 
@@ -411,7 +416,7 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (1- (length selectrum--filtered-candidates)))))
+          (1- (length selectrum--refined-candidates)))))
 
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
@@ -422,7 +427,7 @@ a match is required, in which case do nothing."
             (not selectrum--match-required-p))
     (let ((value (if selectrum--current-candidate-index
                      (nth selectrum--current-candidate-index
-                          selectrum--filtered-candidates)
+                          selectrum--refined-candidates)
                    (buffer-substring
                     selectrum--start-of-input-marker
                     selectrum--end-of-input-marker))))
@@ -452,7 +457,7 @@ ignores the currently selected candidate, if one exists."
     (delete-region selectrum--start-of-input-marker
                    selectrum--end-of-input-marker)
     (insert (nth selectrum--current-candidate-index
-                 selectrum--filtered-candidates))))
+                 selectrum--refined-candidates))))
 
 ;;;; Main entry point
 
@@ -516,10 +521,10 @@ Actually, as long as `selectrum-completing-read' is installed in
 Installing this function in `read-buffer-function' makes sure the
 buffers are sorted in the default order (most to least recently
 used) rather than in whatever order is defined by
-`selectrum-candidate-sort-function', which is likely to be less
-appropriate. For PROMPT, DEF, REQUIRE-MATCH, and PREDICATE, see
-`read-buffer'."
-  (let ((selectrum-candidate-sort-function #'identity)
+`selectrum-preprocess-candidates-function', which is likely to be
+less appropriate. For PROMPT, DEF, REQUIRE-MATCH, and PREDICATE,
+see `read-buffer'."
+  (let ((selectrum-preprocess-candidates-function #'identity)
         (read-buffer-function nil))
     (read-buffer prompt def require-match predicate)))
 
