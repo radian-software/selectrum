@@ -67,10 +67,10 @@ for the prompt line, assuming no multiline text."
 Return only candidates that contain the input as a substring.
 INPUT is a string, CANDIDATES is a list of strings."
   (let ((regexp (regexp-quote input)))
-    (cl-remove-if-not
+    (cl-delete-if-not
      (lambda (candidate)
        (string-match-p regexp candidate))
-     candidates)))
+     (copy-sequence candidates))))
 
 (defcustom selectrum-refine-candidates-function
   #'selectrum-default-candidate-refine-function
@@ -80,7 +80,8 @@ candidates (strings) as returned by
 `selectrum-preprocess-candidates-function'. Returns a new list of
 candidates. Should not modify the input list. The returned list
 may be modified by Selectrum, so a copy of the input should be
-made.
+made. (Beware that `cl-remove-if' doesn't make a copy if there's
+nothing to remove.)
 
 Instead of a list of strings, may alternatively return an alist
 with the following keys:
@@ -213,9 +214,9 @@ If PREDICATE is non-nil, then it filters the collection as in
 `try-completion'."
   (cond
    ((listp collection)
-    (if predicate
-        (setq collection (cl-remove-if-not predicate collection))
-      (setq collection (copy-sequence collection)))
+    (setq collection (copy-sequence collection))
+    (when predicate
+      (setq collection (cl-delete-if-not predicate collection)))
     (selectrum--map-destructive
      (lambda (elt)
        (or (car-safe elt) elt))
