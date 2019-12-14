@@ -159,6 +159,13 @@ It gets the same arguments as `selectrum-read' got, prepended
 with the string the user selected."
   :type 'hook)
 
+;;;; Variables
+
+(defvar selectrum-should-sort-p t
+  "Non-nil if preprocessing and refinement functions should sort.
+This is let-bound to nil in some contexts, and should be
+respected by user functions for optimal results.")
+
 ;;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
@@ -552,7 +559,7 @@ used) rather than in whatever order is defined by
 `selectrum-preprocess-candidates-function', which is likely to be
 less appropriate. For PROMPT, DEF, REQUIRE-MATCH, and PREDICATE,
 see `read-buffer'."
-  (let ((selectrum-preprocess-candidates-function #'identity)
+  (let ((selectrum-should-sort-p nil)
         (read-buffer-function nil))
     (read-buffer prompt def require-match predicate)))
 
