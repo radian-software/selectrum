@@ -589,8 +589,10 @@ see `read-buffer'."
                               (lambda (cell)
                                 (and predicate
                                      (not (funcall predicate (car cell)))))
-                              (directory-files-and-attributes
-                               dir nil "^[^.]\\|^.[^.]" 'nosort)))))
+                              (condition-case _
+                                  (directory-files-and-attributes
+                                   dir nil "^[^.]\\|^.[^.]" 'nosort)
+                                (file-error))))))
               `((candidates . ,(funcall
                                 orig-refine-function
                                 new-input
