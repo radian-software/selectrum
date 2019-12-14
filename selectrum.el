@@ -568,7 +568,9 @@ see `read-buffer'."
 
 (defun selectrum-read-file-name
     (prompt &optional dir default-filename mustmatch initial predicate)
-  "Read file name using Selectrum. Can be used as `read-file-name-function'."
+  "Read file name using Selectrum. Can be used as `read-file-name-function'.
+For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
+PREDICATE, see `read-file-name'."
   (let* ((dir (expand-file-name (or dir default-directory)))
          (orig-preprocess-function selectrum-preprocess-candidates-function)
          (orig-refine-function selectrum-refine-candidates-function)
@@ -584,7 +586,8 @@ see `read-buffer'."
                                    (setq name (concat name "/")))
                                  (propertize
                                   name
-                                  'selectrum--real-candidate (concat dir name))))
+                                  'selectrum--real-candidate
+                                  (concat dir name))))
                              (cl-delete-if
                               (lambda (cell)
                                 (and predicate
@@ -604,7 +607,8 @@ see `read-buffer'."
      prompt nil
      :default-candidate (or (and initial (concat dir initial))
                             default-filename)
-     :initial-input dir)))
+     :initial-input dir
+     :require-match (eq mustmatch t))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
