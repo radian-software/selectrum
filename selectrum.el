@@ -256,7 +256,7 @@ This is used to prevent point from moving into the prompt.")
   "Marker at the end of the minibuffer user input.
 This is used to prevent point from moving into the candidates.")
 
-(defvar selectrum--sorted-candidates nil
+(defvar selectrum--preprocessed-candidates nil
   "Preprocessed list of candidates.
 This is derived from the collection passed to `selectrum-read'
 just once, and is subsequently passed to
@@ -310,7 +310,7 @@ See `selectrum-refine-candidates-function'.")
         ;; there's no special attention needed.
         (setq selectrum--visual-input nil)
         (let ((result (funcall selectrum-refine-candidates-function
-                               input selectrum--sorted-candidates)))
+                               input selectrum--preprocessed-candidates)))
           (if (stringp (car result))
               (setq selectrum--refined-candidates result)
             (setq selectrum--refined-candidates
@@ -392,7 +392,7 @@ provided, rather than providing one of their own."
     (insert initial-input))
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
-  (setq selectrum--sorted-candidates
+  (setq selectrum--preprocessed-candidates
         (funcall selectrum-preprocess-candidates-function candidates))
   (setq selectrum--default-candidate default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
