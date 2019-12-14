@@ -48,6 +48,13 @@ May be used to highlight parts of candidates that match specific
 parts of the input."
   :group 'selectrum-faces)
 
+;;;; Variables
+
+(defvar selectrum-should-sort-p t
+  "Non-nil if preprocessing and refinement functions should sort.
+This is let-bound to nil in some contexts, and should be
+respected by user functions for optimal results.")
+
 ;;;; User options
 
 (defgroup selectrum nil
@@ -94,13 +101,15 @@ with the following keys:
   "Default value of `selectrum-preprocess-candidates-function'.
 Sort first by length and then alphabetically. CANDIDATES is a
 list of strings."
-  (sort candidates
-        (lambda (c1 c2)
-          (or (< (length c1)
-                 (length c2))
-              (and (= (length c1)
-                      (length c2))
-                   (string-lessp c1 c2))))))
+  (if selectrum-should-sort-p
+      (sort candidates
+            (lambda (c1 c2)
+              (or (< (length c1)
+                     (length c2))
+                  (and (= (length c1)
+                          (length c2))
+                       (string-lessp c1 c2)))))
+    candidates))
 
 (defcustom selectrum-preprocess-candidates-function
   #'selectrum-default-candidate-preprocess-function
@@ -165,13 +174,6 @@ with the string the user selected."
 (defcustom selectrum-move-exact-match-to-top t
   "Non-nil means candidates exactly matching your input get sorted first."
   :type 'boolean)
-
-;;;; Variables
-
-(defvar selectrum-should-sort-p t
-  "Non-nil if preprocessing and refinement functions should sort.
-This is let-bound to nil in some contexts, and should be
-respected by user functions for optimal results.")
 
 ;;;; Utility functions
 
