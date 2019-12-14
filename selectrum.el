@@ -162,6 +162,10 @@ It gets the same arguments as `selectrum-read' got, prepended
 with the string the user selected."
   :type 'hook)
 
+(defcustom selectrum-move-exact-match-to-top t
+  "Non-nil means candidates exactly matching your input get sorted first."
+  :type 'boolean)
+
 ;;;; Variables
 
 (defvar selectrum-should-sort-p t
@@ -319,10 +323,12 @@ See `selectrum-refine-candidates-function'.")
             (setq selectrum--visual-input input)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
-               input
-               (selectrum--move-to-front-destructive
-                selectrum--default-candidate
-                selectrum--refined-candidates)))
+               selectrum--default-candidate
+               selectrum--refined-candidates))
+        (when selectrum-move-exact-match-to-top
+          (setq selectrum--refined-candidates
+                (selectrum--move-to-front-destructive
+                 input selectrum--refined-candidates)))
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--refined-candidates) 0)
                    0)))
