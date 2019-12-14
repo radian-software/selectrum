@@ -597,7 +597,9 @@ PREDICATE, see `read-file-name'."
                              (cl-delete-if
                               (lambda (cell)
                                 (and predicate
-                                     (not (funcall predicate (car cell)))))
+                                     (not (funcall
+                                           predicate
+                                           (concat dir (car cell))))))
                               (condition-case _
                                   (directory-files-and-attributes
                                    dir nil "^[^.]\\|^.[^.]" 'nosort)
