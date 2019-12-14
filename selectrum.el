@@ -581,8 +581,14 @@ PREDICATE, see `read-file-name'."
                    (dir (or (file-name-directory input) dir))
                    (entries (selectrum--map-destructive
                              (lambda (cell)
-                               (let ((name (car cell)))
-                                 (when (eq t (nth 0 (cdr cell)))
+                               (let ((name (car cell))
+                                     (type (nth 0 (cdr cell))))
+                                 ;; Check if directory (fast) or
+                                 ;; symlink to directory (slower).
+                                 (when (or (eq t type)
+                                           (and (stringp type)
+                                                (file-directory-p
+                                                 (concat dir name))))
                                    (setq name (concat name "/")))
                                  (propertize
                                   name
