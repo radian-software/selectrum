@@ -29,6 +29,8 @@
 (require 'seq)
 (require 'subr-x)
 
+(declare-function read-library-name "find-func")
+
 ;;;; Faces
 
 (defface selectrum-current-candidate
