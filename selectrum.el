@@ -78,7 +78,13 @@ candidates (strings) as returned by
 `selectrum-preprocess-candidates-function'. Returns a new list of
 candidates. Should not modify the input list. The returned list
 may be modified by Selectrum, so a copy of the input should be
-made."
+made.
+
+Instead of a list of strings, may alternatively return an alist
+with the following keys:
+- `candidates': list of strings, as above
+- `input' (optional): transformed user input, used for sorting
+  and highlighting"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -271,6 +277,12 @@ input that does not match any of the displayed candidates.")
 (defvar selectrum--default-candidate nil
   "Default candidate, or nil if none given.")
 
+;; The existence of this variable is a bit of a mess, but we'll run
+;; with it for now.
+(defvar selectrum--visual-input nil
+  "User input string as transformed by candidate refinement.
+See `selectrum-refine-candidates-function'.")
+
 ;;;; Hook functions
 
 (defun selectrum--minibuffer-post-command-hook ()
@@ -284,16 +296,27 @@ input that does not match any of the displayed candidates.")
           (bound (marker-position selectrum--end-of-input-marker)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
+        ;; Reset the persistent input, so that it will be nil if
+        ;; there's no special attention needed.
+        (setq selectrum--visual-input nil)
+        (let ((result (funcall selectrum-refine-candidates-function
+                               input selectrum--sorted-candidates)))
+          (if (stringp (car result))
+              (setq selectrum--refined-candidates result)
+            (setq selectrum--refined-candidates
+                  (alist-get 'candidates result))
+            (setq input (or (alist-get 'input result) input))
+            (setq selectrum--visual-input input)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input
                (selectrum--move-to-front-destructive
                 selectrum--default-candidate
-                (funcall selectrum-refine-candidates-function
-                         input selectrum--sorted-candidates))))
+                selectrum--refined-candidates)))
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--refined-candidates) 0)
                    0)))
+      (setq input (or selectrum--visual-input input))
       (let ((first-index-displayed
              (if selectrum--current-candidate-index
                  (selectrum--clamp
@@ -456,8 +479,11 @@ ignores the currently selected candidate, if one exists."
   (when selectrum--current-candidate-index
     (delete-region selectrum--start-of-input-marker
                    selectrum--end-of-input-marker)
-    (insert (nth selectrum--current-candidate-index
-                 selectrum--refined-candidates))))
+    (let ((candidate (nth selectrum--current-candidate-index
+                          selectrum--refined-candidates)))
+      (insert (or (get-text-property
+                   0 'selectrum--real-candidate candidate)
+                  candidate)))))
 
 ;;;; Main entry point
 
@@ -489,8 +515,10 @@ listed candidates (so, for example,
            :default-candidate default-candidate
            :initial-input initial-input
            :require-match require-match))
-      (let ((selected (read-from-minibuffer prompt nil keymap nil t)))
-        (prog1 selected
+      (let* ((minibuffer-allow-text-properties t)
+             (selected (read-from-minibuffer prompt nil keymap nil t)))
+        (prog1 (or (get-text-property 0 'selectrum--real-candidate selected)
+                   selected)
           (apply
            #'run-hook-with-args
            'selectrum-candidate-selected-hook
@@ -531,6 +559,47 @@ see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
+(defun selectrum-read-file-name
+    (prompt &optional dir default-filename mustmatch initial predicate)
+  "Read file name using Selectrum. Can be used as `read-file-name-function'."
+  (let* ((dir (expand-file-name (or dir default-directory)))
+         (orig-preprocess-function selectrum-preprocess-candidates-function)
+         (orig-refine-function selectrum-refine-candidates-function)
+         (selectrum-preprocess-candidates-function #'ignore)
+         (selectrum-refine-candidates-function
+          (lambda (input _)
+            (let* ((new-input (file-name-nondirectory input))
+                   (dir (or (file-name-directory input) dir))
+                   (entries (selectrum--map-destructive
+                             (lambda (cell)
+                               (let ((name (car cell)))
+                                 (when (eq t (nth 0 (cdr cell)))
+                                   (setq name (concat name "/")))
+                                 (propertize
+                                  name
+                                  'selectrum--real-candidate (concat dir name))))
+                             (cl-delete-if
+                              (lambda (cell)
+                                (and predicate
+                                     (not (funcall predicate (car cell)))))
+                              (directory-files-and-attributes
+                               dir nil "^[^.]\\|^.[^.]" 'nosort)))))
+              `((candidates . ,(funcall
+                                orig-refine-function
+                                new-input
+                                (funcall
+                                 orig-preprocess-function
+                                 entries)))
+                (input . ,new-input))))))
+    (selectrum-read
+     prompt nil
+     :default-candidate (or (and initial (concat dir initial))
+                            default-filename)
+     :initial-input dir)))
+
+(defvar selectrum--old-read-file-name-function nil
+  "Previous value of `read-file-name-function'.")
+
 ;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
@@ -544,7 +613,11 @@ see `read-buffer'."
         (setq selectrum--old-read-buffer-function
               (default-value 'read-buffer-function))
         (setq-default read-buffer-function
-                      #'selectrum-read-buffer))
+                      #'selectrum-read-buffer)
+        (setq selectrum--old-read-file-name-function
+              (default-value 'read-file-name-function))
+        (setq-default read-file-name-function
+                      #'selectrum-read-file-name))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
@@ -552,7 +625,11 @@ see `read-buffer'."
     (when (equal (default-value 'read-buffer-function)
                  #'selectrum-read-buffer)
       (setq-default read-buffer-function
-                    selectrum--old-read-buffer-function))))
+                    selectrum--old-read-buffer-function))
+    (when (equal (default-value 'read-file-name-function)
+                 #'selectrum-read-file-name)
+      (setq-default read-file-name-function
+                    selectrum--old-read-file-name-function))))
 
 ;;;; Closing remarks
 
