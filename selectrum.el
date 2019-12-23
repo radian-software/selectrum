@@ -696,6 +696,9 @@ shadows correctly."
   :global t
   (if selectrum-mode
       (progn
+        ;; Make sure not to blow away saved variable values if mode is
+        ;; enabled again when already on.
+        (selectrum-mode -1)
         (setq selectrum--old-completing-read-function
               (default-value 'completing-read-function))
         (setq-default completing-read-function
