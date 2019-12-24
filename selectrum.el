@@ -206,7 +206,7 @@ destructively and return the modified list."
     (while (cdr link)
       (if (equal elt (cadr link))
           (progn
-            (push elt elts)
+            (push (cadr link) elts)
             (setcdr link (cddr link)))
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
