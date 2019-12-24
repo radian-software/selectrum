@@ -540,7 +540,7 @@ listed candidates (so, for example,
            candidates
            :default-candidate default-candidate
            :initial-input initial-input
-           :require-match require-match))
+           :require-match (eq require-match t)))
       (let* ((minibuffer-allow-text-properties t)
              (selected (read-from-minibuffer prompt nil keymap nil t)))
         (prog1 (or (get-text-property 0 'selectrum--candidate-full selected)
@@ -638,7 +638,7 @@ PREDICATE, see `read-file-name'."
      :default-candidate (when-let ((default (or initial default-filename)))
                           (file-name-base (directory-file-name default)))
      :initial-input dir
-     :require-match (eq mustmatch t))))
+     :require-match mustmatch)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
