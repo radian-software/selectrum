@@ -561,9 +561,13 @@ listed candidates (so, for example,
            :initial-input initial-input
            :require-match (eq require-match t)))
       (let* ((minibuffer-allow-text-properties t)
-             (selected (read-from-minibuffer prompt nil keymap nil t)))
-        (prog1 (or (get-text-property 0 'selectrum-candidate-full selected)
-                   selected)
+             (selected (read-from-minibuffer prompt nil keymap nil t))
+             (full
+              (or (get-text-property 0 'selectrum-candidate-full selected)
+                  selected)))
+        (prog1 (if (string-empty-p full)
+                   default-candidate
+                 full)
           (apply
            #'run-hook-with-args
            'selectrum-candidate-selected-hook
