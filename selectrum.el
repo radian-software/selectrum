@@ -368,7 +368,13 @@ See `selectrum-refine-candidates-function'.")
             (dolist (candidate (funcall
                                 selectrum-highlight-candidates-function
                                 input
-                                displayed-candidates))
+                                (mapcar
+                                 (lambda (candidate)
+                                   (or (get-text-property
+                                        0 'selectrum--candidate-display
+                                        candidate)
+                                       candidate))
+                                 displayed-candidates)))
               (when (equal index highlighted-index)
                 (setq candidate (propertize
                                  candidate
@@ -502,7 +508,7 @@ ignores the currently selected candidate, if one exists."
     (let ((candidate (nth selectrum--current-candidate-index
                           selectrum--refined-candidates)))
       (insert (or (get-text-property
-                   0 'selectrum--real-candidate candidate)
+                   0 'selectrum--candidate-full candidate)
                   candidate)))))
 
 ;;;; Main entry point
@@ -537,7 +543,7 @@ listed candidates (so, for example,
            :require-match require-match))
       (let* ((minibuffer-allow-text-properties t)
              (selected (read-from-minibuffer prompt nil keymap nil t)))
-        (prog1 (or (get-text-property 0 'selectrum--real-candidate selected)
+        (prog1 (or (get-text-property 0 'selectrum--candidate-full selected)
                    selected)
           (apply
            #'run-hook-with-args
@@ -584,7 +590,8 @@ see `read-buffer'."
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let* ((dir (expand-file-name (or dir default-directory)))
+  (let* ((dir (file-name-as-directory
+               (expand-file-name (or dir default-directory))))
          (orig-preprocess-function selectrum-preprocess-candidates-function)
          (orig-refine-function selectrum-refine-candidates-function)
          (selectrum-preprocess-candidates-function #'ignore)
@@ -594,19 +601,21 @@ PREDICATE, see `read-file-name'."
                    (dir (or (file-name-directory input) dir))
                    (entries (selectrum--map-destructive
                              (lambda (cell)
-                               (let ((name (car cell))
-                                     (type (nth 0 (cdr cell))))
-                                 ;; Check if directory (fast) or
-                                 ;; symlink to directory (slower).
-                                 (when (or (eq t type)
-                                           (and (stringp type)
-                                                (file-directory-p
-                                                 (concat dir name))))
-                                   (setq name (concat name "/")))
+                               (let* ((name (car cell))
+                                      (type (nth 0 (cdr cell)))
+                                      ;; Check if directory (fast) or
+                                      ;; symlink to directory
+                                      ;; (slower).
+                                      (isdir (or (eq t type)
+                                                 (and (stringp type)
+                                                      (file-directory-p
+                                                       (concat dir name))))))
                                  (propertize
                                   name
-                                  'selectrum--real-candidate
-                                  (concat dir name))))
+                                  'selectrum--candidate-display
+                                  (concat name (when isdir "/"))
+                                  'selectrum--candidate-full
+                                  (concat dir name (when isdir "/")))))
                              (cl-delete-if
                               (lambda (cell)
                                 (and predicate
@@ -626,13 +635,30 @@ PREDICATE, see `read-file-name'."
                 (input . ,new-input))))))
     (selectrum-read
      prompt nil
-     :default-candidate (or (and initial (concat dir initial))
-                            default-filename)
+     :default-candidate (when-let ((default (or initial default-filename)))
+                          (file-name-base (directory-file-name default)))
      :initial-input dir
      :require-match (eq mustmatch t))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
+
+(defun selectrum-read-directory-name
+    (prompt &optional dir default-dirname mustmatch initial)
+  "Read directory name using Selectrum.
+Same as `read-directory-name' except it handles default
+candidates a bit better (in particular you can immediately press
+\\[selectrum-select-current-candidate] to use the current
+directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
+INITIAL, see `read-directory-name'."
+  (let ((dir (or dir default-directory))
+        (default (or default-dirname initial)))
+    (unless default
+      (setq default (directory-file-name dir))
+      ;; Elisp way of getting the parent directory.
+      (setq dir (file-name-directory (directory-file-name dir))))
+    (selectrum-read-file-name
+     prompt dir default mustmatch nil #'file-directory-p)))
 
 (defun selectrum--trailing-components (n path)
   "Take at most N trailing components of PATH.
@@ -711,6 +737,8 @@ shadows correctly."
               (default-value 'read-file-name-function))
         (setq-default read-file-name-function
                       #'selectrum-read-file-name)
+        (advice-add #'read-directory-name :override
+                    #'selectrum-read-directory-name)
         (advice-add #'read-library-name :override
                     #'selectrum-read-library-name))
     (when (equal (default-value 'completing-read-function)
@@ -725,6 +753,8 @@ shadows correctly."
                  #'selectrum-read-file-name)
       (setq-default read-file-name-function
                     selectrum--old-read-file-name-function))
+    (advice-remove #'read-directory-name
+                   #'selectrum-read-directory-name)
     (advice-remove #'read-library-name #'selectrum-read-library-name)))
 
 ;;;; Closing remarks
