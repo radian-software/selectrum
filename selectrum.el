@@ -173,6 +173,13 @@ It gets the same arguments as `selectrum-read' got, prepended
 with the string the user selected."
   :type 'hook)
 
+(defcustom selectrum-candidate-inserted-hook nil
+  "Normal hook run when the user inserts a candidate.
+\(This happens by typing \\[selectrum-insert-current-candidate].)
+It gets the same arguments as `selectrum-read' got, prepended
+with the string the user inserted."
+  :type 'hook)
+
 (defcustom selectrum-move-exact-match-to-top t
   "Non-nil means candidates exactly matching your input get sorted first."
   :type 'boolean)
@@ -300,6 +307,10 @@ input that does not match any of the displayed candidates.")
 (defvar selectrum--visual-input nil
   "User input string as transformed by candidate refinement.
 See `selectrum-refine-candidates-function'.")
+
+(defvar selectrum--read-args nil
+  "List of arguments passed to `selectrum-read'.
+Passed to various hook functions.")
 
 ;;;; Hook functions
 
@@ -509,7 +520,11 @@ ignores the currently selected candidate, if one exists."
                           selectrum--refined-candidates)))
       (insert (or (get-text-property
                    0 'selectrum-candidate-full candidate)
-                  candidate)))))
+                  candidate))
+      (apply
+       #'run-hook-with-args
+       'selectrum-candidate-inserted-hook
+       candidate selectrum--read-args))))
 
 ;;;; Main entry point
 
@@ -525,6 +540,7 @@ into the user input area initially (with point at the end).
 REQUIRE-MATCH, if non-nil, means the user must select one of the
 listed candidates (so, for example,
 `selectrum-submit-exact-input' has no effect)."
+  (setq selectrum--read-args (cl-list* prompt candidates args))
   (let ((keymap (make-sparse-keymap)))
     ;; Use `map-apply' instead of `map-do' as the latter is not
     ;; available in Emacs 25.
@@ -548,7 +564,7 @@ listed candidates (so, for example,
           (apply
            #'run-hook-with-args
            'selectrum-candidate-selected-hook
-           selected prompt candidates args))))))
+           selected selectrum--read-args))))))
 
 (defun selectrum-completing-read
     (prompt collection &optional
