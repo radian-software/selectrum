@@ -576,11 +576,39 @@ Installing this function in `read-buffer-function' makes sure the
 buffers are sorted in the default order (most to least recently
 used) rather than in whatever order is defined by
 `selectrum-preprocess-candidates-function', which is likely to be
-less appropriate. For PROMPT, DEF, REQUIRE-MATCH, and PREDICATE,
-see `read-buffer'."
-  (let ((selectrum-should-sort-p nil)
-        (read-buffer-function nil))
-    (read-buffer prompt def require-match predicate)))
+less appropriate. It also allows you to view hidden buffers,
+which is otherwise impossible due to tricky behavior of Emacs'
+completion machinery. For PROMPT, DEF, REQUIRE-MATCH, and
+PREDICATE, see `read-buffer'."
+  (let* ((selectrum-should-sort-p nil)
+         (orig-preprocess-function selectrum-preprocess-candidates-function)
+         (orig-refine-function selectrum-refine-candidates-function)
+         (selectrum-preprocess-candidates-function #'ignore)
+         (selectrum-refine-candidates-function
+          (lambda (input _)
+            (let ((candidates (mapcar #'buffer-name (buffer-list))))
+              (if (string-prefix-p " " input)
+                  (progn
+                    (setq input (substring input 1))
+                    (setq candidates
+                          (cl-delete-if-not
+                           (lambda (name)
+                             (string-prefix-p " " name))
+                           candidates)))
+                (setq candidates
+                      (cl-delete-if
+                       (lambda (name)
+                         (string-prefix-p " " name))
+                       candidates)))
+              `((candidates . ,(funcall
+                                orig-refine-function
+                                input
+                                (funcall
+                                 orig-preprocess-function
+                                 candidates)))
+                (input . ,input))))))
+    (selectrum-completing-read
+     prompt nil predicate require-match nil nil def)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
