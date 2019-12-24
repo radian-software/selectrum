@@ -161,8 +161,8 @@ strings."
     ("TAB"                       . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
-entering the minibuffer. The keys are strings and the values are
-command symbols."
+entering the minibuffer. The keys are strings or raw key events
+and the values are command symbols."
   :type '(alist
           :key-type sexp
           :value-type function))
