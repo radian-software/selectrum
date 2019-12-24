@@ -529,7 +529,7 @@ ignores the currently selected candidate, if one exists."
        'selectrum-candidate-inserted-hook
        candidate selectrum--read-args))))
 
-;;;; Main entry point
+;;;; Main entry points
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key

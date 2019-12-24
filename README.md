@@ -11,9 +11,9 @@ Usage is as follows. First install with
     (straight-use-package
       '(selectrum :host github :repo "raxod502/selectrum"))
 
-Then turn on `selectrum-mode` to enable Selectrum for anything that
-uses `completing-read-function`, `read-buffer-function`, or
-`read-file-name-function`.
+Then turn on `selectrum-mode` to enable Selectrum for *all the things*
+(including but not limited to `completing-read`, `read-buffer-name`,
+`read-file-name`, `read-directory-name`, and `read-library-name`).
 
 For an optimal experience, integrate with
 [`prescient.el`](https://github.com/raxod502/prescient.el). First
