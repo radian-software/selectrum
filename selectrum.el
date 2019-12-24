@@ -322,7 +322,8 @@ Passed to various hook functions.")
     (let ((inhibit-read-only t)
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
-          (bound (marker-position selectrum--end-of-input-marker)))
+          (bound (marker-position selectrum--end-of-input-marker))
+          (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
@@ -394,7 +395,9 @@ Passed to various hook functions.")
               (cl-incf index))))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
-        (set-marker-insertion-type selectrum--end-of-input-marker t)))))
+        (set-marker-insertion-type selectrum--end-of-input-marker t))
+      (when keep-mark-active
+        (setq deactivate-mark nil)))))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
