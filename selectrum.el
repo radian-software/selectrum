@@ -371,7 +371,7 @@ See `selectrum-refine-candidates-function'.")
                                 (mapcar
                                  (lambda (candidate)
                                    (or (get-text-property
-                                        0 'selectrum--candidate-display
+                                        0 'selectrum-candidate-display
                                         candidate)
                                        candidate))
                                  displayed-candidates)))
@@ -508,7 +508,7 @@ ignores the currently selected candidate, if one exists."
     (let ((candidate (nth selectrum--current-candidate-index
                           selectrum--refined-candidates)))
       (insert (or (get-text-property
-                   0 'selectrum--candidate-full candidate)
+                   0 'selectrum-candidate-full candidate)
                   candidate)))))
 
 ;;;; Main entry point
@@ -543,7 +543,7 @@ listed candidates (so, for example,
            :require-match (eq require-match t)))
       (let* ((minibuffer-allow-text-properties t)
              (selected (read-from-minibuffer prompt nil keymap nil t)))
-        (prog1 (or (get-text-property 0 'selectrum--candidate-full selected)
+        (prog1 (or (get-text-property 0 'selectrum-candidate-full selected)
                    selected)
           (apply
            #'run-hook-with-args
@@ -640,9 +640,9 @@ PREDICATE, see `read-file-name'."
                                                        (concat dir name))))))
                                  (propertize
                                   name
-                                  'selectrum--candidate-display
+                                  'selectrum-candidate-display
                                   (concat name (when isdir "/"))
-                                  'selectrum--candidate-full
+                                  'selectrum-candidate-full
                                   (concat dir name (when isdir "/")))))
                              (cl-delete-if
                               (lambda (cell)
