@@ -25,3 +25,5 @@ install:
 
 Then turn on `selectrum-prescient-mode` to enable
 frequency/recency-based sorting for all Selectrum commands.
+
+Recursive minibuffers are not currently supported.

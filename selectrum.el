@@ -561,6 +561,8 @@ listed candidates (so, for example,
            :initial-input initial-input
            :require-match (eq require-match t)))
       (let* ((minibuffer-allow-text-properties t)
+             ;; Not currently supported as all of our state is global.
+             (enable-recursive-minibuffers nil)
              (selected (read-from-minibuffer prompt nil keymap nil t))
              (full
               (or (get-text-property 0 'selectrum-candidate-full selected)
