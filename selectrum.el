@@ -164,7 +164,7 @@ Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings and the values are
 command symbols."
   :type '(alist
-          :key-type string
+          :key-type sexp
           :value-type function))
 
 (defcustom selectrum-candidate-selected-hook nil
