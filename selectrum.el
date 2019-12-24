@@ -699,11 +699,14 @@ candidates a bit better (in particular you can immediately press
 directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
 INITIAL, see `read-directory-name'."
   (let ((dir (or dir default-directory))
-        (default (or default-dirname initial)))
-    (unless default
-      (setq default (directory-file-name dir))
-      ;; Elisp way of getting the parent directory.
-      (setq dir (file-name-directory (directory-file-name dir))))
+        (default (or default-dirname initial dir)))
+    (setq default (directory-file-name dir))
+    ;; Elisp way of getting the parent directory. If we get nil, that
+    ;; means the default was a relative path with only one component,
+    ;; so the parent directory is dir.
+    (setq dir (or (file-name-directory
+                   (directory-file-name default))
+                  dir))
     (selectrum-read-file-name
      prompt dir default mustmatch nil #'file-directory-p)))
 
