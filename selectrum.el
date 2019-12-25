@@ -689,7 +689,8 @@ PREDICATE, see `read-file-name'."
     (selectrum-read
      prompt nil
      :default-candidate (when-let ((default (or initial default-filename)))
-                          (file-name-base (directory-file-name default)))
+                          (file-name-nondirectory
+                           (directory-file-name default)))
      :initial-input dir
      :require-match mustmatch)))
 
