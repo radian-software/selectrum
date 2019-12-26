@@ -768,54 +768,6 @@ shadows correctly."
      0 'selectrum--full-path
      (selectrum-read "Library name: " lst :require-match t))))
 
-(defvar selectrum--last-overlay nil
-  "Last overlay displaying message in minibuffer, or nil if none or deleted.")
-
-(defvar selectrum--orig-delete-overlay nil
-  "Original value of `delete-overlay'.
-We need to save this because `minibuffer-message' calls it when
-we don't want it to, so we have to temporarily overwrite the
-value using `cl-letf', but then we need to call `delete-overlay'
-ourselves in a callback. Hence this variable, used for
-bookkeeping.")
-
-(defun selectrum--delete-overlay ()
-  "Delete last overlay displaying message in minibuffer, if needed.
-Also remove this function from `post-command-hook', if it is
-present. (This is used as part of a hack to delete the overlay
-once the user performs their next command.)"
-  (when selectrum--last-overlay
-    (funcall selectrum--orig-delete-overlay selectrum--last-overlay)
-    (setq selectrum--last-overlay nil))
-  (remove-hook 'post-command-hook #'selectrum--delete-overlay))
-
-(defun selectrum-wrap-minibuffer-message (func &rest args)
-  "Advice for `minibuffer-message' that makes the overlays nicer.
-Specifically, instead of the message blocking the entire UI for
-two seconds, it's displayed unobtrusively until either another
-message is displayed or the user presses a key.
-
-Note that this function does a lot of pretty horrifying things.
-Don't worry about it.
-
-FUNC and ARGS are standard as in any `:around' advice."
-  (cl-letf* ((orig-delete-overlay (symbol-function #'delete-overlay))
-             (orig-make-overlay (symbol-function #'make-overlay))
-             ((symbol-function #'delete-overlay) #'ignore)
-             ((symbol-function #'sit-for) #'ignore)
-             ((symbol-function #'make-overlay)
-              ;; Note we intentionally ignore the rest of the
-              ;; arguments, to force them all to nil.
-              (lambda (beg end &rest _)
-                (selectrum--delete-overlay)
-                (prog1 (setq selectrum--last-overlay
-                             (funcall orig-make-overlay beg end))
-                  (run-with-idle-timer
-                   0 nil #'add-hook 'post-command-hook
-                   #'selectrum--delete-overlay)))))
-    (setq selectrum--orig-delete-overlay orig-delete-overlay)
-    (apply func args)))
-
 ;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
@@ -841,9 +793,7 @@ FUNC and ARGS are standard as in any `:around' advice."
         (advice-add #'read-directory-name :override
                     #'selectrum-read-directory-name)
         (advice-add #'read-library-name :override
-                    #'selectrum-read-library-name)
-        (advice-add #'minibuffer-message :around
-                    #'selectrum-wrap-minibuffer-message))
+                    #'selectrum-read-library-name))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
@@ -858,9 +808,7 @@ FUNC and ARGS are standard as in any `:around' advice."
                     selectrum--old-read-file-name-function))
     (advice-remove #'read-directory-name
                    #'selectrum-read-directory-name)
-    (advice-remove #'read-library-name #'selectrum-read-library-name)
-    (advice-remove #'minibuffer-message
-                   #'selectrum-wrap-minibuffer-message)))
+    (advice-remove #'read-library-name #'selectrum-read-library-name)))
 
 ;;;; Closing remarks
 
