@@ -673,7 +673,10 @@ PREDICATE, see `read-file-name'."
                               (condition-case _
                                   (directory-files-and-attributes
                                    dir nil "^[^.]\\|^.[^.]" 'nosort)
-                                (file-error))))))
+                                (file-error)
+                                ;; May happen in case user quits out
+                                ;; of a TRAMP prompt.
+                                (quit))))))
               `((candidates . ,(funcall
                                 orig-refine-function
                                 new-input
