@@ -150,7 +150,8 @@ strings."
   :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
-  '(([remap previous-line]       . selectrum-previous-candidate)
+  '(([remap keyboard-quit]       . abort-recursive-edit)
+    ([remap previous-line]       . selectrum-previous-candidate)
     ([remap next-line]           . selectrum-next-candidate)
     ([remap newline]             . selectrum-select-current-candidate)
     ([remap scroll-down-command] . selectrum-previous-page)
