@@ -183,6 +183,13 @@ with the string the user inserted."
 
 ;;;; Utility functions
 
+(defmacro selectrum--when-compile (cond &rest body)
+  "Like `when', but COND is evaluated at compile time.
+If it's nil, BODY is not even compiled."
+  (declare (indent 1))
+  (when (eval cond)
+    `(progn ,@body)))
+
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
 If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
@@ -391,7 +398,8 @@ Passed to various hook functions.")
               (cl-incf index))))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
-        (set-marker-insertion-type selectrum--end-of-input-marker t))
+        (set-marker-insertion-type selectrum--end-of-input-marker t)
+        (selectrum-fix-minibuffer-message-overlay))
       (when keep-mark-active
         (setq deactivate-mark nil)))))
 
@@ -772,6 +780,21 @@ shadows correctly."
      0 'selectrum--full-path
      (selectrum-read "Library name: " lst :require-match t))))
 
+(defun selectrum-fix-minibuffer-message-overlay (&rest _)
+  "Move the minibuffer message overlay to the right place.
+This is the overlay placed by `set-minibuffer-message', which is
+called in order to display a message while the minibuffer is
+already active. By default the overlay is placed at the end, but
+in the case of Selectrum this means after all the candidates. We
+want to move it instead to just after the user input.
+
+This is an `:after' advice for `set-minibuffer-message'."
+  (selectrum--when-compile (version<= "27" emacs-version)
+    (when (overlayp minibuffer-message-overlay)
+      (move-overlay minibuffer-message-overlay
+                    selectrum--end-of-input-marker
+                    selectrum--end-of-input-marker))))
+
 ;;;###autoload
 (define-minor-mode selectrum-mode
   "Minor mode to use Selectrum for `completing-read'."
@@ -797,7 +820,10 @@ shadows correctly."
         (advice-add #'read-directory-name :override
                     #'selectrum-read-directory-name)
         (advice-add #'read-library-name :override
-                    #'selectrum-read-library-name))
+                    #'selectrum-read-library-name)
+        (selectrum--when-compile (version<= "27" emacs-version)
+          (advice-add #'set-minibuffer-message :after
+                      #'selectrum-fix-minibuffer-message-overlay)))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
@@ -812,7 +838,10 @@ shadows correctly."
                     selectrum--old-read-file-name-function))
     (advice-remove #'read-directory-name
                    #'selectrum-read-directory-name)
-    (advice-remove #'read-library-name #'selectrum-read-library-name)))
+    (advice-remove #'read-library-name #'selectrum-read-library-name)
+    (selectrum--when-compile (version<= "27" emacs-version)
+      (advice-remove #'set-minibuffer-message
+                     #'selectrum-fix-minibuffer-message-overlay))))
 
 ;;;; Closing remarks
 
