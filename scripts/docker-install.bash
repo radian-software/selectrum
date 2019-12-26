@@ -24,12 +24,17 @@ git
 # just in case we want root
 sudo
 
+# needed for 'make toc'
+npm
+
 "
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y $(grep -v "^#" <<< "$packages")
 rm -rf /var/lib/apt/lists/*
+
+npm install -g markdown-toc
 
 useradd --uid="$uid" --create-home --groups sudo docker
 passwd -d docker

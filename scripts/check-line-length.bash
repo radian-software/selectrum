@@ -7,6 +7,7 @@ find=(
     find .
     -name .git -prune -o
     -name "*.elc" -o
+    -name "*.png" -o
     -type f -print
 )
 

@@ -95,8 +95,8 @@ nothing to remove.)
 Instead of a list of strings, may alternatively return an alist
 with the following keys:
 - `candidates': list of strings, as above
-- `input' (optional): transformed user input, used for sorting
-  and highlighting"
+- `input' (optional): transformed user input, used for
+  highlighting"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -179,10 +179,6 @@ with the string the user selected."
 It gets the same arguments as `selectrum-read' got, prepended
 with the string the user inserted."
   :type 'hook)
-
-(defcustom selectrum-move-exact-match-to-top t
-  "Non-nil means candidates exactly matching your input get sorted first."
-  :type 'boolean)
 
 ;;;; Utility functions
 
@@ -341,10 +337,9 @@ Passed to various hook functions.")
               (selectrum--move-to-front-destructive
                selectrum--default-candidate
                selectrum--refined-candidates))
-        (when selectrum-move-exact-match-to-top
-          (setq selectrum--refined-candidates
-                (selectrum--move-to-front-destructive
-                 input selectrum--refined-candidates)))
+        (setq selectrum--refined-candidates
+              (selectrum--move-to-front-destructive
+               input selectrum--refined-candidates))
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--refined-candidates) 0)
                    0)))
@@ -537,12 +532,12 @@ ignores the currently selected candidate, if one exists."
   "Prompt user with PROMPT to select one of CANDIDATES, list of strings.
 Return the selected string. PROMPT should generally end in a
 colon and space. Additional keyword ARGS are accepted.
-DEFAULT-CANDIDATE, if provided, is added to the list and
-presented at the top. INITIAL-INPUT, if provided, is inserted
-into the user input area initially (with point at the end).
-REQUIRE-MATCH, if non-nil, means the user must select one of the
-listed candidates (so, for example,
-`selectrum-submit-exact-input' has no effect)."
+DEFAULT-CANDIDATE, if provided, is sorted first in the list if
+it's present. INITIAL-INPUT, if provided, is inserted into the
+user input area initially (with point at the end). REQUIRE-MATCH,
+if non-nil, means the user must select one of the listed
+candidates (so, for example, \\[selectrum-submit-exact-input] has
+no effect)."
   (setq selectrum--read-args (cl-list* prompt candidates args))
   (let ((keymap (make-sparse-keymap)))
     ;; Use `map-apply' instead of `map-do' as the latter is not
@@ -794,7 +789,7 @@ once the user performs their next command.)"
     (setq selectrum--last-overlay nil))
   (remove-hook 'post-command-hook #'selectrum--delete-overlay))
 
-(defun selectrum--wrap-minibuffer-message (func &rest args)
+(defun selectrum-wrap-minibuffer-message (func &rest args)
   "Advice for `minibuffer-message' that makes the overlays nicer.
 Specifically, instead of the message blocking the entire UI for
 two seconds, it's displayed unobtrusively until either another
@@ -830,6 +825,7 @@ FUNC and ARGS are standard as in any `:around' advice."
         ;; Make sure not to blow away saved variable values if mode is
         ;; enabled again when already on.
         (selectrum-mode -1)
+        (setq selectrum-mode t)
         (setq selectrum--old-completing-read-function
               (default-value 'completing-read-function))
         (setq-default completing-read-function
@@ -847,7 +843,7 @@ FUNC and ARGS are standard as in any `:around' advice."
         (advice-add #'read-library-name :override
                     #'selectrum-read-library-name)
         (advice-add #'minibuffer-message :around
-                    #'selectrum--wrap-minibuffer-message))
+                    #'selectrum-wrap-minibuffer-message))
     (when (equal (default-value 'completing-read-function)
                  #'selectrum-completing-read)
       (setq-default completing-read-function
@@ -864,7 +860,7 @@ FUNC and ARGS are standard as in any `:around' advice."
                    #'selectrum-read-directory-name)
     (advice-remove #'read-library-name #'selectrum-read-library-name)
     (advice-remove #'minibuffer-message
-                   #'selectrum--wrap-minibuffer-message)))
+                   #'selectrum-wrap-minibuffer-message)))
 
 ;;;; Closing remarks
 

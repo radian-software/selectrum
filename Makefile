@@ -18,7 +18,7 @@ help: ## Show this message
 		column -t -s'|' >&2
 
 .PHONY: lint
-lint: compile checkdoc longlines checkindent ## Run all the linters
+lint: compile checkdoc longlines checkindent toc ## Run all the linters
 
 .PHONY: compile
 compile: ## Byte-compile
@@ -60,6 +60,15 @@ checkindent: ## Ensure that indentation is correct
                            sed "s/\t/: /" | sed "s/^ */$$file:/") ) \
 	        | grep -F ">" | grep -o "[a-z].*" | grep . && exit 1 || true; \
 	done
+
+.PHONY: toc
+toc: README.md ## Update table of contents in README
+	@echo "[toc] $^"
+	@if command -v markdown-toc >/dev/null; then \
+	    markdown-toc -i $^ ; \
+	else \
+	    echo "  --> markdown-toc missing, skipping" ; \
+	fi
 
 .PHONY: clean
 clean: ## Remove build artifacts
