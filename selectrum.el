@@ -29,8 +29,6 @@
 (require 'seq)
 (require 'subr-x)
 
-(declare-function read-library-name "find-func")
-
 ;;;; Faces
 
 (defface selectrum-current-candidate
@@ -819,8 +817,9 @@ This is an `:after' advice for `set-minibuffer-message'."
                       #'selectrum-read-file-name)
         (advice-add #'read-directory-name :override
                     #'selectrum-read-directory-name)
-        (advice-add #'read-library-name :override
-                    #'selectrum-read-library-name)
+        (selectrum--when-compile (version<= "26" emacs-version)
+          (advice-add #'read-library-name :override
+                      #'selectrum-read-library-name))
         (selectrum--when-compile (version<= "27" emacs-version)
           (advice-add #'set-minibuffer-message :after
                       #'selectrum-fix-minibuffer-message-overlay)))
@@ -838,7 +837,8 @@ This is an `:after' advice for `set-minibuffer-message'."
                     selectrum--old-read-file-name-function))
     (advice-remove #'read-directory-name
                    #'selectrum-read-directory-name)
-    (advice-remove #'read-library-name #'selectrum-read-library-name)
+    (selectrum--when-compile (version<= "26" emacs-version)
+      (advice-remove #'read-library-name #'selectrum-read-library-name))
     (selectrum--when-compile (version<= "27" emacs-version)
       (advice-remove #'set-minibuffer-message
                      #'selectrum-fix-minibuffer-message-overlay))))
