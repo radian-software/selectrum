@@ -181,12 +181,14 @@ with the string the user inserted."
 
 ;;;; Utility functions
 
-(defmacro selectrum--when-compile (cond &rest body)
-  "Like `when', but COND is evaluated at compile time.
+;;;###autoload
+(progn
+  (defmacro selectrum--when-compile (cond &rest body)
+    "Like `when', but COND is evaluated at compile time.
 If it's nil, BODY is not even compiled."
-  (declare (indent 1))
-  (when (eval cond)
-    `(progn ,@body)))
+    (declare (indent 1))
+    (when (eval cond)
+      `(progn ,@body))))
 
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
@@ -577,6 +579,7 @@ no effect)."
            'selectrum-candidate-selected-hook
            selected selectrum--read-args))))))
 
+;;;###autoload
 (defun selectrum-completing-read
     (prompt collection &optional
             predicate require-match _initial-input
@@ -595,6 +598,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, and DEF, see
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
 
+;;;###autoload
 (defun selectrum-read-buffer (prompt &optional def require-match predicate)
   "Read buffer using Selectrum. Can be used as `read-buffer-function'.
 Actually, as long as `selectrum-completing-read' is installed in
@@ -640,6 +644,7 @@ PREDICATE, see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
+;;;###autoload
 (defun selectrum-read-file-name
     (prompt &optional dir default-filename mustmatch initial predicate)
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
@@ -702,6 +707,7 @@ PREDICATE, see `read-file-name'."
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
 
+;;;###autoload
 (defun selectrum-read-directory-name
     (prompt &optional dir default-dirname mustmatch initial)
   "Read directory name using Selectrum.
@@ -731,6 +737,7 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
+;;;###autoload
 (defun selectrum-read-library-name ()
   "Read and return a library name.
 Similar to `read-library-name' except it handles `load-path'
@@ -778,6 +785,7 @@ shadows correctly."
      0 'selectrum--full-path
      (selectrum-read "Library name: " lst :require-match t))))
 
+;;;###autoload
 (defun selectrum-fix-minibuffer-message-overlay (&rest _)
   "Move the minibuffer message overlay to the right place.
 This is the overlay placed by `set-minibuffer-message', which is
@@ -794,54 +802,55 @@ This is an `:after' advice for `set-minibuffer-message'."
                     selectrum--end-of-input-marker))))
 
 ;;;###autoload
-(define-minor-mode selectrum-mode
-  "Minor mode to use Selectrum for `completing-read'."
-  :global t
-  (if selectrum-mode
-      (progn
-        ;; Make sure not to blow away saved variable values if mode is
-        ;; enabled again when already on.
-        (selectrum-mode -1)
-        (setq selectrum-mode t)
-        (setq selectrum--old-completing-read-function
-              (default-value 'completing-read-function))
+(progn
+  (define-minor-mode selectrum-mode
+    "Minor mode to use Selectrum for `completing-read'."
+    :global t
+    (if selectrum-mode
+        (progn
+          ;; Make sure not to blow away saved variable values if mode
+          ;; is enabled again when already on.
+          (selectrum-mode -1)
+          (setq selectrum-mode t)
+          (setq selectrum--old-completing-read-function
+                (default-value 'completing-read-function))
+          (setq-default completing-read-function
+                        #'selectrum-completing-read)
+          (setq selectrum--old-read-buffer-function
+                (default-value 'read-buffer-function))
+          (setq-default read-buffer-function
+                        #'selectrum-read-buffer)
+          (setq selectrum--old-read-file-name-function
+                (default-value 'read-file-name-function))
+          (setq-default read-file-name-function
+                        #'selectrum-read-file-name)
+          (advice-add #'read-directory-name :override
+                      #'selectrum-read-directory-name)
+          (selectrum--when-compile (version<= "26" emacs-version)
+            (advice-add #'read-library-name :override
+                        #'selectrum-read-library-name))
+          (selectrum--when-compile (version<= "27" emacs-version)
+            (advice-add #'set-minibuffer-message :after
+                        #'selectrum-fix-minibuffer-message-overlay)))
+      (when (equal (default-value 'completing-read-function)
+                   #'selectrum-completing-read)
         (setq-default completing-read-function
-                      #'selectrum-completing-read)
-        (setq selectrum--old-read-buffer-function
-              (default-value 'read-buffer-function))
+                      selectrum--old-completing-read-function))
+      (when (equal (default-value 'read-buffer-function)
+                   #'selectrum-read-buffer)
         (setq-default read-buffer-function
-                      #'selectrum-read-buffer)
-        (setq selectrum--old-read-file-name-function
-              (default-value 'read-file-name-function))
+                      selectrum--old-read-buffer-function))
+      (when (equal (default-value 'read-file-name-function)
+                   #'selectrum-read-file-name)
         (setq-default read-file-name-function
-                      #'selectrum-read-file-name)
-        (advice-add #'read-directory-name :override
-                    #'selectrum-read-directory-name)
-        (selectrum--when-compile (version<= "26" emacs-version)
-          (advice-add #'read-library-name :override
-                      #'selectrum-read-library-name))
-        (selectrum--when-compile (version<= "27" emacs-version)
-          (advice-add #'set-minibuffer-message :after
-                      #'selectrum-fix-minibuffer-message-overlay)))
-    (when (equal (default-value 'completing-read-function)
-                 #'selectrum-completing-read)
-      (setq-default completing-read-function
-                    selectrum--old-completing-read-function))
-    (when (equal (default-value 'read-buffer-function)
-                 #'selectrum-read-buffer)
-      (setq-default read-buffer-function
-                    selectrum--old-read-buffer-function))
-    (when (equal (default-value 'read-file-name-function)
-                 #'selectrum-read-file-name)
-      (setq-default read-file-name-function
-                    selectrum--old-read-file-name-function))
-    (advice-remove #'read-directory-name
-                   #'selectrum-read-directory-name)
-    (selectrum--when-compile (version<= "26" emacs-version)
-      (advice-remove #'read-library-name #'selectrum-read-library-name))
-    (selectrum--when-compile (version<= "27" emacs-version)
-      (advice-remove #'set-minibuffer-message
-                     #'selectrum-fix-minibuffer-message-overlay))))
+                      selectrum--old-read-file-name-function))
+      (advice-remove #'read-directory-name
+                     #'selectrum-read-directory-name)
+      (selectrum--when-compile (version<= "26" emacs-version)
+        (advice-remove #'read-library-name #'selectrum-read-library-name))
+      (selectrum--when-compile (version<= "27" emacs-version)
+        (advice-remove #'set-minibuffer-message
+                       #'selectrum-fix-minibuffer-message-overlay)))))
 
 ;;;; Closing remarks
 

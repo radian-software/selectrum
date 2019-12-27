@@ -230,20 +230,10 @@ yourself and refrain from enabling `selectrum-mode`. All of the
 functions and advice installed by Selectrum are part of the public
 API.
 
-For the purposes of startup optimization, you may wish to avoid
-loading Selectrum during init. This can be done using
-[`el-patch`](https://github.com/raxod502/el-patch): simply copy the
-definition of `selectrum-mode` into your init-file, and replace
-`define-minor-mode` with `el-patch-define-minor-mode`. Then autoload
-all of the functions and advice installed by Selectrum. This way, you
-can enable the minor mode without loading Selectrum, but it will be
-autoloaded as soon as it is needed for something. Using `el-patch`
-means you will be notified when there are upstream changes to the
-definition of `selectrum-mode` that need to be copied into your
-init-file.
-
-For an example of using `el-patch` to lazy-load Selectrum, please
-refer to [Radian](https://github.com/raxod502/radian).
+The autoloads of Selectrum are set up so that you can enable
+`selectrum-mode` without actually loading Selectrum. It will only be
+loaded once you use some of its functionality in an interactive
+command.
 
 ## Developer guide
 
