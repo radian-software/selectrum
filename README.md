@@ -304,9 +304,10 @@ may be applied to candidates using `propertize`:
   `find-file`, the canonical representation of each candidate is its
   absolute path on the filesystem.
 
-Note that sorting, filtering, and highlighting is done on the standard
-values of candidates, not their `selectrum-candidate-display` or
-`selectrum-candidate-full` values.
+Note that sorting and filtering is done on the standard values of
+candidates, not their `selectrum-candidate-display` or
+`selectrum-candidate-full` values. However, highlighting is of course
+done using `selectrum-candidate-display` if it is present.
 
 There is one final detail: the `selectrum-refine-candidates-function`
 may return, in addition to the refined list of candidates, a
