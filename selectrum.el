@@ -762,7 +762,7 @@ shadows correctly."
         (file-error)))
     (maphash
      (lambda (_ paths)
-       (setq paths (seq-uniq paths))
+       (setq paths (nreverse (seq-uniq paths)))
        (cl-block nil
          (let ((num-components 1)
                (max-components (apply #'max (mapcar (lambda (path)
