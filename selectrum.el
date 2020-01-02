@@ -116,7 +116,10 @@ list of strings."
   "Function used to preprocess the list of candidates.
 Receive one argument, the list of candidates. Return a new list.
 May modify the input list. The returned list may be modified by
-Selectrum."
+Selectrum. Note that if you sort a list of candidates, you should
+use a stable sort. That way, candidates which differ only in text
+properties will retain their ordering, which may be significant
+\(e.g. for `load-path' shadows in `read-library-name')."
   :type 'function)
 
 (defun selectrum-default-candidate-highlight-function (input candidates)
