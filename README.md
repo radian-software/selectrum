@@ -288,13 +288,17 @@ types of candidate selection (in particular, `find-file`) are more
 complex. This complexity is minimized by abstracting the essential
 requirements of the `find-file` implementation into a simple API.
 
-The API is based primarily on the following two text properties, which
-may be applied to candidates using `propertize`:
+The API is based primarily on the following three text properties,
+which may be applied to candidates using `propertize`:
 
-* `selectrum-candidate-display`: controls how the candidate is
+* `selectrum-candidate-display-prefix`: controls how the candidate is
   displayed in the list shown in the minibuffer. If this property is
-  present, then its value is shown in place of the candidate itself.
-  This is used, for example, to display a trailing slash on
+  present, then its value is prepended to the candidate when it is
+  displayed. This is used, for example, to display disambiguating
+  parent directories in `read-library-name`.
+* `selectrum-candidate-display-suffix`: same as the display prefix,
+  but it's postpended instead of prepended when the candidate is
+  dispalyed. This is used, for example, to display a trailing slash on
   directories in `find-file`.
 * `selectrum-candidate-full`: controls how the candidate appears in
   the user input area of the minibuffer. If this property is present,
@@ -304,10 +308,8 @@ may be applied to candidates using `propertize`:
   `find-file`, the canonical representation of each candidate is its
   absolute path on the filesystem.
 
-Note that sorting and filtering is done on the standard values of
-candidates, not their `selectrum-candidate-display` or
-`selectrum-candidate-full` values. However, highlighting is of course
-done using `selectrum-candidate-display` if it is present.
+Note that sorting, filtering, and highlighting is done on the standard
+values of candidates, before any of these text properties are handled.
 
 There is one final detail: the `selectrum-refine-candidates-function`
 may return, in addition to the refined list of candidates, a

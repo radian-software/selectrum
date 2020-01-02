@@ -380,15 +380,19 @@ Passed to various hook functions.")
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
           (let ((index 0))
-            (dolist (candidate (funcall
-                                selectrum-highlight-candidates-function
-                                input
-                                (mapcar
-                                 (lambda (candidate)
-                                   (or (get-text-property
-                                        0 'selectrum-candidate-display
-                                        candidate)
-                                       candidate))
+            (dolist (candidate (mapcar
+                                (lambda (candidate)
+                                  (concat
+                                   (get-text-property
+                                    0 'selectrum-candidate-display-prefix
+                                    candidate)
+                                   candidate
+                                   (get-text-property
+                                    0 'selectrum-candidate-display-suffix
+                                    candidate)))
+                                (funcall
+                                 selectrum-highlight-candidates-function
+                                 input
                                  displayed-candidates)))
               (when (equal index highlighted-index)
                 (setq candidate (propertize
@@ -672,8 +676,8 @@ PREDICATE, see `read-file-name'."
                                                        (concat dir name))))))
                                  (propertize
                                   name
-                                  'selectrum-candidate-display
-                                  (concat name (when isdir "/"))
+                                  'selectrum-candidate-display-suffix
+                                  (when isdir "/")
                                   'selectrum-candidate-full
                                   (concat dir name (when isdir "/")))))
                              (cl-delete-if
@@ -768,22 +772,30 @@ shadows correctly."
              (let ((abbrev-paths
                     (seq-uniq
                      (mapcar (lambda (path)
-                               (propertize
-                                (file-name-sans-extension
-                                 (selectrum--trailing-components
-                                  num-components path))
-                                'selectrum--full-path
-                                path))
+                               (file-name-sans-extension
+                                (selectrum--trailing-components
+                                 num-components path)))
                              paths))))
                (when (or (= num-components max-components)
                          (= (length paths) (length abbrev-paths)))
-                 (setq lst (nconc abbrev-paths lst))
+                 (let ((candidate-paths
+                        (mapcar (lambda (path)
+                                  (propertize
+                                   (file-name-base path)
+                                   'selectrum-candidate-display-prefix
+                                   (file-name-directory
+                                    (file-name-sans-extension
+                                     (selectrum--trailing-components
+                                      num-components path)))
+                                   'fixedcase 'literal
+                                   'selectrum-candidate-full
+                                   path))
+                                paths)))
+                   (setq lst (nconc candidate-paths lst)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (get-text-property
-     0 'selectrum--full-path
-     (selectrum-read "Library name: " lst :require-match t))))
+    (selectrum-read "Library name: " lst :require-match t)))
 
 ;;;###autoload
 (defun selectrum-fix-minibuffer-message-overlay (&rest _)
