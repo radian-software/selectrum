@@ -2,7 +2,7 @@
 
 *Selectrum is a better solution for incremental narrowing in Emacs,
 replacing [Helm](https://github.com/emacs-helm/helm),
-[Ivy](https://github.com/abo-abo/swiper), and
+[Ivy](https://github.com/abo-abo/swiper#ivy), and
 [IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
 
 <!-- toc -->
@@ -20,6 +20,11 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Text properties](#text-properties)
   * [Hooks](#hooks)
 - [Caveats](#caveats)
+- [Why use Selectrum?](#why-use-selectrum)
+  * [Why not IDO?](#why-not-ido)
+  * [Why not Helm?](#why-not-helm)
+  * [Why not Ivy?](#why-not-ivy)
+  * [Why not Icicles?](#why-not-icicles)
 
 <!-- tocstop -->
 
@@ -351,3 +356,100 @@ For more information, see their docstrings.
   I am not necessarily opposed to adding recursive minibuffer support
   if it can be done relatively cleanly and somebody points out a
   concrete use case that benefits from the support.
+
+## Why use Selectrum?
+
+This section documents why I decided to write Selectrum instead of
+using any of the numerous existing solutions in Emacs.
+
+### Why not IDO?
+
+[IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
+is a package for interactive selection that is included in Emacs by
+default. It's a great improvement on the default `completing-read`
+experience. However, I don't like how it displays candidates in a
+horizontal instead of a vertical manner. It feels less intuitive to
+me. Furthermore, IDO is still integrated with the default
+`completing-read` framework, which means it doesn't take full
+advantage of a new UI paradigm.
+
+### Why not Helm?
+
+[Helm](https://github.com/emacs-helm/helm) is an installable package
+which provides an alternate vertical interface for candidate
+selection. It has the advantage of having very many features and a
+large number of packages which integrate with it. However, the problem
+with Helm for me is exactly that it has too many features. Upon
+opening a Helm menu, I am immediately confronted by numerous colors,
+diagnostics, options, and pieces of help text. It is too complicated
+for the problem I want solved.
+
+### Why not Ivy?
+
+[Ivy](https://github.com/abo-abo/swiper#ivy) is the most promising
+alternative to Selectrum, and it's what I used before developing
+Selectrum. It is marketed as a minimal alternative to Helm which
+provides a simpler interface. The problem with Ivy is its
+architecture, API, and implementation, all of which are very poorly
+designed. Ivy was originally designed to be used as a backend to
+[Swiper](https://github.com/abo-abo/swiper#swiper), a buffer search
+package that originally used Helm. Unfortunately, when Ivy became a
+more general-purpose interactive selectrum package, its abstractions
+were not reworked to make sense in this new context. Over time, more
+and more special cases were added to try to make various commands work
+properly, and not nearly enough effort has been put in to making the
+core functionality consistent and correct. As a result, the `ivy-read`
+API has around 20 arguments and a heap of special cases for particular
+values (which are completely undocumented). Numerous functions in Ivy,
+[Counsel](https://github.com/abo-abo/swiper#counsel), and Swiper have
+special cases hardcoded into them to detect when they're being called
+from specific other functions *in the other two packages*. As a result
+of all this, Ivy is incredibly flaky and full of edge-case bugs like
+[this one](https://github.com/abo-abo/swiper/issues/1632). It is these
+bugs and quirks in UX that led me to develop Selectrum.
+
+Fundamentally, selecting an item from a list *is not a complicated
+problem*, and it *does not require a complicated solution*. That's why
+Selectrum is around 900 lines of code even though Ivy+Counsel (which
+do basically the same thing) are around 11,000 lines together.
+Selectrum achieves its conciseness by:
+
+* working with the existing Emacs APIs for completion, rather than
+  replacing all of them and then reimplementing every Emacs command
+  that uses them (incidentally, this also reduces the number of bugs
+  and inconsistencies)
+* preferring simplicity and consistency over the "best" possible UX
+  for each individual command (which also makes it easier to
+  understand what Selectrum is doing and work around the sharp
+  corners)
+* designing the best possible interface for candidate selection from
+  the ground up, rather than repurposing an API that was used for
+  something else and then just sticking new things onto it every time
+  a bug appears
+
+In addition, Selectrum does not support multiple selection or
+alternate actions, unlike Ivy. This is because supporting either of
+these features means you need to throw out the existing
+`completing-read` API, which is an absolutely massive time-sink and
+source of bugs that adds very little to the user experience. Selectrum
+works with *every* Emacs command with approximately no special cases,
+specifically because it focuses on doing the common case as well as
+possible.
+
+As a final note, when you're using `selectrum-prescient.el`, there's
+an easy way to simulate Ivy's alternate actions. Suppose you've typed
+`M-x` and found the command you want, but now you realize you want to
+look up the documentation instead. Press `TAB` to insert the
+candidate, which has the side effect of placing it at the top of the
+recency table in `prescient.el`. Then `C-g` out of Selectrum and type
+`C-h f`. The same command will automatically be at the top of the
+list, so you can get the documentation just by pressing `RET`. I
+believe that this sort of idea can be extended to get all of the
+utility out of these extra features without actually implementing
+explicit support for them (with all of the attendant complexity and
+bugs).
+
+### Why not Icicles?
+
+[Because it's maintained on EmacsWiki, enough
+said.](https://github.com/melpa/melpa/pull/5008)
