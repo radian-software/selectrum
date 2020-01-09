@@ -356,6 +356,12 @@ For more information, see their docstrings.
   I am not necessarily opposed to adding recursive minibuffer support
   if it can be done relatively cleanly and somebody points out a
   concrete use case that benefits from the support.
+* In Emacs 25, `M-x ffap` is basically completely broken. This is
+  because in old versions of Emacs, `ffap` worked by calling
+  `completing-read` directly with a special completion table function,
+  rather than just using `read-file-name` like would be reasonable.
+  Since Emacs 25 is going to die eventually, I'm not going to bother
+  fixing this, although pull requests would be accepted.
 
 ## Why use Selectrum?
 
