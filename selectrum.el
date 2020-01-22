@@ -406,7 +406,7 @@ Passed to various hook functions.")
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)
-        (selectrum-fix-minibuffer-message-overlay))
+        (selectrum-fix-set-minibuffer-message))
       (when keep-mark-active
         (setq deactivate-mark nil)))))
 
@@ -801,20 +801,53 @@ shadows correctly."
     (selectrum-read "Library name: " lst :require-match t)))
 
 ;;;###autoload
-(defun selectrum-fix-minibuffer-message-overlay (&rest _)
+(defun selectrum-fix-set-minibuffer-message (&rest _)
   "Move the minibuffer message overlay to the right place.
-This is the overlay placed by `set-minibuffer-message', which is
-called in order to display a message while the minibuffer is
-already active. By default the overlay is placed at the end, but
-in the case of Selectrum this means after all the candidates. We
-want to move it instead to just after the user input.
+This advice fixes the overlay placed by `set-minibuffer-message',
+which is different from the one placed by `minibuffer-message'.
+
+By default the overlay is placed at the end, but in the case of
+Selectrum this means after all the candidates. We want to move it
+instead to just after the user input.
+
+To test that this advice is working correctly, type \\[find-file]
+and enter \"/sudo::\", then authenticate. The overlay indicating
+that authentication was successful should appear right after the
+user input area, not at the end of the candidate list.
 
 This is an `:after' advice for `set-minibuffer-message'."
-  (selectrum--when-compile (version<= "27" emacs-version)
+  (selectrum--when-compile (boundp 'minibuffer-message-overlay)
     (when (overlayp minibuffer-message-overlay)
       (move-overlay minibuffer-message-overlay
                     selectrum--end-of-input-marker
                     selectrum--end-of-input-marker))))
+
+;;;###autoload
+(defun selectrum-fix-minibuffer-message (func &rest args)
+  "Move the minibuffer message overlay to the right place.
+This advice fixes the overlay placed by `minibuffer-message',
+which is different from the one placed by
+`set-minibuffer-message'.
+
+By default the overlay is placed at the end, but in the case of
+Selectrum this means after all the candidates. We want to move it
+instead to just after the user input.
+
+To test that this advice is working correctly, type \\[find-file]
+twice in a row. The overlay indicating that recursive minibuffers
+are not allowed should appear right after the user input area,
+not at the end of the candidate list.
+
+This is an `:around' advice for `minibuffer-message'. FUNC and
+ARGS are standard as in all `:around' advice."
+  (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
+             ((symbol-function #'make-overlay)
+              (lambda (_beg _end &rest args)
+                (apply orig-make-overlay
+                       selectrum--end-of-input-marker
+                       selectrum--end-of-input-marker
+                       args))))
+    (apply func args)))
 
 ;;;###autoload
 (progn
@@ -841,12 +874,14 @@ This is an `:after' advice for `set-minibuffer-message'."
                         #'selectrum-read-file-name)
           (advice-add #'read-directory-name :override
                       #'selectrum-read-directory-name)
-          (selectrum--when-compile (version<= "26" emacs-version)
+          (selectrum--when-compile (fboundp 'read-library-name)
             (advice-add #'read-library-name :override
                         #'selectrum-read-library-name))
-          (selectrum--when-compile (version<= "27" emacs-version)
+          (advice-add #'minibuffer-message :around
+                      #'selectrum-fix-minibuffer-message)
+          (selectrum--when-compile (fboundp 'set-minibuffer-message)
             (advice-add #'set-minibuffer-message :after
-                        #'selectrum-fix-minibuffer-message-overlay)))
+                        #'selectrum-fix-set-minibuffer-message)))
       (when (equal (default-value 'completing-read-function)
                    #'selectrum-completing-read)
         (setq-default completing-read-function
@@ -861,11 +896,12 @@ This is an `:after' advice for `set-minibuffer-message'."
                       selectrum--old-read-file-name-function))
       (advice-remove #'read-directory-name
                      #'selectrum-read-directory-name)
-      (selectrum--when-compile (version<= "26" emacs-version)
+      (selectrum--when-compile (fboundp 'read-library-name)
         (advice-remove #'read-library-name #'selectrum-read-library-name))
-      (selectrum--when-compile (version<= "27" emacs-version)
+      (advice-remove #'minibuffer-message #'selectrum-fix-minibuffer-message)
+      (selectrum--when-compile (fboundp 'set-minibuffer-message)
         (advice-remove #'set-minibuffer-message
-                       #'selectrum-fix-minibuffer-message-overlay)))))
+                       #'selectrum-fix-set-minibuffer-message)))))
 
 ;;;; Closing remarks
 
