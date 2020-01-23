@@ -227,13 +227,14 @@ Ivy, and copied them to be used for Selectrum as well:
 By inspecting the source code of `selectrum-mode`, you will see that
 Selectrum operates by setting a number of standard Emacs variables
 (`completing-read-function`, `read-file-name-function`, etc.) and
-installing advice on a number of standard function
+installing advice on a number of standard functions
 (`read-library-name`, `minibuffer-message`, etc.).
 
 If you object to these changes being made magically, you can make them
-yourself and refrain from enabling `selectrum-mode`. All of the
-functions and advice installed by Selectrum are part of the public
-API.
+yourself and refrain from enabling `selectrum-mode`. However,
+backwards compatibility is not guaranteed for this usage, so you will
+need to review the source code of `selectrum-mode` after each update
+of Selectrum.
 
 The autoloads of Selectrum are set up so that you can enable
 `selectrum-mode` without actually loading Selectrum. It will only be
@@ -322,8 +323,8 @@ transformed user input which will be used for highlighting (for
 `find-file`, this is the basename of the file in the user input).
 
 To really understand how these pieces work together, it is best to
-inspect the source code of `selectrum-read-buffer` and
-`selectrum-read-file-name` (an effort has been made to make the code
+inspect the source code of `selectrum--read-buffer` and
+`selectrum--read-file-name` (an effort has been made to make the code
 readable). Note that both of these functions operate by temporarily
 rebinding `selectrum-candidate-preprocess-function` and
 `selectrum-candidate-refine-function` in order to generate candidates
