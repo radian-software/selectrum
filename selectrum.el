@@ -735,6 +735,35 @@ INITIAL, see `read-directory-name'."
     (selectrum--read-file-name
      prompt dir default mustmatch nil #'file-directory-p)))
 
+;;;###autoload
+(defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
+  "Make \\[dired] do the \"right thing\" with its default candidate.
+By default \\[dired] uses `read-file-name' internally, which
+causes Selectrum to provide you with the first file inside the
+working directory as the default candidate. However, it would
+arguably be more semantically appropriate to use
+`read-directory-name', and this is especially important for
+Selectrum since this causes it to provide you with the working
+directory itself as the default candidate.
+
+To test that this advice is working correctly, type \\[dired] and
+accept the default candidate. You should have opened the working
+directory in Dired, and not a filtered listing for the current
+file.
+
+This is an `:around' advice for `dired-read-dir-and-switches'.
+FUNC and ARGS are standard as in any `:around' advice."
+  (cl-letf* ((orig-read-file-name (symbol-function #'read-file-name))
+             ((symbol-function #'read-file-name)
+              (lambda (prompt &optional
+                              dir default-filename
+                              mustmatch initial _predicate)
+                (cl-letf (((symbol-function #'read-file-name)
+                           orig-read-file-name))
+                  (read-directory-name
+                   prompt dir default-filename mustmatch initial)))))
+    (apply func args)))
+
 (defun selectrum--trailing-components (n path)
   "Take at most N trailing components of PATH.
 For large enough N, return PATH unchanged."
@@ -874,6 +903,11 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum--read-file-name)
           (advice-add #'read-directory-name :override
                       #'selectrum--read-directory-name)
+          (with-eval-after-load 'dired
+            (eval-and-compile
+              (require 'dired))
+            (advice-add #'dired-read-dir-and-switches :around
+                        #'selectrum--fix-dired-read-dir-and-switches))
           (selectrum--when-compile (fboundp 'read-library-name)
             (advice-add #'read-library-name :override
                         #'selectrum--read-library-name))
@@ -896,6 +930,11 @@ ARGS are standard as in all `:around' advice."
                       selectrum--old-read-file-name-function))
       (advice-remove #'read-directory-name
                      #'selectrum--read-directory-name)
+      (with-eval-after-load 'dired
+        (eval-and-compile
+          (require 'dired))
+        (advice-remove #'dired-read-dir-and-switches
+                       #'selectrum--fix-dired-read-dir-and-switches))
       (selectrum--when-compile (fboundp 'read-library-name)
         (advice-remove #'read-library-name #'selectrum--read-library-name))
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
