@@ -263,6 +263,18 @@ you shouldn't need to use `selectrum-read` directly, as all Emacs
 functions should call into it as appropriate when `selectrum-mode` is
 enabled.
 
+In addition to `selectrum-read`, Selectrum makes available as part of
+its public API some of the functions that wrap `selectrum-read`:
+
+* `selectrum-completing-read` (for `completing-read-function`)
+* `selectrum-read-buffer` (for `read-buffer-function`)
+* `selectrum-read-file-name` (for `read-file-name-function`)
+* `selectrum-read-directory-name` (to override `read-directory-name`)
+* `selectrum-read-library-name` (to override `read-library-name`)
+
+You can use these functions in defining variants of Selectrum-based
+commands.
+
 ### Sorting, filtering, and highlighting
 
 Selectrum exposes a very simple API for sorting, filtering, and
@@ -323,8 +335,8 @@ transformed user input which will be used for highlighting (for
 `find-file`, this is the basename of the file in the user input).
 
 To really understand how these pieces work together, it is best to
-inspect the source code of `selectrum--read-buffer` and
-`selectrum--read-file-name` (an effort has been made to make the code
+inspect the source code of `selectrum-read-buffer` and
+`selectrum-read-file-name` (an effort has been made to make the code
 readable). Note that both of these functions operate by temporarily
 rebinding `selectrum-candidate-preprocess-function` and
 `selectrum-candidate-refine-function` in order to generate candidates

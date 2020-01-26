@@ -587,13 +587,14 @@ no effect)."
            selected selectrum--read-args))))))
 
 ;;;###autoload
-(defun selectrum--completing-read
+(defun selectrum-completing-read
     (prompt collection &optional
-            predicate require-match _initial-input
-            _hist def _inherit-input-method)
+            predicate require-match initial-input
+            hist def inherit-input-method)
   "Read choice using Selectrum. Can be used as `completing-read-function'.
-For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, and DEF, see
-`completing-read'."
+For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
+HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
+  (ignore initial-input hist inherit-input-method)
   (selectrum-read
    prompt (selectrum--normalize-collection collection predicate)
    ;; Don't pass `initial-input'. We use it internally but it's
@@ -606,9 +607,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, and DEF, see
   "Previous value of `completing-read-function'.")
 
 ;;;###autoload
-(defun selectrum--read-buffer (prompt &optional def require-match predicate)
+(defun selectrum-read-buffer (prompt &optional def require-match predicate)
   "Read buffer using Selectrum. Can be used as `read-buffer-function'.
-Actually, as long as `selectrum--completing-read' is installed in
+Actually, as long as `selectrum-completing-read' is installed in
 `completing-read-function', `read-buffer' already uses Selectrum.
 Installing this function in `read-buffer-function' makes sure the
 buffers are sorted in the default order (most to least recently
@@ -645,14 +646,14 @@ PREDICATE, see `read-buffer'."
                                  orig-preprocess-function
                                  candidates)))
                 (input . ,input))))))
-    (selectrum--completing-read
+    (selectrum-completing-read
      prompt nil predicate require-match nil nil def)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
 ;;;###autoload
-(defun selectrum--read-file-name
+(defun selectrum-read-file-name
     (prompt &optional dir default-filename mustmatch initial predicate)
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
@@ -715,7 +716,7 @@ PREDICATE, see `read-file-name'."
   "Previous value of `read-file-name-function'.")
 
 ;;;###autoload
-(defun selectrum--read-directory-name
+(defun selectrum-read-directory-name
     (prompt &optional dir default-dirname mustmatch initial)
   "Read directory name using Selectrum.
 Same as `read-directory-name' except it handles default
@@ -732,7 +733,7 @@ INITIAL, see `read-directory-name'."
     (setq dir (or (file-name-directory
                    (directory-file-name default))
                   dir))
-    (selectrum--read-file-name
+    (selectrum-read-file-name
      prompt dir default mustmatch nil #'file-directory-p)))
 
 ;;;###autoload
@@ -774,7 +775,7 @@ For large enough N, return PATH unchanged."
       (match-string 0 path))))
 
 ;;;###autoload
-(defun selectrum--read-library-name ()
+(defun selectrum-read-library-name ()
   "Read and return a library name.
 Similar to `read-library-name' except it handles `load-path'
 shadows correctly."
@@ -892,17 +893,17 @@ ARGS are standard as in all `:around' advice."
           (setq selectrum--old-completing-read-function
                 (default-value 'completing-read-function))
           (setq-default completing-read-function
-                        #'selectrum--completing-read)
+                        #'selectrum-completing-read)
           (setq selectrum--old-read-buffer-function
                 (default-value 'read-buffer-function))
           (setq-default read-buffer-function
-                        #'selectrum--read-buffer)
+                        #'selectrum-read-buffer)
           (setq selectrum--old-read-file-name-function
                 (default-value 'read-file-name-function))
           (setq-default read-file-name-function
-                        #'selectrum--read-file-name)
+                        #'selectrum-read-file-name)
           (advice-add #'read-directory-name :override
-                      #'selectrum--read-directory-name)
+                      #'selectrum-read-directory-name)
           (with-eval-after-load 'dired
             (eval-and-compile
               (require 'dired))
@@ -910,33 +911,33 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum--fix-dired-read-dir-and-switches))
           (selectrum--when-compile (fboundp 'read-library-name)
             (advice-add #'read-library-name :override
-                        #'selectrum--read-library-name))
+                        #'selectrum-read-library-name))
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
           (selectrum--when-compile (fboundp 'set-minibuffer-message)
             (advice-add #'set-minibuffer-message :after
                         #'selectrum--fix-set-minibuffer-message)))
       (when (equal (default-value 'completing-read-function)
-                   #'selectrum--completing-read)
+                   #'selectrum-completing-read)
         (setq-default completing-read-function
                       selectrum--old-completing-read-function))
       (when (equal (default-value 'read-buffer-function)
-                   #'selectrum--read-buffer)
+                   #'selectrum-read-buffer)
         (setq-default read-buffer-function
                       selectrum--old-read-buffer-function))
       (when (equal (default-value 'read-file-name-function)
-                   #'selectrum--read-file-name)
+                   #'selectrum-read-file-name)
         (setq-default read-file-name-function
                       selectrum--old-read-file-name-function))
       (advice-remove #'read-directory-name
-                     #'selectrum--read-directory-name)
+                     #'selectrum-read-directory-name)
       (with-eval-after-load 'dired
         (eval-and-compile
           (require 'dired))
         (advice-remove #'dired-read-dir-and-switches
                        #'selectrum--fix-dired-read-dir-and-switches))
       (selectrum--when-compile (fboundp 'read-library-name)
-        (advice-remove #'read-library-name #'selectrum--read-library-name))
+        (advice-remove #'read-library-name #'selectrum-read-library-name))
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
       (selectrum--when-compile (fboundp 'set-minibuffer-message)
         (advice-remove #'set-minibuffer-message
