@@ -290,6 +290,7 @@ If PREDICATE is non-nil, then it filters the collection as in
       ('matches         (format "%-4d " total))
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
