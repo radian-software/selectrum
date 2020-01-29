@@ -199,9 +199,8 @@ matching and case-insensitive matching.
   also `selectrum-secondary-highlight`, which is not used by default
   but is provided for other packages that may use more complex
   highlighting schemes (such as `prescient.el`).
-* By default, the index of current match and total number of matches
-  are shown before the prompt. This behavior can be customized using
-  `selectrum-count-style`.
+* By default, the total number of matches are shown before the prompt.
+  This behavior can be customized using `selectrum-count-style`.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color

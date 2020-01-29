@@ -182,13 +182,13 @@ It gets the same arguments as `selectrum-read' got, prepended
 with the string the user inserted."
   :type 'hook)
 
-(defcustom selectrum-count-style 'current/matches
+(defcustom selectrum-count-style 'matches
   "The style to use for displaying count information before the prompt.
 
 Possible values are:
 
-- 'matches: Show total number of matches.
-- 'current/matches: Show the index of current match and total number of matches.
+- \\='matches: Show total number of matches.
+- \\='current/matches: Show the index of current match and total number of matches.
 - nil: Show nothing."
   :type '(choice
           (const :tag "Disabled" nil)
@@ -285,11 +285,10 @@ If PREDICATE is non-nil, then it filters the collection as in
   "Return a string of count information to be prepended to prompt."
   (let ((total (length selectrum--refined-candidates))
         (current (1+ (or selectrum--current-candidate-index -1))))
-    (cond ((eq selectrum-count-style 'matches)
-           (format "%d " total))
-          ((eq selectrum-count-style 'current/matches)
-           (format "%d/%d " current total))
-          (t ""))))
+    (pcase selectrum-count-style
+      ('matches         (format "%-4d " total))
+      ('current/matches (format "%-6s " (format "%d/%d" current total)))
+      (_                ""))))
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
