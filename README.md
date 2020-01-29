@@ -119,6 +119,9 @@ how to fix it.
   file\:* type `TAB`. (What this actually does is insert the currently
   selected candidate into the minibuffer, which for `find-file` has
   the effect of navigating into a directory.)
+* *To copy the current candidate:* type `M-w` or what is bind to
+  `kill-ring-save`. When there's an active region in your input, this
+  copies the active region.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
