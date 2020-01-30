@@ -334,7 +334,7 @@ See `selectrum-refine-candidates-function'.")
   "List of arguments passed to `selectrum-read'.
 Passed to various hook functions.")
 
-(defvar selectrum--count-overlay (make-overlay (point-min) (point-max))
+(defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
 ;;;; Hook functions
