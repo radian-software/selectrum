@@ -159,6 +159,7 @@ strings."
     ([remap scroll-up-command]   . selectrum-next-page)
     ([remap beginning-of-buffer] . selectrum-goto-beginning)
     ([remap end-of-buffer]       . selectrum-goto-end)
+    ([remap kill-ring-save]      . selectrum-kill-ring-save)
     ("C-j"                       . selectrum-submit-exact-input)
     ("TAB"                       . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
@@ -524,6 +525,19 @@ provided, rather than providing one of their own."
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
           (1- (length selectrum--refined-candidates)))))
+
+(defun selectrum-kill-ring-save ()
+  "Save current candidate to kill ring.
+Or if there is an active region, save the region to kill ring."
+  (interactive)
+  (if (or (use-region-p) (not transient-mark-mode))
+      (call-interactively #'kill-ring-save)
+    (let ((candidate (nth selectrum--current-candidate-index
+                          selectrum--refined-candidates)))
+      (when selectrum--current-candidate-index
+        (kill-new (or (get-text-property
+                       0 'selectrum-candidate-full candidate)
+                      candidate))))))
 
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
