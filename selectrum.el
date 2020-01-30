@@ -182,6 +182,21 @@ It gets the same arguments as `selectrum-read' got, prepended
 with the string the user inserted."
   :type 'hook)
 
+(defcustom selectrum-count-style 'matches
+  "The style to use for displaying count information before the prompt.
+
+Possible values are:
+
+- \\='matches: Show the total number of matches.
+- \\='current/matches: Show the index of current match and the total number of
+  matches.
+- nil: Show nothing."
+  :type '(choice
+          (const :tag "Disabled" nil)
+          (const :tag "Count matches" 'matches)
+          (const :tag "Count matches and show current match"
+                 'current/matches)))
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -319,7 +334,19 @@ See `selectrum-refine-candidates-function'.")
   "List of arguments passed to `selectrum-read'.
 Passed to various hook functions.")
 
+(defvar selectrum--count-overlay nil
+  "Overlay used to display count information before prompt.")
+
 ;;;; Hook functions
+
+(defun selectrum--count-info ()
+  "Return a string of count information to be prepended to prompt."
+  (let ((total (length selectrum--refined-candidates))
+        (current (1+ (or selectrum--current-candidate-index -1))))
+    (pcase selectrum-count-style
+      ('matches         (format "%-4d " total))
+      ('current/matches (format "%-6s " (format "%d/%d" current total)))
+      (_                ""))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -354,6 +381,8 @@ Passed to various hook functions.")
         (setq selectrum--current-candidate-index
               (and (> (length selectrum--refined-candidates) 0)
                    0)))
+      (overlay-put selectrum--count-overlay
+                   'before-string (selectrum--count-info))
       (setq input (or selectrum--visual-input input))
       (let ((first-index-displayed
              (if selectrum--current-candidate-index
@@ -414,7 +443,10 @@ Passed to various hook functions.")
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
   (remove-hook
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
-  (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
+  (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
+  (when (overlayp selectrum--count-overlay)
+    (delete-overlay selectrum--count-overlay))
+  (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
     (candidates &key default-candidate initial-input require-match)
@@ -440,6 +472,7 @@ provided, rather than providing one of their own."
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
   (setq selectrum--previous-input-string nil)
+  (setq selectrum--count-overlay (make-overlay (point-min) (point-min)))
   (add-hook
    'post-command-hook
    #'selectrum--minibuffer-post-command-hook
