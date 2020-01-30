@@ -282,15 +282,6 @@ If PREDICATE is non-nil, then it filters the collection as in
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
 
-(defun selectrum--count-info ()
-  "Return a string of count information to be prepended to prompt."
-  (let ((total (length selectrum--refined-candidates))
-        (current (1+ (or selectrum--current-candidate-index -1))))
-    (pcase selectrum-count-style
-      ('matches         (format "%-4d " total))
-      ('current/matches (format "%-6s " (format "%d/%d" current total)))
-      (_                ""))))
-
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -346,6 +337,15 @@ Passed to various hook functions.")
   "Overlay used to display count information before prompt.")
 
 ;;;; Hook functions
+
+(defun selectrum--count-info ()
+  "Return a string of count information to be prepended to prompt."
+  (let ((total (length selectrum--refined-candidates))
+        (current (1+ (or selectrum--current-candidate-index -1))))
+    (pcase selectrum-count-style
+      ('matches         (format "%-4d " total))
+      ('current/matches (format "%-6s " (format "%d/%d" current total)))
+      (_                ""))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
