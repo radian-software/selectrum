@@ -194,7 +194,8 @@ Possible values are:
   :type '(choice
           (const :tag "Disabled" nil)
           (const :tag "Count matches" 'matches)
-          (const :tag "Count matches and show current match" 'current/matches)))
+          (const :tag "Count matches and show current match"
+                 'current/matches)))
 
 ;;;; Utility functions
 
