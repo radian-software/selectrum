@@ -121,7 +121,8 @@ how to fix it.
   the effect of navigating into a directory.)
 * *To copy the current candidate:* type `M-w` or what is bind to
   `kill-ring-save`. When there's an active region in your input, this
-  copies the active region.
+  still copies the active region. The behavior of `M-w` is not
+  modified when Transient Mark mode is disabled.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
