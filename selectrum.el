@@ -443,6 +443,8 @@ Passed to various hook functions.")
   (remove-hook
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
+  (when (overlayp selectrum--count-overlay)
+    (delete-overlay selectrum--count-overlay))
   (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
