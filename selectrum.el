@@ -497,11 +497,14 @@ provided, rather than providing one of their own."
   "Save current candidate to kill ring.
 Or if there is an active region, save the region to kill ring."
   (interactive)
-  (if (region-active-p)
+  (if (or (use-region-p) (not transient-mark-mode))
       (call-interactively #'kill-ring-save)
-    (when selectrum--current-candidate-index
-      (kill-new (nth selectrum--current-candidate-index
-                     selectrum--refined-candidates)))))
+    (let ((candidate (nth selectrum--current-candidate-index
+                          selectrum--refined-candidates)))
+      (when selectrum--current-candidate-index
+        (kill-new (or (get-text-property
+                       0 'selectrum-candidate-full candidate)
+                      candidate))))))
 
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
