@@ -25,6 +25,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Why not Helm?](#why-not-helm)
   * [Why not Ivy?](#why-not-ivy)
   * [Why not Icicles?](#why-not-icicles)
+  * [What about Swiper?](#what-about-swiper)
 
 <!-- tocstop -->
 
@@ -478,3 +479,25 @@ bugs).
 
 [Because it's maintained on EmacsWiki, enough
 said.](https://github.com/melpa/melpa/pull/5008)
+
+### What about Swiper?
+
+As discussed in the section on Ivy,
+[Swiper](https://github.com/abo-abo/swiper#swiper) is a buffer-search
+package that uses Ivy's interface. The implementation is not
+well-abstracted at all, and therefore these two packages are a huge
+mess both internally and in usage.
+
+Does Selectrum attempt to provide a replacement for Swiper in addition
+to Ivy and Counsel? The answer is no. Rather than blindly porting
+functionality from the flawed predecessors of Selectrum, I decided to
+design a better buffer-search interface from scratch. During the
+design process, I realized that a Selectrum-like interface is not the
+best way to present buffer search. Instead, I decided on an improved
+variant of the Isearch interface that takes inspiration from the
+standard text search interface found in almost every other modern
+piece of software, such as web browsers. The result is
+[CTRLF](https://github.com/raxod502/ctrlf), although this package is
+currently alpha-quality and has not yet been documented. See [this
+issue](https://github.com/raxod502/ctrlf/issues/11) for discussion
+about the difference between CTRLF and Swiper.
