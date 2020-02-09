@@ -251,6 +251,10 @@ damaging the original COLLECTION.
 If PREDICATE is non-nil, then it filters the collection as in
 `try-completion'."
   (cond
+   ;; Check for `functionp' first, because anonymous functions can be
+   ;; mistaken for lists.
+   ((functionp collection)
+    (funcall collection "" predicate t))
    ((listp collection)
     (setq collection (copy-sequence collection))
     (when predicate
@@ -279,8 +283,6 @@ If PREDICATE is non-nil, then it filters the collection as in
                    (funcall predicate elt))
            (push (symbol-name elt) lst))))
       lst))
-   ((functionp collection)
-    (funcall collection "" predicate t))
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
 
