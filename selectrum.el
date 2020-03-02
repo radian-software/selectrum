@@ -709,6 +709,9 @@ For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (let* ((dir (file-name-as-directory
                (expand-file-name (or dir default-directory))))
+         (full-path (if (or initial default-filename)
+                        (expand-file-name (or initial default-filename) dir)
+                      dir))
          (orig-preprocess-function selectrum-preprocess-candidates-function)
          (orig-refine-function selectrum-refine-candidates-function)
          (selectrum-preprocess-candidates-function #'ignore)
@@ -755,10 +758,13 @@ PREDICATE, see `read-file-name'."
                 (input . ,new-input))))))
     (selectrum-read
      prompt nil
-     :default-candidate (when-let ((default (or initial default-filename)))
-                          (file-name-nondirectory
-                           (directory-file-name default)))
-     :initial-input dir
+     :default-candidate (when (and (file-exists-p full-path)
+                                   (not (string-empty-p
+                                         (file-name-nondirectory full-path))))
+                          (file-name-nondirectory full-path))
+     :initial-input (if (file-exists-p full-path)
+                        (file-name-directory full-path)
+                      full-path)
      :require-match mustmatch)))
 
 (defvar selectrum--old-read-file-name-function nil
