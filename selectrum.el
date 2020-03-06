@@ -414,6 +414,14 @@ Passed to various hook functions.")
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
+          (if (and highlighted-index
+                   (< highlighted-index 0))
+              (add-text-properties
+               (minibuffer-prompt-end) bound
+               '(face selectrum-current-candidate))
+            (remove-text-properties
+             (minibuffer-prompt-end) bound
+             '(face selectrum-current-candidate)))
           (let ((index 0))
             (dolist (candidate (mapcar
                                 (lambda (candidate)
@@ -488,7 +496,7 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (max 0 (1- selectrum--current-candidate-index)))))
+          (max -1 (1- selectrum--current-candidate-index)))))
 
 (defun selectrum-next-candidate ()
   "Move selection to next candidate, unless at end already."
@@ -546,18 +554,21 @@ Or if there is an active region, save the region to kill ring."
 If there are no candidates, return the current user input, unless
 a match is required, in which case do nothing."
   (interactive)
-  (when (or selectrum--current-candidate-index
-            (not selectrum--match-required-p))
-    (let ((value (if selectrum--current-candidate-index
-                     (nth selectrum--current-candidate-index
-                          selectrum--refined-candidates)
-                   (buffer-substring
-                    selectrum--start-of-input-marker
-                    selectrum--end-of-input-marker))))
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert value))
-      (exit-minibuffer))))
+  (if (and selectrum--current-candidate-index
+           (< selectrum--current-candidate-index 0))
+      (selectrum-submit-exact-input)
+    (when (or selectrum--current-candidate-index
+              (not selectrum--match-required-p))
+      (let ((value (if selectrum--current-candidate-index
+                       (nth selectrum--current-candidate-index
+                            selectrum--refined-candidates)
+                     (buffer-substring
+                      selectrum--start-of-input-marker
+                      selectrum--end-of-input-marker))))
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert value))
+        (exit-minibuffer)))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
