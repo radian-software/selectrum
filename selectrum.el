@@ -579,6 +579,9 @@ ignores the currently selected candidate, if one exists."
     (let ((value (buffer-substring
                   selectrum--start-of-input-marker
                   selectrum--end-of-input-marker)))
+      (remove-text-properties
+       0 (length value)
+       '(face selectrum-current-candidate) value)
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert value))
