@@ -542,9 +542,13 @@ Or if there is an active region, save the region to kill ring."
   (interactive)
   (if (or (use-region-p) (not transient-mark-mode))
       (call-interactively #'kill-ring-save)
-    (let ((candidate (nth selectrum--current-candidate-index
-                          selectrum--refined-candidates)))
-      (when selectrum--current-candidate-index
+    (when selectrum--current-candidate-index
+      (let ((candidate (if (< selectrum--current-candidate-index 0)
+                           (buffer-substring-no-properties
+                            selectrum--start-of-input-marker
+                            selectrum--end-of-input-marker)
+                         (nth selectrum--current-candidate-index
+                              selectrum--refined-candidates))))
         (kill-new (or (get-text-property
                        0 'selectrum-candidate-full candidate)
                       candidate))))))
