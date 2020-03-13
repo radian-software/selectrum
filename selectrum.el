@@ -554,7 +554,7 @@ Or if there is an active region, save the region to kill ring."
                       candidate))))))
 
 (defun selectrum--exit-with (value)
-  "Exit minibuffer with value."
+  "Exit minibuffer with VALUE."
   (remove-text-properties
    0 (length value)
    '(face selectrum-current-candidate) value)
