@@ -414,8 +414,10 @@ Passed to various hook functions.")
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
-          (if (and highlighted-index
-                   (< highlighted-index 0))
+          (if (or (and highlighted-index
+                       (< highlighted-index 0))
+                  (and (not selectrum--match-required-p)
+                       (not displayed-candidates)))
               (add-text-properties
                (minibuffer-prompt-end) bound
                '(face selectrum-current-candidate))
