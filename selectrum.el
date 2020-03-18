@@ -496,7 +496,8 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (max -1 (1- selectrum--current-candidate-index)))))
+          (max (if selectrum--match-required-p 0 -1)
+               (1- selectrum--current-candidate-index)))))
 
 (defun selectrum-next-candidate ()
   "Move selection to next candidate, unless at end already."
