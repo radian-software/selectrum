@@ -113,8 +113,10 @@ how to fix it.
   (`<up>`, `<down>`, `C-v`, `M-v`, `M-<`, `M->`). If you prefer, you
   can use `C-p` and `C-n` instead of the arrow keys.
 * *To accept the currently selected candidate:* type `RET`.
-* *To submit what you've typed, even if it's not a candidate:* type
-  `C-j`.
+* *To submit what you've typed, even if it's not a candidate:* you can
+  use `<up>` or `C-p` to select the user input just like a regular
+  candidate, and type `RET` as usual. (Alternatively, you can type
+  `C-j` to submit your exact input without selecting it first.)
 * *To abort:* as per usual, type `C-g`.
 * *To navigate into the currently selected directory while finding a
   file\:* type `TAB`. (What this actually does is insert the currently

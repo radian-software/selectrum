@@ -414,6 +414,16 @@ Passed to various hook functions.")
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
+          (if (or (and highlighted-index
+                       (< highlighted-index 0))
+                  (and (not selectrum--match-required-p)
+                       (not displayed-candidates)))
+              (add-text-properties
+               (minibuffer-prompt-end) bound
+               '(face selectrum-current-candidate))
+            (remove-text-properties
+             (minibuffer-prompt-end) bound
+             '(face selectrum-current-candidate)))
           (let ((index 0))
             (dolist (candidate (mapcar
                                 (lambda (candidate)
@@ -488,7 +498,8 @@ provided, rather than providing one of their own."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (max 0 (1- selectrum--current-candidate-index)))))
+          (max (if selectrum--match-required-p 0 -1)
+               (1- selectrum--current-candidate-index)))))
 
 (defun selectrum-next-candidate ()
   "Move selection to next candidate, unless at end already."
@@ -534,12 +545,26 @@ Or if there is an active region, save the region to kill ring."
   (interactive)
   (if (or (use-region-p) (not transient-mark-mode))
       (call-interactively #'kill-ring-save)
-    (let ((candidate (nth selectrum--current-candidate-index
-                          selectrum--refined-candidates)))
-      (when selectrum--current-candidate-index
+    (when selectrum--current-candidate-index
+      (let ((candidate (if (< selectrum--current-candidate-index 0)
+                           (buffer-substring-no-properties
+                            selectrum--start-of-input-marker
+                            selectrum--end-of-input-marker)
+                         (nth selectrum--current-candidate-index
+                              selectrum--refined-candidates))))
         (kill-new (or (get-text-property
                        0 'selectrum-candidate-full candidate)
                       candidate))))))
+
+(defun selectrum--exit-with (value)
+  "Exit minibuffer with VALUE."
+  (remove-text-properties
+   0 (length value)
+   '(face selectrum-current-candidate) value)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (insert value))
+  (exit-minibuffer))
 
 (defun selectrum-select-current-candidate ()
   "Exit minibuffer, picking the currently selected candidate.
@@ -548,16 +573,14 @@ a match is required, in which case do nothing."
   (interactive)
   (when (or selectrum--current-candidate-index
             (not selectrum--match-required-p))
-    (let ((value (if selectrum--current-candidate-index
-                     (nth selectrum--current-candidate-index
-                          selectrum--refined-candidates)
-                   (buffer-substring
-                    selectrum--start-of-input-marker
-                    selectrum--end-of-input-marker))))
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert value))
-      (exit-minibuffer))))
+    (selectrum--exit-with
+     (if (and selectrum--current-candidate-index
+              (>= selectrum--current-candidate-index 0))
+         (nth selectrum--current-candidate-index
+              selectrum--refined-candidates)
+       (buffer-substring
+        selectrum--start-of-input-marker
+        selectrum--end-of-input-marker)))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
@@ -565,13 +588,10 @@ This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
   (unless selectrum--match-required-p
-    (let ((value (buffer-substring
-                  selectrum--start-of-input-marker
-                  selectrum--end-of-input-marker)))
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert value))
-      (exit-minibuffer))))
+    (selectrum--exit-with
+     (buffer-substring
+      selectrum--start-of-input-marker
+      selectrum--end-of-input-marker))))
 
 (defun selectrum-insert-current-candidate ()
   "Insert current candidate into user input area."
