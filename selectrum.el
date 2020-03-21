@@ -759,7 +759,7 @@ PREDICATE, see `read-file-name'."
                           (file-name-nondirectory
                            (directory-file-name default)))
      :initial-input (if-let ((default (or initial default-filename)))
-                        (expand-file-name (directory-file-name default) dir)
+                        (expand-file-name default dir)
                       dir)
      :require-match mustmatch)))
 
