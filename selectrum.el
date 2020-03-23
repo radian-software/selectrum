@@ -961,6 +961,12 @@ ARGS are standard as in all `:around' advice."
                        args))))
     (apply func args)))
 
+;; You may ask why we copy the entire minor-mode definition into the
+;; autoloads file, and autoload several private functions as well.
+;; This is because enabling `selectrum-mode' does not actually require
+;; any of the code in Selectrum. So, to improve startup time, we avoid
+;; loading Selectrum when enabling `selectrum-mode'.
+
 ;;;###autoload
 (progn
   (define-minor-mode selectrum-mode
