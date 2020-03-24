@@ -791,7 +791,9 @@ PREDICATE, see `read-file-name'."
      :default-candidate (when-let ((default (or initial default-filename)))
                           (file-name-nondirectory
                            (directory-file-name default)))
-     :initial-input dir
+     :initial-input (if-let ((default (or initial default-filename)))
+                        (expand-file-name default dir)
+                      dir)
      :require-match mustmatch)))
 
 (defvar selectrum--old-read-file-name-function nil
