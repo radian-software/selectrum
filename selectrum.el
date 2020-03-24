@@ -711,8 +711,9 @@ PREDICATE, see `read-buffer'."
             (dolist (buf (buffer-list))
               (push (cons (buffer-name buf) buf)
                     balist))
+            (setq balist (nreverse balist))
             (when predicate
-              (setq balist (cl-delete-if-not predicate (nreverse balist))))
+              (setq balist (cl-delete-if-not predicate balist)))
             (lambda (input _)
               (let ((candidates (mapcar #'car balist)))
                 (if (string-prefix-p " " input)
