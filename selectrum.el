@@ -724,12 +724,11 @@ PREDICATE, see `read-buffer'."
                              (lambda (name)
                                (string-prefix-p " " name))
                              candidates)))
-                  (unless predicate
-                    (setq candidates
-                          (cl-delete-if
-                           (lambda (name)
-                             (string-prefix-p " " name))
-                           candidates))))
+                  (setq candidates
+                        (cl-delete-if
+                         (lambda (name)
+                           (string-prefix-p " " name))
+                         candidates)))
                 `((candidates . ,(funcall
                                   orig-refine-function
                                   input
