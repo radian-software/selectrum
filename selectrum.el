@@ -740,7 +740,8 @@ PREDICATE, see `read-buffer'."
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let* ((dir (file-name-as-directory
+  (let* ((minibuffer-completing-file-name t)
+         (dir (file-name-as-directory
                (expand-file-name (or dir default-directory))))
          (orig-preprocess-function selectrum-preprocess-candidates-function)
          (orig-refine-function selectrum-refine-candidates-function)
