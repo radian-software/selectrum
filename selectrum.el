@@ -706,30 +706,40 @@ PREDICATE, see `read-buffer'."
          (orig-refine-function selectrum-refine-candidates-function)
          (selectrum-preprocess-candidates-function #'ignore)
          (selectrum-refine-candidates-function
-          (lambda (input _)
-            (let ((candidates (mapcar #'buffer-name (buffer-list))))
-              (if (string-prefix-p " " input)
-                  (progn
-                    (setq input (substring input 1))
+          (let ((balist ()))
+            ;; predicate gets passed an alist
+            (dolist (buf (buffer-list))
+              (push (cons (buffer-name buf) buf)
+                    balist))
+            (when predicate
+              (setq balist (cl-delete-if-not predicate (nreverse balist))))
+            (lambda (input _)
+              (let ((candidates (mapcar #'car balist)))
+                (if (string-prefix-p " " input)
+                    (progn
+                      (setq input (substring input 1))
+                      (setq candidates
+                            (cl-delete-if-not
+                             (lambda (name)
+                               (string-prefix-p " " name))
+                             candidates)))
+                  (unless predicate
                     (setq candidates
-                          (cl-delete-if-not
+                          (cl-delete-if
                            (lambda (name)
                              (string-prefix-p " " name))
-                           candidates)))
-                (setq candidates
-                      (cl-delete-if
-                       (lambda (name)
-                         (string-prefix-p " " name))
-                       candidates)))
-              `((candidates . ,(funcall
-                                orig-refine-function
-                                input
-                                (funcall
-                                 orig-preprocess-function
-                                 candidates)))
-                (input . ,input))))))
-    (selectrum-completing-read
-     prompt nil predicate require-match nil nil def)))
+                           candidates))))
+                `((candidates . ,(funcall
+                                  orig-refine-function
+                                  input
+                                  (funcall
+                                   orig-preprocess-function
+                                   candidates)))
+                  (input . ,input)))))))
+    (selectrum-read
+     prompt nil
+     :default-candidate def
+     :require-match require-match)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
