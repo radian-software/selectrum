@@ -706,36 +706,31 @@ PREDICATE, see `read-buffer'."
          (orig-refine-function selectrum-refine-candidates-function)
          (selectrum-preprocess-candidates-function #'ignore)
          (selectrum-refine-candidates-function
-          (let ((balist ()))
-            ;; predicate gets passed an alist
-            (dolist (buf (buffer-list))
-              (push (cons (buffer-name buf) buf)
-                    balist))
-            (setq balist (nreverse balist))
-            (when predicate
-              (setq balist (cl-delete-if-not predicate balist)))
-            (lambda (input _)
-              (let ((candidates (mapcar #'car balist)))
-                (if (string-prefix-p " " input)
-                    (progn
-                      (setq input (substring input 1))
-                      (setq candidates
-                            (cl-delete-if-not
-                             (lambda (name)
-                               (string-prefix-p " " name))
-                             candidates)))
-                  (setq candidates
-                        (cl-delete-if
-                         (lambda (name)
-                           (string-prefix-p " " name))
-                         candidates)))
-                `((candidates . ,(funcall
-                                  orig-refine-function
-                                  input
-                                  (funcall
-                                   orig-preprocess-function
-                                   candidates)))
-                  (input . ,input)))))))
+          (lambda (input _)
+            (let* ((buffers (mapcar #'buffer-name (buffer-list)))
+                   (candidates (if predicate
+                                   (cl-delete-if-not predicate buffers)
+                                 buffers)))
+              (if (string-prefix-p " " input)
+                  (progn
+                    (setq input (substring input 1))
+                    (setq candidates
+                          (cl-delete-if-not
+                           (lambda (name)
+                             (string-prefix-p " " name))
+                           candidates)))
+                (setq candidates
+                      (cl-delete-if
+                       (lambda (name)
+                         (string-prefix-p " " name))
+                       candidates)))
+              `((candidates . ,(funcall
+                                orig-refine-function
+                                input
+                                (funcall
+                                 orig-preprocess-function
+                                 candidates)))
+                (input . ,input))))))
     (selectrum-read
      prompt nil
      :default-candidate def
