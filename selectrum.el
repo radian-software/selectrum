@@ -370,6 +370,10 @@ Passed to various hook functions.")
   (goto-char (min (point) selectrum--end-of-input-marker))
   (save-excursion
     (let ((inhibit-read-only t)
+          ;; Don't record undo information while messing with the
+          ;; minibuffer, as per
+          ;; <https://github.com/raxod502/selectrum/issues/31>.
+          (buffer-undo-list t)
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker))
