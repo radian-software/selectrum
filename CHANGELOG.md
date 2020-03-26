@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Bugs fixed
+`selectrum-read-buffer` did not apply the filter predicate argument. This has
+been fixed.
+
 ## 1.0 (released 2020-03-23)
 ### Added
 * Package `selectrum`
