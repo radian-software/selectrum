@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Bugs fixed
-* `selectrum-read` no longer returns nil when no default value was
+* `selectrum-read` no longer returns nil when no default value wasn't
 given and the empty prompt was submitted. This breaks commands which
 assume an empty string when selecting no value.
 
