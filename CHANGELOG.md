@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Bugs fixed
+* `selectrum-read` no longer returns nil when no default value was
+given and the empty prompt was submitted. This breaks commands which
+assume an empty string when selecting no value.
+
 ## 1.0 (released 2020-03-23)
 ### Added
 * Package `selectrum`
