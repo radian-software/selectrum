@@ -1046,6 +1046,7 @@ ARGS are standard as in all `:around' advice."
 ;; checkdoc-verb-check-experimental-flag: nil
 ;; indent-tabs-mode: nil
 ;; outline-regexp: ";;;;* "
+;; sentence-end-double-space: nil
 ;; End:
 
 ;;; selectrum.el ends here

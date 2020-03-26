@@ -35,7 +35,6 @@ checkdoc: ## Check docstring style
 	    echo "[checkdoc] $$file" >&2 ;\
 	    emacs -Q --batch \
 	        --eval "(or (fboundp 'checkdoc-file) (kill-emacs))" \
-	        --eval "(setq sentence-end-double-space nil)" \
 	        --eval "(checkdoc-file \"$$file\")" 2>&1 \
 	        | grep . && exit 1 || true ;\
 	done
