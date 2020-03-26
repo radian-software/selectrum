@@ -665,7 +665,7 @@ no effect)."
               (or (get-text-property 0 'selectrum-candidate-full selected)
                   selected)))
         (prog1 (if (string-empty-p full)
-                   default-candidate
+                   (or default-candidate "")
                  full)
           (apply
            #'run-hook-with-args
