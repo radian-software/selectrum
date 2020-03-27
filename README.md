@@ -500,7 +500,4 @@ best way to present buffer search. Instead, I decided on an improved
 variant of the Isearch interface that takes inspiration from the
 standard text search interface found in almost every other modern
 piece of software, such as web browsers. The result is
-[CTRLF](https://github.com/raxod502/ctrlf), although this package is
-currently alpha-quality and has not yet been documented. See [this
-issue](https://github.com/raxod502/ctrlf/issues/11) for discussion
-about the difference between CTRLF and Swiper.
+[CTRLF](https://github.com/raxod502/ctrlf).
