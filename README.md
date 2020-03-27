@@ -423,7 +423,7 @@ implementation is complex and buggy. Ivy was originally designed to be
 used as a backend to
 [Swiper](https://github.com/abo-abo/swiper#swiper), a buffer search
 package that originally used Helm. Unfortunately, when Ivy became a
-more general-purpose interactive selectrum package, its abstractions
+more general-purpose interactive selection package, its abstractions
 were not reworked to make sense in this new context. Over time, more
 and more special cases were added to try to make various commands work
 properly, and as a result the consistency and correctness of the core
