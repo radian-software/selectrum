@@ -417,18 +417,19 @@ for the problem I want solved.
 [Ivy](https://github.com/abo-abo/swiper#ivy) is the most promising
 alternative to Selectrum, and it's what I used before developing
 Selectrum. It is marketed as a minimal alternative to Helm which
-provides a simpler interface. The problem with Ivy is its
-architecture, API, and implementation, all of which are very poorly
-designed. Ivy was originally designed to be used as a backend to
+provides a simpler interface. The problem with Ivy is that its
+architecture and API are very messy, and as a result the
+implementation is complex and buggy. Ivy was originally designed to be
+used as a backend to
 [Swiper](https://github.com/abo-abo/swiper#swiper), a buffer search
 package that originally used Helm. Unfortunately, when Ivy became a
 more general-purpose interactive selectrum package, its abstractions
 were not reworked to make sense in this new context. Over time, more
 and more special cases were added to try to make various commands work
-properly, and not nearly enough effort has been put in to making the
-core functionality consistent and correct. As a result, the `ivy-read`
-API has around 20 arguments and a heap of special cases for particular
-values (which are completely undocumented). Numerous functions in Ivy,
+properly, and as a result the consistency and correctness of the core
+functionality have suffered. As a result, the `ivy-read` API has
+around 20 arguments and a heap of special cases for particular values
+(which are completely undocumented). Numerous functions in Ivy,
 [Counsel](https://github.com/abo-abo/swiper#counsel), and Swiper have
 special cases hardcoded into them to detect when they're being called
 from specific other functions *in the other two packages*. As a result
@@ -438,7 +439,7 @@ bugs and quirks in UX that led me to develop Selectrum.
 
 Fundamentally, selecting an item from a list *is not a complicated
 problem*, and it *does not require a complicated solution*. That's why
-Selectrum is around 900 lines of code even though Ivy+Counsel (which
+Selectrum is around 1,000 lines of code even though Ivy+Counsel (which
 do basically the same thing) are around 11,000 lines together.
 Selectrum achieves its conciseness by:
 
