@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Changed
+* `selectrum-read` now also accepts a function as CANDIDATES.  This
+   can be used to generate them dynamically and to adjust user input
+   used for matching/highlighting ([#27]).
+* The API of `selectrum-refine-candidates-function` changed to always
+  return a list of strings and is no longer able to adjust user input.
+
 ## 1.0 (released 2020-03-23)
 ### Added
 * Package `selectrum`

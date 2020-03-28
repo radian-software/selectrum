@@ -96,18 +96,12 @@ INPUT is a string, CANDIDATES is a list of strings."
   #'selectrum-default-candidate-refine-function
   "Function used to decide which candidates should be displayed.
 Receives two arguments, the user input (a string) and the list of
-candidates (strings) as returned by
-`selectrum-preprocess-candidates-function'. Returns a new list of
-candidates. Should not modify the input list. The returned list
-may be modified by Selectrum, so a copy of the input should be
-made. (Beware that `cl-remove-if' doesn't make a copy if there's
-nothing to remove.)
+candidates (strings).
 
-Instead of a list of strings, may alternatively return an alist
-with the following keys:
-- `candidates': list of strings, as above
-- `input' (optional): transformed user input, used for
-  highlighting"
+Returns a new list of candidates. Should not modify the input
+list. The returned list may be modified by Selectrum, so a copy
+of the input should be made. (Beware that `cl-remove-if' doesn't
+make a copy if there's nothing to remove.)"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -311,11 +305,17 @@ This is used to prevent point from moving into the candidates.")
 
 (defvar selectrum--preprocessed-candidates nil
   "Preprocessed list of candidates.
-This is derived from the collection passed to `selectrum-read'
-just once, and is subsequently passed to
-`selectrum-preprocess-candidates-function' every time the user
-input changes in order to generate
-`selectrum--refined-candidates'.")
+This is derived from the argument passed to `selectrum-read'.
+If the collection is a list it is processed once by
+`selectrum-preprocess-candidates-function' and saved. If the
+collection is a function then it is called every time the input
+changes and the returned list of candidates is preprocessed each time
+by `selectrum-preprocess-candidates-function'. (See `selectrum-read'
+for more details on function collections.)
+
+The list of candidates is subsequently passed to
+`selectrum-refine-candidates-function' every time the user input
+changes in order to generate `selectrum--refined-candidates'.")
 
 (defvar selectrum--refined-candidates nil
   "Refined list of candidates to be displayed.
@@ -383,14 +383,21 @@ Passed to various hook functions.")
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
         (setq selectrum--visual-input nil)
-        (let ((result (funcall selectrum-refine-candidates-function
-                               input selectrum--preprocessed-candidates)))
-          (if (stringp (car result))
-              (setq selectrum--refined-candidates result)
-            (setq selectrum--refined-candidates
-                  (alist-get 'candidates result))
-            (setq input (or (alist-get 'input result) input))
-            (setq selectrum--visual-input input)))
+        (let ((cands (if (functionp selectrum--preprocessed-candidates)
+                         (funcall selectrum-preprocess-candidates-function
+                                  (let ((result
+                                         (funcall
+                                          selectrum--preprocessed-candidates
+                                          input)))
+                                    (if (stringp (car result))
+                                        result
+                                      (setq input (or (alist-get 'input result)
+                                                      input))
+                                      (setq selectrum--visual-input input)
+                                      (alist-get 'candidates result))))
+                       selectrum--preprocessed-candidates)))
+          (setq selectrum--refined-candidates
+                (funcall selectrum-refine-candidates-function input cands)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                selectrum--default-candidate
@@ -496,7 +503,9 @@ provided, rather than providing one of their own."
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--preprocessed-candidates
-        (funcall selectrum-preprocess-candidates-function candidates))
+        (if (functionp candidates)
+            candidates
+          (funcall selectrum-preprocess-candidates-function candidates)))
   (setq selectrum--default-candidate default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
@@ -631,15 +640,26 @@ ignores the currently selected candidate, if one exists."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match)
-  "Prompt user with PROMPT to select one of CANDIDATES, list of strings.
-Return the selected string. PROMPT should generally end in a
-colon and space. Additional keyword ARGS are accepted.
-DEFAULT-CANDIDATE, if provided, is sorted first in the list if
-it's present. INITIAL-INPUT, if provided, is inserted into the
-user input area initially (with point at the end). REQUIRE-MATCH,
-if non-nil, means the user must select one of the listed
-candidates (so, for example, \\[selectrum-submit-exact-input] has
-no effect)."
+  "Prompt user with PROMPT to select one of CANDIDATES.
+Return the selected string.
+
+Candidates is a list of strings or a function to dynamically
+generate them. The function receives one argument, the current
+user input and returns the list of strings.
+
+Instead of a list of strings, the function may alternatively
+return an alist with the following keys:
+- `candidates': list of strings, as above.
+- `input' (optional): transformed user input, used for
+  highlighting.
+
+PROMPT should generally end in a colon and space. Additional
+keyword ARGS are accepted.  DEFAULT-CANDIDATE, if provided, is
+sorted first in the list if it's present. INITIAL-INPUT, if
+provided, is inserted into the user input area initially (with
+point at the end). REQUIRE-MATCH, if non-nil, means the user must
+select one of the listed candidates (so, for example,
+\\[selectrum-submit-exact-input] has no effect)."
   (setq selectrum--read-args (cl-list* prompt candidates args))
   (let ((keymap (make-sparse-keymap)))
     ;; Use `map-apply' instead of `map-do' as the latter is not
@@ -705,35 +725,27 @@ less appropriate. It also allows you to view hidden buffers,
 which is otherwise impossible due to tricky behavior of Emacs'
 completion machinery. For PROMPT, DEF, REQUIRE-MATCH, and
 PREDICATE, see `read-buffer'."
-  (let* ((selectrum-should-sort-p nil)
-         (orig-preprocess-function selectrum-preprocess-candidates-function)
-         (orig-refine-function selectrum-refine-candidates-function)
-         (selectrum-preprocess-candidates-function #'ignore)
-         (selectrum-refine-candidates-function
-          (lambda (input _)
-            (let ((candidates (mapcar #'buffer-name (buffer-list))))
-              (if (string-prefix-p " " input)
-                  (progn
-                    (setq input (substring input 1))
-                    (setq candidates
-                          (cl-delete-if-not
-                           (lambda (name)
-                             (string-prefix-p " " name))
-                           candidates)))
-                (setq candidates
-                      (cl-delete-if
-                       (lambda (name)
-                         (string-prefix-p " " name))
-                       candidates)))
-              `((candidates . ,(funcall
-                                orig-refine-function
-                                input
-                                (funcall
-                                 orig-preprocess-function
-                                 candidates)))
-                (input . ,input))))))
+  (let ((selectrum-should-sort-p nil)
+        (candidates
+         (lambda (input)
+           (let ((candidates (mapcar #'buffer-name (buffer-list))))
+             (if (string-prefix-p " " input)
+                 (progn
+                   (setq input (substring input 1))
+                   (setq candidates
+                         (cl-delete-if-not
+                          (lambda (name)
+                            (string-prefix-p " " name))
+                          candidates)))
+               (setq candidates
+                     (cl-delete-if
+                      (lambda (name)
+                        (string-prefix-p " " name))
+                      candidates)))
+             `((candidates . ,candidates)
+               (input . ,input))))))
     (selectrum-completing-read
-     prompt nil predicate require-match nil nil def)))
+     prompt candidates predicate require-match nil nil def)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -747,11 +759,8 @@ PREDICATE, see `read-file-name'."
   (let* ((minibuffer-completing-file-name t)
          (dir (file-name-as-directory
                (expand-file-name (or dir default-directory))))
-         (orig-preprocess-function selectrum-preprocess-candidates-function)
-         (orig-refine-function selectrum-refine-candidates-function)
-         (selectrum-preprocess-candidates-function #'ignore)
-         (selectrum-refine-candidates-function
-          (lambda (input _)
+         (candidates
+          (lambda (input)
             (let* ((new-input (file-name-nondirectory input))
                    (dir (or (file-name-directory input) dir))
                    (entries (selectrum--map-destructive
@@ -784,15 +793,10 @@ PREDICATE, see `read-file-name'."
                                 ;; May happen in case user quits out
                                 ;; of a TRAMP prompt.
                                 (quit))))))
-              `((candidates . ,(funcall
-                                orig-refine-function
-                                new-input
-                                (funcall
-                                 orig-preprocess-function
-                                 entries)))
+              `((candidates . ,entries)
                 (input . ,new-input))))))
     (selectrum-read
-     prompt nil
+     prompt candidates
      :default-candidate (when-let ((default (or initial default-filename)))
                           (file-name-nondirectory
                            (directory-file-name default)))

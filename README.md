@@ -282,7 +282,8 @@ its public API some of the functions that wrap `selectrum-read`:
 * `selectrum-read-library-name` (to override `read-library-name`)
 
 You can use these functions in defining variants of Selectrum-based
-commands.
+commands. Internally those functions all use `selectrum-read` which
+you can use to build other custom completion commands.
 
 ### Sorting, filtering, and highlighting
 
@@ -292,12 +293,13 @@ user option:
 
 * `selectrum-preprocess-candidates-function` takes the original list
   of candidates and sorts it (actually, it can do any sort of
-  preprocessing it wants). This preprocessing only happens once.
+  preprocessing it wants). Usually preprocessing only happens once
+  unless the candidates are generated dynamically from user input. In
+  that case the candidate set might have changed, thus they are
+  processed after each input change.
 * `selectrum-refine-candidates-function` takes the preprocessed list
-  and filters it using the user's input (actually, it can produce the
-  final list of candidates however it wants, including generating it
-  on the fly). This refinement happens every time the user input is
-  updated.
+  and filters it using the user's input. This refinement happens every
+  time the user input is updated.
 * `selectrum-highlight-candidates-function` takes a list of the
   refined candidates that are going to be displayed in the minibuffer,
   and propertizes them with highlighting.
@@ -338,19 +340,10 @@ which may be applied to candidates using `propertize`:
 Note that sorting, filtering, and highlighting is done on the standard
 values of candidates, before any of these text properties are handled.
 
-There is one final detail: the `selectrum-refine-candidates-function`
-may return, in addition to the refined list of candidates, a
-transformed user input which will be used for highlighting (for
-`find-file`, this is the basename of the file in the user input).
-
 To really understand how these pieces work together, it is best to
 inspect the source code of `selectrum-read-buffer` and
 `selectrum-read-file-name` (an effort has been made to make the code
-readable). Note that both of these functions operate by temporarily
-rebinding `selectrum-candidate-preprocess-function` and
-`selectrum-candidate-refine-function` in order to generate candidates
-on the fly and then sort and filter them using the original values of
-these functions.
+readable).
 
 ### Hooks
 
