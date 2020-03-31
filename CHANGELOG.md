@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Enhancements
+* In `read-file-name`, when a default is provided (for example in the
+  `dired-do-rename` command), we actually use it as the initial
+  contents of the minibuffer, which allows you to have convenient
+  access to the default filename when that default file does not exist
+  ([#25]).
+* We now bind `minibuffer-completing-file-name` during
+  `read-file-name`, in conformance with the standard Emacs interface
+  ([#30]).
+
+## Bugs fixed
+* You can now use the undo system in the minibuffer. Previously,
+  trying to do so would break Selectrum ([#31]).
+
+[#25]: https://github.com/raxod502/selectrum/pull/25
+[#30]: https://github.com/raxod502/selectrum/issues/30
+[#31]: https://github.com/raxod502/selectrum/issues/31
+
 ## 1.0 (released 2020-03-23)
 ### Added
 * Package `selectrum`
