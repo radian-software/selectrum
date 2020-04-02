@@ -274,7 +274,10 @@ If PREDICATE is non-nil, then it filters the collection as in
       (setq collection (cl-delete-if-not predicate collection)))
     (selectrum--map-destructive
      (lambda (elt)
-       (or (car-safe elt) elt))
+       (let ((car (car-safe elt)))
+         (if (and car (symbolp car))
+             (symbol-name car)
+           (or car elt))))
      collection))
    ((hash-table-p collection)
     (let ((lst nil))
