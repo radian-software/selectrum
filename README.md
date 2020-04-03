@@ -3,7 +3,7 @@
 *Selectrum is a better solution for incremental narrowing in Emacs,
 replacing [Helm](https://github.com/emacs-helm/helm),
 [Ivy](https://github.com/abo-abo/swiper#ivy), and
-[IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
+[Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
 
 <!-- toc -->
 
@@ -21,7 +21,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Hooks](#hooks)
 - [Caveats](#caveats)
 - [Why use Selectrum?](#why-use-selectrum)
-  * [Why not IDO?](#why-not-ido)
+  * [Why not Ido?](#why-not-ido)
   * [Why not Helm?](#why-not-helm)
   * [Why not Ivy?](#why-not-ivy)
   * [Why not Icomplete?](#why-not-icomplete)
@@ -398,14 +398,14 @@ I have not used many of these packages extensively. So, if you think
 I've overlooked an important part or I've written something mean or
 unfair, **please** feel free to contribute a correction.
 
-### Why not IDO?
+### Why not Ido?
 
-[IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
+[Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
 is a package for interactive selection that is included in Emacs by
 default. It's a great improvement on the default `completing-read`
 experience. However, I don't like how it displays candidates in a
 horizontal instead of a vertical manner. It feels less intuitive to
-me. Furthermore, IDO is still integrated with the default
+me. Furthermore, Ido is still integrated with the default
 `completing-read` framework, which means it doesn't take full
 advantage of a new UI paradigm.
 
@@ -488,20 +488,18 @@ bugs).
 
 ### Why not Icomplete?
 
-[IComplete](https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html)
+[Icomplete](https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html)
 is another built-in Emacs package for interactive selection. It is
 basically the same as the standard `completing-read` framework, except
 that the available candidates are displayed in the minibuffer as you
 type. Unlike Selectrum, the candidates are displayed horizontally (by
 default). This can be changed by some manual configuration, including
-customizing `icomplete-separator` (and see also
-[icomplete-vertical](https://github.com/oantolin/icomplete-vertical)),
-although it is clear that this use case is not an intended one for
-Icomplete. A serious usability problem of Icomplete is that the way
-you select a candidate from lower down in the list is very
-unintuitive: you must "rotate" the entire set of candidates, whereupon
-the previous candidates become invisible since they have wrapped to
-the bottom of the list.
+customizing `icomplete-separator`, although it is clear that this use
+case is not an intended one for Icomplete. A serious usability problem
+of Icomplete is that the way you select a candidate from lower down in
+the list is very unintuitive: you must "rotate" the entire set of
+candidates, whereupon the previous candidates become invisible since
+they have wrapped to the bottom of the list.
 
 With sufficient configuration, it is likely possible to replicate a
 subset of the features of Selectrum using Icomplete. However, the
@@ -516,9 +514,9 @@ interface that is robust and works out of the box.
 
 It is worth noting the new [Fido
 mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
-which will be included in Emacs 28. It is basically a combination of
-IDO with Icomplete, and as such does not offer solutions to the
-problems outlined in the above sections.
+which will be included in Emacs 27. It is basically a variation of
+Icomplete that behaves more like Ido. As such, Fido mode does not
+offer solutions to the problems outlined in the above sections.
 
 ### Why not Icicles?
 
@@ -577,10 +575,10 @@ mess both internally and in usage.
 
 Does Selectrum attempt to provide a replacement for Swiper in addition
 to Ivy and Counsel? The answer is no. Rather than blindly porting
-functionality from the flawed predecessors of Selectrum, I decided to
-design a better buffer-search interface from scratch. During the
-design process, I realized that a Selectrum-like interface is not the
-best way to present buffer search. Instead, I decided on an improved
+functionality from the predecessors of Selectrum, I decided to design
+a better buffer-search interface from scratch. During the design
+process, I realized that a Selectrum-like interface is not the best
+way to present buffer search. Instead, I decided on an improved
 variant of the Isearch interface that takes inspiration from the
 standard text search interface found in almost every other modern
 piece of software, such as web browsers. The result is
