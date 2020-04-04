@@ -256,8 +256,8 @@ destructively and return the modified list."
 
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
-COLLECTION may be a list of strings or cons cells, an obarray, a
-hash table, or a function, as per the docstring of
+COLLECTION may be a list of strings or symbols or cons cells, an
+obarray, a hash table, or a function, as per the docstring of
 `try-completion'. The returned list may be mutated without
 damaging the original COLLECTION.
 
@@ -274,7 +274,10 @@ If PREDICATE is non-nil, then it filters the collection as in
       (setq collection (cl-delete-if-not predicate collection)))
     (selectrum--map-destructive
      (lambda (elt)
-       (or (car-safe elt) elt))
+       (setq elt (or (car-safe elt) elt))
+       (when (symbolp elt)
+         (setq elt (symbol-name elt)))
+       elt)
      collection))
    ((hash-table-p collection)
     (let ((lst nil))
