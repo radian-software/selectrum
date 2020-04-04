@@ -1002,19 +1002,19 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-read-file-name)
           (advice-add #'read-directory-name :override
                       #'selectrum-read-directory-name)
-          (with-eval-after-load 'dired
-            (eval-and-compile
-              (require 'dired))
-            (advice-add #'dired-read-dir-and-switches :around
-                        #'selectrum--fix-dired-read-dir-and-switches))
-          (selectrum--when-compile (fboundp 'read-library-name)
-            (advice-add #'read-library-name :override
-                        #'selectrum-read-library-name))
+          ;; No sharp quote because Dired may not be loaded yet.
+          (advice-add 'dired-read-dir-and-switches :around
+                      #'selectrum--fix-dired-read-dir-and-switches)
+          ;; No sharp quote because `read-library-name' is not defined
+          ;; in older Emacs versions.
+          (advice-add 'read-library-name :override
+                      #'selectrum-read-library-name)
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
-          (selectrum--when-compile (fboundp 'set-minibuffer-message)
-            (advice-add #'set-minibuffer-message :after
-                        #'selectrum--fix-set-minibuffer-message)))
+          ;; No sharp quote because `set-minibuffer-message' is not
+          ;; defined in older Emacs versions.
+          (advice-add 'set-minibuffer-message :after
+                      #'selectrum--fix-set-minibuffer-message))
       (when (equal (default-value 'completing-read-function)
                    #'selectrum-completing-read)
         (setq-default completing-read-function
@@ -1029,17 +1029,17 @@ ARGS are standard as in all `:around' advice."
                       selectrum--old-read-file-name-function))
       (advice-remove #'read-directory-name
                      #'selectrum-read-directory-name)
-      (with-eval-after-load 'dired
-        (eval-and-compile
-          (require 'dired))
-        (advice-remove #'dired-read-dir-and-switches
-                       #'selectrum--fix-dired-read-dir-and-switches))
-      (selectrum--when-compile (fboundp 'read-library-name)
-        (advice-remove #'read-library-name #'selectrum-read-library-name))
+      ;; No sharp quote because Dired may not be loaded yet.
+      (advice-remove 'dired-read-dir-and-switches
+                     #'selectrum--fix-dired-read-dir-and-switches)
+      ;; No sharp quote because `read-library-name' is not defined in
+      ;; older Emacs versions.
+      (advice-remove 'read-library-name #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
-      (selectrum--when-compile (fboundp 'set-minibuffer-message)
-        (advice-remove #'set-minibuffer-message
-                       #'selectrum--fix-set-minibuffer-message)))))
+      ;; No sharp quote because `set-minibuffer-message' is not
+      ;; defined in older Emacs versions.
+      (advice-remove 'set-minibuffer-message
+                     #'selectrum--fix-set-minibuffer-message))))
 
 ;;;; Closing remarks
 
