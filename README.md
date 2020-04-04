@@ -405,9 +405,7 @@ is a package for interactive selection that is included in Emacs by
 default. It's a great improvement on the default `completing-read`
 experience. However, I don't like how it displays candidates in a
 horizontal instead of a vertical manner. It feels less intuitive to
-me. Furthermore, Ido is still integrated with the default
-`completing-read` framework, which means it doesn't take full
-advantage of a new UI paradigm.
+me.
 
 ### Why not Helm?
 
