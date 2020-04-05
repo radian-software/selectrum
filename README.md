@@ -398,6 +398,9 @@ I have not used many of these packages extensively. So, if you think
 I've overlooked an important part or I've written something mean or
 unfair, **please** feel free to contribute a correction.
 
+See [#23](https://github.com/raxod502/selectrum/issues/23) for
+discussion.
+
 ### Why not Ido?
 
 [Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
@@ -405,7 +408,12 @@ is a package for interactive selection that is included in Emacs by
 default. It's a great improvement on the default `completing-read`
 experience. However, I don't like how it displays candidates in a
 horizontal instead of a vertical manner. It feels less intuitive to
-me.
+me. Another key issue with Ido is that it hardly supports any commands
+out of the box (only buffers and files). There is an extension package
+[ido-completing-read+](https://github.com/DarwinAwardWinner/ido-completing-read-plus)
+which adds support for the `completing-read` interface, but I have
+been told that even this package does not handle all the cases
+correctly.
 
 ### Why not Helm?
 
