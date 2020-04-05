@@ -924,6 +924,51 @@ shadows correctly."
     (selectrum-read "Library name: " lst :require-match t)))
 
 ;;;###autoload
+(defun selectrum--imenu-completion-buffer (ilist &optional prompt)
+  "Improve `imenu' to work better with selectrum model.
+
+For ILIST and PROMPT see `imenu--completion-buffer' which this
+function overrides."
+  (let ((res (selectrum-read (or prompt "Imenu: ")
+                             (selectrum--imenu-candidates ilist)
+                             ;; TODO: add when history is supported
+                             ;; :history 'imenu--history-list
+                             :require-match t)))
+    (get-text-property
+     0 'selectrum--imenu-value res)))
+
+(defvar selectrum--imenu-auto-rescan-old nil)
+(defvar imenu-auto-rescan)
+(declare-function imenu--subalist-p "imenu")
+(defun selectrum--imenu-candidates (ilist)
+  "Convert ILIST to list of strings.
+
+For format of ILIST see `imenu--index-alist'."
+  (let ((ilist (delete (assoc "*Rescan*" ilist) ilist))
+        (candidates nil))
+    (cl-labels ((selectrum--imenu-candidates-1
+                 (ilist &optional prefix)
+                 (dolist (item ilist)
+                   (cond ((imenu--subalist-p item)
+                          (selectrum--imenu-candidates-1
+                           (cdr item)
+                           (if prefix
+                               (concat prefix "->" (car item))
+                             (car item))))
+                         (t
+                          (push
+                           (propertize
+                            (car item)
+                            'selectrum-candidate-display-suffix
+                            (and prefix
+                                 (format " (%s)" prefix))
+                            'selectrum--imenu-value
+                            item)
+                           candidates))))))
+      (selectrum--imenu-candidates-1 ilist)
+      (nreverse candidates))))
+
+;;;###autoload
 (defun selectrum--fix-set-minibuffer-message (&rest _)
   "Move the minibuffer message overlay to the right place.
 This advice fixes the overlay placed by `set-minibuffer-message',
@@ -1015,7 +1060,11 @@ ARGS are standard as in all `:around' advice."
           ;; No sharp quote because `set-minibuffer-message' is not
           ;; defined in older Emacs versions.
           (advice-add 'set-minibuffer-message :after
-                      #'selectrum--fix-set-minibuffer-message))
+                      #'selectrum--fix-set-minibuffer-message)
+          (setq selectrum--imenu-auto-rescan-old imenu-auto-rescan)
+          (setq imenu-auto-rescan t)
+          (advice-add 'imenu--completion-buffer :override
+                      #'selectrum--imenu-completion-buffer))
       (when (equal (default-value 'completing-read-function)
                    #'selectrum-completing-read)
         (setq-default completing-read-function
@@ -1040,7 +1089,10 @@ ARGS are standard as in all `:around' advice."
       ;; No sharp quote because `set-minibuffer-message' is not
       ;; defined in older Emacs versions.
       (advice-remove 'set-minibuffer-message
-                     #'selectrum--fix-set-minibuffer-message))))
+                     #'selectrum--fix-set-minibuffer-message)
+      (setq imenu-auto-rescan selectrum--imenu-auto-rescan-old)
+      (advice-remove 'imenu--completion-buffer
+                     #'selectrum--imenu-completion-buffer))))
 
 ;;;; Closing remarks
 
