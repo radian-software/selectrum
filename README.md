@@ -3,7 +3,7 @@
 *Selectrum is a better solution for incremental narrowing in Emacs,
 replacing [Helm](https://github.com/emacs-helm/helm),
 [Ivy](https://github.com/abo-abo/swiper#ivy), and
-[IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
+[Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
 
 <!-- toc -->
 
@@ -21,10 +21,14 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Hooks](#hooks)
 - [Caveats](#caveats)
 - [Why use Selectrum?](#why-use-selectrum)
-  * [Why not IDO?](#why-not-ido)
+  * [Why not Ido?](#why-not-ido)
   * [Why not Helm?](#why-not-helm)
   * [Why not Ivy?](#why-not-ivy)
+  * [Why not Icomplete?](#why-not-icomplete)
   * [Why not Icicles?](#why-not-icicles)
+  * [Why not Snails?](#why-not-snails)
+  * [Why not Sallet?](#why-not-sallet)
+  * [Why not Raven?](#why-not-raven)
   * [What about Swiper?](#what-about-swiper)
 
 <!-- tocstop -->
@@ -282,8 +286,9 @@ its public API some of the functions that wrap `selectrum-read`:
 * `selectrum-read-library-name` (to override `read-library-name`)
 
 You can use these functions in defining variants of Selectrum-based
-commands. Internally those functions all use `selectrum-read` which
-you can use to build other custom completion commands.
+commands. If you need to do something more complicated than just
+calling one of these functions with special options, then define your
+own function and call `selectrum-read` directly.
 
 ### Sorting, filtering, and highlighting
 
@@ -293,10 +298,10 @@ user option:
 
 * `selectrum-preprocess-candidates-function` takes the original list
   of candidates and sorts it (actually, it can do any sort of
-  preprocessing it wants). Usually preprocessing only happens once
-  unless the candidates are generated dynamically from user input. In
-  that case the candidate set might have changed, thus they are
-  processed after each input change.
+  preprocessing it wants). Usually preprocessing only happens once.
+  However, if a function is passed to `selectrum-read` to generate the
+  candidate list dynamically based on the user input, then
+  preprocessing happens instead after each input change.
 * `selectrum-refine-candidates-function` takes the preprocessed list
   and filters it using the user's input. This refinement happens every
   time the user input is updated.
@@ -383,16 +388,26 @@ For more information, see their docstrings.
 This section documents why I decided to write Selectrum instead of
 using any of the numerous existing solutions in Emacs.
 
-### Why not IDO?
+I have not used many of these packages extensively. So, if you think
+I've overlooked an important part or I've written something mean or
+unfair, **please** feel free to contribute a correction.
 
-[IDO](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
+See [#23](https://github.com/raxod502/selectrum/issues/23) for
+discussion.
+
+### Why not Ido?
+
+[Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
 is a package for interactive selection that is included in Emacs by
 default. It's a great improvement on the default `completing-read`
 experience. However, I don't like how it displays candidates in a
 horizontal instead of a vertical manner. It feels less intuitive to
-me. Furthermore, IDO is still integrated with the default
-`completing-read` framework, which means it doesn't take full
-advantage of a new UI paradigm.
+me. Another key issue with Ido is that it hardly supports any commands
+out of the box (only buffers and files). There is an extension package
+[ido-completing-read+](https://github.com/DarwinAwardWinner/ido-completing-read-plus)
+which adds support for the `completing-read` interface, but I have
+been told that even this package does not handle all the cases
+correctly.
 
 ### Why not Helm?
 
@@ -471,10 +486,84 @@ utility out of these extra features without actually implementing
 explicit support for them (with all of the attendant complexity and
 bugs).
 
+### Why not Icomplete?
+
+[Icomplete](https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html)
+is another built-in Emacs package for interactive selection. It is
+basically the same as the standard `completing-read` framework, except
+that the available candidates are displayed in the minibuffer as you
+type. Unlike Selectrum, the candidates are displayed horizontally (by
+default). This can be changed by some manual configuration, including
+customizing `icomplete-separator`, although it is clear that this use
+case is not an intended one for Icomplete. A serious usability problem
+of Icomplete is that the way you select a candidate from lower down in
+the list is very unintuitive: you must "rotate" the entire set of
+candidates, whereupon the previous candidates become invisible since
+they have wrapped to the bottom of the list.
+
+With sufficient configuration, it is likely possible to replicate a
+subset of the features of Selectrum using Icomplete. However, the
+documentation of Icomplete is basically nonexistent, and to achieve
+this configuration one must bend Icomplete rather severely away from
+the interaction model it is designed for. In other words, the
+configuration is not an enjoyable process, and the results will never
+be equivalent in user experience to a package that was designed for
+the desired interaction model in the first place. Selectrum, on the
+other hand, offers a well-tuned and snappy vertical completion
+interface that is robust and works out of the box.
+
+It is worth noting the new [Fido
+mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
+which will be included in Emacs 27. It is basically a variation of
+Icomplete that behaves more like Ido. As such, Fido mode does not
+offer solutions to the problems outlined in the above sections.
+
 ### Why not Icicles?
 
 [Because it's maintained on EmacsWiki, enough
 said.](https://github.com/melpa/melpa/pull/5008)
+
+### Why not Snails?
+
+[Snails](https://github.com/manateelazycat/snails) describes itself as
+a "modern, easy-to-expand fuzzy-search framework". From the README, it
+seems to provide a similar vertical completion interface to Selectrum.
+Unfortunately, the package seems to be essentially nonfunctional. I
+had to fix three bugs in the code before I could even get candidates
+to show up, and filtering and sorting still did not work.
+
+A deeper problem with Snails is that, like Ivy, it goes the route of
+wrapping every possible command with a "backend" rather than using
+existing Emacs interfaces to handle all possible commands. It's also
+worth noting that Snails is unusable by design in a tty environment.
+
+### Why not Sallet?
+
+[Sallet](https://github.com/Fuco1/sallet) describes itself as "a type
+of light spherical helmet", according to the repo description.
+However, it also appears to be another vertical completion interface.
+Although I haven't used Sallet extensively, here are some differences
+that I can note:
+
+* Sallet seems to go the route of providing wrappers for all the
+  possible commands, rather than implementing all of them via the
+  existing `completing-read` interface. I am skeptical of this for the
+  reasons outlined in the Ivy section.
+* Sallet provides a "rich-text" approach to vertical completion, where
+  you are shown an entire buffer with colors and multiple columns.
+  Personally, I would prefer something more minimal that fits neatly
+  into the minibuffer.
+* There is no user-facing documentation, which suggests to me that the
+  package is unfinished.
+
+### Why not Raven?
+
+[Raven](https://github.com/chameco/raven) is a little-known package
+for vertical completion. It looks quite similar to Selectrum, and
+seems pretty usable to me. The main difference is that Selectrum
+simply has a more fully-rounded set of features (such as candidate
+highlighting and a full `find-file` replacement). I suspect that these
+features have simply not yet been implemented.
 
 ### What about Swiper?
 
@@ -486,10 +575,10 @@ mess both internally and in usage.
 
 Does Selectrum attempt to provide a replacement for Swiper in addition
 to Ivy and Counsel? The answer is no. Rather than blindly porting
-functionality from the flawed predecessors of Selectrum, I decided to
-design a better buffer-search interface from scratch. During the
-design process, I realized that a Selectrum-like interface is not the
-best way to present buffer search. Instead, I decided on an improved
+functionality from the predecessors of Selectrum, I decided to design
+a better buffer-search interface from scratch. During the design
+process, I realized that a Selectrum-like interface is not the best
+way to present buffer search. Instead, I decided on an improved
 variant of the Isearch interface that takes inspiration from the
 standard text search interface found in almost every other modern
 piece of software, such as web browsers. The result is
