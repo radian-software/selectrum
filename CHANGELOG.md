@@ -20,12 +20,17 @@ The format is based on [Keep a Changelog].
 * Passing a list of symbols to `selectrum-completing-read` works now.
 * Previously, `selectrum-read-buffer` ignored its PREDICATE argument.
   This has now been fixed ([#32, #33]).
+* Previously, `selectrum-read` would return nil when
+  `selectrum-submit-exact-input` was used on an empty input and no
+  `:default-candidate` was provided. Now the empty string is returned,
+  in accordance with the `completing-read` API ([#34]).
 
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
 [#32]: https://github.com/raxod502/selectrum/issues/31
 [#33]: https://github.com/raxod502/selectrum/issues/31
+[#34]: https://github.com/raxod502/selectrum/issues/34
 
 ## 1.0 (released 2020-03-23)
 ### Added
