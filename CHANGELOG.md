@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Breaking changes
+* The way to dynamically generate the candidate list has changed.
+  Instead of rebinding `selectrum-preprocess-candidates-function` and
+  `selectrum-refine-candidates-function`, you simply pass a function
+  as the COLLECTION argument to `selectrum-read`. This function takes
+  one argument, the current user input, and returns the list of
+  candidates as strings. Alternatively, it can return an alist whose
+  `candidates` key is the candidate list and whose `input` key is a
+  transformed user input to use for highlighting.
+
+  As part of this change, `selectrum-refine-candidates-function` no
+  longer can return an alist; that functionality should instead be
+  moved to the CANDIDATES function. (This feature was never properly
+  supported in the first place if you tried to use it in a way that
+  can't be done equivalently in the CANDIDATES function.)
+
+  See [#27].
+
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
@@ -26,11 +44,12 @@ The format is based on [Keep a Changelog].
   in accordance with the `completing-read` API ([#34]).
 
 [#25]: https://github.com/raxod502/selectrum/pull/25
+[#27]: https://github.com/raxod502/selectrum/pull/27
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
 [#32]: https://github.com/raxod502/selectrum/issues/32
-[#33]: https://github.com/raxod502/selectrum/issues/33
-[#34]: https://github.com/raxod502/selectrum/issues/34
+[#33]: https://github.com/raxod502/selectrum/pull/33
+[#34]: https://github.com/raxod502/selectrum/pull/34
 
 ## 1.0 (released 2020-03-23)
 ### Added
