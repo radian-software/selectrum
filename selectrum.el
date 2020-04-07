@@ -7,6 +7,7 @@
 ;; Homepage: https://github.com/raxod502/selectrum
 ;; Keywords: extensions
 ;; Package-Requires: ((emacs "25.1"))
+;; SPDX-License-Identifier: MIT
 ;; Version: 1.0
 
 ;;; Commentary:
@@ -256,8 +257,8 @@ destructively and return the modified list."
 
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
-COLLECTION may be a list of strings or cons cells, an obarray, a
-hash table, or a function, as per the docstring of
+COLLECTION may be a list of strings or symbols or cons cells, an
+obarray, a hash table, or a function, as per the docstring of
 `try-completion'. The returned list may be mutated without
 damaging the original COLLECTION.
 
@@ -274,7 +275,10 @@ If PREDICATE is non-nil, then it filters the collection as in
       (setq collection (cl-delete-if-not predicate collection)))
     (selectrum--map-destructive
      (lambda (elt)
-       (or (car-safe elt) elt))
+       (setq elt (or (car-safe elt) elt))
+       (when (symbolp elt)
+         (setq elt (symbol-name elt)))
+       elt)
      collection))
    ((hash-table-p collection)
     (let ((lst nil))
@@ -711,7 +715,10 @@ PREDICATE, see `read-buffer'."
          (selectrum-preprocess-candidates-function #'ignore)
          (selectrum-refine-candidates-function
           (lambda (input _)
-            (let ((candidates (mapcar #'buffer-name (buffer-list))))
+            (let* ((buffers (mapcar #'buffer-name (buffer-list)))
+                   (candidates (if predicate
+                                   (cl-delete-if-not predicate buffers)
+                                 buffers)))
               (if (string-prefix-p " " input)
                   (progn
                     (setq input (substring input 1))
@@ -732,8 +739,10 @@ PREDICATE, see `read-buffer'."
                                  orig-preprocess-function
                                  candidates)))
                 (input . ,input))))))
-    (selectrum-completing-read
-     prompt nil predicate require-match nil nil def)))
+    (selectrum-read
+     prompt nil
+     :default-candidate def
+     :require-match require-match)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -999,19 +1008,19 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-read-file-name)
           (advice-add #'read-directory-name :override
                       #'selectrum-read-directory-name)
-          (with-eval-after-load 'dired
-            (eval-and-compile
-              (require 'dired))
-            (advice-add #'dired-read-dir-and-switches :around
-                        #'selectrum--fix-dired-read-dir-and-switches))
-          (selectrum--when-compile (fboundp 'read-library-name)
-            (advice-add #'read-library-name :override
-                        #'selectrum-read-library-name))
+          ;; No sharp quote because Dired may not be loaded yet.
+          (advice-add 'dired-read-dir-and-switches :around
+                      #'selectrum--fix-dired-read-dir-and-switches)
+          ;; No sharp quote because `read-library-name' is not defined
+          ;; in older Emacs versions.
+          (advice-add 'read-library-name :override
+                      #'selectrum-read-library-name)
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
-          (selectrum--when-compile (fboundp 'set-minibuffer-message)
-            (advice-add #'set-minibuffer-message :after
-                        #'selectrum--fix-set-minibuffer-message)))
+          ;; No sharp quote because `set-minibuffer-message' is not
+          ;; defined in older Emacs versions.
+          (advice-add 'set-minibuffer-message :after
+                      #'selectrum--fix-set-minibuffer-message))
       (when (equal (default-value 'completing-read-function)
                    #'selectrum-completing-read)
         (setq-default completing-read-function
@@ -1026,17 +1035,17 @@ ARGS are standard as in all `:around' advice."
                       selectrum--old-read-file-name-function))
       (advice-remove #'read-directory-name
                      #'selectrum-read-directory-name)
-      (with-eval-after-load 'dired
-        (eval-and-compile
-          (require 'dired))
-        (advice-remove #'dired-read-dir-and-switches
-                       #'selectrum--fix-dired-read-dir-and-switches))
-      (selectrum--when-compile (fboundp 'read-library-name)
-        (advice-remove #'read-library-name #'selectrum-read-library-name))
+      ;; No sharp quote because Dired may not be loaded yet.
+      (advice-remove 'dired-read-dir-and-switches
+                     #'selectrum--fix-dired-read-dir-and-switches)
+      ;; No sharp quote because `read-library-name' is not defined in
+      ;; older Emacs versions.
+      (advice-remove 'read-library-name #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
-      (selectrum--when-compile (fboundp 'set-minibuffer-message)
-        (advice-remove #'set-minibuffer-message
-                       #'selectrum--fix-set-minibuffer-message)))))
+      ;; No sharp quote because `set-minibuffer-message' is not
+      ;; defined in older Emacs versions.
+      (advice-remove 'set-minibuffer-message
+                     #'selectrum--fix-set-minibuffer-message))))
 
 ;;;; Closing remarks
 

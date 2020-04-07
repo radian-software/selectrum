@@ -4,10 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
-### Bugs fixed
-* `selectrum-read` no longer returns nil when no default value was
-given and the empty prompt was submitted. This breaks commands which
-assume an empty string when selecting no value.
+### Enhancements
+* In `read-file-name`, when a default is provided (for example in the
+  `dired-do-rename` command), we actually use it as the initial
+  contents of the minibuffer, which allows you to have convenient
+  access to the default filename when that default file does not exist
+  ([#25]).
+* We now bind `minibuffer-completing-file-name` during
+  `read-file-name`, in conformance with the standard Emacs interface
+  ([#30]).
+
+## Bugs fixed
+* You can now use the undo system in the minibuffer. Previously,
+  trying to do so would break Selectrum ([#31]).
+* Passing a list of symbols to `selectrum-completing-read` works now.
+* Previously, `selectrum-read-buffer` ignored its PREDICATE argument.
+  This has now been fixed ([#32, #33]).
+* Previously, `selectrum-read` would return nil when
+  `selectrum-submit-exact-input` was used on an empty input and no
+  `:default-candidate` was provided. Now the empty string is returned,
+  in accordance with the `completing-read` API ([#34]).
+
+[#25]: https://github.com/raxod502/selectrum/pull/25
+[#30]: https://github.com/raxod502/selectrum/issues/30
+[#31]: https://github.com/raxod502/selectrum/issues/31
+[#32]: https://github.com/raxod502/selectrum/issues/31
+[#33]: https://github.com/raxod502/selectrum/issues/31
+[#34]: https://github.com/raxod502/selectrum/issues/34
 
 ## 1.0 (released 2020-03-23)
 ### Added
