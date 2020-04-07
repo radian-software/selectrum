@@ -18,10 +18,14 @@ The format is based on [Keep a Changelog].
 * You can now use the undo system in the minibuffer. Previously,
   trying to do so would break Selectrum ([#31]).
 * Passing a list of symbols to `selectrum-completing-read` works now.
+* Previously, `selectrum-read-buffer` ignored its PREDICATE argument.
+  This has now been fixed ([#32, #33]).
 
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
+[#32]: https://github.com/raxod502/selectrum/issues/31
+[#33]: https://github.com/raxod502/selectrum/issues/31
 
 ## 1.0 (released 2020-03-23)
 ### Added

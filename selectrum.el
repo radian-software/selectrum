@@ -715,7 +715,10 @@ PREDICATE, see `read-buffer'."
          (selectrum-preprocess-candidates-function #'ignore)
          (selectrum-refine-candidates-function
           (lambda (input _)
-            (let ((candidates (mapcar #'buffer-name (buffer-list))))
+            (let* ((buffers (mapcar #'buffer-name (buffer-list)))
+                   (candidates (if predicate
+                                   (cl-delete-if-not predicate buffers)
+                                 buffers)))
               (if (string-prefix-p " " input)
                   (progn
                     (setq input (substring input 1))
@@ -736,8 +739,10 @@ PREDICATE, see `read-buffer'."
                                  orig-preprocess-function
                                  candidates)))
                 (input . ,input))))))
-    (selectrum-completing-read
-     prompt nil predicate require-match nil nil def)))
+    (selectrum-read
+     prompt nil
+     :default-candidate def
+     :require-match require-match)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
