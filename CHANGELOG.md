@@ -28,8 +28,8 @@ The format is based on [Keep a Changelog].
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
-[#32]: https://github.com/raxod502/selectrum/issues/31
-[#33]: https://github.com/raxod502/selectrum/issues/31
+[#32]: https://github.com/raxod502/selectrum/issues/32
+[#33]: https://github.com/raxod502/selectrum/issues/33
 [#34]: https://github.com/raxod502/selectrum/issues/34
 
 ## 1.0 (released 2020-03-23)
