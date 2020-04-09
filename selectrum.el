@@ -206,6 +206,22 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
+(defcustom selectrum-right-margin-padding 1
+  "The number of spaces to add after right margin text.
+This only takes effect when the
+`selectrum-candidate-display-right-margin' property is presented
+in candidates.
+
+This option is a workaround for 2 problems:
+
+- Some terminals will wrap the last character of a line when it
+  exactly fits.
+
+- Emacs doesn't provide a method to calculate the exact pixel
+  width of a unicode char, so a wide char can cause line
+  wrapping."
+  :type 'integer)
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -363,6 +379,9 @@ Passed to various hook functions.")
 (defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
+(defvar selectrum--right-margin-overlays nil
+  "A list of overlays used to display right margin text.")
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -420,6 +439,8 @@ Passed to various hook functions.")
                    0)))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
+      (while selectrum--right-margin-overlays
+        (delete-overlay (pop selectrum--right-margin-overlays)))
       (setq input (or selectrum--visual-input input))
       (let ((first-index-displayed
              (if selectrum--current-candidate-index
@@ -459,25 +480,41 @@ Passed to various hook functions.")
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))
           (let ((index 0))
-            (dolist (candidate (mapcar
-                                (lambda (candidate)
-                                  (concat
-                                   (get-text-property
-                                    0 'selectrum-candidate-display-prefix
-                                    candidate)
-                                   candidate
-                                   (get-text-property
-                                    0 'selectrum-candidate-display-suffix
-                                    candidate)))
-                                (funcall
-                                 selectrum-highlight-candidates-function
-                                 input
-                                 displayed-candidates)))
-              (when (equal index highlighted-index)
-                (setq candidate (propertize
-                                 candidate
-                                 'face 'selectrum-current-candidate)))
-              (insert "\n" candidate)
+            (dolist (candidate (funcall
+                                selectrum-highlight-candidates-function
+                                input
+                                displayed-candidates))
+              (let ((displayed-candidate
+                     (concat
+                      (get-text-property
+                       0 'selectrum-candidate-display-prefix
+                       candidate)
+                      candidate
+                      (get-text-property
+                       0 'selectrum-candidate-display-suffix
+                       candidate)))
+                    (right-margin (get-text-property
+                                   0 'selectrum-candidate-display-right-margin
+                                   candidate)))
+                (when (equal index highlighted-index)
+                  (setq displayed-candidate
+                        (propertize
+                         displayed-candidate
+                         'face 'selectrum-current-candidate)))
+                (insert "\n" displayed-candidate)
+                (when right-margin
+                  (let ((ol (make-overlay (point) (point))))
+                    (overlay-put
+                     ol 'after-string
+                     (concat
+                      (propertize
+                       " "
+                       'display
+                       `(space :align-to (- right-fringe
+                                            ,(string-width right-margin)
+                                            selectrum-right-margin-padding)))
+                      right-margin))
+                    (push ol selectrum--right-margin-overlays))))
               (cl-incf index))))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
@@ -493,7 +530,9 @@ Passed to various hook functions.")
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
   (when (overlayp selectrum--count-overlay)
     (delete-overlay selectrum--count-overlay))
-  (setq selectrum--count-overlay nil))
+  (setq selectrum--count-overlay nil)
+  (while selectrum--right-margin-overlays
+    (delete-overlay (pop selectrum--right-margin-overlays))))
 
 (cl-defun selectrum--minibuffer-setup-hook
     (candidates &key default-candidate initial-input require-match)

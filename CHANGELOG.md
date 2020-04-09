@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog].
 * We now bind `minibuffer-completing-file-name` during
   `read-file-name`, in conformance with the standard Emacs interface
   ([#30]).
+* A new text property `selectrum-candidate-display-right-margin` is
+  added, to display a string at the right margin after a candidate
+  ([#44]).
 
 ## Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -50,6 +53,7 @@ The format is based on [Keep a Changelog].
 [#32]: https://github.com/raxod502/selectrum/issues/32
 [#33]: https://github.com/raxod502/selectrum/pull/33
 [#34]: https://github.com/raxod502/selectrum/pull/34
+[#44]: https://github.com/raxod502/selectrum/pull/44
 
 ## 1.0 (released 2020-03-23)
 ### Added
