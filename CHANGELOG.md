@@ -32,7 +32,7 @@ The format is based on [Keep a Changelog].
   `read-file-name`, in conformance with the standard Emacs interface
   ([#30]).
 
-## Bugs fixed
+### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
   trying to do so would break Selectrum ([#31]).
 * Passing a list of symbols to `selectrum-completing-read` works now.
