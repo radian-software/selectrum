@@ -8,7 +8,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 <!-- toc -->
 
 - [What is it?](#what-is-it)
-- [Getting started](#getting-started)
+- [Installation](#installation)
+- [Usage](#usage)
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
@@ -63,16 +64,21 @@ the need for any configuration:
 <p align="center"> <img src="images/libraries.png" alt="Finding
 libraries, with load-path shadows" height="200"/> </p>
 
-## Getting started
+## Installation
 
-Selectrum is not currently listed on MELPA. Therefore, the best way to
-install it is with
+Selectrum is [available as a package on
+MELPA](https://melpa.org/#/selectrum). The easiest way to install this
+package is using
 [`straight.el`](https://github.com/raxod502/straight.el):
 
 ```elisp
-(straight-use-package
-  '(selectrum :host github :repo "raxod502/selectrum"))
+(straight-use-package 'selectrum)
 ```
+
+However, you may install using any other package manager if you
+prefer.
+
+## Usage
 
 To enable Selectrum, simply add to your init-file:
 
@@ -84,14 +90,10 @@ Now all of your favorite Emacs commands will automatically use
 Selectrum. However, the default sorting and filtering is very basic.
 It is recommended to use
 [`prescient.el`](https://github.com/raxod502/prescient.el) to enable
-more intelligent sorting and filtering. Simply add this to your
-init-file:
+more intelligent sorting and filtering. Simply install the
+`selectrum-prescient` package from MELPA and add to your init-file:
 
 ```elisp
-(straight-use-package
-  '(selectrum-prescient :host github :repo "raxod502/prescient.el"
-                        :files ("selectrum-prescient.el")))
-
 ;; to make sorting and filtering more intelligent
 (selectrum-prescient-mode +1)
 
