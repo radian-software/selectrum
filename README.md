@@ -344,6 +344,14 @@ which may be applied to candidates using `propertize`:
   `find-file`, the canonical representation of each candidate is its
   absolute path on the filesystem.
 
+Besides, we have:
+
+* `selectrum-candidate-display-right-margin`: if this property is
+  presented, its value is displayed at the right margin after the
+  candidate. Currently Selectrum doesn't make use of this property. It
+  can be used to display supplementary information in user-defined
+  commands.
+
 Note that sorting, filtering, and highlighting is done on the standard
 values of candidates, before any of these text properties are handled.
 
