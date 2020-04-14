@@ -40,7 +40,7 @@ The format is based on [Keep a Changelog].
   trying to do so would break Selectrum ([#31]).
 * Passing a list of symbols to `selectrum-completing-read` works now.
 * Previously, `selectrum-read-buffer` ignored its PREDICATE argument.
-  This has now been fixed ([#32, #33]).
+  This has now been fixed ([#32], [#33]).
 * Previously, `selectrum-read` would return nil when
   `selectrum-submit-exact-input` was used on an empty input and no
   `:default-candidate` was provided. Now the empty string is returned,
