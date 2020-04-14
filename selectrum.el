@@ -168,7 +168,8 @@ strings."
     ([remap next-line]                        . selectrum-next-candidate)
     ([remap previous-line-or-history-element] . selectrum-previous-candidate)
     ([remap next-line-or-history-element]     . selectrum-next-candidate)
-    ([remap exit-minibuffer]                  . selectrum-select-current-candidate)
+    ([remap exit-minibuffer]
+     . selectrum-select-current-candidate)
     ([remap scroll-down-command]              . selectrum-previous-page)
     ([remap scroll-up-command]                . selectrum-next-page)
     ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
@@ -178,7 +179,8 @@ strings."
     ([remap end-of-buffer]                    . selectrum-goto-end)
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
     ("C-j"                                    . selectrum-submit-exact-input)
-    ("TAB"                                    . selectrum-insert-current-candidate))
+    ("TAB"
+     . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings or raw key events
