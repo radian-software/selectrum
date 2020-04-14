@@ -162,7 +162,7 @@ strings."
   '(([remap keyboard-quit]                    . abort-recursive-edit)
     ;; This is bound in `minibuffer-local-map' by loading `delsel', so
     ;; we have to account for it too.
-    ([remap minibuffer-keyboard-quit]         . ctrlf-cancel)
+    ([remap minibuffer-keyboard-quit]         . abort-recursive-edit)
     ;; Override both the arrow keys and C-n/C-p.
     ([remap previous-line]                    . selectrum-previous-candidate)
     ([remap next-line]                        . selectrum-next-candidate)
@@ -178,6 +178,10 @@ strings."
     ([remap beginning-of-buffer]              . selectrum-goto-beginning)
     ([remap end-of-buffer]                    . selectrum-goto-end)
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
+    ([remap previous-history-element]
+     . selectrum-previous-history-element)
+    ([remap next-history-element]
+     . selectrum-next-history-element)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("TAB"
      . selectrum-insert-current-candidate))
@@ -649,7 +653,9 @@ Or if there is an active region, save the region to kill ring."
    '(face selectrum-current-candidate) value)
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (insert value))
+    (insert (or (get-text-property 0 'selectrum-candidate-full
+                                   value)
+                value)))
   (exit-minibuffer))
 
 (defun selectrum-select-current-candidate ()
@@ -695,11 +701,32 @@ ignores the currently selected candidate, if one exists."
        'selectrum-candidate-inserted-hook
        candidate selectrum--read-args))))
 
+(defun selectrum-next-history-element (arg)
+  "Forward to `next-history-element'.
+ARG has same meaning as in `next-history-element'."
+  (interactive "p")
+  (save-restriction
+    (narrow-to-region selectrum--start-of-input-marker
+                      selectrum--end-of-input-marker)
+    (let ((inhibit-read-only t))
+      (next-history-element arg))))
+
+(defun selectrum-previous-history-element (arg)
+  "Forward to `previous-history-element'.
+ARG has same meaning as in `previous-history-element'."
+  (interactive "p")
+  (save-restriction
+    (narrow-to-region selectrum--start-of-input-marker
+                      selectrum--end-of-input-marker)
+    (let ((inhibit-read-only t))
+      (previous-history-element arg))))
+
 ;;;; Main entry points
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
-            default-candidate initial-input require-match)
+            default-candidate initial-input require-match
+            (history 'minibuffer-history))
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -715,12 +742,13 @@ return an alist with the following keys:
   highlighting (see `selectrum-highlight-candidates-function').
 
 PROMPT should generally end in a colon and space. Additional
-keyword ARGS are accepted.  DEFAULT-CANDIDATE, if provided, is
+keyword ARGS are accepted. DEFAULT-CANDIDATE, if provided, is
 sorted first in the list if it's present. INITIAL-INPUT, if
 provided, is inserted into the user input area initially (with
 point at the end). REQUIRE-MATCH, if non-nil, means the user must
 select one of the listed candidates (so, for example,
-\\[selectrum-submit-exact-input] has no effect)."
+\\[selectrum-submit-exact-input] has no effect). HISTORY is the
+`minibuffer-history-variable' to use."
   (setq selectrum--read-args (cl-list* prompt candidates args))
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap minibuffer-local-map)
@@ -742,13 +770,12 @@ select one of the listed candidates (so, for example,
       (let* ((minibuffer-allow-text-properties t)
              ;; Not currently supported as all of our state is global.
              (enable-recursive-minibuffers nil)
-             (selected (read-from-minibuffer prompt nil keymap nil t))
-             (full
-              (or (get-text-property 0 'selectrum-candidate-full selected)
-                  selected)))
-        (prog1 (if (string-empty-p full)
+             (minibuffer-history-variable history)
+             (selected (read-from-minibuffer
+                        prompt nil keymap nil minibuffer-history-variable)))
+        (prog1 (if (string-empty-p selected)
                    (or default-candidate "")
-                 full)
+                 selected)
           (apply
            #'run-hook-with-args
            'selectrum-candidate-selected-hook
@@ -769,7 +796,8 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    ;; deprecated in `completing-read' and doesn't work well with the
    ;; Selectrum paradigm except in specific cases that we control.
    :default-candidate (or (car-safe def) def)
-   :require-match require-match))
+   :require-match require-match
+   :history hist))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -812,7 +840,8 @@ PREDICATE, see `read-buffer'."
     (selectrum-read
      prompt candidates
      :default-candidate def
-     :require-match require-match)))
+     :require-match require-match
+     :history 'buffer-name-history)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -870,7 +899,8 @@ PREDICATE, see `read-file-name'."
      :initial-input (if-let ((default (or initial default-filename)))
                         (expand-file-name default dir)
                       dir)
-     :require-match mustmatch)))
+     :require-match mustmatch
+     :history 'file-name-history)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
