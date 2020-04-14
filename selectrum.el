@@ -162,7 +162,7 @@ strings."
   '(([remap keyboard-quit]                    . abort-recursive-edit)
     ;; This is bound in `minibuffer-local-map' by loading `delsel', so
     ;; we have to account for it too.
-    ([remap minibuffer-keyboard-quit]         . ctrlf-cancel)
+    ([remap minibuffer-keyboard-quit]         . abort-recursive-edit)
     ;; Override both the arrow keys and C-n/C-p.
     ([remap previous-line]                    . selectrum-previous-candidate)
     ([remap next-line]                        . selectrum-next-candidate)
