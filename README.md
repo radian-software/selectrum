@@ -522,11 +522,24 @@ the desired interaction model in the first place. Selectrum, on the
 other hand, offers a well-tuned and snappy vertical completion
 interface that is robust and works out of the box.
 
+There is a package which takes care of some of the manual labor of
+configuring Icomplete, called
+[`icomplete-vertical`](https://github.com/oantolin/icomplete-vertical).
+
 It is worth noting the new [Fido
 mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
 which will be included in Emacs 27. It is basically a variation of
 Icomplete that behaves more like Ido. As such, Fido mode does not
 offer solutions to the problems outlined in the above sections.
+
+To be transparent, there are a few standard Emacs features which are
+not implemented in Selectrum (mostly because I was unaware they
+existed) but which do work in Icomplete. These include the
+`resize-mini-windows` setting (see
+[#35](https://github.com/raxod502/selectrum/issues/35)), recursive
+minibuffers, and many of the `completion-*` user options such as
+`completion-ignore-case`. I do not see any design reason these
+features cannot all be incorporated into Selectrum eventually.
 
 ### Why not Icicles?
 

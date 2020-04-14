@@ -159,17 +159,28 @@ strings."
   :type 'function)
 
 (defcustom selectrum-minibuffer-bindings
-  '(([remap keyboard-quit]       . abort-recursive-edit)
-    ([remap previous-line]       . selectrum-previous-candidate)
-    ([remap next-line]           . selectrum-next-candidate)
-    ([remap newline]             . selectrum-select-current-candidate)
-    ([remap scroll-down-command] . selectrum-previous-page)
-    ([remap scroll-up-command]   . selectrum-next-page)
-    ([remap beginning-of-buffer] . selectrum-goto-beginning)
-    ([remap end-of-buffer]       . selectrum-goto-end)
-    ([remap kill-ring-save]      . selectrum-kill-ring-save)
-    ("C-j"                       . selectrum-submit-exact-input)
-    ("TAB"                       . selectrum-insert-current-candidate))
+  '(([remap keyboard-quit]                    . abort-recursive-edit)
+    ;; This is bound in `minibuffer-local-map' by loading `delsel', so
+    ;; we have to account for it too.
+    ([remap minibuffer-keyboard-quit]         . ctrlf-cancel)
+    ;; Override both the arrow keys and C-n/C-p.
+    ([remap previous-line]                    . selectrum-previous-candidate)
+    ([remap next-line]                        . selectrum-next-candidate)
+    ([remap previous-line-or-history-element] . selectrum-previous-candidate)
+    ([remap next-line-or-history-element]     . selectrum-next-candidate)
+    ([remap exit-minibuffer]
+     . selectrum-select-current-candidate)
+    ([remap scroll-down-command]              . selectrum-previous-page)
+    ([remap scroll-up-command]                . selectrum-next-page)
+    ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
+    ;; `beginning-of-buffer' for Emacs <=26.
+    ([remap minibuffer-beginning-of-buffer]   . selectrum-goto-beginning)
+    ([remap beginning-of-buffer]              . selectrum-goto-beginning)
+    ([remap end-of-buffer]                    . selectrum-goto-end)
+    ([remap kill-ring-save]                   . selectrum-kill-ring-save)
+    ("C-j"                                    . selectrum-submit-exact-input)
+    ("TAB"
+     . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
 Rather it is an alist that is converted into a keymap just before
 entering the minibuffer. The keys are strings or raw key events
@@ -713,6 +724,7 @@ select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect)."
   (setq selectrum--read-args (cl-list* prompt candidates args))
   (let ((keymap (make-sparse-keymap)))
+    (set-keymap-parent keymap minibuffer-local-map)
     ;; Use `map-apply' instead of `map-do' as the latter is not
     ;; available in Emacs 25.
     (map-apply
