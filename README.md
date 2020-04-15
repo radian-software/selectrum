@@ -14,6 +14,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
   * [Customization](#customization)
+  * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
 - [Developer guide](#developer-guide)
   * [Usage of Selectrum](#usage-of-selectrum)
