@@ -771,8 +771,7 @@ select one of the listed candidates (so, for example,
              ;; Not currently supported as all of our state is global.
              (enable-recursive-minibuffers nil)
              (minibuffer-history-variable history)
-             (selected (read-from-minibuffer
-                        prompt nil keymap nil minibuffer-history-variable)))
+             (selected (read-from-minibuffer prompt nil keymap nil history)))
         (prog1 (if (string-empty-p selected)
                    (or default-candidate "")
                  selected)
