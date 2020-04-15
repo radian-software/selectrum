@@ -240,7 +240,7 @@ Ivy, and copied them to be used for Selectrum as well:
 ### Complementary extensions
 
 - You can display completions in a child frame using
-[emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
+  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
 
 - Imenu completion can be improved by using
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the tree based
