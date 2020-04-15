@@ -34,6 +34,8 @@ The format is based on [Keep a Changelog].
 * A new text property `selectrum-candidate-display-right-margin` is
   added, to display a string at the right margin after a candidate
   ([#44]).
+* You can now access standard minibuffer history using `M-p` and `M-n`
+  ([#4], [#38]).
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -49,6 +51,7 @@ The format is based on [Keep a Changelog].
   `minibuffer-local-map`, so standard minibuffer bindings should still
   work ([raxod502/ctrlf#41]).
 
+[#4]: https://github.com/raxod502/selectrum/issues/4
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
 [#30]: https://github.com/raxod502/selectrum/issues/30
@@ -56,6 +59,7 @@ The format is based on [Keep a Changelog].
 [#32]: https://github.com/raxod502/selectrum/issues/32
 [#33]: https://github.com/raxod502/selectrum/pull/33
 [#34]: https://github.com/raxod502/selectrum/pull/34
+[#38]: https://github.com/raxod502/selectrum/pull/38
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
