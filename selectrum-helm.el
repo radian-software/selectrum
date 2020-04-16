@@ -31,6 +31,8 @@
 ONLY-ONE non-nil means don't add section headers."
   (setq the-source source)
   (let-alist source
+    (when .init
+      (funcall .init))
     (let ((cands (cond
                   ((functionp .candidates)
                    (funcall .candidates))
@@ -61,7 +63,9 @@ ONLY-ONE non-nil means don't add section headers."
                                 (when (string-suffix-p ":" name)
                                   (setq name
                                         (substring name 0 (1- (length name)))))
-                                (format " [%s]" name)))))
+                                (format " [%s]" name)))
+                            'selectrum-helm-source
+                            .name))
                      cand)
                    cands))
       cands)))
@@ -77,6 +81,16 @@ ONLY-ONE non-nil means don't add section headers."
                             (selectrum-helm--normalize-source
                              source (= 1 (length sources))))
                           sources)))
+
+(defun selectrum-helm--get-current-source ()
+  "Return the Helm source for the current Selectrum candidate.
+Return nil when there are no candidates. This is an `:override'
+advice for `helm-get-current-source'."
+  (when selectrum--current-candidate-index
+    (get-text-property
+     0 'selectrum-helm-source
+     (nth selectrum--current-candidate-index
+          selectrum--refined-candidates))))
 
 (defun selectrum-helm--adapter (&rest plist)
   "Receive arguments to `helm' and invoke `selectrum-read' instead.
@@ -99,8 +113,13 @@ For PLIST, see `helm'. This is an `:override' advice for `helm'."
   "Minor mode to use Selectrum to implement Helm commands."
   :global t
   (if selectrum-helm-mode
-      (advice-add #'helm :override #'selectrum-helm--adapter)
-    (advice-remove #'helm #'selectrum-helm--adapter)))
+      (progn
+        (advice-add #'helm :override #'selectrum-helm--adapter)
+        (advice-add #'helm-get-current-source :override
+                    #'selectrum-helm--get-current-source))
+    (advice-remove #'helm #'selectrum-helm--adapter)
+    (advice-remove #'helm-get-current-source
+                   #'selectrum-helm--get-current-source)))
 
 ;;;; Closing remarks
 
