@@ -13,6 +13,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
+  * [Additional features](#additional-features)
   * [Customization](#customization)
   * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
