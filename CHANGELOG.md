@@ -22,6 +22,12 @@ The format is based on [Keep a Changelog].
 
   See [#27].
 
+### Features
+* You can resume the last completion session using the
+  `selectrum-repeat` command. (Note that you must bind this command to
+  a key sequence in order to use it.) This command implements similar
+  functionality to `ivy-resume`. See [#39].
+
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
@@ -60,6 +66,7 @@ The format is based on [Keep a Changelog].
 [#33]: https://github.com/raxod502/selectrum/pull/33
 [#34]: https://github.com/raxod502/selectrum/pull/34
 [#38]: https://github.com/raxod502/selectrum/pull/38
+[#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 

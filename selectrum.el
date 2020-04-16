@@ -397,6 +397,16 @@ Passed to various hook functions.")
 (defvar selectrum--right-margin-overlays nil
   "A list of overlays used to display right margin text.")
 
+(defvar selectrum--last-command nil
+  "Name of last interactive command that invoked Selectrum.")
+
+(defvar selectrum--last-prefix-arg nil
+  "Prefix argument given to last interactive command that invoked Selectrum.")
+
+(defvar selectrum--repeat nil
+  "Non-nil means try to restore the minibuffer state during setup.
+This is used to implement `selectrum-repeat'.")
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -449,9 +459,16 @@ Passed to various hook functions.")
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input selectrum--refined-candidates))
-        (setq selectrum--current-candidate-index
-              (and (> (length selectrum--refined-candidates) 0)
-                   0)))
+        (if selectrum--repeat
+            (progn
+              (setq selectrum--current-candidate-index
+                    (and (> (length selectrum--refined-candidates) 0)
+                         (min (or selectrum--current-candidate-index 0)
+                              (1- (length selectrum--refined-candidates)))))
+              (setq selectrum--repeat nil))
+          (setq selectrum--current-candidate-index
+                (and (> (length selectrum--refined-candidates) 0)
+                     0))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
       (while selectrum--right-margin-overlays
@@ -562,8 +579,10 @@ provided, rather than providing one of their own."
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq selectrum--match-required-p require-match)
   (setq selectrum--start-of-input-marker (point-marker))
-  (when initial-input
-    (insert initial-input))
+  (if selectrum--repeat
+      (insert selectrum--previous-input-string)
+    (when initial-input
+      (insert initial-input)))
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
   (setq selectrum--preprocessed-candidates
@@ -750,6 +769,9 @@ select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
 `minibuffer-history-variable' to use."
   (setq selectrum--read-args (cl-list* prompt candidates args))
+  (unless selectrum--repeat
+    (setq selectrum--last-command this-command)
+    (setq selectrum--last-prefix-arg current-prefix-arg))
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap minibuffer-local-map)
     ;; Use `map-apply' instead of `map-do' as the latter is not
@@ -1018,6 +1040,15 @@ shadows correctly."
              (cl-incf num-components)))))
      table)
     (selectrum-read "Library name: " lst :require-match t)))
+
+(defun selectrum-repeat ()
+  "Repeat the last command that used Selectrum, and try to restore state."
+  (interactive)
+  (unless selectrum--last-command
+    (user-error "No Selectrum command has been run yet"))
+  (let ((selectrum--repeat t))
+    (setq current-prefix-arg selectrum--last-prefix-arg)
+    (call-interactively selectrum--last-command)))
 
 ;;;###autoload
 (defun selectrum--fix-set-minibuffer-message (&rest _)

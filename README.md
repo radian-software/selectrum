@@ -201,6 +201,19 @@ because Emacs includes a system for this by default. The command `M-x
 toggle-case-fold-search` toggles globally between case-sensitive
 matching and case-insensitive matching.
 
+### Additional features
+
+* You can repeat the last command that invoked Selectrum, restoring
+  your user input and selected candidate, using `selectrum-repeat`.
+  You must bind this command to a key sequence in order to use it,
+  since running `selectrum-repeat` from `M-x` will dutifully repeat
+  the last command that invoked Selectrum, which was `M-x`. For
+  example:
+
+  ```elisp
+  (global-set-key "C-x C-z" #'selectrum-repeat)
+  ```
+
 ### Customization
 
 * By default, ten candidates are shown in the minibuffer at any given
