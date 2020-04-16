@@ -147,6 +147,7 @@ editing bindings. So, for example:
 * To delete your current input, just use `C-a C-k`.
 * To go up a directory, use `M-DEL` to delete it in the minibuffer.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
+* Minibuffer history navigation works as usual with `M-p` and `M-n`.
 
 ### Sorting and filtering
 
