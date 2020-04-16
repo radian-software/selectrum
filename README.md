@@ -14,6 +14,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
   * [Customization](#customization)
+  * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
 - [Developer guide](#developer-guide)
   * [Usage of Selectrum](#usage-of-selectrum)
@@ -237,6 +238,15 @@ Ivy, and copied them to be used for Selectrum as well:
 
 (enable-theme 'zerodark)
 ```
+
+### Complementary extensions
+
+* You can display completions in a child frame using
+  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
+
+* Imenu completion can be improved by using
+  [flimenu](https://github.com/IvanMalison/flimenu) which turns the
+  tree based item navigation into a flat completion menu.
 
 ### But what is it doing to my Emacs??
 
