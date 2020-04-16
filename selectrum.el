@@ -887,7 +887,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let ((coll (lambda (input)
                 (let* (;; full path of input dir (might include shadowed parts)
                        (dir (or (file-name-directory input) ""))
-                       ;; the input used for matching current dir entries
+                       ;; The input used for matching current dir entries.
                        (ematch (file-name-nondirectory input))
                        ;; Adjust original collection for Selectrum.
                        (cands (funcall collection dir
