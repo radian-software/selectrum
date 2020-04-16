@@ -885,7 +885,7 @@ PREDICATE, see `read-file-name'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll (lambda (input)
-                (let* (;; full path of input dir (might include shadowed parts)
+                (let* (;; Full path of input dir (might include shadowed parts).
                        (dir (or (file-name-directory input) ""))
                        ;; The input used for matching current dir entries.
                        (ematch (file-name-nondirectory input))
