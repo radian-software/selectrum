@@ -890,18 +890,22 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                        ;; The input used for matching current dir entries.
                        (ematch (file-name-nondirectory input))
                        ;; Adjust original collection for Selectrum.
-                       (cands (funcall collection dir
-                                       (lambda (i)
-                                         (when (and (or (not predicate)
-                                                        (funcall predicate i))
-                                                    (not (member
-                                                          i '("./" "../"))))
-                                           (prog1 t
-                                             (add-text-properties
-                                              0 (length i)
-                                              `(selectrum-candidate-full
-                                                ,(concat dir i)) i))))
-                                       t)))
+                       (cands (condition-case _
+                                  (funcall collection dir
+                                           (lambda (i)
+                                             (when (and (or (not predicate)
+                                                            (funcall predicate i))
+                                                        (not (member
+                                                              i '("./" "../"))))
+                                               (prog1 t
+                                                 (add-text-properties
+                                                  0 (length i)
+                                                  `(selectrum-candidate-full
+                                                    ,(concat dir i)) i))))
+                                           t)
+                                ;; May happen in case user quits out
+                                ;; of a TRAMP prompt.
+                                (quit))))
                   `((input . ,ematch)
                     (candidates . ,cands))))))
     (selectrum-read
