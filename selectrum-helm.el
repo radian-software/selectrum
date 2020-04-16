@@ -22,9 +22,15 @@
 ;; variable declarations in each section, run M-x occur with the
 ;; following query: ^;;;;* \|^(
 
+(require 'cl-lib)
 (require 'let-alist)
 (require 'map)
 (require 'subr-x)
+
+(require 'selectrum)
+
+(declare-function helm "helm")
+(declare-function helm-get-current-source "helm")
 
 (cl-defun selectrum-helm--normalize-source (source &optional only-one)
   "Normalize single Helm SOURCE alist.
@@ -86,11 +92,13 @@ ONLY-ONE non-nil means don't add section headers."
 For PLIST, see `helm'. This is an `:override' advice for `helm'."
   (let* ((result (selectrum-read
                   (or (plist-get plist :prompt) "pattern: ")
-                  (selectrum-helm--normalize-sources (plist-get plist :sources))
+                  (selectrum-helm--normalize-sources
+                   (plist-get plist :sources))
                   :default-candidate (plist-get plist :preselect)
                   :initial-input (plist-get plist :input)
                   :history (plist-get plist :history)))
-         (cand (or (get-text-property 0 'selectrum-helm-return result) result)))
+         (cand (or (get-text-property 0 'selectrum-helm-return result)
+                   result)))
     (when-let ((action (get-text-property 0 'selectrum-helm-action result)))
       (if (functionp action)
           (funcall action cand)
