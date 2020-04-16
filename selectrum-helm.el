@@ -26,8 +26,10 @@
 (require 'map)
 (require 'subr-x)
 
-(cl-defun selectrum-helm--normalize-source (source)
-  "Normalize single Helm SOURCE alist."
+(cl-defun selectrum-helm--normalize-source (source &optional only-one)
+  "Normalize single Helm SOURCE alist.
+ONLY-ONE non-nil means don't add section headers."
+  (setq the-source source)
   (let-alist source
     (let ((cands (cond
                   ((functionp .candidates)
@@ -36,9 +38,9 @@
                    (symbol-value .candidates))
                   (t
                    .candidates))))
-      (dolist (func (if (listp .candidate-transformer)
-                        .candidate-transformer
-                      (list .candidate-transformer)))
+      (dolist (func (if (functionp .candidate-transformer)
+                        (list .candidate-transformer)
+                      .candidate-transformer))
         (setq cands (funcall func cands)))
       (setq cands (mapcar
                    (lambda (cand)
@@ -54,11 +56,12 @@
                             'selectrum-helm-action
                             .action
                             'selectrum-candidate-display-suffix
-                            (when-let ((name .name))
-                              (when (string-suffix-p ":" name)
-                                (setq name
-                                      (substring name 0 (1- (length name)))))
-                              (format " [%s]" name))))
+                            (unless only-one
+                              (when-let ((name .name))
+                                (when (string-suffix-p ":" name)
+                                  (setq name
+                                        (substring name 0 (1- (length name)))))
+                                (format " [%s]" name)))))
                      cand)
                    cands))
       cands)))
@@ -70,13 +73,16 @@
     (setq sources (symbol-value sources)))
    ((symbolp (car-safe (car-safe sources)))
     (setq sources (list sources))))
-  (apply #'append (mapcar #'selectrum-helm--normalize-source sources)))
+  (apply #'append (mapcar (lambda (source)
+                            (selectrum-helm--normalize-source
+                             source (= 1 (length sources))))
+                          sources)))
 
 (defun selectrum-helm--adapter (&rest plist)
   "Receive arguments to `helm' and invoke `selectrum-read' instead.
 For PLIST, see `helm'. This is an `:override' advice for `helm'."
   (let* ((result (selectrum-read
-                  (or (plist-get plist :prompt) helm--prompt)
+                  (or (plist-get plist :prompt) "pattern: ")
                   (selectrum-helm--normalize-sources (plist-get plist :sources))
                   :default-candidate (plist-get plist :preselect)
                   :initial-input (plist-get plist :input)
