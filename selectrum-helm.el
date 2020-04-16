@@ -40,20 +40,27 @@
                         .candidate-transformer
                       (list .candidate-transformer)))
         (setq cands (funcall func cands)))
-      (setq cands (mapcar (lambda (cand)
-                            (when (consp cand)
-                              (setq cand
-                                    (propertize
-                                     (car cand)
-                                     'selectrum-helm-return
-                                     (cdr cand))))
-                            (setq cand
-                                  (propertize
-                                   cand
-                                   'selectrum-helm-action
-                                   .action))
-                            cand)
-                          cands))
+      (setq cands (mapcar
+                   (lambda (cand)
+                     (when (consp cand)
+                       (setq cand
+                             (propertize
+                              (car cand)
+                              'selectrum-helm-return
+                              (cdr cand))))
+                     (setq cand
+                           (propertize
+                            cand
+                            'selectrum-helm-action
+                            .action
+                            'selectrum-candidate-display-suffix
+                            (when-let ((name .name))
+                              (when (string-suffix-p ":" name)
+                                (setq name
+                                      (substring name 0 (1- (length name)))))
+                              (format " [%s]" name))))
+                     cand)
+                   cands))
       cands)))
 
 (cl-defun selectrum-helm--normalize-sources (sources)
