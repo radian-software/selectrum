@@ -170,10 +170,10 @@ section for how to do this.) With `prescient.el`:
   algorithm turns out to do very well in practice while being fast and
   not very magical.
 * Your input is split on spaces into subqueries, each of which must
-  match as either a substring or an initialism (e.g. `ffap` matches
-  `find-file-at-point`) in order for a candidate to be included.
-  Again, this algorithm isn't optimal, but it does very well in
-  practice given its simplicity and speed.
+  match as either a substring, a regexp, or an initialism (e.g. `ffap`
+  matches `find-file-at-point`) in order for a candidate to be
+  included. Again, this algorithm isn't optimal, but it does very well
+  in practice given its simplicity and speed.
 * The part of each candidate that matched your input is highlighted,
   with the initials of an initialism highlighted in a second color.
 
