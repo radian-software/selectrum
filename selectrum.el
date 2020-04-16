@@ -873,55 +873,43 @@ PREDICATE, see `read-buffer'."
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let* ((minibuffer-completing-file-name t)
-         (dir (file-name-as-directory
-               (expand-file-name (or dir default-directory))))
-         (candidates
-          (lambda (input)
-            (let* ((new-input (file-name-nondirectory input))
-                   (dir (or (file-name-directory input) dir))
-                   (entries (selectrum--map-destructive
-                             (lambda (cell)
-                               (let* ((name (car cell))
-                                      (type (nth 0 (cdr cell)))
-                                      ;; Check if directory (fast) or
-                                      ;; symlink to directory
-                                      ;; (slower).
-                                      (isdir (or (eq t type)
-                                                 (and (stringp type)
-                                                      (file-directory-p
-                                                       (concat dir name))))))
-                                 (propertize
-                                  name
-                                  'selectrum-candidate-display-suffix
-                                  (when isdir "/")
-                                  'selectrum-candidate-full
-                                  (concat dir name (when isdir "/")))))
-                             (cl-delete-if
-                              (lambda (cell)
-                                (and predicate
-                                     (not (funcall
-                                           predicate
-                                           (concat dir (car cell))))))
-                              (condition-case _
-                                  (directory-files-and-attributes
-                                   dir nil "^[^.]\\|^.[^.]" 'nosort)
-                                (file-error)
-                                ;; May happen in case user quits out
-                                ;; of a TRAMP prompt.
-                                (quit))))))
-              `((candidates . ,entries)
-                (input . ,new-input))))))
+  (let ((completing-read-function #'selectrum--completing-read-file-name))
+    (read-file-name-default
+     prompt dir default-filename mustmatch initial predicate)))
+
+(defun selectrum--completing-read-file-name
+    (prompt collection &optional
+            predicate require-match initial-input
+            hist def _inherit-input-method)
+  "Selectrums completing read function for `read-file-name-default'.
+For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
+            HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
+  (let ((coll (lambda (input)
+                (let* (;; full path of input dir (might include shadowed parts)
+                       (dir (or (file-name-directory input) ""))
+                       ;; the input used for matching current dir entries
+                       (ematch (file-name-nondirectory input))
+                       ;; adjust original collection for selectrum
+                       (cands (funcall collection dir
+                                       (lambda (i)
+                                         (when (and (or (not predicate)
+                                                        (funcall predicate i))
+                                                    (not (member
+                                                          i '("./" "../"))))
+                                           (prog1 t
+                                             (add-text-properties
+                                              0 (length i)
+                                              `(selectrum-candidate-full
+                                                ,(concat dir i)) i))))
+                                       t)))
+                  `((input . ,ematch)
+                    (candidates . ,cands))))))
     (selectrum-read
-     prompt candidates
-     :default-candidate (when-let ((default (or initial default-filename)))
-                          (file-name-nondirectory
-                           (directory-file-name default)))
-     :initial-input (if-let ((default (or initial default-filename)))
-                        (expand-file-name default dir)
-                      dir)
-     :require-match mustmatch
-     :history 'file-name-history)))
+     prompt coll
+     :default-candidate  (or (car-safe def) def)
+     :initial-input (or (car-safe initial-input) initial-input)
+     :history hist
+     :require-match require-match)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
@@ -936,8 +924,7 @@ candidates a bit better (in particular you can immediately press
 directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
 INITIAL, see `read-directory-name'."
   (let ((dir (expand-file-name (or dir default-directory)))
-        (default (or default-dirname initial dir)))
-    (setq default (directory-file-name dir))
+        (default (directory-file-name (or default-dirname initial dir))))
     ;; Elisp way of getting the parent directory. If we get nil, that
     ;; means the default was a relative path with only one component,
     ;; so the parent directory is dir.
@@ -945,7 +932,11 @@ INITIAL, see `read-directory-name'."
                    (directory-file-name default))
                   dir))
     (selectrum-read-file-name
-     prompt dir default mustmatch nil #'file-directory-p)))
+     prompt dir
+     ;; show current dir first
+     (file-name-as-directory
+      (file-name-nondirectory default))
+     mustmatch nil #'file-directory-p)))
 
 ;;;###autoload
 (defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
