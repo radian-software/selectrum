@@ -4,8 +4,8 @@ CMD ?=
 SHELL := bash
 
 # The order is important for compilation.
-for_compile := selectrum.el
-for_checkdoc := selectrum.el
+for_compile := selectrum.el selectrum-helm.el
+for_checkdoc := selectrum.el selectrum-helm.el
 for_checkindent := $(wildcard *.el)
 
 .PHONY: help
