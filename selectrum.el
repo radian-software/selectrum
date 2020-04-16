@@ -884,33 +884,35 @@ PREDICATE, see `read-file-name'."
   "Selectrums completing read function for `read-file-name-default'.
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
-  (let ((coll (lambda (input)
-                (let* (;; Full path of input dir (might include shadowed parts).
-                       (dir (or (file-name-directory input) ""))
-                       ;; The input used for matching current dir entries.
-                       (ematch (file-name-nondirectory input))
-                       ;; Adjust original collection for Selectrum.
-                       (cands (condition-case _
-                                  (funcall collection dir
-                                           (lambda (i)
-                                             (when (and (or (not predicate)
-                                                            (funcall predicate i))
-                                                        (not (member
-                                                              i '("./" "../"))))
-                                               (prog1 t
-                                                 (add-text-properties
-                                                  0 (length i)
-                                                  `(selectrum-candidate-full
-                                                    ,(concat dir i)) i))))
-                                           t)
-                                ;; May happen in case user quits out
-                                ;; of a TRAMP prompt.
-                                (quit))))
-                  `((input . ,ematch)
-                    (candidates . ,cands))))))
+  (let ((coll
+         (lambda (input)
+           (let* (;; Full path of input dir (might include shadowed parts).
+                  (dir (or (file-name-directory input) ""))
+                  ;; The input used for matching current dir entries.
+                  (ematch (file-name-nondirectory input))
+                  ;; Adjust original collection for Selectrum.
+                  (cands
+                   (condition-case _
+                       (funcall collection dir
+                                (lambda (i)
+                                  (when (and (or (not predicate)
+                                                 (funcall predicate i))
+                                             (not (member
+                                                   i '("./" "../"))))
+                                    (prog1 t
+                                      (add-text-properties
+                                       0 (length i)
+                                       `(selectrum-candidate-full
+                                         ,(concat dir i)) i))))
+                                t)
+                     ;; May happen in case user quits out
+                     ;; of a TRAMP prompt.
+                     (quit))))
+             `((input . ,ematch)
+               (candidates . ,cands))))))
     (selectrum-read
      prompt coll
-     :default-candidate  (or (car-safe def) def)
+     :default-candidate (or (car-safe def) def)
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
      :require-match require-match)))
