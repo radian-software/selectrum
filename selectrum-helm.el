@@ -29,7 +29,6 @@
 (cl-defun selectrum-helm--normalize-source (source &optional only-one)
   "Normalize single Helm SOURCE alist.
 ONLY-ONE non-nil means don't add section headers."
-  (setq the-source source)
   (let-alist source
     (when .init
       (funcall .init))
@@ -82,16 +81,6 @@ ONLY-ONE non-nil means don't add section headers."
                              source (= 1 (length sources))))
                           sources)))
 
-(defun selectrum-helm--get-current-source ()
-  "Return the Helm source for the current Selectrum candidate.
-Return nil when there are no candidates. This is an `:override'
-advice for `helm-get-current-source'."
-  (when selectrum--current-candidate-index
-    (get-text-property
-     0 'selectrum-helm-source
-     (nth selectrum--current-candidate-index
-          selectrum--refined-candidates))))
-
 (defun selectrum-helm--adapter (&rest plist)
   "Receive arguments to `helm' and invoke `selectrum-read' instead.
 For PLIST, see `helm'. This is an `:override' advice for `helm'."
@@ -115,11 +104,9 @@ For PLIST, see `helm'. This is an `:override' advice for `helm'."
   (if selectrum-helm-mode
       (progn
         (advice-add #'helm :override #'selectrum-helm--adapter)
-        (advice-add #'helm-get-current-source :override
-                    #'selectrum-helm--get-current-source))
+        (advice-add #'helm-get-current-source :override #'ignore))
     (advice-remove #'helm #'selectrum-helm--adapter)
-    (advice-remove #'helm-get-current-source
-                   #'selectrum-helm--get-current-source)))
+    (advice-remove #'helm-get-current-source #'ignore)))
 
 ;;;; Closing remarks
 
