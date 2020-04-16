@@ -889,7 +889,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                        (dir (or (file-name-directory input) ""))
                        ;; the input used for matching current dir entries
                        (ematch (file-name-nondirectory input))
-                       ;; adjust original collection for selectrum
+                       ;; Adjust original collection for Selectrum.
                        (cands (funcall collection dir
                                        (lambda (i)
                                          (when (and (or (not predicate)
