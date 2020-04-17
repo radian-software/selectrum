@@ -13,6 +13,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
+  * [Additional features](#additional-features)
   * [Customization](#customization)
   * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
@@ -119,7 +120,11 @@ how to fix it.
 * *To navigate to a candidate:* use the standard motion commands
   (`<up>`, `<down>`, `C-v`, `M-v`, `M-<`, `M->`). If you prefer, you
   can use `C-p` and `C-n` instead of the arrow keys.
-* *To accept the currently selected candidate:* type `RET`.
+* *To accept the currently selected candidate:* type `RET`. (With a
+  prefix argument, accept instead the candidate at that point in the
+  list, counting from one. See `selectrum-show-indices`. The value
+  zero means to accept exactly what you've typed, as in the next
+  bullet point.)
 * *To submit what you've typed, even if it's not a candidate:* you can
   use `<up>` or `C-p` to select the user input just like a regular
   candidate, and type `RET` as usual. (Alternatively, you can type
@@ -170,10 +175,10 @@ section for how to do this.) With `prescient.el`:
   algorithm turns out to do very well in practice while being fast and
   not very magical.
 * Your input is split on spaces into subqueries, each of which must
-  match as either a substring or an initialism (e.g. `ffap` matches
-  `find-file-at-point`) in order for a candidate to be included.
-  Again, this algorithm isn't optimal, but it does very well in
-  practice given its simplicity and speed.
+  match as either a substring, a regexp, or an initialism (e.g. `ffap`
+  matches `find-file-at-point`) in order for a candidate to be
+  included. Again, this algorithm isn't optimal, but it does very well
+  in practice given its simplicity and speed.
 * The part of each candidate that matched your input is highlighted,
   with the initials of an initialism highlighted in a second color.
 
@@ -214,6 +219,19 @@ matching and case-insensitive matching.
   (global-set-key "C-x C-z" #'selectrum-repeat)
   ```
 
+* There is experimental support for running Helm commands via the
+  Selectrum interface. The idea is that we install some advices on
+  Helm which translate calls to the Helm API into calls to the
+  Selectrum API. Needless to say, this translation comes at a loss of
+  functionality, since Helm is a behemoth which supports every
+  conceivable kind of completion paradigm while Selectrum is designed
+  to have as few features as possible without seriously compromising
+  user experience. However, this support might allow you to make more
+  convenient use of the extensive Helm ecosystem.
+
+  To use the support, load the `selectrum-helm` library and enable
+  `selectrum-helm-mode`.
+
 ### Customization
 
 * By default, ten candidates are shown in the minibuffer at any given
@@ -229,6 +247,11 @@ matching and case-insensitive matching.
   highlighting schemes (such as `prescient.el`).
 * By default, the total number of matches are shown before the prompt.
   This behavior can be customized using `selectrum-count-style`.
+* You can cause the candidates to be numbered sequentially in the
+  minibuffer by enabling `selectrum-show-indices`. This may be helpful
+  in telling you what prefix argument you should pass to
+  `selectrum-select-current-candidate` in order to select a given
+  candidate.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color

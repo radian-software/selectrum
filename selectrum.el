@@ -221,6 +221,12 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
+(defcustom selectrum-show-indices nil
+  "Non-nil means to number the candidates (starting from 1).
+This allows you to select one directly by providing a prefix
+argument to `selectrum-select-current-candidate'."
+  :type 'boolean)
+
 (defcustom selectrum-right-margin-padding 1
   "The number of spaces to add after right margin text.
 This only takes effect when the
@@ -407,6 +413,9 @@ Passed to various hook functions.")
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
 
+(defvar selectrum--active-p nil
+  "Non-nil means we are in a Selectrum session currently.")
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -530,10 +539,34 @@ This is used to implement `selectrum-repeat'.")
                                    candidate)))
                 (when (equal index highlighted-index)
                   (setq displayed-candidate
-                        (propertize
-                         displayed-candidate
-                         'face 'selectrum-current-candidate)))
-                (insert "\n" displayed-candidate)
+                        (copy-sequence displayed-candidate))
+                  ;; Use `add-face-text-property' to avoid trampling
+                  ;; highlighting done by
+                  ;; `selectrum-highlight-candidates-function', see
+                  ;; <https://github.com/raxod502/selectrum/issues/21>.
+                  ;; No need to clean up afterwards, as an update will
+                  ;; cause all these strings to be thrown away and
+                  ;; re-generated from scratch.
+                  (add-face-text-property
+                   0 (length displayed-candidate)
+                   'selectrum-current-candidate
+                   'append displayed-candidate))
+                (insert "\n")
+                (when selectrum-show-indices
+                  (let* ((abs-index (+ index first-index-displayed))
+                         (num (number-to-string (1+ abs-index)))
+                         (num-digits
+                          (length
+                           (number-to-string
+                            (length selectrum--refined-candidates)))))
+                    (insert
+                     (propertize
+                      (concat
+                       (make-string (- num-digits (length num)) ? )
+                       num " ")
+                      'face
+                      'minibuffer-prompt))))
+                (insert displayed-candidate)
                 (when right-margin
                   (let ((ol (make-overlay (point) (point))))
                     (overlay-put
@@ -670,28 +703,39 @@ Or if there is an active region, save the region to kill ring."
   (remove-text-properties
    0 (length value)
    '(face selectrum-current-candidate) value)
+  (apply
+   #'run-hook-with-args
+   'selectrum-candidate-selected-hook
+   value selectrum--read-args)
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert (or (get-text-property 0 'selectrum-candidate-full
                                    value)
-                value)))
-  (exit-minibuffer))
+                value))
+    (exit-minibuffer)))
 
-(defun selectrum-select-current-candidate ()
+(defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input, unless
-a match is required, in which case do nothing."
-  (interactive)
-  (when (or selectrum--current-candidate-index
-            (not selectrum--match-required-p))
-    (selectrum--exit-with
-     (if (and selectrum--current-candidate-index
-              (>= selectrum--current-candidate-index 0))
-         (nth selectrum--current-candidate-index
-              selectrum--refined-candidates)
-       (buffer-substring
-        selectrum--start-of-input-marker
-        selectrum--end-of-input-marker)))))
+a match is required, in which case do nothing.
+
+Give a prefix argument ARG to select the candidate at that index
+\(counting from one, clamped to fall within the candidate list).
+Zero means to select the current user input."
+  (interactive "P")
+  (let ((index (if arg
+                   (min (1- (prefix-numeric-value arg))
+                        (1- (length selectrum--refined-candidates)))
+                 selectrum--current-candidate-index)))
+    (when (or index (not selectrum--match-required-p))
+      (selectrum--exit-with
+       (if (and index
+                (>= index 0))
+           (nth index
+                selectrum--refined-candidates)
+         (buffer-substring
+          selectrum--start-of-input-marker
+          selectrum--end-of-input-marker))))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
@@ -792,15 +836,15 @@ select one of the listed candidates (so, for example,
       (let* ((minibuffer-allow-text-properties t)
              ;; Not currently supported as all of our state is global.
              (enable-recursive-minibuffers nil)
+             (resize-mini-windows 'grow-only)
+             (max-mini-window-height
+              (1+ selectrum-num-candidates-displayed))
              (minibuffer-history-variable history)
+             (selectrum--active-p t)
              (selected (read-from-minibuffer prompt nil keymap nil history)))
-        (prog1 (if (string-empty-p selected)
-                   (or default-candidate "")
-                 selected)
-          (apply
-           #'run-hook-with-args
-           'selectrum-candidate-selected-hook
-           selected selectrum--read-args))))))
+        (if (string-empty-p selected)
+            (or default-candidate "")
+          selected)))))
 
 ;;;###autoload
 (defun selectrum-completing-read
@@ -1064,7 +1108,8 @@ user input area, not at the end of the candidate list.
 
 This is an `:after' advice for `set-minibuffer-message'."
   (selectrum--when-compile (boundp 'minibuffer-message-overlay)
-    (when (overlayp minibuffer-message-overlay)
+    (when (and (bound-and-true-p selectrum--active-p)
+               (overlayp minibuffer-message-overlay))
       (move-overlay minibuffer-message-overlay
                     selectrum--end-of-input-marker
                     selectrum--end-of-input-marker))))
@@ -1087,13 +1132,15 @@ not at the end of the candidate list.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
-  (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
-             ((symbol-function #'make-overlay)
-              (lambda (_beg _end &rest args)
-                (apply orig-make-overlay
-                       selectrum--end-of-input-marker
-                       selectrum--end-of-input-marker
-                       args))))
+  (if (bound-and-true-p selectrum--active-p)
+      (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
+                 ((symbol-function #'make-overlay)
+                  (lambda (_beg _end &rest args)
+                    (apply orig-make-overlay
+                           selectrum--end-of-input-marker
+                           selectrum--end-of-input-marker
+                           args))))
+        (apply func args))
     (apply func args)))
 
 ;; You may ask why we copy the entire minor-mode definition into the

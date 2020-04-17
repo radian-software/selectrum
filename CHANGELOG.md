@@ -27,6 +27,14 @@ The format is based on [Keep a Changelog].
   `selectrum-repeat` command. (Note that you must bind this command to
   a key sequence in order to use it.) This command implements similar
   functionality to `ivy-resume`. See [#39].
+* Experimental support for using Selectrum as a backend for Helm
+  commands. Use it by loading the `selectrum-helm` library and
+  enabling `selectrum-helm-mode`. See [#18].
+* You can now give a prefix argument to
+  `selectrum-select-current-candidate` to select the candidate at a
+  given index directly. New user option `selectrum-show-indices` to
+  display these indices for your convenience. This feature implements
+  similar functionality to `ivy-avy`. See [#16].
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
@@ -42,6 +50,15 @@ The format is based on [Keep a Changelog].
   ([#44]).
 * You can now access standard minibuffer history using `M-p` and `M-n`
   ([#4], [#38]).
+* Previously, setting `resize-mini-windows` to nil would cause
+  Selectrum to be unable to display any candidates. This has been
+  fixed by having Selectrum bind the variable to `grow-only` when
+  entering the minibuffer ([#35]).
+* Previously, a large value of `selectrum-num-candidates-displayed`
+  would produce a confusing result because `max-mini-window-height`
+  imposed a lower limit on the height of the minibuffer. Now that
+  variable is bound automatically by Selectrum based on the value of
+  `selectrum-num-candidates-displayed` ([#22]).
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -56,15 +73,29 @@ The format is based on [Keep a Changelog].
 * The keymap used in the minibuffer now inherits from
   `minibuffer-local-map`, so standard minibuffer bindings should still
   work ([raxod502/ctrlf#41]).
+* The application of face `selectrum-current-candidate` does not
+  trample on the results of `selectrum-highlight-candidates-function`.
+  In other words, the matched part of the current candidate is now
+  highlighted just like the matched part of the other candidates. See
+  [#21].
+* Previously, an error was thrown if you used certain non-Selectrum
+  minibuffer commands before loading Selectrum. This has been fixed
+  ([#28]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
+[#16]: https://github.com/raxod502/selectrum/issues/16
+[#18]: https://github.com/raxod502/selectrum/issues/18
+[#21]: https://github.com/raxod502/selectrum/issues/21
+[#22]: https://github.com/raxod502/selectrum/issues/22
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
+[#28]: https://github.com/raxod502/selectrum/issues/28
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
 [#32]: https://github.com/raxod502/selectrum/issues/32
 [#33]: https://github.com/raxod502/selectrum/pull/33
 [#34]: https://github.com/raxod502/selectrum/pull/34
+[#35]: https://github.com/raxod502/selectrum/issues/35
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
