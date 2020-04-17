@@ -413,6 +413,9 @@ Passed to various hook functions.")
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
 
+(defvar selectrum--active-p nil
+  "Non-nil means we are in a Selectrum session currently.")
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -834,6 +837,7 @@ select one of the listed candidates (so, for example,
              ;; Not currently supported as all of our state is global.
              (enable-recursive-minibuffers nil)
              (minibuffer-history-variable history)
+             (selectrum--active-p t)
              (selected (read-from-minibuffer prompt nil keymap nil history)))
         (if (string-empty-p selected)
             (or default-candidate "")
@@ -1104,7 +1108,8 @@ user input area, not at the end of the candidate list.
 
 This is an `:after' advice for `set-minibuffer-message'."
   (selectrum--when-compile (boundp 'minibuffer-message-overlay)
-    (when (overlayp minibuffer-message-overlay)
+    (when (and (bound-and-true-p selectrum--active-p)
+               (overlayp minibuffer-message-overlay))
       (move-overlay minibuffer-message-overlay
                     selectrum--end-of-input-marker
                     selectrum--end-of-input-marker))))
@@ -1127,13 +1132,15 @@ not at the end of the candidate list.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
-  (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
-             ((symbol-function #'make-overlay)
-              (lambda (_beg _end &rest args)
-                (apply orig-make-overlay
-                       selectrum--end-of-input-marker
-                       selectrum--end-of-input-marker
-                       args))))
+  (if (bound-and-true-p selectrum--active-p)
+      (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
+                 ((symbol-function #'make-overlay)
+                  (lambda (_beg _end &rest args)
+                    (apply orig-make-overlay
+                           selectrum--end-of-input-marker
+                           selectrum--end-of-input-marker
+                           args))))
+        (apply func args))
     (apply func args)))
 
 ;; You may ask why we copy the entire minor-mode definition into the

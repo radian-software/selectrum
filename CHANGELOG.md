@@ -69,6 +69,9 @@ The format is based on [Keep a Changelog].
   In other words, the matched part of the current candidate is now
   highlighted just like the matched part of the other candidates. See
   [#21].
+* Previously, an error was thrown if you used certain non-Selectrum
+  minibuffer commands before loading Selectrum. This has been fixed
+  ([#28]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#16]: https://github.com/raxod502/selectrum/issues/16
@@ -76,6 +79,7 @@ The format is based on [Keep a Changelog].
 [#21]: https://github.com/raxod502/selectrum/issues/21
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
+[#28]: https://github.com/raxod502/selectrum/issues/28
 [#30]: https://github.com/raxod502/selectrum/issues/30
 [#31]: https://github.com/raxod502/selectrum/issues/31
 [#32]: https://github.com/raxod502/selectrum/issues/32
