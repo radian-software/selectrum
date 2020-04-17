@@ -37,11 +37,13 @@ The format is based on [Keep a Changelog].
   similar functionality to `ivy-avy`. See [#16].
 
 ### Enhancements
-* `selectrum-read-file-name` which is used as `read-file-name-function` now uses
-  `read-file-name-default` internally. This means all default features of file
-  completion should be available now. Most notably you can now use `M-n` to
-  insert file names into the minibuffer (using `file-name-at-point-functions`)
-  and you are able to use shortcuts like `//` or `~/` ([#50]).
+* `selectrum-read-file-name` which is used as
+  `read-file-name-function` now uses `read-file-name-default`
+  internally. This means all default features of file completion
+  should be available now. Most notably you can now use `M-n` to
+  insert file names into the minibuffer (using
+  `file-name-at-point-functions`) and you are able to use shortcuts
+  like `//` or `~/` ([#50]).
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
   contents of the minibuffer, which allows you to have convenient
