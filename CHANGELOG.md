@@ -27,6 +27,9 @@ The format is based on [Keep a Changelog].
   `selectrum-repeat` command. (Note that you must bind this command to
   a key sequence in order to use it.) This command implements similar
   functionality to `ivy-resume`. See [#39].
+* Experimental support for using Selectrum as a backend for Helm
+  commands. Use it by loading the `selectrum-helm` library and
+  enabling `selectrum-helm-mode`. See [#18].
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
@@ -58,6 +61,7 @@ The format is based on [Keep a Changelog].
   work ([raxod502/ctrlf#41]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
+[#18]: https://github.com/raxod502/selectrum/issues/18
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
 [#30]: https://github.com/raxod502/selectrum/issues/30
