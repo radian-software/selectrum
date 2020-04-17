@@ -30,6 +30,11 @@ The format is based on [Keep a Changelog].
 * Experimental support for using Selectrum as a backend for Helm
   commands. Use it by loading the `selectrum-helm` library and
   enabling `selectrum-helm-mode`. See [#18].
+* You can now give a prefix argument to
+  `selectrum-select-current-candidate` to select the candidate at a
+  given index directly. New user option `selectrum-show-indices` to
+  display these indices for your convenience. This feature implements
+  similar functionality to `ivy-avy`. See [#16].
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
@@ -61,6 +66,7 @@ The format is based on [Keep a Changelog].
   work ([raxod502/ctrlf#41]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
+[#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27

@@ -221,6 +221,12 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
+(defcustom selectrum-show-indices nil
+  "Non-nil means to number the candidates (starting from 1).
+This allows you to select one directly by providing a prefix
+argument to `selectrum-select-current-candidate'."
+  :type 'boolean)
+
 (defcustom selectrum-right-margin-padding 1
   "The number of spaces to add after right margin text.
 This only takes effect when the
@@ -533,7 +539,22 @@ This is used to implement `selectrum-repeat'.")
                         (propertize
                          displayed-candidate
                          'face 'selectrum-current-candidate)))
-                (insert "\n" displayed-candidate)
+                (insert "\n")
+                (when selectrum-show-indices
+                  (let* ((abs-index (+ index first-index-displayed))
+                         (num (number-to-string (1+ abs-index)))
+                         (num-digits
+                          (length
+                           (number-to-string
+                            (length selectrum--refined-candidates)))))
+                    (insert
+                     (propertize
+                      (concat
+                       (make-string (- num-digits (length num)) ? )
+                       num " ")
+                      'face
+                      'minibuffer-prompt))))
+                (insert displayed-candidate)
                 (when right-margin
                   (let ((ol (make-overlay (point) (point))))
                     (overlay-put
@@ -681,21 +702,28 @@ Or if there is an active region, save the region to kill ring."
                 value))
     (exit-minibuffer)))
 
-(defun selectrum-select-current-candidate ()
+(defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input, unless
-a match is required, in which case do nothing."
-  (interactive)
-  (when (or selectrum--current-candidate-index
-            (not selectrum--match-required-p))
-    (selectrum--exit-with
-     (if (and selectrum--current-candidate-index
-              (>= selectrum--current-candidate-index 0))
-         (nth selectrum--current-candidate-index
-              selectrum--refined-candidates)
-       (buffer-substring
-        selectrum--start-of-input-marker
-        selectrum--end-of-input-marker)))))
+a match is required, in which case do nothing.
+
+Give a prefix argument ARG to select the candidate at that index
+\(counting from one, clamped to fall within the candidate list).
+Zero means to select the current user input."
+  (interactive "P")
+  (let ((index (if arg
+                   (min (1- (prefix-numeric-value arg))
+                        (1- (length selectrum--refined-candidates)))
+                 selectrum--current-candidate-index)))
+    (when (or index (not selectrum--match-required-p))
+      (selectrum--exit-with
+       (if (and index
+                (>= index 0))
+           (nth index
+                selectrum--refined-candidates)
+         (buffer-substring
+          selectrum--start-of-input-marker
+          selectrum--end-of-input-marker))))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.

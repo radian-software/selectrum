@@ -120,7 +120,11 @@ how to fix it.
 * *To navigate to a candidate:* use the standard motion commands
   (`<up>`, `<down>`, `C-v`, `M-v`, `M-<`, `M->`). If you prefer, you
   can use `C-p` and `C-n` instead of the arrow keys.
-* *To accept the currently selected candidate:* type `RET`.
+* *To accept the currently selected candidate:* type `RET`. (With a
+  prefix argument, accept instead the candidate at that point in the
+  list, counting from one. See `selectrum-show-indices`. The value
+  zero means to accept exactly what you've typed, as in the next
+  bullet point.)
 * *To submit what you've typed, even if it's not a candidate:* you can
   use `<up>` or `C-p` to select the user input just like a regular
   candidate, and type `RET` as usual. (Alternatively, you can type
@@ -243,6 +247,11 @@ matching and case-insensitive matching.
   highlighting schemes (such as `prescient.el`).
 * By default, the total number of matches are shown before the prompt.
   This behavior can be customized using `selectrum-count-style`.
+* You can cause the candidates to be numbered sequentially in the
+  minibuffer by enabling `selectrum-show-indices`. This may be helpful
+  in telling you what prefix argument you should pass to
+  `selectrum-select-current-candidate` in order to select a given
+  candidate.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
