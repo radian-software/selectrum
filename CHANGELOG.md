@@ -64,10 +64,16 @@ The format is based on [Keep a Changelog].
 * The keymap used in the minibuffer now inherits from
   `minibuffer-local-map`, so standard minibuffer bindings should still
   work ([raxod502/ctrlf#41]).
+* The application of face `selectrum-current-candidate` does not
+  trample on the results of `selectrum-highlight-candidates-function`.
+  In other words, the matched part of the current candidate is now
+  highlighted just like the matched part of the other candidates. See
+  [#21].
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
+[#21]: https://github.com/raxod502/selectrum/issues/21
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
 [#30]: https://github.com/raxod502/selectrum/issues/30

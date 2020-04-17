@@ -536,9 +536,18 @@ This is used to implement `selectrum-repeat'.")
                                    candidate)))
                 (when (equal index highlighted-index)
                   (setq displayed-candidate
-                        (propertize
-                         displayed-candidate
-                         'face 'selectrum-current-candidate)))
+                        (copy-sequence displayed-candidate))
+                  ;; Use `add-face-text-property' to avoid trampling
+                  ;; highlighting done by
+                  ;; `selectrum-highlight-candidates-function', see
+                  ;; <https://github.com/raxod502/selectrum/issues/21>.
+                  ;; No need to clean up afterwards, as an update will
+                  ;; cause all these strings to be thrown away and
+                  ;; re-generated from scratch.
+                  (add-face-text-property
+                   0 (length displayed-candidate)
+                   'selectrum-current-candidate
+                   'append displayed-candidate))
                 (insert "\n")
                 (when selectrum-show-indices
                   (let* ((abs-index (+ index first-index-displayed))
