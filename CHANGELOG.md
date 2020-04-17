@@ -54,6 +54,11 @@ The format is based on [Keep a Changelog].
   Selectrum to be unable to display any candidates. This has been
   fixed by having Selectrum bind the variable to `grow-only` when
   entering the minibuffer ([#35]).
+* Previously, a large value of `selectrum-num-candidates-displayed`
+  would produce a confusing result because `max-mini-window-height`
+  imposed a lower limit on the height of the minibuffer. Now that
+  variable is bound automatically by Selectrum based on the value of
+  `selectrum-num-candidates-displayed` ([#22]).
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -81,6 +86,7 @@ The format is based on [Keep a Changelog].
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
 [#21]: https://github.com/raxod502/selectrum/issues/21
+[#22]: https://github.com/raxod502/selectrum/issues/22
 [#25]: https://github.com/raxod502/selectrum/pull/25
 [#27]: https://github.com/raxod502/selectrum/pull/27
 [#28]: https://github.com/raxod502/selectrum/issues/28

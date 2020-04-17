@@ -837,6 +837,8 @@ select one of the listed candidates (so, for example,
              ;; Not currently supported as all of our state is global.
              (enable-recursive-minibuffers nil)
              (resize-mini-windows 'grow-only)
+             (max-mini-window-height
+              (1+ selectrum-num-candidates-displayed))
              (minibuffer-history-variable history)
              (selectrum--active-p t)
              (selected (read-from-minibuffer prompt nil keymap nil history)))
