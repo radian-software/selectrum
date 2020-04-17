@@ -44,6 +44,8 @@ The format is based on [Keep a Changelog].
   insert file names into the minibuffer (using
   `file-name-at-point-functions`) and you are able to use shortcuts
   like `//` or `~/` ([#50]).
+* When reading directories using `read-directory-name` the default is
+  sorted to the top instead of inserting it ([#50]).
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
   contents of the minibuffer, which allows you to have convenient
