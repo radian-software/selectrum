@@ -50,6 +50,10 @@ The format is based on [Keep a Changelog].
   ([#44]).
 * You can now access standard minibuffer history using `M-p` and `M-n`
   ([#4], [#38]).
+* Previously, setting `resize-mini-windows` to nil would cause
+  Selectrum to be unable to display any candidates. This has been
+  fixed by having Selectrum bind the variable to `grow-only` when
+  entering the minibuffer ([#35]).
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -85,6 +89,7 @@ The format is based on [Keep a Changelog].
 [#32]: https://github.com/raxod502/selectrum/issues/32
 [#33]: https://github.com/raxod502/selectrum/pull/33
 [#34]: https://github.com/raxod502/selectrum/pull/34
+[#35]: https://github.com/raxod502/selectrum/issues/35
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
