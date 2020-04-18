@@ -703,18 +703,15 @@ just rendering it to the screen and then checking."
     (delete-overlay (pop selectrum--right-margin-overlays))))
 
 (cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate initial-input require-match)
+    (candidates &key default-candidate initial-input)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. INITIAL-INPUT, if provided, is inserted
-into the user input area to start with. REQUIRE-MATCH, if
-non-nil, means the user has to select one of the candidates
-provided, rather than providing one of their own."
+into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq selectrum--minibuffer (current-buffer))
-  (setq selectrum--match-required-p require-match)
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
@@ -963,6 +960,7 @@ select one of the listed candidates (so, for example,
     (unless selectrum--repeat
       (setq selectrum--last-command this-command)
       (setq selectrum--last-prefix-arg current-prefix-arg))
+    (setq selectrum--match-required-p require-match)
     (let ((keymap (make-sparse-keymap)))
       (set-keymap-parent keymap minibuffer-local-map)
       ;; Use `map-apply' instead of `map-do' as the latter is not
@@ -978,8 +976,7 @@ select one of the listed candidates (so, for example,
             (selectrum--minibuffer-setup-hook
              candidates
              :default-candidate default-candidate
-             :initial-input initial-input
-             :require-match (eq require-match t)))
+             :initial-input initial-input))
         (let* ((minibuffer-allow-text-properties t)
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
