@@ -437,6 +437,9 @@ This is used to implement `selectrum-repeat'.")
 (defvar selectrum--ensure-centered-timer nil
   "Timer to run `selectrum--ensure-current-candidate-centered'.")
 
+(defvar selectrum--return-candidates-p nil
+  "Non-nil means return the list of candidates, not just the selected one.")
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -926,13 +929,14 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--active-p
               selectrum--minibuffer
               selectrum--current-candidate-bounds
-              selectrum--ensure-centered-timer)))
+              selectrum--ensure-centered-timer
+              selectrum--return-candidates-p)))
      ,@body))
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            (history 'minibuffer-history))
+            (history 'minibuffer-history) return-candidates)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -954,7 +958,11 @@ provided, is inserted into the user input area initially (with
 point at the end). REQUIRE-MATCH, if non-nil, means the user must
 select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
-`minibuffer-history-variable' to use."
+`minibuffer-history-variable' to use. RETURN-CANDIDATES, if
+non-nil, means that a list of all the currently displayed
+candidates is returned when the user exits the minibuffer
+\(instead of the selected candidate). This can be used to
+implement commands similar to `ivy-occur'."
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -984,9 +992,11 @@ select one of the listed candidates (so, for example,
                (minibuffer-history-variable history)
                (selectrum--active-p t)
                (selected (read-from-minibuffer prompt nil keymap nil history)))
-          (if (string-empty-p selected)
-              (or default-candidate "")
-            selected))))))
+          (if return-candidates
+              selectrum--refined-candidates
+            (if (string-empty-p selected)
+                (or default-candidate "")
+              selected)))))))
 
 ;;;###autoload
 (defun selectrum-completing-read

@@ -43,6 +43,11 @@ The format is based on [Keep a Changelog].
 * You can now cause the minibuffer to always have the same height,
   even if there are fewer candidates, by enabling
   `selectrum-fix-minibuffer-height` ([#35]).
+* New keyboard argument `:return-candidates` to `selectrum-read`
+  allows you to get the list of currently displayed candidates when
+  the user exits the minibuffer, rather than the candidate that was
+  displayed. This allows you to implement commands similar to
+  `ivy-occur` on top of Selectrum. See [#15].
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
@@ -98,6 +103,7 @@ The format is based on [Keep a Changelog].
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
+[#15]: https://github.com/raxod502/selectrum/issues/15
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
 [#21]: https://github.com/raxod502/selectrum/issues/21
