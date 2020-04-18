@@ -955,7 +955,7 @@ point at the end). REQUIRE-MATCH, if non-nil, means the user must
 select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
 `minibuffer-history-variable' to use (by default
-`minibuffer-history-variable')."
+`minibuffer-history')."
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -982,9 +982,10 @@ select one of the listed candidates (so, for example,
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
-               (minibuffer-history-variable (or history 'minibuffer-history))
                (selectrum--active-p t)
-               (selected (read-from-minibuffer prompt nil keymap nil history)))
+               (selected (read-from-minibuffer
+                          prompt nil keymap nil
+                          (or history 'minibuffer-history))))
           (if (string-empty-p selected)
               (or default-candidate "")
             selected))))))
