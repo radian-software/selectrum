@@ -59,6 +59,8 @@ The format is based on [Keep a Changelog].
   imposed a lower limit on the height of the minibuffer. Now that
   variable is bound automatically by Selectrum based on the value of
   `selectrum-num-candidates-displayed` ([#22]).
+* Multiline candidates are now displayed properly and do not mess up
+  scrolling in the candidate list ([#12]).
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -83,6 +85,7 @@ The format is based on [Keep a Changelog].
   ([#28]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
+[#12]: https://github.com/raxod502/selectrum/issues/12
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
 [#21]: https://github.com/raxod502/selectrum/issues/21
