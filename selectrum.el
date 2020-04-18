@@ -1012,7 +1012,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    ;; deprecated in `completing-read' and doesn't work well with the
    ;; Selectrum paradigm except in specific cases that we control.
    :default-candidate (or (car-safe def) def)
-   :require-match require-match
+   :require-match (eq require-match t)
    :history hist))
 
 (defvar selectrum--old-completing-read-function nil
@@ -1056,7 +1056,7 @@ PREDICATE, see `read-buffer'."
     (selectrum-read
      prompt candidates
      :default-candidate def
-     :require-match require-match
+     :require-match (eq require-match t)
      :history 'buffer-name-history)))
 
 (defvar selectrum--old-read-buffer-function nil
@@ -1110,7 +1110,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
      :default-candidate (or (car-safe def) def)
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
-     :require-match require-match)))
+     :require-match (eq require-match t))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
