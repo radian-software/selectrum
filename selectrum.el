@@ -932,7 +932,7 @@ ARG has same meaning as in `previous-history-element'."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            (history 'minibuffer-history))
+            history)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -954,7 +954,8 @@ provided, is inserted into the user input area initially (with
 point at the end). REQUIRE-MATCH, if non-nil, means the user must
 select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
-`minibuffer-history-variable' to use."
+`minibuffer-history-variable' to use (by default
+`minibuffer-history-variable')."
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -981,7 +982,7 @@ select one of the listed candidates (so, for example,
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
-               (minibuffer-history-variable history)
+               (minibuffer-history-variable (or history 'minibuffer-history))
                (selectrum--active-p t)
                (selected (read-from-minibuffer prompt nil keymap nil history)))
           (if (string-empty-p selected)
