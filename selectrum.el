@@ -182,6 +182,10 @@ strings."
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
+    ("C-s"                                    . selectrum-select-from-history)
+    ("C-r"                                    . selectrum-select-from-history)
+    ("C-M-s"                                  . selectrum-select-from-history)
+    ("C-M-r"                                  . selectrum-select-from-history)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("TAB"
      . selectrum-insert-current-candidate))
@@ -874,7 +878,49 @@ ARG has same meaning as in `previous-history-element'."
     (let ((inhibit-read-only t))
       (previous-history-element arg))))
 
+(defun selectrum-select-from-history ()
+  "Select a candidate from the minibuffer history."
+  (interactive)
+  (let ((selectrum-should-sort-p nil)
+        (enable-recursive-minibuffers t)
+        (history (symbol-value minibuffer-history-variable)))
+    (when (eq history t)
+      (user-error "No history is recorded for this command"))
+    (let ((result (selectrum-read "History: " history)))
+      (if (and selectrum--match-required-p
+               (not (member result selectrum--refined-candidates)))
+          (user-error "That history element is not one of the candidates")
+        (selectrum--exit-with result)))))
+
 ;;;; Main entry points
+
+(defmacro selectrum--save-global-state (&rest body)
+  "Eval BODY, restoring all Selectrum global variables afterward."
+  (declare (indent 0))
+  `(let (,@(mapcar
+            (lambda (var)
+              `(,var ,var))
+            '(selectrum--start-of-input-marker
+              selectrum--end-of-input-marker
+              selectrum--preprocessed-candidates
+              selectrum--refined-candidates
+              selectrum--current-candidate-index
+              selectrum--previous-input-string
+              selectrum--match-required-p
+              selectrum--default-candidate
+              selectrum--visual-input
+              selectrum--read-args
+              selectrum--count-overlay
+              selectrum--default-value-overlay
+              selectrum--right-margin-overlays
+              selectrum--last-command
+              selectrum--last-prefix-arg
+              selectrum--repeat
+              selectrum--active-p
+              selectrum--minibuffer
+              selectrum--current-candidate-bounds
+              selectrum--ensure-centered-timer)))
+     ,@body))
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
@@ -902,6 +948,7 @@ point at the end). REQUIRE-MATCH, if non-nil, means the user must
 select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
 `minibuffer-history-variable' to use."
+  (selectrum--save-global-state
   (setq selectrum--read-args (cl-list* prompt candidates args))
   (unless selectrum--repeat
     (setq selectrum--last-command this-command)
@@ -924,8 +971,6 @@ select one of the listed candidates (so, for example,
            :initial-input initial-input
            :require-match (eq require-match t)))
       (let* ((minibuffer-allow-text-properties t)
-             ;; Not currently supported as all of our state is global.
-             (enable-recursive-minibuffers nil)
              (resize-mini-windows 'grow-only)
              (max-mini-window-height
               (1+ selectrum-num-candidates-displayed))
@@ -934,7 +979,7 @@ select one of the listed candidates (so, for example,
              (selected (read-from-minibuffer prompt nil keymap nil history)))
         (if (string-empty-p selected)
             (or default-candidate "")
-          selected)))))
+            selected))))))
 
 ;;;###autoload
 (defun selectrum-completing-read

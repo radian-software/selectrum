@@ -22,6 +22,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Sorting, filtering, and highlighting](#sorting-filtering-and-highlighting)
   * [Text properties](#text-properties)
   * [Hooks](#hooks)
+- [Contributor guide](#contributor-guide)
 - [Caveats](#caveats)
 - [Why use Selectrum?](#why-use-selectrum)
   * [Why not Ido?](#why-not-ido)
@@ -419,6 +420,21 @@ are:
 
 For more information, see their docstrings.
 
+## Contributor guide
+
+This section is intended for people who would like to modify the code
+of Selectrum itself.
+
+* Run the linters and re-generate the table of contents in the README
+  by way of `make lint`. This is done by
+  [CircleCI](https://circleci.com/gh/raxod502/selectrum) against every
+  commit and pull request.
+* When adding a new state variable (like for example
+  `selectrum--current-candidate-index`), you should think if its value
+  needs to be preserved when entering a recursive Selectrum session.
+  If so, you should add it to the list in
+  `selectrum--save-global-state`.
+
 ## Caveats
 
 * There is no support for multiple selection or alternate actions.
@@ -426,13 +442,6 @@ For more information, see their docstrings.
   requires violating the `completing-read` abstraction rather
   aggressively, and that goes against Selectrum's design philosophy of
   simplicity and consistency.
-* Recursive minibuffers are not currently supported. This is because
-  such support would complicate the implementation significantly
-  (currently all state is stored in a small set of global variables,
-  and this scheme would need to be replaced with some kind of stack).
-  I am not necessarily opposed to adding recursive minibuffer support
-  if it can be done relatively cleanly and somebody points out a
-  concrete use case that benefits from the support.
 * In Emacs 25, `M-x ffap` is basically completely broken. This is
   because in old versions of Emacs, `ffap` worked by calling
   `completing-read` directly with a special completion table function,

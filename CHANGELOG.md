@@ -35,6 +35,11 @@ The format is based on [Keep a Changelog].
   given index directly. New user option `selectrum-show-indices` to
   display these indices for your convenience. This feature implements
   similar functionality to `ivy-avy`. See [#16].
+* Recursive minibuffers are now supported.
+* In the standard `completing-read` interface, you can use Isearch to
+  retrieve history elements. The Isearch entry-point bindings now work
+  properly in Selectrum too, except that they allow you to select a
+  history element using Selectrum. See [#49].
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the
@@ -106,6 +111,7 @@ The format is based on [Keep a Changelog].
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
+[#49]: https://github.com/raxod502/selectrum/issues/49
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
