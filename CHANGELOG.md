@@ -45,6 +45,15 @@ The format is based on [Keep a Changelog].
   `selectrum-fix-minibuffer-height` ([#35]).
 
 ### Enhancements
+* `selectrum-read-file-name` which is used as
+  `read-file-name-function` now uses `read-file-name-default`
+  internally. This means all default features of file completion
+  should be available now. Most notably you can now use `M-n` to
+  insert file names into the minibuffer (using
+  `file-name-at-point-functions`) and you are able to use shortcuts
+  like `//` or `~/` ([#50], [#52]).
+* When reading directories using `read-directory-name` the default is
+  sorted to the top instead of inserting it ([#50]).
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
   contents of the minibuffer, which allows you to have convenient
@@ -115,6 +124,7 @@ The format is based on [Keep a Changelog].
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
+[#52]: https://github.com/raxod502/selectrum/issues/52
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
