@@ -290,6 +290,9 @@ Ivy, and copied them to be used for Selectrum as well:
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the
   tree based item navigation into a flat completion menu.
 
+* For cached sorting and additional features for `M-x` you can use
+  [amx](https://github.com/DarwinAwardWinner/amx).
+
 ### But what is it doing to my Emacs??
 
 By inspecting the source code of `selectrum-mode`, you will see that
