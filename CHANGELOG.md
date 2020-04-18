@@ -35,6 +35,14 @@ The format is based on [Keep a Changelog].
   given index directly. New user option `selectrum-show-indices` to
   display these indices for your convenience. This feature implements
   similar functionality to `ivy-avy`. See [#16].
+* Recursive minibuffers are now supported.
+* In the standard `completing-read` interface, you can use Isearch to
+  retrieve history elements. The Isearch entry-point bindings now work
+  properly in Selectrum too, except that they allow you to select a
+  history element using Selectrum. See [#49].
+* You can now cause the minibuffer to always have the same height,
+  even if there are fewer candidates, by enabling
+  `selectrum-fix-minibuffer-height` ([#35]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -68,6 +76,12 @@ The format is based on [Keep a Changelog].
   imposed a lower limit on the height of the minibuffer. Now that
   variable is bound automatically by Selectrum based on the value of
   `selectrum-num-candidates-displayed` ([#22]).
+* Multiline candidates are now displayed properly and do not mess up
+  scrolling in the candidate list ([#12]).
+* When you select the user input area and it doesn't have anything
+  typed, we now show an overlay indicating that you are in this state,
+  so it is less confusing. The overlay shows what default value will
+  be submitted if you press return. See [#55].
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -92,6 +106,7 @@ The format is based on [Keep a Changelog].
   ([#28]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
+[#12]: https://github.com/raxod502/selectrum/issues/12
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#18]: https://github.com/raxod502/selectrum/issues/18
 [#21]: https://github.com/raxod502/selectrum/issues/21
@@ -108,6 +123,7 @@ The format is based on [Keep a Changelog].
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
+[#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
