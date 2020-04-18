@@ -238,6 +238,11 @@ matching and case-insensitive matching.
 * By default, ten candidates are shown in the minibuffer at any given
   time. You can customize that by changing
   `selectrum-num-candidates-displayed`.
+    * Normally `selectrum-num-candidates-displayed` acts as just a
+      maximum for the height of the minibuffer. You might prefer for
+      the minibuffer to *always* have that height, even if there are
+      fewer candidates. This behavior may be achieved by setting
+      `selectrum-fix-minibuffer-height` to a non-nil value.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.

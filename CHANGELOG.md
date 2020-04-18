@@ -40,6 +40,9 @@ The format is based on [Keep a Changelog].
   retrieve history elements. The Isearch entry-point bindings now work
   properly in Selectrum too, except that they allow you to select a
   history element using Selectrum. See [#49].
+* You can now cause the minibuffer to always have the same height,
+  even if there are fewer candidates, by enabling
+  `selectrum-fix-minibuffer-height` ([#35]).
 
 ### Enhancements
 * In `read-file-name`, when a default is provided (for example in the

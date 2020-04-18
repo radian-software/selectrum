@@ -247,6 +247,11 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
+(defcustom selectrum-fix-minibuffer-height nil
+  "Non-nil means the minibuffer always has the same height.
+Even if there are fewer candidates."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -667,7 +672,12 @@ just rendering it to the screen and then checking."
                                             selectrum-right-margin-padding)))
                       right-margin))
                     (push ol selectrum--right-margin-overlays))))
-              (cl-incf index))))
+              (cl-incf index))
+            ;; Simplest way to grow the minibuffer to size is to just
+            ;; insert some extra newlines :P
+            (when selectrum-fix-minibuffer-height
+              (dotimes (_ (- selectrum-num-candidates-displayed index))
+                (insert "\n")))))
         (add-text-properties bound (point-max) '(read-only t))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)
