@@ -178,6 +178,8 @@ strings."
     ([remap beginning-of-buffer]              . selectrum-goto-beginning)
     ([remap end-of-buffer]                    . selectrum-goto-end)
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
+    ([remap previous-matching-history-element]
+     . selectrum-previous-matching-history-element)
     ([remap previous-history-element]
      . selectrum-previous-history-element)
     ([remap next-history-element]
@@ -865,25 +867,28 @@ ignores the currently selected candidate, if one exists."
        'selectrum-candidate-inserted-hook
        candidate selectrum--read-args))))
 
+(defun selectrum-previous-matching-history-element ()
+  "Forward to `previous-matching-history-element'."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (call-interactively 'previous-matching-history-element)
+    (goto-char (minibuffer-prompt-end))))
+
 (defun selectrum-next-history-element (arg)
   "Forward to `next-history-element'.
 ARG has same meaning as in `next-history-element'."
   (interactive "p")
-  (save-restriction
-    (narrow-to-region selectrum--start-of-input-marker
-                      selectrum--end-of-input-marker)
-    (let ((inhibit-read-only t))
-      (next-history-element arg))))
+  (let ((inhibit-read-only t))
+    (next-history-element arg)
+    (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-previous-history-element (arg)
   "Forward to `previous-history-element'.
 ARG has same meaning as in `previous-history-element'."
   (interactive "p")
-  (save-restriction
-    (narrow-to-region selectrum--start-of-input-marker
-                      selectrum--end-of-input-marker)
-    (let ((inhibit-read-only t))
-      (previous-history-element arg))))
+  (let ((inhibit-read-only t))
+    (previous-history-element arg)
+    (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history."
