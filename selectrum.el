@@ -855,11 +855,13 @@ ignores the currently selected candidate, if one exists."
   (when selectrum--current-candidate-index
     (delete-region selectrum--start-of-input-marker
                    selectrum--end-of-input-marker)
-    (let ((candidate (nth selectrum--current-candidate-index
-                          selectrum--refined-candidates)))
-      (insert (or (get-text-property
-                   0 'selectrum-candidate-full candidate)
-                  candidate))
+    (let* ((candidate (nth selectrum--current-candidate-index
+                           selectrum--refined-candidates))
+           (full (or (get-text-property
+                      0 'selectrum-candidate-full candidate)
+                     candidate)))
+      (insert full)
+      (add-to-history minibuffer-history-variable full)
       (apply
        #'run-hook-with-args
        'selectrum-candidate-inserted-hook
