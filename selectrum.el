@@ -1005,7 +1005,7 @@ select one of the listed candidates (so, for example,
   "Read choice using Selectrum. Can be used as `completing-read-function'.
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
-  (ignore initial-input hist inherit-input-method)
+  (ignore initial-input inherit-input-method)
   (selectrum-read
    prompt (selectrum--normalize-collection collection predicate)
    ;; Don't pass `initial-input'. We use it internally but it's
