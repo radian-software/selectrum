@@ -125,6 +125,7 @@ The format is based on [Keep a Changelog].
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
+[#55]: https://github.com/raxod502/selectrum/issues/55
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
