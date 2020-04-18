@@ -61,6 +61,10 @@ The format is based on [Keep a Changelog].
   `selectrum-num-candidates-displayed` ([#22]).
 * Multiline candidates are now displayed properly and do not mess up
   scrolling in the candidate list ([#12]).
+* When you select the user input area and it doesn't have anything
+  typed, we now show an overlay indicating that you are in this state,
+  so it is less confusing. The overlay shows what default value will
+  be submitted if you press return. See [#55].
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,

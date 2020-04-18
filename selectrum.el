@@ -400,6 +400,9 @@ Passed to various hook functions.")
 (defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
+(defvar selectrum--default-value-overlay nil
+  "Overlay used to show the default candidate when the input is selected.")
+
 (defvar selectrum--right-margin-overlays nil
   "A list of overlays used to display right margin text.")
 
@@ -568,13 +571,28 @@ just rendering it to the screen and then checking."
           (setq displayed-candidates
                 (seq-take displayed-candidates
                           selectrum-num-candidates-displayed))
+          (when selectrum--default-value-overlay
+            (delete-overlay selectrum--default-value-overlay)
+            (setq selectrum--default-value-overlay nil))
           (if (or (and highlighted-index
                        (< highlighted-index 0))
                   (and (not selectrum--match-required-p)
                        (not displayed-candidates)))
-              (add-text-properties
-               (minibuffer-prompt-end) bound
-               '(face selectrum-current-candidate))
+              (if (= (minibuffer-prompt-end) bound)
+                  (let ((str
+                         (propertize
+                          (format " [default value: %S]"
+                                  (or selectrum--default-candidate 'none))
+                          'face 'minibuffer-prompt))
+                        (ol (make-overlay
+                             (minibuffer-prompt-end)
+                             (minibuffer-prompt-end))))
+                    (put-text-property 0 1 'cursor t str)
+                    (overlay-put ol 'after-string str)
+                    (setq selectrum--default-value-overlay ol))
+                (add-text-properties
+                 (minibuffer-prompt-end) bound
+                 '(face selectrum-current-candidate)))
             (remove-text-properties
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))
