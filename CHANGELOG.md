@@ -43,7 +43,7 @@ The format is based on [Keep a Changelog].
   should be available now. Most notably you can now use `M-n` to
   insert file names into the minibuffer (using
   `file-name-at-point-functions`) and you are able to use shortcuts
-  like `//` or `~/` ([#50]).
+  like `//` or `~/` ([#50], [#52]).
 * When reading directories using `read-directory-name` the default is
   sorted to the top instead of inserting it ([#50]).
 * In `read-file-name`, when a default is provided (for example in the
@@ -108,6 +108,7 @@ The format is based on [Keep a Changelog].
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
 [#44]: https://github.com/raxod502/selectrum/pull/44
+[#52]: https://github.com/raxod502/selectrum/issues/52
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
