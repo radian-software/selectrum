@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog].
   See [#27].
 
 ### Features
+* Candidates inserted by `selectrum-insert-current-candidate` are now
+  added to history ([#54]).
 * You can resume the last completion session using the
   `selectrum-repeat` command. (Note that you must bind this command to
   a key sequence in order to use it.) This command implements similar
@@ -125,6 +127,7 @@ The format is based on [Keep a Changelog].
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
+[#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
