@@ -1098,7 +1098,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                       (add-text-properties
                                        0 (length i)
                                        `(selectrum-candidate-full
-                                         ,(concat dir i)) i))))
+                                         ,(concat dir i))
+                                       i))))
                                 t)
                      ;; May happen in case user quits out
                      ;; of a TRAMP prompt.
