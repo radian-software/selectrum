@@ -949,36 +949,36 @@ select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
 `minibuffer-history-variable' to use."
   (selectrum--save-global-state
-  (setq selectrum--read-args (cl-list* prompt candidates args))
-  (unless selectrum--repeat
-    (setq selectrum--last-command this-command)
-    (setq selectrum--last-prefix-arg current-prefix-arg))
-  (let ((keymap (make-sparse-keymap)))
-    (set-keymap-parent keymap minibuffer-local-map)
-    ;; Use `map-apply' instead of `map-do' as the latter is not
-    ;; available in Emacs 25.
-    (map-apply
-     (lambda (key cmd)
-       (when (stringp key)
-         (setq key (kbd key)))
-       (define-key keymap key cmd))
-     selectrum-minibuffer-bindings)
-    (minibuffer-with-setup-hook
-        (lambda ()
-          (selectrum--minibuffer-setup-hook
-           candidates
-           :default-candidate default-candidate
-           :initial-input initial-input
-           :require-match (eq require-match t)))
-      (let* ((minibuffer-allow-text-properties t)
-             (resize-mini-windows 'grow-only)
-             (max-mini-window-height
-              (1+ selectrum-num-candidates-displayed))
-             (minibuffer-history-variable history)
-             (selectrum--active-p t)
-             (selected (read-from-minibuffer prompt nil keymap nil history)))
-        (if (string-empty-p selected)
-            (or default-candidate "")
+    (setq selectrum--read-args (cl-list* prompt candidates args))
+    (unless selectrum--repeat
+      (setq selectrum--last-command this-command)
+      (setq selectrum--last-prefix-arg current-prefix-arg))
+    (let ((keymap (make-sparse-keymap)))
+      (set-keymap-parent keymap minibuffer-local-map)
+      ;; Use `map-apply' instead of `map-do' as the latter is not
+      ;; available in Emacs 25.
+      (map-apply
+       (lambda (key cmd)
+         (when (stringp key)
+           (setq key (kbd key)))
+         (define-key keymap key cmd))
+       selectrum-minibuffer-bindings)
+      (minibuffer-with-setup-hook
+          (lambda ()
+            (selectrum--minibuffer-setup-hook
+             candidates
+             :default-candidate default-candidate
+             :initial-input initial-input
+             :require-match (eq require-match t)))
+        (let* ((minibuffer-allow-text-properties t)
+               (resize-mini-windows 'grow-only)
+               (max-mini-window-height
+                (1+ selectrum-num-candidates-displayed))
+               (minibuffer-history-variable history)
+               (selectrum--active-p t)
+               (selected (read-from-minibuffer prompt nil keymap nil history)))
+          (if (string-empty-p selected)
+              (or default-candidate "")
             selected))))))
 
 ;;;###autoload
