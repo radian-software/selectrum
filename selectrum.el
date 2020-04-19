@@ -766,6 +766,16 @@ list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
+  (when selectrum--allow-multiple-selection-p
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (goto-char (point-min))
+        (insert
+         (apply
+          #'propertize
+          (substitute-command-keys
+           "[\\[selectrum-select-additional] enabled] ")
+          (text-properties-at (point)))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
