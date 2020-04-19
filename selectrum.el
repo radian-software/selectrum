@@ -1100,6 +1100,31 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
    :multiple t))
 
 ;;;###autoload
+(defun selectrum-completion-in-region
+    (start end collection predicate)
+  "Complete in-buffer text using a list of candidates.
+Can be used as `completion-in-region-function'. For START, END,
+COLLECTION, and PREDICATE, see `completion-in-region'."
+  (let ((cands (nconc
+                (completion-all-completions
+                 (buffer-substring-no-properties start end)
+                 collection
+                 predicate
+                 (- end start))
+                nil))
+        (result nil))
+    (pcase (length cands)
+      (`0 (message "No match"))
+      (`1 (setq result (car cands)))
+      ( _ (setq result (selectrum-read "Completion: " cands))))
+    (when result
+      (delete-region start end)
+      (insert (substring-no-properties result)))))
+
+(defvar selectrum--old-completion-in-region-function nil
+  "Previous value of `completion-in-region-function'.")
+
+;;;###autoload
 (defun selectrum-read-buffer (prompt &optional def require-match predicate)
   "Read buffer using Selectrum. Can be used as `read-buffer-function'.
 Actually, as long as `selectrum-completing-read' is installed in
@@ -1405,6 +1430,10 @@ ARGS are standard as in all `:around' advice."
                 (default-value 'read-file-name-function))
           (setq-default read-file-name-function
                         #'selectrum-read-file-name)
+          (setq selectrum--old-completion-in-region-function
+                (default-value 'completion-in-region-function))
+          (setq-default completion-in-region-function
+                        #'selectrum-completion-in-region)
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           (advice-add #'read-directory-name :override
@@ -1434,6 +1463,10 @@ ARGS are standard as in all `:around' advice."
                    #'selectrum-read-file-name)
         (setq-default read-file-name-function
                       selectrum--old-read-file-name-function))
+      (when (equal (default-value 'completion-in-region-function)
+                   #'selectrum-completion-in-region)
+        (setq-default completion-in-region-function
+                      selectrum--old-completion-in-region-function))
       (advice-remove #'completing-read-multiple
                      #'selectrum-completing-read-multiple)
       (advice-remove #'read-directory-name

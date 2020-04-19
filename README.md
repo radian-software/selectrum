@@ -339,6 +339,10 @@ In addition to `selectrum-read`, Selectrum makes available as part of
 its public API some of the functions that wrap `selectrum-read`:
 
 * `selectrum-completing-read` (for `completing-read-function`)
+* `selectrum-completing-read-multiple` (to override
+  `completing-read-multiple`)
+* `selectrum-completion-in-region` (for
+  `completion-in-region-function`)
 * `selectrum-read-buffer` (for `read-buffer-function`)
 * `selectrum-read-file-name` (for `read-file-name-function`)
 * `selectrum-read-directory-name` (to override `read-directory-name`)

@@ -55,6 +55,10 @@ The format is based on [Keep a Changelog].
   We have a new face `selectrum-additional-candidate` which determines
   how selected candidates other than the current candidate are
   highlighted. See [#53].
+* We provide a `selectrum-completion-in-region` function now and
+  install it on `completion-in-region-function` in `selectrum-mode`,
+  so `completion-at-point` will use Selectrum when there is more than
+  one completion ([#42]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -134,6 +138,7 @@ The format is based on [Keep a Changelog].
 [#35]: https://github.com/raxod502/selectrum/issues/35
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
+[#42]: https://github.com/raxod502/selectrum/issues/42
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
