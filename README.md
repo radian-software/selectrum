@@ -139,6 +139,10 @@ how to fix it.
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
+* *To select multiple candidates:* type `M-RET` to select additional
+  candidates before typing `RET` or `C-j` to exit the minibuffer. This
+  is only allowed in commands that use `completing-read-multiple`,
+  such as `describe-face`.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -338,6 +342,10 @@ In addition to `selectrum-read`, Selectrum makes available as part of
 its public API some of the functions that wrap `selectrum-read`:
 
 * `selectrum-completing-read` (for `completing-read-function`)
+* `selectrum-completing-read-multiple` (to override
+  `completing-read-multiple`)
+* `selectrum-completion-in-region` (for
+  `completion-in-region-function`)
 * `selectrum-read-buffer` (for `read-buffer-function`)
 * `selectrum-read-file-name` (for `read-file-name-function`)
 * `selectrum-read-directory-name` (to override `read-directory-name`)

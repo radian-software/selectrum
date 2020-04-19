@@ -45,6 +45,20 @@ The format is based on [Keep a Changelog].
 * You can now cause the minibuffer to always have the same height,
   even if there are fewer candidates, by enabling
   `selectrum-fix-minibuffer-height` ([#35]).
+* Multiple candidate selection is now supported, and we provide a
+  `selectrum-completing-read-multiple` function which is installed
+  automatically by `selectrum-mode`. This means that commands like
+  `describe-face` (which delegate to `completing-read-multiple`
+  internally) now use Selectrum by default. To select additional
+  candidates within a supported command, use `M-RET`. The feature is
+  supported by a new keyword argument `:multiple` to `selectrum-read`.
+  We have a new face `selectrum-additional-candidate` which determines
+  how selected candidates other than the current candidate are
+  highlighted. See [#53].
+* We provide a `selectrum-completion-in-region` function now and
+  install it on `completion-in-region-function` in `selectrum-mode`,
+  so `completion-at-point` will use Selectrum when there is more than
+  one completion ([#42]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -84,6 +98,11 @@ The format is based on [Keep a Changelog].
   typed, we now show an overlay indicating that you are in this state,
   so it is less confusing. The overlay shows what default value will
   be submitted if you press return. See [#55].
+* Switching buffers is now less confusing, because we don't modify the
+  order of the buffer list at all. Previously the default buffer to
+  switch to was moved to the top of the list. Now we leave it where it
+  is, and just select it initially. `selectrum-read` grows a new
+  argument `:no-move-default-candidate` to support this improvement.
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -124,9 +143,11 @@ The format is based on [Keep a Changelog].
 [#35]: https://github.com/raxod502/selectrum/issues/35
 [#38]: https://github.com/raxod502/selectrum/pull/38
 [#39]: https://github.com/raxod502/selectrum/issues/39
+[#42]: https://github.com/raxod502/selectrum/issues/42
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
+[#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
