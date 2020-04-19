@@ -139,6 +139,10 @@ how to fix it.
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
+* *To select multiple candidates:* type `M-RET` to select additional
+  candidates before typing `RET` or `C-j` to exit the minibuffer. This
+  is only allowed in commands that use `completing-read-multiple`,
+  such as `describe-face`.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select

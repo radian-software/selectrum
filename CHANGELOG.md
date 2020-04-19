@@ -45,6 +45,16 @@ The format is based on [Keep a Changelog].
 * You can now cause the minibuffer to always have the same height,
   even if there are fewer candidates, by enabling
   `selectrum-fix-minibuffer-height` ([#35]).
+* Multiple candidate selection is now supported, and we provide a
+  `selectrum-completing-read-multiple` function which is installed
+  automatically by `selectrum-mode`. This means that commands like
+  `describe-face` (which delegate to `completing-read-multiple`
+  internally) now use Selectrum by default. To select additional
+  candidates within a supported command, use `M-RET`. The feature is
+  supported by a new keyword argument `:multiple` to `selectrum-read`.
+  We have a new face `selectrum-additional-candidate` which determines
+  how selected candidates other than the current candidate are
+  highlighted. See [#53].
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -127,6 +137,7 @@ The format is based on [Keep a Changelog].
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
 [#52]: https://github.com/raxod502/selectrum/issues/52
+[#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
