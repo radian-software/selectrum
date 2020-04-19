@@ -250,6 +250,10 @@ matching and case-insensitive matching.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
+    * When multiple candidates are selected (in commands which allow
+      it, like `describe-face`), the selected candidates other than
+      the current one are highlighted with the face
+      `selectrum-additional-candidate`.
 * By default, the part of each candidate that matches your input is
   highlighted with the face `selectrum-primary-highlight`. There is
   also `selectrum-secondary-highlight`, which is not used by default
