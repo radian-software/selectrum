@@ -295,7 +295,11 @@ Ivy, and copied them to be used for Selectrum as well:
   tree based item navigation into a flat completion menu.
 
 * For cached sorting and additional features for `M-x` you can use
-  [amx](https://github.com/DarwinAwardWinner/amx).
+  [amx](https://github.com/DarwinAwardWinner/amx). Because of caching there is
+  no initial sort when starting the completion which can speed up command
+  invocation. Additionally `amx` can display keybindings, ignore uninteresting
+  commands and offers keybindings to call different actions on selected
+  commands.
 
 ### But what is it doing to my Emacs??
 
