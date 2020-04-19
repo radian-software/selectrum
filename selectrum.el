@@ -1128,14 +1128,34 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
   "Complete in-buffer text using a list of candidates.
 Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
-  (let ((cands (nconc
-                (completion-all-completions
-                 (buffer-substring-no-properties start end)
-                 collection
-                 predicate
-                 (- end start))
-                nil))
-        (result nil))
+  (let* ((cands (nconc
+                 (completion-all-completions
+                  (buffer-substring-no-properties start end)
+                  collection
+                  predicate
+                  (- end start))
+                 nil))
+         (result nil)
+         (annotation-func (plist-get completion-extra-properties
+                                     :annotation-function))
+         (docsig-func (plist-get completion-extra-properties
+                                 :company-docsig))
+         (selectrum-preprocess-candidates-function
+          (lambda (cands)
+            (selectrum--map-destructive
+             (lambda (cand)
+               (propertize cand
+                           'selectrum-candidate-display-prefix
+                           (when annotation-func
+                             (propertize
+                              (format "%-12s" (funcall annotation-func cand))
+                              'face 'italic))
+                           'selectrum-candidate-display-right-margin
+                           (when docsig-func
+                             (propertize
+                              (format "%s" (funcall docsig-func cand))
+                              'face 'italic))))
+             cands))))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
