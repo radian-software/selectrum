@@ -415,6 +415,11 @@ input that does not match any of the displayed candidates.")
 (defvar selectrum--allow-multiple-selection-p nil
   "Non-nil if multiple selection is allowed.")
 
+(defvar selectrum--move-default-candidate-p nil
+  "Non-nil means move default candidate to start of list.
+Nil means select the default candidate initially even if it's not
+at the start of the list.")
+
 (defvar selectrum--default-candidate nil
   "Default candidate, or nil if none given.")
 
@@ -563,10 +568,11 @@ just rendering it to the screen and then checking."
                        selectrum--preprocessed-candidates)))
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function input cands)))
-        (setq selectrum--refined-candidates
-              (selectrum--move-to-front-destructive
-               selectrum--default-candidate
-               selectrum--refined-candidates))
+        (when selectrum--move-default-candidate-p
+          (setq selectrum--refined-candidates
+                (selectrum--move-to-front-destructive
+                 selectrum--default-candidate
+                 selectrum--refined-candidates)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input selectrum--refined-candidates))
@@ -578,8 +584,17 @@ just rendering it to the screen and then checking."
                               (1- (length selectrum--refined-candidates)))))
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
-                (and (> (length selectrum--refined-candidates) 0)
-                     0))))
+                (cond
+                 ((null selectrum--refined-candidates)
+                  nil)
+                 (selectrum--move-default-candidate-p
+                  0)
+                 (t
+                  (or (cl-position selectrum--default-candidate
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
       (while selectrum--right-margin-overlays
@@ -971,6 +986,7 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--previous-input-string
               selectrum--match-required-p
               selectrum--allow-multiple-selection-p
+              selectrum--move-default-candidate-p
               selectrum--default-candidate
               selectrum--visual-input
               selectrum--read-args
@@ -989,7 +1005,7 @@ ARG has same meaning as in `previous-history-element'."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history multiple)
+            history multiple no-move-default-candidate)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -1013,7 +1029,13 @@ select one of the listed candidates (so, for example,
 \\[selectrum-submit-exact-input] has no effect). HISTORY is the
 `minibuffer-history-variable' to use (by default
 `minibuffer-history'). MULTIPLE, if non-nil, means to allow
-multiple selections and return a list of selected candidates."
+multiple selections and return a list of selected candidates.
+NO-MOVE-DEFAULT-CANDIDATE, if non-nil, means that the default
+candidate is not sorted first. Instead, it is left at its
+original position in the candidate list. However, it is still
+selected initially. This is handy for `switch-to-buffer' and
+friends, for which getting the candidate list out of order at all
+is very confusing."
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -1021,6 +1043,7 @@ multiple selections and return a list of selected candidates."
       (setq selectrum--last-prefix-arg current-prefix-arg))
     (setq selectrum--match-required-p require-match)
     (setq selectrum--allow-multiple-selection-p multiple)
+    (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
     (let ((keymap (make-sparse-keymap)))
       (set-keymap-parent keymap minibuffer-local-map)
       ;; Use `map-apply' instead of `map-do' as the latter is not
@@ -1163,7 +1186,8 @@ PREDICATE, see `read-buffer'."
      prompt candidates
      :default-candidate def
      :require-match (eq require-match t)
-     :history 'buffer-name-history)))
+     :history 'buffer-name-history
+     :no-move-default-candidate t)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")

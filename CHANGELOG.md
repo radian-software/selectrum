@@ -98,6 +98,11 @@ The format is based on [Keep a Changelog].
   typed, we now show an overlay indicating that you are in this state,
   so it is less confusing. The overlay shows what default value will
   be submitted if you press return. See [#55].
+* Switching buffers is now less confusing, because we don't modify the
+  order of the buffer list at all. Previously the default buffer to
+  switch to was moved to the top of the list. Now we leave it where it
+  is, and just select it initially. `selectrum-read` grows a new
+  argument `:no-move-default-candidate` to support this improvement.
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
