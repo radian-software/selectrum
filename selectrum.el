@@ -1041,6 +1041,20 @@ multiple selections and return a list of selected candidates."
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
+               ;; Need to bind this back to its standard value due to
+               ;; <https://github.com/raxod502/selectrum/issues/61>.
+               ;; What happens is `selectrum-read-file-name' binds
+               ;; `completing-read-function' to
+               ;; `selectrum--completing-read-file-name', so if you
+               ;; invoke another Selectrum command recursively then it
+               ;; inherits that binding, even if the new Selectrum
+               ;; command is not reading file names. This causes an
+               ;; error. Arguably this solution is a bit of a hack but
+               ;; it should work "well enough" for now. If we
+               ;; encounter more trouble then we shall come up with a
+               ;; proper solution.
+               (completing-read-function
+                #'selectrum-completing-read)
                (selectrum--active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
