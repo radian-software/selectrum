@@ -1090,7 +1090,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   "Read one or more choices using Selectrum.
 Replaces `completing-read-multiple'. For PROMPT, TABLE,
 PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF, and
-INHERIT-INPUT-METHOD, see `completing-read'."
+INHERIT-INPUT-METHOD, see `completing-read-multiple'."
   (ignore initial-input inherit-input-method)
   (selectrum-read
    prompt (selectrum--normalize-collection table predicate)
