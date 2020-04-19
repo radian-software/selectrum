@@ -1129,16 +1129,6 @@ PREDICATE, see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
-;;;###autoload
-(defun selectrum-read-file-name
-    (prompt &optional dir default-filename mustmatch initial predicate)
-  "Read file name using Selectrum. Can be used as `read-file-name-function'.
-For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
-PREDICATE, see `read-file-name'."
-  (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
-
 (defun selectrum--completing-read-file-name
     (prompt collection &optional
             predicate require-match initial-input
@@ -1179,6 +1169,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
      :require-match (eq require-match t))))
+
+;;;###autoload
+(defun selectrum-read-file-name
+    (prompt &optional dir default-filename mustmatch initial predicate)
+  "Read file name using Selectrum. Can be used as `read-file-name-function'.
+For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
+PREDICATE, see `read-file-name'."
+  (let ((completing-read-function #'selectrum--completing-read-file-name))
+    (read-file-name-default
+     prompt dir default-filename mustmatch initial predicate)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
