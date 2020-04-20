@@ -67,6 +67,11 @@ May be used to highlight parts of candidates that match specific
 parts of the input."
   :group 'selectrum-faces)
 
+(defface selectrum-completion-annotation
+  '((t :inherit italic :foreground "#888888"))
+  "Face used to display annotations in `selectrum-completion-in-region'."
+  :group 'selectrum-faces)
+
 ;;;; Variables
 
 (defvar selectrum-should-sort-p t
@@ -1135,27 +1140,29 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                   predicate
                   (- end start))
                  nil))
-         (result nil)
          (annotation-func (plist-get completion-extra-properties
                                      :annotation-function))
          (docsig-func (plist-get completion-extra-properties
                                  :company-docsig))
-         (selectrum-preprocess-candidates-function
-          (lambda (cands)
-            (selectrum--map-destructive
-             (lambda (cand)
-               (propertize cand
-                           'selectrum-candidate-display-prefix
-                           (when annotation-func
-                             (propertize
-                              (format "%-12s" (funcall annotation-func cand))
-                              'face 'italic))
-                           'selectrum-candidate-display-right-margin
-                           (when docsig-func
-                             (propertize
-                              (format "%s" (funcall docsig-func cand))
-                              'face 'italic))))
-             cands))))
+         (cands (selectrum--map-destructive
+                 (lambda (cand)
+                   (propertize
+                    cand
+                    'selectrum-candidate-display-prefix
+                    (when annotation-func
+                      ;; Rule out situations where the annotation is nil.
+                      (when-let (annotation (funcall annotation-func cand))
+                        (propertize
+                         (format "%-12s" annotation)
+                         'face 'selectrum-completion-annotation)))
+                    'selectrum-candidate-display-right-margin
+                    (when docsig-func
+                      (when-let (docsig (funcall docsig-func cand))
+                        (propertize
+                         (format "%s" docsig)
+                         'face 'selectrum-completion-annotation)))))
+                 cands))
+         (result nil))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
