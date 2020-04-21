@@ -297,9 +297,11 @@ Ivy, and copied them to be used for Selectrum as well:
 * As an alternative to `prescient.el` (although it only works for
   `M-x`) there is [Amx](https://github.com/DarwinAwardWinner/amx). It
   has some extra features specific to `M-x`, like displaying
-  keybindings and ignoring uninteresting commands. It is also reported
-  that Amx may be faster than `prescient.el` because it uses a
-  different sorting algorithm.
+  keybindings, ignoring uninteresting commands, and performing
+  alternate actions (such as `C-h f` instead of `RET` to look up docs
+  for a command instead of calling it). It is also reported that Amx
+  may be faster than `prescient.el` because it uses a different
+  sorting algorithm.
 
 ### But what is it doing to my Emacs??
 
