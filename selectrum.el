@@ -876,7 +876,13 @@ Otherwise just return CANDIDATE."
   (setq selectrum--result (selectrum--get-full candidate))
   (when (string-empty-p selectrum--result)
     (setq selectrum--result (or selectrum--default-candidate "")))
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (insert selectrum--result))
   (when selectrum--allow-multiple-selection-p
+    ;; add to history before adding current which already got inserted
+    (dolist (c selectrum--selected-candidates)
+      (add-to-history minibuffer-history-variable c))
     (cl-pushnew selectrum--result selectrum--selected-candidates)
     (setq selectrum--selected-candidates
           (nreverse selectrum--selected-candidates))
