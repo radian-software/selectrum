@@ -294,12 +294,12 @@ Ivy, and copied them to be used for Selectrum as well:
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the
   tree based item navigation into a flat completion menu.
 
-* For cached sorting and additional features for `M-x` you can use
-  [amx](https://github.com/DarwinAwardWinner/amx). Because of caching there is
-  no initial sort when starting the completion which can speed up command
-  invocation. Additionally `amx` can display keybindings, ignore uninteresting
-  commands and offers keybindings to call different actions on selected
-  commands.
+* As an alternative to `prescient.el` (although it only works for
+  `M-x`) there is [Amx](https://github.com/DarwinAwardWinner/amx). It
+  has some extra features specific to `M-x`, like displaying
+  keybindings and ignoring uninteresting commands. It is also reported
+  that Amx may be faster than `prescient.el` because it uses a
+  different sorting algorithm.
 
 ### But what is it doing to my Emacs??
 
