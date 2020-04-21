@@ -597,6 +597,8 @@ just rendering it to the screen and then checking."
                       0))))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
+      (overlay-put selectrum--count-overlay
+                   'priority 1)
       (while selectrum--right-margin-overlays
         (delete-overlay (pop selectrum--right-margin-overlays)))
       (setq input (or selectrum--visual-input input))
