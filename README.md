@@ -298,6 +298,15 @@ Ivy, and copied them to be used for Selectrum as well:
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the
   tree based item navigation into a flat completion menu.
 
+* As an alternative to `prescient.el` (although it only works for
+  `M-x`) there is [Amx](https://github.com/DarwinAwardWinner/amx). It
+  has some extra features specific to `M-x`, like displaying
+  keybindings, ignoring uninteresting commands, and performing
+  alternate actions (such as `C-h f` instead of `RET` to look up docs
+  for a command instead of calling it). It is also reported that Amx
+  may be faster than `prescient.el` because it uses a different
+  sorting algorithm.
+
 ### But what is it doing to my Emacs??
 
 By inspecting the source code of `selectrum-mode`, you will see that
