@@ -42,6 +42,7 @@
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
+(require 'minibuf-eldef)
 
 ;;;; Faces
 
@@ -356,6 +357,24 @@ If PREDICATE is non-nil, then it filters the collection as in
   (or (get-text-property 0 'selectrum-candidate-full candidate)
       candidate))
 
+(defvar selectrum--minibuffer-default-prompt-regexps
+  (let ((minibuffer-eldef-shorten-default nil))
+    (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
+                  (minibuffer-default--in-prompt-regexps)))
+  "See `minibuffer-default-in-prompt-regexps'.")
+
+(defun selectrum--replace-default-in-prompt (prompt)
+  "Remove default indication from PROMPT."
+  (let ((regexps selectrum--minibuffer-default-prompt-regexps))
+    (cl-dolist (matcher regexps prompt)
+      (let ((regex (if (stringp matcher) matcher (car matcher))))
+        (when (string-match regex prompt)
+          (cl-return
+           (replace-match "" nil nil prompt
+                          (if (consp matcher)
+                              (cadr matcher)
+                            0))))))))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -639,8 +658,7 @@ just rendering it to the screen and then checking."
               (if (= (minibuffer-prompt-end) bound)
                   (let ((str
                          (propertize
-                          (format " [default value: %S]"
-                                  (or selectrum--default-candidate 'none))
+                          (format " [submit empty string]")
                           'face 'minibuffer-prompt))
                         (ol (make-overlay
                              (minibuffer-prompt-end)
@@ -808,7 +826,21 @@ into the user input area to start with."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (max (if selectrum--match-required-p 0 -1)
+          (max (cond ((and selectrum--match-required-p
+                           (not selectrum--default-candidate))
+                      ;; allow submitting the empty string
+                      -1)
+                     ((and (not selectrum--match-required-p)
+                           (or (not selectrum--default-candidate)
+                               (and selectrum--previous-input-string
+                                    (not (string-empty-p
+                                          selectrum--previous-input-string)))))
+                      ;; when match is not required but there is a default
+                      ;; candidate only allow selecting when prompt isn't
+                      ;; empty because the default candidate is already
+                      ;; selected anyway
+                      -1)
+                     (t 0))
                (1- selectrum--current-candidate-index)))))
 
 (defun selectrum-next-candidate ()
@@ -1082,6 +1114,7 @@ is very confusing."
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
+               (prompt (selectrum--replace-default-in-prompt prompt))
                ;; Need to bind this back to its standard value due to
                ;; <https://github.com/raxod502/selectrum/issues/61>.
                ;; What happens is `selectrum-read-file-name' binds
