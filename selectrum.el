@@ -1148,12 +1148,12 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                  (lambda (cand)
                    (propertize
                     cand
-                    'selectrum-candidate-display-prefix
+                    'selectrum-candidate-display-suffix
                     (when annotation-func
                       ;; Rule out situations where the annotation is nil.
                       (when-let (annotation (funcall annotation-func cand))
                         (propertize
-                         (format "%-12s" annotation)
+                         annotation
                          'face 'selectrum-completion-annotation)))
                     'selectrum-candidate-display-right-margin
                     (when docsig-func
