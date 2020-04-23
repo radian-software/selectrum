@@ -468,12 +468,20 @@ of Selectrum itself.
   requires violating the `completing-read` abstraction rather
   aggressively, and that goes against Selectrum's design philosophy of
   simplicity and consistency.
-* In Emacs 25, `M-x ffap` is basically completely broken. This is
-  because in old versions of Emacs, `ffap` worked by calling
+* In Emacs 25 and earlier, `M-x ffap` is basically completely broken.
+  This is because in old versions of Emacs, `ffap` worked by calling
   `completing-read` directly with a special completion table function,
   rather than just using `read-file-name` like would be reasonable.
   Since Emacs 25 is going to die eventually, I'm not going to bother
   fixing this, although pull requests would be accepted.
+* In Emacs 26 and earlier, the way that messages are displayed while
+  the minibuffer is active is unworkably bad: they block out the
+  entire minibuffer as long as they are displayed, and then mess up
+  redisplay. This issue has been fixed in Emacs 27, and I suggest
+  upgrading. I think the best solution for people running Emacs 26
+  would be the development of a small third-party package which
+  backports the improvement from Emacs 27. That way all
+  minibuffer-based packages can benefit from the improvement.
 
 ## Why use Selectrum?
 
