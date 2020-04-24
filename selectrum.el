@@ -980,7 +980,10 @@ ARG has same meaning as in `previous-history-element'."
         (history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result (selectrum-read "History: " history)))
+    (let ((result
+           (let ((selectrum-candidate-inserted-hook nil)
+                 (selectrum-candidate-selected-hook nil))
+             (selectrum-read "History: " history :history t))))
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
