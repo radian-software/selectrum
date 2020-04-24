@@ -1151,13 +1151,13 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                     'selectrum-candidate-display-suffix
                     (when annotation-func
                       ;; Rule out situations where the annotation is nil.
-                      (when-let (annotation (funcall annotation-func cand))
+                      (when-let ((annotation (funcall annotation-func cand)))
                         (propertize
                          annotation
                          'face 'selectrum-completion-annotation)))
                     'selectrum-candidate-display-right-margin
                     (when docsig-func
-                      (when-let (docsig (funcall docsig-func cand))
+                      (when-let ((docsig (funcall docsig-func cand)))
                         (propertize
                          (format "%s" docsig)
                          'face 'selectrum-completion-annotation)))))
