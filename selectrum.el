@@ -599,9 +599,10 @@ just rendering it to the screen and then checking."
                               selectrum--default-candidate
                               cands (not minibuffer-completing-file-name))
                            cands))))
-        (setq selectrum--refined-candidates
-              (selectrum--move-to-front-destructive
-               input selectrum--refined-candidates))
+        (when (and input (not (string-empty-p input)))
+          (setq selectrum--refined-candidates
+                (selectrum--move-to-front-destructive
+                 input selectrum--refined-candidates)))
         (if selectrum--repeat
             (progn
               (setq selectrum--current-candidate-index
