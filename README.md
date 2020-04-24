@@ -266,6 +266,9 @@ matching and case-insensitive matching.
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
   candidate.
+* The `selectrum-completion-in-region` function can display annotations
+  if the `completion-in-region-function` backend offers them. Customize
+  the face `selectrum-completion-annotation` to change their appearance.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
