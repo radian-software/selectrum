@@ -287,11 +287,13 @@ new one."
       (setcar lst (funcall func (car lst)))
       (setq lst (cdr lst)))))
 
-(defun selectrum--move-to-front-destructive (elt lst)
+(defun selectrum--move-to-front-destructive (elt lst &optional add)
   "Move all instances of ELT to front of LST, if present.
-Make comparisons using `equal'. Modify the input list
-destructively and return the modified list."
+If ADD is non-nil add element if not present. Make comparisons
+using `equal'. Modify the input list destructively and return the
+modified list."
   (let* ((elts nil)
+         (found nil)
          ;; All problems in computer science are solved by an
          ;; additional layer of indirection.
          (lst (cons (make-symbol "dummy") lst))
@@ -299,10 +301,14 @@ destructively and return the modified list."
     (while (cdr link)
       (if (equal elt (cadr link))
           (progn
+            (setq found t)
             (push (cadr link) elts)
             (setcdr link (cddr link)))
         (setq link (cdr link))))
-    (nconc (nreverse elts) (cdr lst))))
+    (nconc (if (and elt add (not found))
+               (cons elt (nreverse elts))
+             (nreverse elts))
+           (cdr lst))))
 
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
@@ -591,7 +597,7 @@ just rendering it to the screen and then checking."
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
                  selectrum--default-candidate
-                 selectrum--refined-candidates)))
+                 selectrum--refined-candidates t)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input selectrum--refined-candidates))
