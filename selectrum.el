@@ -592,12 +592,13 @@ just rendering it to the screen and then checking."
                                       (alist-get 'candidates result))))
                        selectrum--preprocessed-candidates)))
           (setq selectrum--refined-candidates
-                (funcall selectrum-refine-candidates-function input cands)))
-        (when selectrum--move-default-candidate-p
-          (setq selectrum--refined-candidates
-                (selectrum--move-to-front-destructive
-                 selectrum--default-candidate
-                 selectrum--refined-candidates t)))
+                (funcall selectrum-refine-candidates-function input
+                         (if (and selectrum--move-default-candidate-p
+                                  selectrum--default-candidate)
+                             (selectrum--move-to-front-destructive
+                              selectrum--default-candidate
+                              cands t)
+                           cands))))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input selectrum--refined-candidates))
