@@ -42,6 +42,7 @@
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
+(require 'crm)
 
 ;;;; Faces
 
@@ -778,6 +779,15 @@ into the user input area to start with."
           (substitute-command-keys
            "[\\[selectrum-select-additional] enabled] ")
           (text-properties-at (point)))))))
+  (when crm-completion-table
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (minibuffer-prompt-end)
+        (when (search-backward ":" nil t)
+          (insert
+           (apply #'propertize
+                  " [one or more]"
+                  (text-properties-at (point))))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
@@ -869,11 +879,15 @@ Otherwise just return CANDIDATE."
   (remove-text-properties
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
-  (apply
-   #'run-hook-with-args
-   'selectrum-candidate-selected-hook
-   candidate selectrum--read-args)
-  (setq selectrum--result (selectrum--get-full candidate))
+  (setq selectrum--result
+        (if (and crm-completion-table
+                 (string-match crm-separator selectrum--previous-input-string))
+            selectrum--previous-input-string
+          (apply
+           #'run-hook-with-args
+           'selectrum-candidate-selected-hook
+           candidate selectrum--read-args)
+          (selectrum--get-full candidate)))
   (when (string-empty-p selectrum--result)
     (setq selectrum--result (or selectrum--default-candidate "")))
   (let ((inhibit-read-only t))
@@ -942,7 +956,15 @@ ignores the currently selected candidate, if one exists."
     (let* ((candidate (nth selectrum--current-candidate-index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert full)
+      (insert (if (not crm-completion-table)
+                  full
+                (let ((string ""))
+                  (dolist (str (butlast
+                                (split-string
+                                 selectrum--previous-input-string
+                                 crm-separator)))
+                    (setq string (concat string str ",")))
+                  (concat string full))))
       (add-to-history minibuffer-history-variable full)
       (apply
        #'run-hook-with-args
@@ -981,10 +1003,19 @@ ARG has same meaning as in `previous-history-element'."
     (when (eq history t)
       (user-error "No history is recorded for this command"))
     (let ((result (selectrum-read "History: " history)))
-      (if (and selectrum--match-required-p
-               (not (member result selectrum--refined-candidates)))
-          (user-error "That history element is not one of the candidates")
-        (selectrum--exit-with result)))))
+      (cond ((and selectrum--match-required-p
+                  crm-completion-table
+                  (not (cl-every (lambda (i)
+                                   (member i selectrum--refined-candidates))
+                                 (split-string result crm-separator t))))
+             (user-error
+              "History element contains elements not present in candidates"))
+            ((and selectrum--match-required-p
+                  (not crm-completion-table)
+                  (not (member result selectrum--refined-candidates)))
+             (user-error "History element is not one of the candidates"))
+            (t
+             (selectrum--exit-with result))))))
 
 ;;;; Main entry points
 
@@ -1125,20 +1156,28 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
 
 ;;;###autoload
 (defun selectrum-completing-read-multiple
-    (prompt table &optional
-            predicate require-match initial-input
-            hist def inherit-input-method)
+    (prompt table &optional predicate require-match initial-input
+            hist def _inherit-input-method)
   "Read one or more choices using Selectrum.
 Replaces `completing-read-multiple'. For PROMPT, TABLE,
 PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF, and
 INHERIT-INPUT-METHOD, see `completing-read-multiple'."
-  (ignore initial-input inherit-input-method)
-  (selectrum-read
-   prompt (selectrum--normalize-collection table predicate)
-   :default-candidate (or (car-safe def) def)
-   :require-match require-match
-   :history hist
-   :multiple t))
+  (let* ((crm-completion-table table)
+         (coll (all-completions "" #'crm--collection-fn predicate))
+         (candidates
+          (lambda (input)
+            (let ((ninput (or (car (last (split-string input crm-separator)))
+                              "")))
+              `((input . ,ninput)
+                (candidates . ,(copy-sequence coll))))))
+         (res (selectrum-read
+               prompt
+               candidates
+               :require-match require-match
+               :initial-input initial-input
+               :history hist
+               :default-candidate def)))
+    (split-string res crm-separator t)))
 
 ;;;###autoload
 (defun selectrum-completion-in-region
