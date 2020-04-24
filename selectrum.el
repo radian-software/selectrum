@@ -597,7 +597,7 @@ just rendering it to the screen and then checking."
                                   selectrum--default-candidate)
                              (selectrum--move-to-front-destructive
                               selectrum--default-candidate
-                              cands t)
+                              cands (not minibuffer-completing-file-name))
                            cands))))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
