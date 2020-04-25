@@ -597,7 +597,15 @@ just rendering it to the screen and then checking."
                                   selectrum--default-candidate)
                              (selectrum--move-to-front-destructive
                               selectrum--default-candidate
-                              cands (not minibuffer-completing-file-name))
+                              cands
+                              ;; Imenu blindly uses symbol-at-point as default
+                              ;; which might not be an actual candidate which
+                              ;; makes no sense for imenu and is confusing.
+                              (if (eq minibuffer-history-variable
+                                      'imenu--history-list)
+                                  (and (member selectrum--default-candidate
+                                               cands))
+                                (not minibuffer-completing-file-name)))
                            cands))))
         (when (and input (not (string-empty-p input)))
           (setq selectrum--refined-candidates
