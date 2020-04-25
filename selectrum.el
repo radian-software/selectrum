@@ -974,8 +974,8 @@ ARG has same meaning as in `previous-history-element'."
 
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
-
-If selectrum isn't active insert selected candidate."
+If Selectrum isn't active, insert this candidate into the
+minibuffer."
   (interactive)
   (let ((selectrum-should-sort-p nil)
         (enable-recursive-minibuffers t)
