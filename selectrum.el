@@ -424,6 +424,9 @@ input changes, and is subsequently passed to
 (defvar selectrum--result nil
   "Return value for `selectrum-read'. Candidate string or list of them.")
 
+(defvar selectrum--prompt-selected nil
+  "The selected prompt value if the the user exited with selected prompt.")
+
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
@@ -829,6 +832,7 @@ into the user input area to start with."
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
   (setq selectrum--previous-input-string nil)
+  (setq selectrum--prompt-selected nil)
   (setq selectrum--count-overlay (make-overlay (point-min) (point-min)))
   (add-hook
    'post-command-hook
@@ -926,7 +930,13 @@ Otherwise just return CANDIDATE."
     (setq selectrum--result (or selectrum--default-candidate "")))
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (insert selectrum--result))
+    ;; For file names we need to make sure to return the selected prompt via
+    ;; selectrum--prompt-selected because read-file-name-default just returns
+    ;; the default if there was one.
+    (if (and minibuffer-completing-file-name
+             (< selectrum--current-candidate-index 0))
+        (setq selectrum--prompt-selected candidate)
+      (insert selectrum--result)))
   (when selectrum--allow-multiple-selection-p
     ;; add to history before adding current which already got inserted
     (dolist (c selectrum--selected-candidates)
@@ -1291,6 +1301,20 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ;; May happen in case user quits out
                      ;; of a TRAMP prompt.
                      (quit))))
+             ;; Add non existing default file dynamically.
+             (when (and (equal selectrum--previous-input-string
+                               initial-input)
+                        (not (equal selectrum--default-candidate
+                                    selectrum--previous-input-string))
+                        (not (member selectrum--default-candidate
+                                     cands)))
+               ;; Make use of the fact tha read-file-name returns the default
+               ;; when initial input is submitted.
+               (push (propertize
+                      selectrum--default-candidate
+                      'selectrum-candidate-full
+                      initial-input)
+                     cands))
              `((input . ,ematch)
                (candidates . ,cands))))))
     (selectrum-read
@@ -1306,9 +1330,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
+  (let* ((completing-read-function #'selectrum--completing-read-file-name)
+         (res (read-file-name-default
+               prompt dir default-filename mustmatch initial predicate)))
+    (or selectrum--prompt-selected res)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
