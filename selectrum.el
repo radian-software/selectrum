@@ -552,7 +552,8 @@ just rendering it to the screen and then checking."
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker))
-          (keep-mark-active (not deactivate-mark)))
+          (keep-mark-active (not deactivate-mark))
+          (total-num-candidates nil))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
@@ -571,6 +572,7 @@ just rendering it to the screen and then checking."
                                       (setq selectrum--visual-input input)
                                       (alist-get 'candidates result))))
                        selectrum--preprocessed-candidates)))
+          (setq total-num-candidates (length cands))
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function input cands)))
         (when selectrum--move-default-candidate-p
@@ -704,7 +706,7 @@ just rendering it to the screen and then checking."
                           (num-digits
                            (length
                             (number-to-string
-                             (length selectrum--refined-candidates)))))
+                             total-num-candidates))))
                      (insert
                       (propertize
                        (concat
