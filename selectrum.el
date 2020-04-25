@@ -39,10 +39,10 @@
 
 (require 'cl-lib)
 (require 'map)
+(require 'minibuf-eldef)
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
-(require 'minibuf-eldef)
 
 ;;;; Faces
 
@@ -289,9 +289,9 @@ new one."
 
 (defun selectrum--move-to-front-destructive (elt lst &optional add)
   "Move all instances of ELT to front of LST, if present.
-If ADD is non-nil add element if not present. Make comparisons
-using `equal'. Modify the input list destructively and return the
-modified list."
+If ADD is non-nil add element to start of LST if not present.
+Make comparisons using `equal'. Modify the input list
+destructively and return the modified list."
   (let* ((elts nil)
          (found nil)
          ;; All problems in computer science are solved by an
@@ -836,17 +836,17 @@ into the user input area to start with."
     (setq selectrum--current-candidate-index
           (max (cond ((and selectrum--match-required-p
                            (not selectrum--default-candidate))
-                      ;; allow submitting the empty string
+                      ;; Allow submitting the empty string.
                       -1)
                      ((and (not selectrum--match-required-p)
                            (or (not selectrum--default-candidate)
                                (and selectrum--previous-input-string
                                     (not (string-empty-p
                                           selectrum--previous-input-string)))))
-                      ;; when match is not required but there is a default
-                      ;; candidate only allow selecting when prompt isn't
-                      ;; empty because the default candidate is already
-                      ;; selected anyway
+                      ;; When match is not required but there is a default
+                      ;; candidate only allow selecting when prompt isn't empty
+                      ;; because the default candidate is already selected
+                      ;; anyway.
                       -1)
                      (t 0))
                (1- selectrum--current-candidate-index)))))
