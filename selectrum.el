@@ -1166,10 +1166,19 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
          (coll (all-completions "" #'crm--collection-fn predicate))
          (candidates
           (lambda (input)
-            (let ((ninput (or (car (last (split-string input crm-separator)))
-                              "")))
-              `((input . ,ninput)
-                (candidates . ,(copy-sequence coll))))))
+            (let ((beg 0)
+                  (inputs ()))
+              (while (string-match crm-separator input beg)
+                (push (substring input beg (match-beginning 0))
+                      inputs)
+                (setq beg (match-end 0)))
+              (let ((coll (cl-delete-if
+                           (lambda (i)
+                             (member i inputs))
+                           (copy-sequence coll)))
+                    (ninput (substring input beg)))
+                `((input . ,ninput)
+                  (candidates . ,coll))))))
          (res (selectrum-read
                prompt
                candidates
