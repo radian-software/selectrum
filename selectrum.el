@@ -993,6 +993,15 @@ ARG has same meaning as in `previous-history-element'."
 
 ;;;; Main entry points
 
+(defmacro selectrum--let-maybe (pred varlist &rest body)
+  "If PRED evaluates to non-nil, bind variables in VARLIST and eval BODY.
+Otherwise, just eval BODY."
+  (declare (indent 0))
+  `(if ,pred
+       (let ,varlist
+         ,@body)
+     ,@body))
+
 (defmacro selectrum--save-global-state (&rest body)
   "Eval BODY, restoring all Selectrum global variables afterward."
   (declare (indent 0))
@@ -1005,8 +1014,6 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--refined-candidates
               selectrum--selected-candidates
               selectrum--result
-              selectrum--current-candidate-index
-              selectrum--previous-input-string
               selectrum--match-required-p
               selectrum--allow-multiple-selection-p
               selectrum--move-default-candidate-p
@@ -1016,14 +1023,22 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--count-overlay
               selectrum--default-value-overlay
               selectrum--right-margin-overlays
-              selectrum--last-command
-              selectrum--last-prefix-arg
               selectrum--repeat
               selectrum--active-p
               selectrum--minibuffer
               selectrum--current-candidate-bounds
               selectrum--ensure-centered-timer)))
-     ,@body))
+     ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
+     (selectrum--let-maybe
+       selectrum--active-p
+       (,@(mapcar
+           (lambda (var)
+             `(,var ,var))
+           '(selectrum--current-candidate-index
+             selectrum--previous-input-string
+             selectrum--last-command
+             selectrum--last-prefix-arg)))
+       ,@body)))
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
