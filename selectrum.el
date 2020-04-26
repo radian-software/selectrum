@@ -189,15 +189,11 @@ strings."
     ([remap end-of-buffer]                    . selectrum-goto-end)
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
     ([remap previous-matching-history-element]
-     . selectrum-previous-matching-history-element)
+     . selectrum-select-from-history)
     ([remap previous-history-element]
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
-    ("C-s"                                    . selectrum-select-from-history)
-    ("C-r"                                    . selectrum-select-from-history)
-    ("C-M-s"                                  . selectrum-select-from-history)
-    ("C-M-r"                                  . selectrum-select-from-history)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("M-RET"                                  . selectrum-select-additional)
     ("TAB"
