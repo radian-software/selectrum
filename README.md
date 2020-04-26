@@ -627,12 +627,10 @@ offer solutions to the problems outlined in the above sections.
 
 To be transparent, there are a few standard Emacs features which are
 not implemented in Selectrum (mostly because I was unaware they
-existed) but which do work in Icomplete. These include the
-`resize-mini-windows` setting (see
-[#35](https://github.com/raxod502/selectrum/issues/35)), recursive
-minibuffers, and many of the `completion-*` user options such as
-`completion-ignore-case`. I do not see any design reason these
-features cannot all be incorporated into Selectrum eventually.
+existed) but which do work in Icomplete: for example, many of the
+`completion-*` user options such as `completion-ignore-case`. I do not
+see any design reason these features cannot all be incorporated into
+Selectrum eventually.
 
 ### Why not Icicles?
 
