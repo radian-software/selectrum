@@ -266,6 +266,9 @@ matching and case-insensitive matching.
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
   candidate.
+* The `selectrum-completion-in-region` function can display annotations
+  if the `completion-in-region-function` backend offers them. Customize
+  the face `selectrum-completion-annotation` to change their appearance.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
@@ -624,12 +627,10 @@ offer solutions to the problems outlined in the above sections.
 
 To be transparent, there are a few standard Emacs features which are
 not implemented in Selectrum (mostly because I was unaware they
-existed) but which do work in Icomplete. These include the
-`resize-mini-windows` setting (see
-[#35](https://github.com/raxod502/selectrum/issues/35)), recursive
-minibuffers, and many of the `completion-*` user options such as
-`completion-ignore-case`. I do not see any design reason these
-features cannot all be incorporated into Selectrum eventually.
+existed) but which do work in Icomplete: for example, many of the
+`completion-*` user options such as `completion-ignore-case`. I do not
+see any design reason these features cannot all be incorporated into
+Selectrum eventually.
 
 ### Why not Icicles?
 

@@ -58,7 +58,10 @@ The format is based on [Keep a Changelog].
 * We provide a `selectrum-completion-in-region` function now and
   install it on `completion-in-region-function` in `selectrum-mode`,
   so `completion-at-point` will use Selectrum when there is more than
-  one completion ([#42]).
+  one completion ([#42]). This function can display annotation
+  informations if the `completion-at-point-function` backend offers
+  them, and they use the face `selectrum-completion-annotation`
+  ([#62]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -150,6 +153,7 @@ The format is based on [Keep a Changelog].
 [#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
+[#62]: https://github.com/raxod502/selectrum/pull/62
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)

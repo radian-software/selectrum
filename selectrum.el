@@ -67,6 +67,11 @@ May be used to highlight parts of candidates that match specific
 parts of the input."
   :group 'selectrum-faces)
 
+(defface selectrum-completion-annotation
+  '((t :inherit italic :foreground "#888888"))
+  "Face used to display annotations in `selectrum-completion-in-region'."
+  :group 'selectrum-faces)
+
 ;;;; Variables
 
 (defvar selectrum-should-sort-p t
@@ -547,7 +552,8 @@ just rendering it to the screen and then checking."
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker))
-          (keep-mark-active (not deactivate-mark)))
+          (keep-mark-active (not deactivate-mark))
+          (total-num-candidates nil))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
@@ -566,6 +572,7 @@ just rendering it to the screen and then checking."
                                       (setq selectrum--visual-input input)
                                       (alist-get 'candidates result))))
                        selectrum--preprocessed-candidates)))
+          (setq total-num-candidates (length cands))
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function input cands)))
         (when selectrum--move-default-candidate-p
@@ -699,7 +706,7 @@ just rendering it to the screen and then checking."
                           (num-digits
                            (length
                             (number-to-string
-                             (length selectrum--refined-candidates)))))
+                             total-num-candidates))))
                      (insert
                       (propertize
                        (concat
@@ -973,20 +980,36 @@ ARG has same meaning as in `previous-history-element'."
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-select-from-history ()
-  "Select a candidate from the minibuffer history."
+  "Select a candidate from the minibuffer history.
+If Selectrum isn't active, insert this candidate into the
+minibuffer."
   (interactive)
   (let ((selectrum-should-sort-p nil)
         (enable-recursive-minibuffers t)
         (history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result (selectrum-read "History: " history)))
+    (let ((result
+           (let ((selectrum-candidate-inserted-hook nil)
+                 (selectrum-candidate-selected-hook nil))
+             (selectrum-read "History: " history :history t))))
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
-        (selectrum--exit-with result)))))
+        (if selectrum--active-p
+            (selectrum--exit-with result)
+          (insert result))))))
 
 ;;;; Main entry points
+
+(defmacro selectrum--let-maybe (pred varlist &rest body)
+  "If PRED evaluates to non-nil, bind variables in VARLIST and eval BODY.
+Otherwise, just eval BODY."
+  (declare (indent 0))
+  `(if ,pred
+       (let ,varlist
+         ,@body)
+     ,@body))
 
 (defmacro selectrum--save-global-state (&rest body)
   "Eval BODY, restoring all Selectrum global variables afterward."
@@ -1000,8 +1023,6 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--refined-candidates
               selectrum--selected-candidates
               selectrum--result
-              selectrum--current-candidate-index
-              selectrum--previous-input-string
               selectrum--match-required-p
               selectrum--allow-multiple-selection-p
               selectrum--move-default-candidate-p
@@ -1011,14 +1032,22 @@ ARG has same meaning as in `previous-history-element'."
               selectrum--count-overlay
               selectrum--default-value-overlay
               selectrum--right-margin-overlays
-              selectrum--last-command
-              selectrum--last-prefix-arg
               selectrum--repeat
               selectrum--active-p
               selectrum--minibuffer
               selectrum--current-candidate-bounds
               selectrum--ensure-centered-timer)))
-     ,@body))
+     ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
+     (selectrum--let-maybe
+       selectrum--active-p
+       (,@(mapcar
+           (lambda (var)
+             `(,var ,var))
+           '(selectrum--current-candidate-index
+             selectrum--previous-input-string
+             selectrum--last-command
+             selectrum--last-prefix-arg)))
+       ,@body)))
 
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
@@ -1146,14 +1175,36 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
   "Complete in-buffer text using a list of candidates.
 Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
-  (let ((cands (nconc
-                (completion-all-completions
-                 (buffer-substring-no-properties start end)
-                 collection
-                 predicate
-                 (- end start))
-                nil))
-        (result nil))
+  (let* ((cands (nconc
+                 (completion-all-completions
+                  (buffer-substring-no-properties start end)
+                  collection
+                  predicate
+                  (- end start))
+                 nil))
+         (annotation-func (plist-get completion-extra-properties
+                                     :annotation-function))
+         (docsig-func (plist-get completion-extra-properties
+                                 :company-docsig))
+         (cands (selectrum--map-destructive
+                 (lambda (cand)
+                   (propertize
+                    cand
+                    'selectrum-candidate-display-suffix
+                    (when annotation-func
+                      ;; Rule out situations where the annotation is nil.
+                      (when-let ((annotation (funcall annotation-func cand)))
+                        (propertize
+                         annotation
+                         'face 'selectrum-completion-annotation)))
+                    'selectrum-candidate-display-right-margin
+                    (when docsig-func
+                      (when-let ((docsig (funcall docsig-func cand)))
+                        (propertize
+                         (format "%s" docsig)
+                         'face 'selectrum-completion-annotation)))))
+                 cands))
+         (result nil))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
