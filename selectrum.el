@@ -960,7 +960,9 @@ ignores the currently selected candidate, if one exists."
   "Forward to `previous-matching-history-element'."
   (interactive)
   (let ((inhibit-read-only t))
-    (call-interactively 'previous-matching-history-element)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (call-interactively 'previous-matching-history-element))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-next-history-element (arg)
@@ -968,7 +970,9 @@ ignores the currently selected candidate, if one exists."
 ARG has same meaning as in `next-history-element'."
   (interactive "p")
   (let ((inhibit-read-only t))
-    (next-history-element arg)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (next-history-element arg))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-previous-history-element (arg)
@@ -976,7 +980,9 @@ ARG has same meaning as in `next-history-element'."
 ARG has same meaning as in `previous-history-element'."
   (interactive "p")
   (let ((inhibit-read-only t))
-    (previous-history-element arg)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (previous-history-element arg))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-select-from-history ()
