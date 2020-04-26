@@ -340,11 +340,6 @@ If PREDICATE is non-nil, then it filters the collection as in
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
 
-(defun selectrum--get-full (candidate)
-  "Get full form of CANDIDATE by inspecting text properties."
-  (or (get-text-property 0 'selectrum-candidate-full candidate)
-      candidate))
-
 (defvar selectrum--minibuffer-default-prompt-regexps
   (let ((minibuffer-eldef-shorten-default nil))
     (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
@@ -476,6 +471,16 @@ This is used to implement `selectrum-repeat'.")
 
 ;;;;; Minibuffer state utility functions
 
+(defun selectrum--get-full (candidate)
+  "Get full form of CANDIDATE by inspecting text properties."
+  (if (and selectrum--transient-default-overlay
+           (< selectrum--current-candidate-index 0))
+      (substring-no-properties
+       (overlay-get selectrum--transient-default-overlay
+                    'after-string))
+    (or (get-text-property 0 'selectrum-candidate-full candidate)
+        candidate)))
+
 (defun selectrum--get-candidate (index)
   "Get candidate at given INDEX. Negative means get the current user input."
   (if (and index (>= index 0))
@@ -565,15 +570,18 @@ candidates."
                           cands))))))
 
 (defun selectrum--vague-member (default cands)
-  "Return non-nil if DEFAULT can be considered a member of CANDS.
+  "Return DEFAULT when it exists in CANDS.
 
-Return the represantation of DEFAULT in CANDS."
-  (if (member default cands)
-      default
+DEFAULT is returned in the format required for current selectrum
+completion."
+  (if-let ((mem (member default cands)))
+      (car mem)
     (when minibuffer-completing-file-name
       (let ((rep (file-name-nondirectory
                   (directory-file-name  (expand-file-name default)))))
         (when (member rep cands)
+          (put-text-property 0 1 'selectrum-candidate-full
+                             default rep)
           rep)))))
 
 (defun selectrum--highlight-prompt (start end)
@@ -896,6 +904,7 @@ into the user input area to start with."
                       ;; Allow submitting the empty string.
                       -1)
                      (selectrum--transient-default-overlay
+                      ;; Allow selecting the transient prompts.
                       -1)
                      ((and (not selectrum--match-required-p)
                            (or (not selectrum--default-candidate)
@@ -906,6 +915,11 @@ into the user input area to start with."
                       ;; candidate only allow selecting when prompt isn't empty
                       ;; because the default candidate is already selected
                       ;; anyway.
+                      -1)
+                     ((and minibuffer-completing-file-name
+                           (file-exists-p selectrum--previous-input-string))
+                      ;; For file completion always allow selecting the prompt
+                      ;; when the path exists.
                       -1)
                      (t 0))
                (1- selectrum--current-candidate-index)))))
@@ -1107,7 +1121,6 @@ Otherwise, just eval BODY."
               selectrum--preprocessed-candidates
               selectrum--refined-candidates
               selectrum--selected-candidates
-              selectrum--result
               selectrum--match-required-p
               selectrum--allow-multiple-selection-p
               selectrum--move-default-candidate-p
@@ -1128,7 +1141,8 @@ Otherwise, just eval BODY."
        (,@(mapcar
            (lambda (var)
              `(,var ,var))
-           '(selectrum--current-candidate-index
+           '(selectrum--result
+             selectrum--current-candidate-index
              selectrum--previous-input-string
              selectrum--last-command
              selectrum--last-prefix-arg)))
@@ -1394,9 +1408,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let ((completing-read-function #'selectrum--completing-read-file-name))
+  (let* ((completing-read-function #'selectrum--completing-read-file-name))
     (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
+     prompt dir default-filename mustmatch initial predicate)
+    selectrum--result))
+
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
