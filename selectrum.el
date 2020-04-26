@@ -292,29 +292,6 @@ new one."
       (setcar lst (funcall func (car lst)))
       (setq lst (cdr lst)))))
 
-(defun selectrum--move-to-front-destructive (elt lst &optional add)
-  "Move all instances of ELT to front of LST, if present.
-If ADD is non-nil add element to start of LST if not present.
-Make comparisons using `equal'. Modify the input list
-destructively and return the modified list."
-  (let* ((elts nil)
-         (found nil)
-         ;; All problems in computer science are solved by an
-         ;; additional layer of indirection.
-         (lst (cons (make-symbol "dummy") lst))
-         (link lst))
-    (while (cdr link)
-      (if (equal elt (cadr link))
-          (progn
-            (setq found t)
-            (push (cadr link) elts)
-            (setcdr link (cddr link)))
-        (setq link (cdr link))))
-    (nconc (if (and elt add (not found))
-               (cons elt (nreverse elts))
-             (nreverse elts))
-           (cdr lst))))
-
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
@@ -429,9 +406,6 @@ input changes, and is subsequently passed to
 (defvar selectrum--result nil
   "Return value for `selectrum-read'. Candidate string or list of them.")
 
-(defvar selectrum--prompt-selected nil
-  "The selected prompt value if the the user exited with selected prompt.")
-
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
@@ -471,6 +445,9 @@ Passed to various hook functions.")
 
 (defvar selectrum--default-value-overlay nil
   "Overlay used to show the default candidate when the input is selected.")
+
+(defvar selectrum--transient-default-overlay nil
+  "Overlay used to show the transient prompt overlay.")
 
 (defvar selectrum--right-margin-overlays nil
   "A list of overlays used to display right margin text.")
@@ -567,6 +544,64 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
+(defun selectrum--show-transient-default (default input cands)
+  "Return non-nil if transient DEFAULT should be shown.
+
+INPUT and CANDS are the current minibuffer input and current
+candidates."
+
+  (let ((initial-prompt (plist-get (cddr selectrum--read-args)
+                                   :initial-input)))
+    (when (string-empty-p input)
+      (setq input nil))
+    (when (string-empty-p initial-prompt)
+      (setq initial-prompt nil))
+    (and (equal input  initial-prompt)
+         (not (equal default input))
+         (not (member default cands))
+         (or (not minibuffer-completing-file-name)
+             (not (member (file-name-nondirectory
+                           (directory-file-name  (expand-file-name default)))
+                          cands))))))
+
+(defun selectrum--vague-member (default cands)
+  "Return non-nil if DEFAULT can be considered a member of CANDS.
+
+Return the represantation of DEFAULT in CANDS."
+  (if (member default cands)
+      default
+    (when minibuffer-completing-file-name
+      (let ((rep (file-name-nondirectory
+                  (directory-file-name  (expand-file-name default)))))
+        (when (member rep cands)
+          rep)))))
+
+(defun selectrum--highlight-prompt (start end)
+  "Highlight prompt according to current state.
+
+START and END are positions for highlighting."
+  (cond (selectrum--transient-default-overlay
+         (let ((str (overlay-get selectrum--transient-default-overlay
+                                 'after-string)))
+           (add-face-text-property
+            0 (length str)
+            'selectrum-current-candidate 'append str)))
+        ((= start end)
+         (let ((str
+                (propertize
+                 (format " [submit empty string]")
+                 'face 'minibuffer-prompt))
+               (ol (make-overlay
+                    end
+                    end)))
+           (put-text-property 0 1 'cursor t str)
+           (overlay-put ol 'after-string str)
+           (setq selectrum--default-value-overlay ol)))
+        (t
+         (add-text-properties
+          start end
+          '(face selectrum-current-candidate)))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
@@ -582,8 +617,17 @@ just rendering it to the screen and then checking."
           (bound (marker-position selectrum--end-of-input-marker))
           (keep-mark-active (not deactivate-mark))
           (total-num-candidates nil))
+      (when selectrum--transient-default-overlay
+        (let ((str (overlay-get selectrum--transient-default-overlay
+                                'after-string)))
+          (font-lock--remove-face-from-text-property
+           0 (length str) 'face 'selectrum-current-candidate
+           str)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
+        (when selectrum--transient-default-overlay
+          (delete-overlay selectrum--transient-default-overlay)
+          (setq selectrum--transient-default-overlay nil))
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
         (setq selectrum--visual-input nil)
@@ -605,22 +649,30 @@ just rendering it to the screen and then checking."
                 (funcall selectrum-refine-candidates-function input
                          (if (and selectrum--move-default-candidate-p
                                   selectrum--default-candidate)
-                             (selectrum--move-to-front-destructive
-                              selectrum--default-candidate
-                              cands
-                              ;; Imenu blindly uses symbol-at-point as default
-                              ;; which might not be an actual candidate which
-                              ;; makes no sense for imenu and is confusing.
-                              (if (eq minibuffer-history-variable
-                                      'imenu--history-list)
-                                  (and (member selectrum--default-candidate
-                                               cands))
-                                (not minibuffer-completing-file-name)))
+                             (if-let ((res (selectrum--vague-member
+                                            selectrum--default-candidate
+                                            cands)))
+                                 (cons res (delete res cands))
+                               (prog1 cands
+                                 (when (selectrum--show-transient-default
+                                        selectrum--default-candidate
+                                        selectrum--previous-input-string cands)
+                                   ;; Show transient default.
+                                   (let ((ol (make-overlay
+                                              selectrum--end-of-input-marker
+                                              selectrum--end-of-input-marker))
+                                         (td (propertize
+                                              selectrum--default-candidate
+                                              'face 'shadow)))
+                                     (put-text-property 0 1 'cursor t td)
+                                     (overlay-put ol 'after-string td)
+                                     (setq selectrum--transient-default-overlay
+                                           ol)))))
                            cands))))
-        (when (and input (not (string-empty-p input)))
+        (when (and input (not (string-empty-p input))
+                   (member input selectrum--refined-candidates))
           (setq selectrum--refined-candidates
-                (selectrum--move-to-front-destructive
-                 input selectrum--refined-candidates)))
+                (cons input (delete input selectrum--refined-candidates))))
         (if selectrum--repeat
             (progn
               (setq selectrum--current-candidate-index
@@ -681,20 +733,7 @@ just rendering it to the screen and then checking."
                        (< highlighted-index 0))
                   (and (not selectrum--match-required-p)
                        (not displayed-candidates)))
-              (if (= (minibuffer-prompt-end) bound)
-                  (let ((str
-                         (propertize
-                          (format " [submit empty string]")
-                          'face 'minibuffer-prompt))
-                        (ol (make-overlay
-                             (minibuffer-prompt-end)
-                             (minibuffer-prompt-end))))
-                    (put-text-property 0 1 'cursor t str)
-                    (overlay-put ol 'after-string str)
-                    (setq selectrum--default-value-overlay ol))
-                (add-text-properties
-                 (minibuffer-prompt-end) bound
-                 '(face selectrum-current-candidate)))
+              (selectrum--highlight-prompt (minibuffer-prompt-end) bound)
             (remove-text-properties
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))
@@ -839,7 +878,6 @@ into the user input area to start with."
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
   (setq selectrum--previous-input-string nil)
-  (setq selectrum--prompt-selected nil)
   (setq selectrum--count-overlay (make-overlay (point-min) (point-min)))
   (add-hook
    'post-command-hook
@@ -857,10 +895,7 @@ into the user input area to start with."
                            (not selectrum--default-candidate))
                       ;; Allow submitting the empty string.
                       -1)
-                     ((and minibuffer-completing-file-name
-                           (file-exists-p selectrum--previous-input-string))
-                      ;; Always allow selecting prompt for existing files, if
-                      ;; match is required existing files are ok.
+                     (selectrum--transient-default-overlay
                       -1)
                      ((and (not selectrum--match-required-p)
                            (or (not selectrum--default-candidate)
@@ -940,11 +975,6 @@ Otherwise just return CANDIDATE."
   (setq selectrum--result (selectrum--get-full candidate))
   (when (string-empty-p selectrum--result)
     (setq selectrum--result (or selectrum--default-candidate "")))
-  (when (< selectrum--current-candidate-index 0)
-    ;; For file names we don't want to return the default when the prompt was
-    ;; selected, which is what read-file-name-default does so we have to save
-    ;; the selected prompt to use it in selectrum-read-file-name.
-    (setq selectrum--prompt-selected selectrum--result))
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert selectrum--result))
@@ -1101,8 +1131,7 @@ Otherwise, just eval BODY."
            '(selectrum--current-candidate-index
              selectrum--previous-input-string
              selectrum--last-command
-             selectrum--last-prefix-arg
-             selectrum--prompt-selected)))
+             selectrum--last-prefix-arg)))
        ,@body)))
 
 (cl-defun selectrum-read
@@ -1325,51 +1354,33 @@ PREDICATE, see `read-buffer'."
   "Selectrums completing read function for `read-file-name-default'.
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
-  (let* ((initialized nil)
-         (coll
-          (lambda (input)
-            (let* (;; Full path of input dir (might include shadowed parts).
-                   (dir (or (file-name-directory input) ""))
-                   ;; The input used for matching current dir entries.
-                   (ematch (file-name-nondirectory input))
-                   ;; Adjust original collection for Selectrum.
-                   (cands
-                    (condition-case _
-                        (funcall collection dir
-                                 (lambda (i)
-                                   (when (and (or (not predicate)
-                                                  (funcall predicate i))
-                                              (not (member
-                                                    i '("./" "../"))))
-                                     (prog1 t
-                                       (add-text-properties
-                                        0 (length i)
-                                        `(selectrum-candidate-full
-                                          ,(concat dir i))
-                                        i))))
-                                 t)
-                      ;; May happen in case user quits out
-                      ;; of a TRAMP prompt.
-                      (quit))))
-              ;; Add non existing default file dynamically.
-              (when (and (not initialized)
-                         (equal selectrum--previous-input-string
-                                initial-input)
-                         (not (equal selectrum--default-candidate
-                                     selectrum--previous-input-string))
-                         (not (member selectrum--default-candidate cands)))
-                ;; Make use of the fact that read-file-name returns the default
-                ;; when initial input is submitted.
-                (push (propertize
-                       selectrum--default-candidate
-                       'selectrum-candidate-full
-                       initial-input
-                       'face
-                       'shadow)
-                      cands))
-              (setq initialized t)
-              `((input . ,ematch)
-                (candidates . ,cands))))))
+  (let ((coll
+         (lambda (input)
+           (let* (;; Full path of input dir (might include shadowed parts).
+                  (dir (or (file-name-directory input) ""))
+                  ;; The input used for matching current dir entries.
+                  (ematch (file-name-nondirectory input))
+                  ;; Adjust original collection for Selectrum.
+                  (cands
+                   (condition-case _
+                       (funcall collection dir
+                                (lambda (i)
+                                  (when (and (or (not predicate)
+                                                 (funcall predicate i))
+                                             (not (member
+                                                   i '("./" "../"))))
+                                    (prog1 t
+                                      (add-text-properties
+                                       0 (length i)
+                                       `(selectrum-candidate-full
+                                         ,(concat dir i))
+                                       i))))
+                                t)
+                     ;; May happen in case user quits out
+                     ;; of a TRAMP prompt.
+                     (quit))))
+             `((input . ,ematch)
+               (candidates . ,cands))))))
     (selectrum-read
      prompt coll
      :default-candidate (or (car-safe def) def)
@@ -1383,10 +1394,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let* ((completing-read-function #'selectrum--completing-read-file-name)
-         (res (read-file-name-default
-               prompt dir default-filename mustmatch initial predicate)))
-    (or selectrum--prompt-selected res)))
+  (let ((completing-read-function #'selectrum--completing-read-file-name))
+    (read-file-name-default
+     prompt dir default-filename mustmatch initial predicate)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
