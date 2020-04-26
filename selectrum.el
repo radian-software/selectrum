@@ -539,6 +539,16 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
+(defun selectrum--minibuffer-pre-command-hook ()
+  "Cleanup highlighting before next command."
+  (when (and selectrum--current-candidate-index
+             (> selectrum--current-candidate-index -1))
+    (let ((cand (nth selectrum--current-candidate-index
+                     selectrum--refined-candidates)))
+      (font-lock--remove-face-from-text-property
+       0 (length cand) 'face 'selectrum-current-candidate
+       cand))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
@@ -798,6 +808,8 @@ into the user input area to start with."
             candidates
           (funcall selectrum-preprocess-candidates-function candidates)))
   (setq selectrum--default-candidate default-candidate)
+  (add-hook 'pre-command-hook
+            #'selectrum--minibuffer-pre-command-hook nil 'local)
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
