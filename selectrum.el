@@ -1424,13 +1424,16 @@ shadows correctly."
                                     (file-name-sans-extension
                                      (selectrum--trailing-components
                                       num-components path)))
-                                   'fixedcase 'literal))
+                                   'fixedcase 'literal
+                                   'selectrum--lib-path path))
                                 paths)))
                    (setq lst (nconc candidate-paths lst)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (selectrum-read "Library name: " lst :require-match t)))
+    (get-text-property
+     0 'selectrum--lib-path
+     (selectrum-read "Library name: " lst :require-match t))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
