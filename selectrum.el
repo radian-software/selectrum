@@ -1086,18 +1086,25 @@ ARG has same meaning as in `previous-history-element'."
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-select-from-history ()
-  "Select a candidate from the minibuffer history."
+  "Select a candidate from the minibuffer history.
+If Selectrum isn't active, insert this candidate into the
+minibuffer."
   (interactive)
   (let ((selectrum-should-sort-p nil)
         (enable-recursive-minibuffers t)
         (history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result (selectrum-read "History: " history)))
+    (let ((result
+           (let ((selectrum-candidate-inserted-hook nil)
+                 (selectrum-candidate-selected-hook nil))
+             (selectrum-read "History: " history :history t))))
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
-        (selectrum--exit-with result)))))
+        (if selectrum--active-p
+            (selectrum--exit-with result)
+          (insert result))))))
 
 ;;;; Main entry points
 
