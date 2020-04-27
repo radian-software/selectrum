@@ -541,13 +541,10 @@ just rendering it to the screen and then checking."
 
 (defun selectrum--minibuffer-pre-command-hook ()
   "Cleanup highlighting before next command."
-  (when (and selectrum--current-candidate-index
-             (> selectrum--current-candidate-index -1))
-    (let ((cand (nth selectrum--current-candidate-index
-                     selectrum--refined-candidates)))
-      (font-lock--remove-face-from-text-property
-       0 (length cand) 'face 'selectrum-current-candidate
-       cand))))
+  (let ((cand (selectrum--get-candidate selectrum--current-candidate-index)))
+    (font-lock--remove-face-from-text-property
+     0 (length cand) 'face 'selectrum-current-candidate
+     cand)))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
