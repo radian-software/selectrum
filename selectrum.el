@@ -808,8 +808,9 @@ into the user input area to start with."
             candidates
           (funcall selectrum-preprocess-candidates-function candidates)))
   (setq selectrum--default-candidate default-candidate)
-  (add-hook 'pre-command-hook
-            #'selectrum--minibuffer-pre-command-hook nil 'local)
+  (when (version< emacs-version "27")
+    (add-hook 'pre-command-hook
+              #'selectrum--minibuffer-pre-command-hook nil 'local))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
