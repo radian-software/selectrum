@@ -690,6 +690,7 @@ START and END are positions for highlighting."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
+                 (selectrum--transient-default-overlay -1)
                  ((null selectrum--refined-candidates)
                   nil)
                  (selectrum--move-default-candidate-p
