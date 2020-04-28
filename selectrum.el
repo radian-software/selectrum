@@ -669,9 +669,7 @@ START and END are positions for highlighting."
                                    (let ((ol (make-overlay
                                               selectrum--end-of-input-marker
                                               selectrum--end-of-input-marker))
-                                         (td (propertize
-                                              selectrum--default-candidate
-                                              'face 'shadow)))
+                                         (td selectrum--default-candidate))
                                      (put-text-property 0 1 'cursor t td)
                                      (overlay-put ol 'after-string td)
                                      (setq selectrum--transient-default-overlay
