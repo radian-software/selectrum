@@ -539,13 +539,6 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
-(defun selectrum--minibuffer-pre-command-hook ()
-  "Cleanup highlighting before next command."
-  (let ((cand (selectrum--get-candidate selectrum--current-candidate-index)))
-    (font-lock--remove-face-from-text-property
-     0 (length cand) 'face 'selectrum-current-candidate
-     cand)))
-
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
@@ -693,16 +686,18 @@ just rendering it to the screen and then checking."
                               'selectrum-additional-candidate))))
                    (setq displayed-candidate
                          (copy-sequence displayed-candidate))
-                   ;; Use `add-face-text-property' to avoid trampling
+                   ;; Use `font-lock-prepend-text-property'. to avoid trampling
                    ;; highlighting done by
-                   ;; `selectrum-highlight-candidates-function', see
-                   ;; <https://github.com/raxod502/selectrum/issues/21>.
-                   ;; No need to clean up afterwards, as an update
-                   ;; will cause all these strings to be thrown away
-                   ;; and re-generated from scratch.
-                   (add-face-text-property
+                   ;; `selectrum-highlight-candidates-function'. See
+                   ;; <https://github.com/raxod502/selectrum/issues/21>. In
+                   ;; emacs < 27 `add-face-text-property' causes other issues
+                   ;; see <https://github.com/raxod502/selectrum/issues/58>,
+                   ;; <https://github.com/raxod502/selectrum/pull/76>. No need to
+                   ;; clean up afterwards, as an update will cause all these
+                   ;; strings to be thrown away and re-generated from scratch.
+                   (font-lock-prepend-text-property
                     0 (length displayed-candidate)
-                    face 'append displayed-candidate))
+                    'face face displayed-candidate))
                  (insert "\n")
                  (when (equal index highlighted-index)
                    (setf (car selectrum--current-candidate-bounds)
@@ -805,9 +800,6 @@ into the user input area to start with."
             candidates
           (funcall selectrum-preprocess-candidates-function candidates)))
   (setq selectrum--default-candidate default-candidate)
-  (when (version< emacs-version "27")
-    (add-hook 'pre-command-hook
-              #'selectrum--minibuffer-pre-command-hook nil 'local))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
