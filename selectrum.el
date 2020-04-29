@@ -1580,9 +1580,11 @@ ARGS are standard as in all `:around' advice."
       ;; defined in older Emacs versions.
       (advice-remove 'set-minibuffer-message
                      #'selectrum--fix-set-minibuffer-message)
-      (define-key minibuffer-local-map
-        [remap previous-matching-history-element]
-        nil))))
+      (when (eq (lookup-key minibuffer-local-map
+                            [remap previous-matching-history-element])
+                'selectrum-select-from-history)
+        (define-key minibuffer-local-map
+          [remap previous-matching-history-element] nil)))))
 
 ;;;; Closing remarks
 
