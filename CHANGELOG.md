@@ -30,8 +30,8 @@ The format is based on [Keep a Changelog].
   a key sequence in order to use it.) This command implements similar
   functionality to `ivy-resume`. See [#39].
 * Experimental support for using Selectrum as a backend for Helm
-  commands. Use it by loading the `selectrum-helm` library and
-  enabling `selectrum-helm-mode`. See [#18].
+  commands. Use it by enabling `selectrum-helm-mode` from the
+  `selectrum-helm` library. See [#18].
 * You can now give a prefix argument to
   `selectrum-select-current-candidate` to select the candidate at a
   given index directly. New user option `selectrum-show-indices` to

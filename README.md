@@ -234,8 +234,8 @@ matching and case-insensitive matching.
   user experience. However, this support might allow you to make more
   convenient use of the extensive Helm ecosystem.
 
-  To use the support, load the `selectrum-helm` library and enable
-  `selectrum-helm-mode`.
+  To use the support, enable `selectrum-helm-mode` from the
+  `selectrum-helm` library.
 
 ### Customization
 
