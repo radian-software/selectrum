@@ -124,7 +124,9 @@ The format is based on [Keep a Changelog].
   trample on the results of `selectrum-highlight-candidates-function`.
   In other words, the matched part of the current candidate is now
   highlighted just like the matched part of the other candidates. See
-  [#21].
+  [#21]. Using `add-face-text-property` caused further face trampling
+  issues for Emacs < 27 and was replaced by
+  `font-lock-prepend-text-property` [#76].
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
@@ -154,6 +156,7 @@ The format is based on [Keep a Changelog].
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#76]: https://github.com/raxod502/selectrum/pull/76
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
