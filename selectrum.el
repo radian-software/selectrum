@@ -1582,7 +1582,7 @@ ARGS are standard as in all `:around' advice."
                      #'selectrum--fix-set-minibuffer-message)
       (when (eq (lookup-key minibuffer-local-map
                             [remap previous-matching-history-element])
-                'selectrum-select-from-history)
+                #'selectrum-select-from-history)
         (define-key minibuffer-local-map
           [remap previous-matching-history-element] nil)))))
 
