@@ -411,8 +411,8 @@ which may be applied to candidates using `propertize`:
   parent directories in `read-library-name`.
 * `selectrum-candidate-display-suffix`: same as the display prefix,
   but it's postpended instead of prepended when the candidate is
-  dispalyed. This is used, for example, to display a trailing slash on
-  directories in `find-file`.
+  dispalyed. This is used, for example, to display candidate
+  annotations under `completion-in-region`.
 * `selectrum-candidate-full`: controls how the candidate appears in
   the user input area of the minibuffer. If this property is present,
   then it specifies the canonical representation of the candidate.
