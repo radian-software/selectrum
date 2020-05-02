@@ -63,8 +63,10 @@ The format is based on [Keep a Changelog].
   so `completion-at-point` will use Selectrum when there is more than
   one completion ([#42]). This function can display annotation
   informations if the `completion-at-point-function` backend offers
-  them, and they use the face `selectrum-completion-annotation`
-  ([#62]).
+  them ([#62]).
+* This function uses the faces `selectrum-completion-annotation` and
+  `selectrum-completion-docsig`, and is affected by the built-in face
+  `completions-common-part` ([#86]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -160,6 +162,7 @@ The format is based on [Keep a Changelog].
 [#62]: https://github.com/raxod502/selectrum/pull/62
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
+[#86]: https://github.com/raxod502/selectrum/pull/86
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
