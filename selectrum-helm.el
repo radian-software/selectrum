@@ -106,6 +106,7 @@ For PLIST, see `helm'. This is an `:override' advice for `helm'."
           (setq action (symbol-value action)))
         (funcall (cdr (car action)) cand)))))
 
+;;;###autoload
 (define-minor-mode selectrum-helm-mode
   "Minor mode to use Selectrum to implement Helm commands."
   :global t

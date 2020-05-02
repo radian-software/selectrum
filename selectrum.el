@@ -189,15 +189,11 @@ strings."
     ([remap end-of-buffer]                    . selectrum-goto-end)
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
     ([remap previous-matching-history-element]
-     . selectrum-previous-matching-history-element)
+     . selectrum-select-from-history)
     ([remap previous-history-element]
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
-    ("C-s"                                    . selectrum-select-from-history)
-    ("C-r"                                    . selectrum-select-from-history)
-    ("C-M-s"                                  . selectrum-select-from-history)
-    ("C-M-r"                                  . selectrum-select-from-history)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("M-RET"                                  . selectrum-select-additional)
     ("TAB"
@@ -962,7 +958,9 @@ ignores the currently selected candidate, if one exists."
   "Forward to `previous-matching-history-element'."
   (interactive)
   (let ((inhibit-read-only t))
-    (call-interactively 'previous-matching-history-element)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (call-interactively 'previous-matching-history-element))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-next-history-element (arg)
@@ -970,7 +968,9 @@ ignores the currently selected candidate, if one exists."
 ARG has same meaning as in `next-history-element'."
   (interactive "p")
   (let ((inhibit-read-only t))
-    (next-history-element arg)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (next-history-element arg))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-previous-history-element (arg)
@@ -978,7 +978,9 @@ ARG has same meaning as in `next-history-element'."
 ARG has same meaning as in `previous-history-element'."
   (interactive "p")
   (let ((inhibit-read-only t))
-    (previous-history-element arg)
+    (save-restriction
+      (narrow-to-region (point-min) selectrum--end-of-input-marker)
+      (previous-history-element arg))
     (goto-char (minibuffer-prompt-end))))
 
 (defun selectrum-select-from-history ()
@@ -1545,7 +1547,10 @@ ARGS are standard as in all `:around' advice."
           ;; No sharp quote because `set-minibuffer-message' is not
           ;; defined in older Emacs versions.
           (advice-add 'set-minibuffer-message :after
-                      #'selectrum--fix-set-minibuffer-message))
+                      #'selectrum--fix-set-minibuffer-message)
+          (define-key minibuffer-local-map
+            [remap previous-matching-history-element]
+            'selectrum-select-from-history))
       (when (equal (default-value 'completing-read-function)
                    #'selectrum-completing-read)
         (setq-default completing-read-function
@@ -1576,7 +1581,12 @@ ARGS are standard as in all `:around' advice."
       ;; No sharp quote because `set-minibuffer-message' is not
       ;; defined in older Emacs versions.
       (advice-remove 'set-minibuffer-message
-                     #'selectrum--fix-set-minibuffer-message))))
+                     #'selectrum--fix-set-minibuffer-message)
+      (when (eq (lookup-key minibuffer-local-map
+                            [remap previous-matching-history-element])
+                #'selectrum-select-from-history)
+        (define-key minibuffer-local-map
+          [remap previous-matching-history-element] nil)))))
 
 ;;;; Closing remarks
 
