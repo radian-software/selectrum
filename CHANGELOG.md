@@ -131,6 +131,9 @@ The format is based on [Keep a Changelog].
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
+* If `selectrum-num-candidates-displayed` is set to one, the
+  highlighting works correctly now [#85]. Before the prompt would get
+  highlighted instead of the current candidate.
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -159,6 +162,7 @@ The format is based on [Keep a Changelog].
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
 [#77]: https://github.com/raxod502/selectrum/pull/77
+[#85]: https://github.com/raxod502/selectrum/pull/85
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
