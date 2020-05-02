@@ -127,9 +127,7 @@ The format is based on [Keep a Changelog].
   trample on the results of `selectrum-highlight-candidates-function`.
   In other words, the matched part of the current candidate is now
   highlighted just like the matched part of the other candidates. See
-  [#21]. Using `add-face-text-property` caused further face trampling
-  issues for Emacs < 27 and was replaced by
-  `font-lock-prepend-text-property` [#76].
+  ([#21], [#76]).
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
