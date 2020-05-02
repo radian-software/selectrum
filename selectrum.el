@@ -612,7 +612,7 @@ just rendering it to the screen and then checking."
                   ;; there are guaranteed to be more candidates shown
                   ;; below the selection than above.
                   (1+ (- selectrum--current-candidate-index
-                         (/ selectrum-num-candidates-displayed 2)))
+                         (max 1 (/ selectrum-num-candidates-displayed 2))))
                   0
                   (max (- (length selectrum--refined-candidates)
                           selectrum-num-candidates-displayed)
