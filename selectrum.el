@@ -874,14 +874,21 @@ Otherwise just return CANDIDATE."
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
   (setq selectrum--result
-        (if (and selectrum--allow-multiple-selection-p
-                 (string-match crm-separator selectrum--previous-input-string))
-            selectrum--previous-input-string
-          (apply
-           #'run-hook-with-args
-           'selectrum-candidate-selected-hook
-           candidate selectrum--read-args)
-          (selectrum--get-full candidate)))
+        (cond ((and selectrum--allow-multiple-selection-p
+                    (string-match crm-separator selectrum--previous-input-string))
+               (with-temp-buffer
+                 (insert selectrum--previous-input-string)
+                 (re-search-backward crm-separator)
+                 (goto-char (match-end 0))
+                 (delete-region (point) (point-max))
+                 (insert (selectrum--get-full candidate))
+                 (buffer-string)))
+              (t
+               (apply
+                #'run-hook-with-args
+                'selectrum-candidate-selected-hook
+                candidate selectrum--read-args)
+               (selectrum--get-full candidate))))
   (when (string-empty-p selectrum--result)
     (setq selectrum--result (or selectrum--default-candidate "")))
   (let ((inhibit-read-only t))
