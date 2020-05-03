@@ -451,13 +451,11 @@ For more information, see their docstrings.
 
 ## Contributor guide
 
-This section is intended for people who would like to modify the code
-of Selectrum itself.
+Please see [the contributor guide for my
+projects](https://github.com/raxod502/contributor-guide).
 
-* Run the linters and re-generate the table of contents in the README
-  by way of `make lint`. This is done by
-  [CircleCI](https://circleci.com/gh/raxod502/selectrum) against every
-  commit and pull request.
+Technical points:
+
 * When adding a new state variable (like for example
   `selectrum--current-candidate-index`), you should think if its value
   needs to be preserved when entering a recursive Selectrum session.
