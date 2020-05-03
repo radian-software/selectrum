@@ -127,7 +127,7 @@ The format is based on [Keep a Changelog].
   trample on the results of `selectrum-highlight-candidates-function`.
   In other words, the matched part of the current candidate is now
   highlighted just like the matched part of the other candidates. See
-  [#21].
+  ([#21], [#76]).
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
@@ -158,6 +158,7 @@ The format is based on [Keep a Changelog].
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 

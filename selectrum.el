@@ -682,16 +682,18 @@ just rendering it to the screen and then checking."
                               'selectrum-additional-candidate))))
                    (setq displayed-candidate
                          (copy-sequence displayed-candidate))
-                   ;; Use `add-face-text-property' to avoid trampling
+                   ;; Use `font-lock-prepend-text-property'. to avoid trampling
                    ;; highlighting done by
-                   ;; `selectrum-highlight-candidates-function', see
-                   ;; <https://github.com/raxod502/selectrum/issues/21>.
-                   ;; No need to clean up afterwards, as an update
-                   ;; will cause all these strings to be thrown away
-                   ;; and re-generated from scratch.
-                   (add-face-text-property
+                   ;; `selectrum-highlight-candidates-function'. See
+                   ;; <https://github.com/raxod502/selectrum/issues/21>. In
+                   ;; emacs < 27 `add-face-text-property' causes other issues
+                   ;; see <https://github.com/raxod502/selectrum/issues/58>,
+                   ;; <https://github.com/raxod502/selectrum/pull/76>. No need to
+                   ;; clean up afterwards, as an update will cause all these
+                   ;; strings to be thrown away and re-generated from scratch.
+                   (font-lock-prepend-text-property
                     0 (length displayed-candidate)
-                    face 'append displayed-candidate))
+                    'face face displayed-candidate))
                  (insert "\n")
                  (when (equal index highlighted-index)
                    (setf (car selectrum--current-candidate-bounds)
