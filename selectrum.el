@@ -780,7 +780,9 @@ into the user input area to start with."
         (when (search-backward ":" nil t)
           (insert
            (apply #'propertize
-                  " [one or more]"
+                  (substitute-command-keys
+                   (concat " [add more using "
+                           "\\[selectrum-insert-current-candidate]]"))
                   (text-properties-at (point))))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
