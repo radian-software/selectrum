@@ -781,8 +781,9 @@ into the user input area to start with."
           (insert
            (apply #'propertize
                   (substitute-command-keys
-                   (concat " [add more using "
-                           "\\[selectrum-insert-current-candidate]]"))
+                   (concat " [one OR more using "
+                           "\\[selectrum-insert-current-candidate] "
+                           "+ crm-separator]"))
                   (text-properties-at (point))))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
