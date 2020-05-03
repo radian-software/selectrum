@@ -38,11 +38,11 @@
 ;;;; Libraries
 
 (require 'cl-lib)
+(require 'crm)
 (require 'map)
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
-(require 'crm)
 
 ;;;; Faces
 
@@ -195,7 +195,6 @@ strings."
     ("C-M-s"                                  . selectrum-select-from-history)
     ("C-M-r"                                  . selectrum-select-from-history)
     ("C-j"                                    . selectrum-submit-exact-input)
-    ("M-RET"                                  . selectrum-select-additional)
     ("TAB"
      . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
@@ -772,16 +771,6 @@ into the user input area to start with."
   (when selectrum--allow-multiple-selection-p
     (let ((inhibit-read-only t))
       (save-excursion
-        (goto-char (point-min))
-        (insert
-         (apply
-          #'propertize
-          (substitute-command-keys
-           "[\\[selectrum-select-additional] enabled] ")
-          (text-properties-at (point)))))))
-  (when crm-completion-table
-    (let ((inhibit-read-only t))
-      (save-excursion
         (minibuffer-prompt-end)
         (when (search-backward ":" nil t)
           (insert
@@ -880,7 +869,7 @@ Otherwise just return CANDIDATE."
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
   (setq selectrum--result
-        (if (and crm-completion-table
+        (if (and selectrum--allow-multiple-selection-p
                  (string-match crm-separator selectrum--previous-input-string))
             selectrum--previous-input-string
           (apply
@@ -893,14 +882,6 @@ Otherwise just return CANDIDATE."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert selectrum--result))
-  (when selectrum--allow-multiple-selection-p
-    ;; add to history before adding current which already got inserted
-    (dolist (c selectrum--selected-candidates)
-      (add-to-history minibuffer-history-variable c))
-    (cl-pushnew selectrum--result selectrum--selected-candidates)
-    (setq selectrum--selected-candidates
-          (nreverse selectrum--selected-candidates))
-    (setq selectrum--result selectrum--selected-candidates))
   (exit-minibuffer))
 
 (defun selectrum-select-current-candidate (&optional arg)
@@ -919,22 +900,6 @@ Zero means to select the current user input."
     (when (or index (not selectrum--match-required-p))
       (selectrum--exit-with
        (selectrum--get-candidate index)))))
-
-(defun selectrum-select-additional ()
-  "Select a candidate without leaving the minibuffer.
-This allows you to select multiple candidates if `selectrum-read'
-was called with `:multiple' non-nil."
-  (interactive)
-  (when (and selectrum--allow-multiple-selection-p
-             selectrum--current-candidate-index
-             (>= selectrum--current-candidate-index 0))
-    (let ((candidate
-           (selectrum--get-full (nth selectrum--current-candidate-index
-                                     selectrum--refined-candidates))))
-      (if (member candidate selectrum--selected-candidates)
-          (setq selectrum--selected-candidates
-                (delete candidate selectrum--selected-candidates))
-        (push candidate selectrum--selected-candidates)))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
@@ -956,7 +921,7 @@ ignores the currently selected candidate, if one exists."
     (let* ((candidate (nth selectrum--current-candidate-index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert (if (not crm-completion-table)
+      (insert (if (not selectrum--allow-multiple-selection-p)
                   full
                 (let ((string ""))
                   (dolist (str (butlast
@@ -1004,14 +969,14 @@ ARG has same meaning as in `previous-history-element'."
       (user-error "No history is recorded for this command"))
     (let ((result (selectrum-read "History: " history)))
       (cond ((and selectrum--match-required-p
-                  crm-completion-table
+                  selectrum--allow-multiple-selection-p
                   (not (cl-every (lambda (i)
                                    (member i selectrum--refined-candidates))
                                  (split-string result crm-separator t))))
              (user-error
               "History element contains elements not present in candidates"))
             ((and selectrum--match-required-p
-                  (not crm-completion-table)
+                  (not selectrum--allow-multiple-selection-p)
                   (not (member result selectrum--refined-candidates)))
              (user-error "History element is not one of the candidates"))
             (t
@@ -1185,7 +1150,8 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
                :require-match require-match
                :initial-input initial-input
                :history hist
-               :default-candidate def)))
+               :default-candidate def
+               :multiple t)))
     (split-string res crm-separator t)))
 
 ;;;###autoload
