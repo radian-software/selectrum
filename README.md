@@ -234,8 +234,8 @@ matching and case-insensitive matching.
   user experience. However, this support might allow you to make more
   convenient use of the extensive Helm ecosystem.
 
-  To use the support, load the `selectrum-helm` library and enable
-  `selectrum-helm-mode`.
+  To use the support, enable `selectrum-helm-mode` from the
+  `selectrum-helm` library.
 
 ### Customization
 
@@ -266,6 +266,9 @@ matching and case-insensitive matching.
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
   candidate.
+* The `selectrum-completion-in-region` function can display annotations
+  if the `completion-in-region-function` backend offers them. Customize
+  the face `selectrum-completion-annotation` to change their appearance.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
@@ -408,8 +411,8 @@ which may be applied to candidates using `propertize`:
   parent directories in `read-library-name`.
 * `selectrum-candidate-display-suffix`: same as the display prefix,
   but it's postpended instead of prepended when the candidate is
-  dispalyed. This is used, for example, to display a trailing slash on
-  directories in `find-file`.
+  dispalyed. This is used, for example, to display candidate
+  annotations under `completion-in-region`.
 * `selectrum-candidate-full`: controls how the candidate appears in
   the user input area of the minibuffer. If this property is present,
   then it specifies the canonical representation of the candidate.
@@ -624,12 +627,10 @@ offer solutions to the problems outlined in the above sections.
 
 To be transparent, there are a few standard Emacs features which are
 not implemented in Selectrum (mostly because I was unaware they
-existed) but which do work in Icomplete. These include the
-`resize-mini-windows` setting (see
-[#35](https://github.com/raxod502/selectrum/issues/35)), recursive
-minibuffers, and many of the `completion-*` user options such as
-`completion-ignore-case`. I do not see any design reason these
-features cannot all be incorporated into Selectrum eventually.
+existed) but which do work in Icomplete: for example, many of the
+`completion-*` user options such as `completion-ignore-case`. I do not
+see any design reason these features cannot all be incorporated into
+Selectrum eventually.
 
 ### Why not Icicles?
 
