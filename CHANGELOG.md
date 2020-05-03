@@ -30,18 +30,21 @@ The format is based on [Keep a Changelog].
   a key sequence in order to use it.) This command implements similar
   functionality to `ivy-resume`. See [#39].
 * Experimental support for using Selectrum as a backend for Helm
-  commands. Use it by loading the `selectrum-helm` library and
-  enabling `selectrum-helm-mode`. See [#18].
+  commands. Use it by enabling `selectrum-helm-mode` from the
+  `selectrum-helm` library. See [#18].
 * You can now give a prefix argument to
   `selectrum-select-current-candidate` to select the candidate at a
   given index directly. New user option `selectrum-show-indices` to
   display these indices for your convenience. This feature implements
   similar functionality to `ivy-avy`. See [#16].
 * Recursive minibuffers are now supported.
-* In the standard `completing-read` interface, you can use Isearch to
-  retrieve history elements. The Isearch entry-point bindings now work
-  properly in Selectrum too, except that they allow you to select a
-  history element using Selectrum. See [#49].
+* In the standard `completing-read` interface, you can use
+  `previous-matching-history-element` to retrieve history
+  elements. The binding now works properly in Selectrum too, except
+  that you can use Selectrum to select a history element. See [#49],
+  [#77]. If you prefer to use the original interface you can use
+  `selectrum-previous-history-element` which is just not bound by
+  default [#57].
 * You can now cause the minibuffer to always have the same height,
   even if there are fewer candidates, by enabling
   `selectrum-fix-minibuffer-height` ([#35]).
@@ -124,7 +127,7 @@ The format is based on [Keep a Changelog].
   trample on the results of `selectrum-highlight-candidates-function`.
   In other words, the matched part of the current candidate is now
   highlighted just like the matched part of the other candidates. See
-  [#21].
+  ([#21], [#76]).
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
@@ -153,7 +156,10 @@ The format is based on [Keep a Changelog].
 [#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
+[#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#76]: https://github.com/raxod502/selectrum/pull/76
+[#77]: https://github.com/raxod502/selectrum/pull/77
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
