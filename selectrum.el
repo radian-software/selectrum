@@ -879,8 +879,8 @@ Otherwise just return CANDIDATE."
                                   selectrum--previous-input-string))
                (with-temp-buffer
                  (insert selectrum--previous-input-string)
-                 (re-search-backward crm-separator)
-                 (goto-char (match-end 0))
+                 (goto-char (point-min))
+                 (while (re-search-forward crm-separator nil t))
                  (delete-region (point) (point-max))
                  (insert (selectrum--get-full candidate))
                  (buffer-string)))
