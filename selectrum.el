@@ -875,7 +875,8 @@ Otherwise just return CANDIDATE."
    '(face selectrum-current-candidate) candidate)
   (setq selectrum--result
         (cond ((and selectrum--allow-multiple-selection-p
-                    (string-match crm-separator selectrum--previous-input-string))
+                    (string-match crm-separator
+                                  selectrum--previous-input-string))
                (with-temp-buffer
                  (insert selectrum--previous-input-string)
                  (re-search-backward crm-separator)
