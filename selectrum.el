@@ -776,7 +776,7 @@ into the user input area to start with."
   (when selectrum--allow-multiple-selection-p
     (let ((inhibit-read-only t))
       (save-excursion
-        (minibuffer-prompt-end)
+        (goto-char (minibuffer-prompt-end))
         (when (search-backward ":" nil t)
           (insert
            (apply #'propertize
