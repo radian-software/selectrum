@@ -1027,7 +1027,8 @@ Otherwise, just eval BODY."
               selectrum--active-p
               selectrum--minibuffer
               selectrum--current-candidate-bounds
-              selectrum--ensure-centered-timer)))
+              selectrum--ensure-centered-timer
+              crm-separator)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum--active-p
