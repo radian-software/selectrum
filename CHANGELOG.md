@@ -63,10 +63,9 @@ The format is based on [Keep a Changelog].
   so `completion-at-point` will use Selectrum when there is more than
   one completion ([#42]). This function can display annotation
   informations if the `completion-at-point-function` backend offers
-  them ([#62]).
-* This function uses the faces `selectrum-completion-annotation` and
-  `selectrum-completion-docsig`, and is affected by the built-in face
-  `completions-common-part` ([#86]).
+  them ([#62]). Appearance can be configured using the faces
+  `selectrum-completion-annotation`, `selectrum-completion-docsig`,
+  and `completions-common-part` ([#86]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
