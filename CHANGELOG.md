@@ -110,6 +110,11 @@ The format is based on [Keep a Changelog].
   switch to was moved to the top of the list. Now we leave it where it
   is, and just select it initially. `selectrum-read` grows a new
   argument `:no-move-default-candidate` to support this improvement.
+* Previously, `selectrum-read` sometimes modified the list of
+  candidates it was given. This has been fixed, and there is a new
+  keyword argument `:may-modify-candidates` to re-enable the old
+  behavior for cases where it is safe and the performance gains are
+  useful. See [#74].
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -162,6 +167,7 @@ The format is based on [Keep a Changelog].
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
 [#85]: https://github.com/raxod502/selectrum/pull/85

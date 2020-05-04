@@ -1063,7 +1063,8 @@ Otherwise, just eval BODY."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history multiple no-move-default-candidate)
+            history multiple no-move-default-candidate
+            may-modify-candidates)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -1079,21 +1080,36 @@ return an alist with the following keys:
   highlighting (see `selectrum-highlight-candidates-function').
 
 PROMPT should generally end in a colon and space. Additional
-keyword ARGS are accepted. DEFAULT-CANDIDATE, if provided, is
-sorted first in the list if it's present. INITIAL-INPUT, if
-provided, is inserted into the user input area initially (with
-point at the end). REQUIRE-MATCH, if non-nil, means the user must
-select one of the listed candidates (so, for example,
-\\[selectrum-submit-exact-input] has no effect). HISTORY is the
-`minibuffer-history-variable' to use (by default
-`minibuffer-history'). MULTIPLE, if non-nil, means to allow
-multiple selections and return a list of selected candidates.
+keyword ARGS are accepted.
+
+DEFAULT-CANDIDATE, if provided, is sorted first in the list if
+it's present.
+
+INITIAL-INPUT, if provided, is inserted into the user input area
+initially (with point at the end).
+
+REQUIRE-MATCH, if non-nil, means the user must select one of the
+listed candidates (so, for example,
+\\[selectrum-submit-exact-input] has no effect).
+
+HISTORY is the `minibuffer-history-variable' to use (by default
+`minibuffer-history').
+
+MULTIPLE, if non-nil, means to allow multiple selections and
+return a list of selected candidates.
+
 NO-MOVE-DEFAULT-CANDIDATE, if non-nil, means that the default
 candidate is not sorted first. Instead, it is left at its
 original position in the candidate list. However, it is still
 selected initially. This is handy for `switch-to-buffer' and
 friends, for which getting the candidate list out of order at all
-is very confusing."
+is very confusing.
+
+MAY-MODIFY-CANDIDATES, if non-nil, means that Selectrum is
+allowed to modify the CANDIDATES list destructively. Otherwise a
+copy is made."
+  (unless may-modify-candidates
+    (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -1158,7 +1174,8 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    ;; Selectrum paradigm except in specific cases that we control.
    :default-candidate (or (car-safe def) def)
    :require-match (eq require-match t)
-   :history hist))
+   :history hist
+   :may-modify-candidates t))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1178,7 +1195,8 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
    :default-candidate (or (car-safe def) def)
    :require-match require-match
    :history hist
-   :multiple t))
+   :multiple t
+   :may-modify-candidates t))
 
 ;;;###autoload
 (defun selectrum-completion-in-region
@@ -1219,7 +1237,8 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
-      ( _ (setq result (selectrum-read "Completion: " cands))))
+      ( _ (setq result (selectrum-read
+                        "Completion: " cands :may-modify-candidates t))))
     (when result
       (delete-region start end)
       (insert (substring-no-properties result)))))
@@ -1267,7 +1286,8 @@ PREDICATE, see `read-buffer'."
      :default-candidate def
      :require-match (eq require-match t)
      :history 'buffer-name-history
-     :no-move-default-candidate t)))
+     :no-move-default-candidate t
+     :may-modify-candidates t)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1311,7 +1331,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
      :default-candidate (or (car-safe def) def)
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
-     :require-match (eq require-match t))))
+     :require-match (eq require-match t)
+     :may-modify-candidates t)))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1442,7 +1463,8 @@ shadows correctly."
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (selectrum-read "Library name: " lst :require-match t)))
+    (selectrum-read
+     "Library name: " lst :require-match t :may-modify-candidates t)))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
