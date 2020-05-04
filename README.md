@@ -337,13 +337,18 @@ filtering behavior of Selectrum.
 
 ### Usage of Selectrum
 
-Selectrum provides a single entry point to its main functionality, the
-function `selectrum-read`. This function is rather like
-`completing-read`, but with a cleaner API. See the docstring for
-details. The various functions and advice installed by Selectrum just
-call into `selectrum-read` with various arguments, after translating
-whatever Emacs API they implement into Selectrum's least common
-denominator.
+**In normal usage, there should be no need to use any
+Selectrum-specific functions. Simply use `completing-read` and
+friends, and Selectrum will automatically enhance the experience if
+`selectrum-mode` is enabled.**
+
+However, Selectrum does expose some internal functions as part of its
+public API. The main entry point is the function `selectrum-read`.
+This function is rather like `completing-read`, but with a cleaner
+API. See the docstring for details. The various functions and advice
+installed by Selectrum just call into `selectrum-read` with various
+arguments, after translating whatever Emacs API they implement into
+Selectrum's least common denominator.
 
 Unless you are extending Selectrum to support some very weird function
 which (ab)uses the `completing-read` framework in an interesting way,
