@@ -132,8 +132,8 @@ The format is based on [Keep a Changelog].
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
 * If `selectrum-num-candidates-displayed` is set to one, the
-  highlighting works correctly now [#85]. Before the prompt would get
-  highlighted instead of the current candidate.
+  highlighting now works correctly. Before, the prompt would get
+  highlighted instead of the current candidate. See [#85].
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
