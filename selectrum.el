@@ -470,6 +470,9 @@ This is used to implement `selectrum-repeat'.")
 (defvar selectrum--ensure-centered-timer nil
   "Timer to run `selectrum--ensure-current-candidate-centered'.")
 
+(defvar selectrum--total-num-candidates nil
+  "Saved number of candidates, used for `selectrum-show-indices'.")
+
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum--get-candidate (index)
@@ -553,8 +556,7 @@ just rendering it to the screen and then checking."
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker))
-          (keep-mark-active (not deactivate-mark))
-          (total-num-candidates nil))
+          (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
@@ -573,7 +575,7 @@ just rendering it to the screen and then checking."
                                       (setq selectrum--visual-input input)
                                       (alist-get 'candidates result))))
                        selectrum--preprocessed-candidates)))
-          (setq total-num-candidates (length cands))
+          (setq selectrum--total-num-candidates (length cands))
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function input cands)))
         (when selectrum--move-default-candidate-p
@@ -617,7 +619,7 @@ just rendering it to the screen and then checking."
                   ;; there are guaranteed to be more candidates shown
                   ;; below the selection than above.
                   (1+ (- selectrum--current-candidate-index
-                         (/ selectrum-num-candidates-displayed 2)))
+                         (max 1 (/ selectrum-num-candidates-displayed 2))))
                   0
                   (max (- (length selectrum--refined-candidates)
                           selectrum-num-candidates-displayed)
@@ -709,7 +711,7 @@ just rendering it to the screen and then checking."
                           (num-digits
                            (length
                             (number-to-string
-                             total-num-candidates))))
+                             selectrum--total-num-candidates))))
                      (insert
                       (propertize
                        (concat
