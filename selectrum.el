@@ -68,8 +68,13 @@ parts of the input."
   :group 'selectrum-faces)
 
 (defface selectrum-completion-annotation
-  '((t :inherit italic :foreground "#888888"))
+  '((t :inherit completions-annotations))
   "Face used to display annotations in `selectrum-completion-in-region'."
+  :group 'selectrum-faces)
+
+(defface selectrum-completion-docsig
+  '((t :inherit selectrum-completion-annotation :slant italic))
+  "Face used to display docsigs in `selectrum-completion-in-region'."
   :group 'selectrum-faces)
 
 ;;;; Variables
@@ -1208,7 +1213,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                       (when-let ((docsig (funcall docsig-func cand)))
                         (propertize
                          (format "%s" docsig)
-                         'face 'selectrum-completion-annotation)))))
+                         'face 'selectrum-completion-docsig)))))
                  cands))
          (result nil))
     (pcase (length cands)

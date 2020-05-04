@@ -268,7 +268,14 @@ matching and case-insensitive matching.
   candidate.
 * The `selectrum-completion-in-region` function can display annotations
   if the `completion-in-region-function` backend offers them. Customize
-  the face `selectrum-completion-annotation` to change their appearance.
+  the face `selectrum-completion-annotation` to change their
+  appearance.
+    * Customize the face `selectrum-completion-docsig` to change the
+      appearance of function signatures show by
+      `completion-in-region`.
+    * Customize the face `completions-common-part` to change the
+      appearance of the common prefix in `completion-in-region`
+      candidates.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
