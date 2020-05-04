@@ -1187,10 +1187,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                                      :annotation-function))
          (docsig-func (plist-get completion-extra-properties
                                  :company-docsig))
-         (selectrum-preprocess-candidates-function
-          (if-let (display-sort-func (cdr (assq 'display-sort-function meta)))
-              display-sort-func
-            selectrum-preprocess-candidates-function))
+         (display-sort-func (cdr (assq 'display-sort-function meta)))
          (cands (selectrum--map-destructive
                  (lambda (cand)
                    (propertize
@@ -1209,7 +1206,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                          (format "%s" docsig)
                          'face 'selectrum-completion-annotation)))))
                  cands))
+         (selectrum-should-sort-p selectrum-should-sort-p)
          (result nil))
+    (when display-sort-func
+      (setq cands (funcall display-sort-func cands))
+      (setq selectrum-should-sort-p nil))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
