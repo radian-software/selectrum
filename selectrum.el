@@ -1187,6 +1187,8 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                                      :annotation-function))
          (docsig-func (plist-get completion-extra-properties
                                  :company-docsig))
+         (exit-func (plist-get completion-extra-properties
+                               :exit-function))
          (display-sort-func (cdr (assq 'display-sort-function meta)))
          (cands (selectrum--map-destructive
                  (lambda (cand)
@@ -1217,7 +1219,14 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       ( _ (setq result (selectrum-read "Completion: " cands))))
     (when result
       (delete-region start end)
-      (insert (substring-no-properties result)))))
+      (insert (substring-no-properties result)))
+    (when exit-func
+      (let ((status
+             (cond
+              ((not (member result cands)) 'sole)
+              ((eq (try-completion result collection predicate) t) 'finished)
+              (t 'exact))))
+        (funcall exit-func result status)))))
 
 (defvar selectrum--old-completion-in-region-function nil
   "Previous value of `completion-in-region-function'.")
