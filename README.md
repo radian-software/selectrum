@@ -268,7 +268,14 @@ matching and case-insensitive matching.
   candidate.
 * The `selectrum-completion-in-region` function can display annotations
   if the `completion-in-region-function` backend offers them. Customize
-  the face `selectrum-completion-annotation` to change their appearance.
+  the face `selectrum-completion-annotation` to change their
+  appearance.
+    * Customize the face `selectrum-completion-docsig` to change the
+      appearance of function signatures show by
+      `completion-in-region`.
+    * Customize the face `completions-common-part` to change the
+      appearance of the common prefix in `completion-in-region`
+      candidates.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
@@ -337,13 +344,18 @@ filtering behavior of Selectrum.
 
 ### Usage of Selectrum
 
-Selectrum provides a single entry point to its main functionality, the
-function `selectrum-read`. This function is rather like
-`completing-read`, but with a cleaner API. See the docstring for
-details. The various functions and advice installed by Selectrum just
-call into `selectrum-read` with various arguments, after translating
-whatever Emacs API they implement into Selectrum's least common
-denominator.
+**In normal usage, there should be no need to use any
+Selectrum-specific functions. Simply use `completing-read` and
+friends, and Selectrum will automatically enhance the experience if
+`selectrum-mode` is enabled.**
+
+However, Selectrum does expose some internal functions as part of its
+public API. The main entry point is the function `selectrum-read`.
+This function is rather like `completing-read`, but with a cleaner
+API. See the docstring for details. The various functions and advice
+installed by Selectrum just call into `selectrum-read` with various
+arguments, after translating whatever Emacs API they implement into
+Selectrum's least common denominator.
 
 Unless you are extending Selectrum to support some very weird function
 which (ab)uses the `completing-read` framework in an interesting way,
@@ -451,13 +463,11 @@ For more information, see their docstrings.
 
 ## Contributor guide
 
-This section is intended for people who would like to modify the code
-of Selectrum itself.
+Please see [the contributor guide for my
+projects](https://github.com/raxod502/contributor-guide).
 
-* Run the linters and re-generate the table of contents in the README
-  by way of `make lint`. This is done by
-  [CircleCI](https://circleci.com/gh/raxod502/selectrum) against every
-  commit and pull request.
+Technical points:
+
 * When adding a new state variable (like for example
   `selectrum--current-candidate-index`), you should think if its value
   needs to be preserved when entering a recursive Selectrum session.
