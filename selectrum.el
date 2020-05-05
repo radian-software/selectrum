@@ -1224,8 +1224,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (let ((status
              (cond
               ((not (member result cands)) 'sole)
-              ((eq (try-completion result collection predicate) t) 'finished)
-              (t 'exact))))
+              (t 'finished))))
         (funcall exit-func result status)))))
 
 (defvar selectrum--old-completion-in-region-function nil
