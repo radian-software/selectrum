@@ -724,7 +724,7 @@ just rendering it to the screen and then checking."
                                             selectrum-right-margin-padding)))
                       right-margin))
                     (push ol selectrum--right-margin-overlays))))
-               (cl-incf index))
+              (cl-incf index))
             ;; Simplest way to grow the minibuffer to size is to just
             ;; insert some extra newlines :P
             (when selectrum-fix-minibuffer-height
