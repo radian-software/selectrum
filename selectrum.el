@@ -1449,22 +1449,24 @@ shadows correctly."
                  (let ((candidate-paths
                         (mapcar (lambda (path)
                                   (propertize
-                                   (file-name-base path)
+                                   (file-name-base
+                                    (file-name-sans-extension path))
                                    'selectrum-candidate-display-prefix
                                    (file-name-directory
                                     (file-name-sans-extension
                                      (selectrum--trailing-components
                                       num-components path)))
                                    'fixedcase 'literal
-                                   'selectrum-candidate-full
-                                   path))
+                                   'selectrum--lib-path path))
                                 paths)))
                    (setq lst (nconc candidate-paths lst)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (selectrum-read
-     "Library name: " lst :require-match t :may-modify-candidates t)))
+    (get-text-property
+     0 'selectrum--lib-path
+     (selectrum-read
+      "Library name: " lst :require-match t :may-modify-candidates t))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."

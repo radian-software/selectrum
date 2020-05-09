@@ -140,6 +140,11 @@ The format is based on [Keep a Changelog].
 * If `selectrum-num-candidates-displayed` is set to one, the
   highlighting now works correctly. Before, the prompt would get
   highlighted instead of the current candidate. See [#85].
+* `selectrum-read-library-name` previously, in certain versions of
+  Emacs, showed some entries with `.el` appended. This has now been
+  fixed. Also, `TAB` now inserts the current candidate and not the
+  whole path to the library, so that the result can be submitted
+  directly ([#73]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -167,6 +172,7 @@ The format is based on [Keep a Changelog].
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#73]: https://github.com/raxod502/selectrum/pull/73
 [#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
