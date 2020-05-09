@@ -1211,7 +1211,8 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
                :initial-input initial-input
                :history hist
                :default-candidate def
-               :multiple t)))
+               :multiple t
+               :may-modify-candidates t)))
     (split-string res crm-separator t)))
 
 ;;;###autoload
