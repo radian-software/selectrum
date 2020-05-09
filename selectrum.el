@@ -771,7 +771,7 @@ into the user input area to start with."
           (insert
            (apply #'propertize
                   (substitute-command-keys
-                   (concat " [one OR more using "
+                   (concat " [add more using "
                            "\\[selectrum-insert-current-candidate] "
                            "+ crm-separator]"))
                   (text-properties-at (point))))))))
