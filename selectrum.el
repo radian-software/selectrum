@@ -69,8 +69,13 @@ parts of the input."
   :group 'selectrum-faces)
 
 (defface selectrum-completion-annotation
-  '((t :inherit italic :foreground "#888888"))
+  '((t :inherit completions-annotations))
   "Face used to display annotations in `selectrum-completion-in-region'."
+  :group 'selectrum-faces)
+
+(defface selectrum-completion-docsig
+  '((t :inherit selectrum-completion-annotation :slant italic))
+  "Face used to display docsigs in `selectrum-completion-in-region'."
   :group 'selectrum-faces)
 
 ;;;; Variables
@@ -465,6 +470,9 @@ This is used to implement `selectrum-repeat'.")
 (defvar selectrum--ensure-centered-timer nil
   "Timer to run `selectrum--ensure-current-candidate-centered'.")
 
+(defvar selectrum--total-num-candidates nil
+  "Saved number of candidates, used for `selectrum-show-indices'.")
+
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum--get-candidate (index)
@@ -548,8 +556,7 @@ just rendering it to the screen and then checking."
           (input (buffer-substring selectrum--start-of-input-marker
                                    selectrum--end-of-input-marker))
           (bound (marker-position selectrum--end-of-input-marker))
-          (keep-mark-active (not deactivate-mark))
-          (total-num-candidates nil))
+          (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
@@ -568,7 +575,7 @@ just rendering it to the screen and then checking."
                                       (setq selectrum--visual-input input)
                                       (alist-get 'candidates result))))
                        selectrum--preprocessed-candidates)))
-          (setq total-num-candidates (length cands))
+          (setq selectrum--total-num-candidates (length cands))
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function input cands)))
         (when selectrum--move-default-candidate-p
@@ -612,7 +619,7 @@ just rendering it to the screen and then checking."
                   ;; there are guaranteed to be more candidates shown
                   ;; below the selection than above.
                   (1+ (- selectrum--current-candidate-index
-                         (/ selectrum-num-candidates-displayed 2)))
+                         (max 1 (/ selectrum-num-candidates-displayed 2))))
                   0
                   (max (- (length selectrum--refined-candidates)
                           selectrum-num-candidates-displayed)
@@ -704,7 +711,7 @@ just rendering it to the screen and then checking."
                           (num-digits
                            (length
                             (number-to-string
-                             total-num-candidates))))
+                             selectrum--total-num-candidates))))
                      (insert
                       (propertize
                        (concat
@@ -1056,7 +1063,8 @@ Otherwise, just eval BODY."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history multiple no-move-default-candidate)
+            history multiple no-move-default-candidate
+            may-modify-candidates)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -1072,21 +1080,36 @@ return an alist with the following keys:
   highlighting (see `selectrum-highlight-candidates-function').
 
 PROMPT should generally end in a colon and space. Additional
-keyword ARGS are accepted. DEFAULT-CANDIDATE, if provided, is
-sorted first in the list if it's present. INITIAL-INPUT, if
-provided, is inserted into the user input area initially (with
-point at the end). REQUIRE-MATCH, if non-nil, means the user must
-select one of the listed candidates (so, for example,
-\\[selectrum-submit-exact-input] has no effect). HISTORY is the
-`minibuffer-history-variable' to use (by default
-`minibuffer-history'). MULTIPLE, if non-nil, means to allow
-multiple selections and return a list of selected candidates.
+keyword ARGS are accepted.
+
+DEFAULT-CANDIDATE, if provided, is sorted first in the list if
+it's present.
+
+INITIAL-INPUT, if provided, is inserted into the user input area
+initially (with point at the end).
+
+REQUIRE-MATCH, if non-nil, means the user must select one of the
+listed candidates (so, for example,
+\\[selectrum-submit-exact-input] has no effect).
+
+HISTORY is the `minibuffer-history-variable' to use (by default
+`minibuffer-history').
+
+MULTIPLE, if non-nil, means to allow multiple selections and
+return a list of selected candidates.
+
 NO-MOVE-DEFAULT-CANDIDATE, if non-nil, means that the default
 candidate is not sorted first. Instead, it is left at its
 original position in the candidate list. However, it is still
 selected initially. This is handy for `switch-to-buffer' and
 friends, for which getting the candidate list out of order at all
-is very confusing."
+is very confusing.
+
+MAY-MODIFY-CANDIDATES, if non-nil, means that Selectrum is
+allowed to modify the CANDIDATES list destructively. Otherwise a
+copy is made."
+  (unless may-modify-candidates
+    (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
     (unless selectrum--repeat
@@ -1151,7 +1174,8 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    ;; Selectrum paradigm except in specific cases that we control.
    :default-candidate (or (car-safe def) def)
    :require-match (eq require-match t)
-   :history hist))
+   :history hist
+   :may-modify-candidates t))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1224,13 +1248,14 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                       (when-let ((docsig (funcall docsig-func cand)))
                         (propertize
                          (format "%s" docsig)
-                         'face 'selectrum-completion-annotation)))))
+                         'face 'selectrum-completion-docsig)))))
                  cands))
          (result nil))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
-      ( _ (setq result (selectrum-read "Completion: " cands))))
+      ( _ (setq result (selectrum-read
+                        "Completion: " cands :may-modify-candidates t))))
     (when result
       (delete-region start end)
       (insert (substring-no-properties result)))))
@@ -1278,7 +1303,8 @@ PREDICATE, see `read-buffer'."
      :default-candidate def
      :require-match (eq require-match t)
      :history 'buffer-name-history
-     :no-move-default-candidate t)))
+     :no-move-default-candidate t
+     :may-modify-candidates t)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1322,7 +1348,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
      :default-candidate (or (car-safe def) def)
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
-     :require-match (eq require-match t))))
+     :require-match (eq require-match t)
+     :may-modify-candidates t)))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1439,21 +1466,24 @@ shadows correctly."
                  (let ((candidate-paths
                         (mapcar (lambda (path)
                                   (propertize
-                                   (file-name-base path)
+                                   (file-name-base
+                                    (file-name-sans-extension path))
                                    'selectrum-candidate-display-prefix
                                    (file-name-directory
                                     (file-name-sans-extension
                                      (selectrum--trailing-components
                                       num-components path)))
                                    'fixedcase 'literal
-                                   'selectrum-candidate-full
-                                   path))
+                                   'selectrum--lib-path path))
                                 paths)))
                    (setq lst (nconc candidate-paths lst)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (selectrum-read "Library name: " lst :require-match t)))
+    (get-text-property
+     0 'selectrum--lib-path
+     (selectrum-read
+      "Library name: " lst :require-match t :may-modify-candidates t))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."

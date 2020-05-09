@@ -63,8 +63,9 @@ The format is based on [Keep a Changelog].
   so `completion-at-point` will use Selectrum when there is more than
   one completion ([#42]). This function can display annotation
   informations if the `completion-at-point-function` backend offers
-  them, and they use the face `selectrum-completion-annotation`
-  ([#62]).
+  them ([#62]). Appearance can be configured using the faces
+  `selectrum-completion-annotation`, `selectrum-completion-docsig`,
+  and `completions-common-part` ([#86]).
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
@@ -109,6 +110,11 @@ The format is based on [Keep a Changelog].
   switch to was moved to the top of the list. Now we leave it where it
   is, and just select it initially. `selectrum-read` grows a new
   argument `:no-move-default-candidate` to support this improvement.
+* Previously, `selectrum-read` sometimes modified the list of
+  candidates it was given. This has been fixed, and there is a new
+  keyword argument `:may-modify-candidates` to re-enable the old
+  behavior for cases where it is safe and the performance gains are
+  useful. See [#74].
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -131,6 +137,14 @@ The format is based on [Keep a Changelog].
 * Previously, an error was thrown if you used certain non-Selectrum
   minibuffer commands before loading Selectrum. This has been fixed
   ([#28]).
+* If `selectrum-num-candidates-displayed` is set to one, the
+  highlighting now works correctly. Before, the prompt would get
+  highlighted instead of the current candidate. See [#85].
+* `selectrum-read-library-name` previously, in certain versions of
+  Emacs, showed some entries with `.el` appended. This has now been
+  fixed. Also, `TAB` now inserts the current candidate and not the
+  whole path to the library, so that the result can be submitted
+  directly ([#73]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -158,8 +172,12 @@ The format is based on [Keep a Changelog].
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#73]: https://github.com/raxod502/selectrum/pull/73
+[#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
+[#85]: https://github.com/raxod502/selectrum/pull/85
+[#86]: https://github.com/raxod502/selectrum/pull/86
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
