@@ -1045,9 +1045,7 @@ Otherwise, just eval BODY."
               selectrum--active-p
               selectrum--minibuffer
               selectrum--current-candidate-bounds
-              selectrum--ensure-centered-timer
-              crm-separator
-              crm-completion-table)))
+              selectrum--ensure-centered-timer)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum--active-p
@@ -1189,6 +1187,7 @@ Replaces `completing-read-multiple'. For PROMPT, TABLE,
 PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF, and
 INHERIT-INPUT-METHOD, see `completing-read-multiple'."
   (let* ((crm-completion-table table)
+         (crm-separator crm-separator)
          (coll (all-completions "" #'crm--collection-fn predicate))
          (candidates
           (lambda (input)
