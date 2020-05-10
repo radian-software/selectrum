@@ -476,11 +476,9 @@ Technical points:
 
 ## Caveats
 
-* There is no support for multiple selection or alternate actions.
-  This is unlikely to ever change, because supporting these features
-  requires violating the `completing-read` abstraction rather
-  aggressively, and that goes against Selectrum's design philosophy of
-  simplicity and consistency.
+* There is currently no support for alternate actions, although there
+  are plans for how this feature could be implemented without
+  descending into the madness of how Ivy and Helm do it.
 * In Emacs 25 and earlier, `M-x ffap` is basically completely broken.
   This is because in old versions of Emacs, `ffap` worked by calling
   `completing-read` directly with a special completion table function,
