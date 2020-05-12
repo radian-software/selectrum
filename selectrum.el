@@ -770,10 +770,12 @@ into the user input area to start with."
         (when (search-backward ":" nil t)
           (insert
            (apply #'propertize
-                  (substitute-command-keys
-                   (concat " [add more using "
-                           "\\[selectrum-insert-current-candidate] "
-                           "+ crm-separator]"))
+                  (format " [add more using %s and %s]"
+                          (substitute-command-keys
+                           "\\[selectrum-insert-current-candidate]" )
+                          (if (equal crm-separator "[ \t]*,[ \t]*")
+                              "\",\""
+                            "crm-separator"))
                   (text-properties-at (point))))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
