@@ -1257,8 +1257,10 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       ( _ (setq result (selectrum-read
                         "Completion: " cands :may-modify-candidates t))))
     (when result
-      (delete-region start end)
-      (insert (substring-no-properties result)))
+      (let ((bound (car (completion-boundaries
+                         input collection predicate ""))))
+        (delete-region (+ start bound) end)
+        (insert (substring-no-properties result))))
     (when exit-func
       (let ((status
              (cond
