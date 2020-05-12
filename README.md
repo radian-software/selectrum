@@ -139,10 +139,10 @@ how to fix it.
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
-* *To select multiple candidates:* type `M-RET` to select additional
-  candidates before typing `RET` or `C-j` to exit the minibuffer. This
-  is only allowed in commands that use `completing-read-multiple`,
-  such as `describe-face`.
+* *To select multiple candidates:* type `TAB` and input
+  `crm-separator` (`,` by default). This feature only works in
+  commands that use `completing-read-multiple`, such as
+  `describe-face`.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -250,10 +250,6 @@ matching and case-insensitive matching.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
-    * When multiple candidates are selected (in commands which allow
-      it, like `describe-face`), the selected candidates other than
-      the current one are highlighted with the face
-      `selectrum-additional-candidate`.
 * By default, the part of each candidate that matches your input is
   highlighted with the face `selectrum-primary-highlight`. There is
   also `selectrum-secondary-highlight`, which is not used by default
