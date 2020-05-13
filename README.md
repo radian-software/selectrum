@@ -571,14 +571,10 @@ Selectrum achieves its conciseness by:
   something else and then just sticking new things onto it every time
   a bug appears
 
-In addition, Selectrum does not support multiple selection or
-alternate actions, unlike Ivy. This is because supporting either of
-these features means you need to throw out the existing
-`completing-read` API, which is an absolutely massive time-sink and
-source of bugs that adds very little to the user experience. Selectrum
-works with *every* Emacs command with approximately no special cases,
-specifically because it focuses on doing the common case as well as
-possible.
+In addition, Selectrum does not support features which break the
+`completing-read` API because and works with *every* Emacs command
+with approximately no special cases, specifically because it focuses
+on doing the common case as well as possible.
 
 As a final note, when you're using `selectrum-prescient.el`, there's
 an easy way to simulate Ivy's alternate actions. Suppose you've typed
