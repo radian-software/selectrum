@@ -410,8 +410,8 @@ to be re-filtered.")
 Equivalently, nil if the user is allowed to submit their own
 input that does not match any of the displayed candidates.")
 
-(defvar selectrum--allow-multiple-selection-p nil
-  "Non-nil if multiple selection is allowed.")
+(defvar selectrum--crm-p nil
+  "Non-nil for `selectrum-completing-read-multiple' sessions.")
 
 (defvar selectrum--move-default-candidate-p nil
   "Non-nil means move default candidate to start of list.
@@ -866,7 +866,7 @@ previous selected ones."
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
   (setq selectrum--result
-        (cond ((and selectrum--allow-multiple-selection-p
+        (cond ((and selectrum--crm-p
                     (string-match crm-separator
                                   selectrum--previous-input-string))
                (with-temp-buffer
@@ -926,7 +926,7 @@ ignores the currently selected candidate, if one exists."
     (let* ((candidate (nth selectrum--current-candidate-index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert (if (not selectrum--allow-multiple-selection-p)
+      (insert (if (not selectrum--crm-p)
                   full
                 (let ((string ""))
                   (dolist (str (butlast
@@ -1185,7 +1185,7 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
      res
      (minibuffer-with-setup-hook
          (lambda ()
-           (setq-local selectrum--allow-multiple-selection-p t)
+           (setq-local selectrum--crm-p t)
            (let ((inhibit-read-only t))
              (save-excursion
                (goto-char (minibuffer-prompt-end))
