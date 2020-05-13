@@ -763,20 +763,6 @@ list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
-  (when selectrum--allow-multiple-selection-p
-    (let ((inhibit-read-only t))
-      (save-excursion
-        (goto-char (minibuffer-prompt-end))
-        (when (search-backward ":" nil t)
-          (insert
-           (apply #'propertize
-                  (format " [add more using %s and %s]"
-                          (substitute-command-keys
-                           "\\[selectrum-insert-current-candidate]" )
-                          (if (equal crm-separator "[ \t]*,[ \t]*")
-                              "\",\""
-                            "crm-separator"))
-                  (text-properties-at (point))))))))
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
@@ -1017,7 +1003,6 @@ Otherwise, just eval BODY."
               selectrum--refined-candidates
               selectrum--result
               selectrum--match-required-p
-              selectrum--allow-multiple-selection-p
               selectrum--move-default-candidate-p
               selectrum--default-candidate
               selectrum--visual-input
@@ -1045,7 +1030,7 @@ Otherwise, just eval BODY."
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history multiple no-move-default-candidate
+            history no-move-default-candidate
             may-modify-candidates)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
@@ -1077,9 +1062,6 @@ listed candidates (so, for example,
 HISTORY is the `minibuffer-history-variable' to use (by default
 `minibuffer-history').
 
-MULTIPLE, if non-nil, means to allow multiple selections and
-return a list of selected candidates.
-
 NO-MOVE-DEFAULT-CANDIDATE, if non-nil, means that the default
 candidate is not sorted first. Instead, it is left at its
 original position in the candidate list. However, it is still
@@ -1098,7 +1080,6 @@ copy is made."
       (setq selectrum--last-command this-command)
       (setq selectrum--last-prefix-arg current-prefix-arg))
     (setq selectrum--match-required-p require-match)
-    (setq selectrum--allow-multiple-selection-p multiple)
     (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
     (let ((keymap (make-sparse-keymap)))
       (set-keymap-parent keymap minibuffer-local-map)
@@ -1188,15 +1169,33 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
                     (ninput (substring input beg)))
                 `((input . ,ninput)
                   (candidates . ,coll))))))
-         (res (selectrum-read
-               prompt
-               candidates
-               :require-match require-match
-               :initial-input initial-input
-               :history hist
-               :default-candidate def
-               :multiple t
-               :may-modify-candidates t)))
+         (res nil))
+    (setq
+     res
+     (minibuffer-with-setup-hook
+         (lambda ()
+           (setq-local selectrum--allow-multiple-selection-p t)
+           (let ((inhibit-read-only t))
+             (save-excursion
+               (goto-char (minibuffer-prompt-end))
+               (when (search-backward ":" nil t)
+                 (insert
+                  (apply #'propertize
+                         (format " [add more using %s and %s]"
+                                 (substitute-command-keys
+                                  "\\[selectrum-insert-current-candidate]")
+                                 (if (equal crm-separator "[ \t]*,[ \t]*")
+                                     "\",\""
+                                   "crm-separator"))
+                         (text-properties-at (point))))))))
+       (selectrum-read
+        prompt
+        candidates
+        :require-match require-match
+        :initial-input initial-input
+        :history hist
+        :default-candidate def
+        :may-modify-candidates t)))
     (split-string res crm-separator t)))
 
 ;;;###autoload
