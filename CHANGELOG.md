@@ -54,8 +54,7 @@ The format is based on [Keep a Changelog].
   `describe-face` (which delegate to `completing-read-multiple`
   internally) now use Selectrum by default. To select additional
   candidates within a supported command, use `TAB` and input
-  `crm-separator`. The feature is supported by a new keyword argument
-  `:multiple` to `selectrum-read` [#53], [#80], [#74].
+  `crm-separator`[#53], [#80], [#74].
 * We provide a `selectrum-completion-in-region` function now and
   install it on `completion-in-region-function` in `selectrum-mode`,
   so `completion-at-point` will use Selectrum when there is more than
