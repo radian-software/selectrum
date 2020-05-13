@@ -677,18 +677,29 @@ just rendering it to the screen and then checking."
                 (when (equal index highlighted-index)
                   (setq displayed-candidate
                         (copy-sequence displayed-candidate))
-                  ;; Use `font-lock-prepend-text-property'. to avoid trampling
-                  ;; highlighting done by
-                  ;; `selectrum-highlight-candidates-function'. See
-                  ;; <https://github.com/raxod502/selectrum/issues/21>. In
-                  ;; emacs < 27 `add-face-text-property' causes other issues
-                  ;; see <https://github.com/raxod502/selectrum/issues/58>,
-                  ;; <https://github.com/raxod502/selectrum/pull/76>. No need to
-                  ;; clean up afterwards, as an update will cause all these
-                  ;; strings to be thrown away and re-generated from scratch.
-                  (font-lock-prepend-text-property
-                   0 (length displayed-candidate)
-                   'face 'selectrum-current-candidate displayed-candidate))
+                  ;; Avoid trampling highlighting done by
+                  ;; `selectrum-highlight-candidates-function'. In
+                  ;; Emacs<27 `add-face-text-property' has a bug but
+                  ;; in Emacs>=27 `font-lock-prepend-text-property'
+                  ;; doesn't work. Even though these functions are
+                  ;; both supposed to do the same thing.
+                  ;;
+                  ;; Anyway, no need to clean up the text properties
+                  ;; afterwards, as an update will cause all these
+                  ;; strings to be thrown away and re-generated from
+                  ;; scratch.
+                  ;;
+                  ;; See:
+                  ;; <https://github.com/raxod502/selectrum/issues/21>
+                  ;; <https://github.com/raxod502/selectrum/issues/58>
+                  ;; <https://github.com/raxod502/selectrum/pull/76>
+                  (if (version< emacs-version "27")
+                      (font-lock-prepend-text-property
+                       0 (length displayed-candidate)
+                       'face 'selectrum-current-candidate displayed-candidate)
+                    (add-face-text-property
+                     0 (length displayed-candidate)
+                     'selectrum-current-candidate 'append displayed-candidate)))
                 (insert "\n")
                 (when (equal index highlighted-index)
                   (setf (car selectrum--current-candidate-bounds)
@@ -1203,17 +1214,19 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
   "Complete in-buffer text using a list of candidates.
 Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
-  (let* ((cands (nconc
-                 (completion-all-completions
-                  (buffer-substring-no-properties start end)
-                  collection
-                  predicate
-                  (- end start))
+  (let* ((input (buffer-substring-no-properties start end))
+         (meta (completion-metadata input collection predicate))
+         (cands (nconc
+                 (completion-all-completions input collection predicate
+                                             (- end start) meta)
                  nil))
          (annotation-func (plist-get completion-extra-properties
                                      :annotation-function))
          (docsig-func (plist-get completion-extra-properties
                                  :company-docsig))
+         (exit-func (plist-get completion-extra-properties
+                               :exit-function))
+         (display-sort-func (cdr (assq 'display-sort-function meta)))
          (cands (selectrum--map-destructive
                  (lambda (cand)
                    (propertize
@@ -1232,7 +1245,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                          (format "%s" docsig)
                          'face 'selectrum-completion-docsig)))))
                  cands))
+         (selectrum-should-sort-p selectrum-should-sort-p)
          (result nil))
+    (when display-sort-func
+      (setq cands (funcall display-sort-func cands))
+      (setq selectrum-should-sort-p nil))
     (pcase (length cands)
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
@@ -1240,7 +1257,13 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                         "Completion: " cands :may-modify-candidates t))))
     (when result
       (delete-region start end)
-      (insert (substring-no-properties result)))))
+      (insert (substring-no-properties result)))
+    (when exit-func
+      (let ((status
+             (cond
+              ((not (member result cands)) 'sole)
+              (t 'finished))))
+        (funcall exit-func result status)))))
 
 (defvar selectrum--old-completion-in-region-function nil
   "Previous value of `completion-in-region-function'.")
