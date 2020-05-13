@@ -572,9 +572,9 @@ Selectrum achieves its conciseness by:
   a bug appears
 
 Selectrum does not support features which break the `completing-read`
-API because and works with *every* Emacs command with approximately no
-special cases, specifically because it focuses on doing the common
-case as well as possible.
+API and works with *every* Emacs command with approximately no special
+cases, specifically because it focuses on doing the common case as
+well as possible.
 
 As a final note, when you're using `selectrum-prescient.el`, there's
 an easy way to simulate Ivy's alternate actions. Suppose you've typed
