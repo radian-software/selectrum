@@ -860,8 +860,8 @@ Or if there is an active region, save the region to kill ring."
 
 (defun selectrum--exit-with (candidate)
   "Exit minibuffer with given CANDIDATE.
-If multiple selection is enabled exit with candidate plus the
-previous selected ones."
+If `selectrum--crm-p' is non-nil exit with the choosen candidates
+plus CANDIDATE."
   (remove-text-properties
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
