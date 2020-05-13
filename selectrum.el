@@ -848,9 +848,8 @@ Or if there is an active region, save the region to kill ring."
 
 (defun selectrum--exit-with (candidate)
   "Exit minibuffer with given CANDIDATE.
-If multiple selection is enabled, add CANDIDATE to the list of
-selected candidates and then return the list to `selectrum-read'.
-Otherwise just return CANDIDATE."
+If multiple selection is enabled exit with candidate plus the
+previous selected ones."
   (remove-text-properties
    0 (length candidate)
    '(face selectrum-current-candidate) candidate)
