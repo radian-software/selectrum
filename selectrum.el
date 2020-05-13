@@ -699,7 +699,8 @@ just rendering it to the screen and then checking."
                        'face 'selectrum-current-candidate displayed-candidate)
                     (add-face-text-property
                      0 (length displayed-candidate)
-                     'selectrum-current-candidate 'append displayed-candidate)))
+                     'selectrum-current-candidate
+                     'append displayed-candidate)))
                 (insert "\n")
                 (when (equal index highlighted-index)
                   (setf (car selectrum--current-candidate-bounds)
