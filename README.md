@@ -139,10 +139,13 @@ how to fix it.
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
-* *To select multiple candidates:* type `TAB` and input
-  `crm-separator` (`,` by default). This feature only works in
+* *To select multiple candidates:* separate them with `crm-separator`
+  (`,` by default). To make this workflow more convenient, you can use
+  `TAB` to complete the currently selected candidate before typing `,`
+  to move on to entering the next one. This feature only works in
   commands that use `completing-read-multiple`, such as
-  `describe-face`.
+  `describe-face`. (If multiple selection is enabled, it is shown in
+  the minibuffer prompt.)
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
