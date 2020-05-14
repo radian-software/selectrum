@@ -139,10 +139,13 @@ how to fix it.
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
-* *To select multiple candidates:* type `M-RET` to select additional
-  candidates before typing `RET` or `C-j` to exit the minibuffer. This
-  is only allowed in commands that use `completing-read-multiple`,
-  such as `describe-face`.
+* *To select multiple candidates:* separate them with `crm-separator`
+  (`,` by default). To make this workflow more convenient, you can use
+  `TAB` to complete the currently selected candidate before typing `,`
+  to move on to entering the next one. This feature only works in
+  commands that use `completing-read-multiple`, such as
+  `describe-face`. (If multiple selection is enabled, it is shown in
+  the minibuffer prompt.)
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -250,10 +253,6 @@ matching and case-insensitive matching.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
-    * When multiple candidates are selected (in commands which allow
-      it, like `describe-face`), the selected candidates other than
-      the current one are highlighted with the face
-      `selectrum-additional-candidate`.
 * By default, the part of each candidate that matches your input is
   highlighted with the face `selectrum-primary-highlight`. There is
   also `selectrum-secondary-highlight`, which is not used by default
@@ -575,14 +574,10 @@ Selectrum achieves its conciseness by:
   something else and then just sticking new things onto it every time
   a bug appears
 
-In addition, Selectrum does not support multiple selection or
-alternate actions, unlike Ivy. This is because supporting either of
-these features means you need to throw out the existing
-`completing-read` API, which is an absolutely massive time-sink and
-source of bugs that adds very little to the user experience. Selectrum
-works with *every* Emacs command with approximately no special cases,
-specifically because it focuses on doing the common case as well as
-possible.
+Selectrum does not support features which break the `completing-read`
+API and works with *every* Emacs command with approximately no special
+cases, specifically because it focuses on doing the common case as
+well as possible.
 
 As a final note, when you're using `selectrum-prescient.el`, there's
 an easy way to simulate Ivy's alternate actions. Suppose you've typed

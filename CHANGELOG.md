@@ -53,11 +53,8 @@ The format is based on [Keep a Changelog].
   automatically by `selectrum-mode`. This means that commands like
   `describe-face` (which delegate to `completing-read-multiple`
   internally) now use Selectrum by default. To select additional
-  candidates within a supported command, use `M-RET`. The feature is
-  supported by a new keyword argument `:multiple` to `selectrum-read`.
-  We have a new face `selectrum-additional-candidate` which determines
-  how selected candidates other than the current candidate are
-  highlighted. See [#53].
+  candidates within a supported command, use `TAB` and input
+  `crm-separator` (`,` by default). See [#53], [#80], [#74].
 * We provide a `selectrum-completion-in-region` function now and
   install it on `completion-in-region-function` in `selectrum-mode`,
   so `completion-at-point` will use Selectrum when there is more than
@@ -176,6 +173,7 @@ The format is based on [Keep a Changelog].
 [#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
+[#80]: https://github.com/raxod502/selectrum/issues/80
 [#85]: https://github.com/raxod502/selectrum/pull/85
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
