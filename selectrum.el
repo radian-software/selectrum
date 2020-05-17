@@ -1379,8 +1379,8 @@ candidates a bit better (in particular you can immediately press
 \\[selectrum-select-current-candidate] to use the current
 directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
 INITIAL, see `read-directory-name'."
-  (let ((dir (expand-file-name (or dir default-directory)))
-        (default (directory-file-name (or default-dirname initial dir))))
+  (let* ((dir (expand-file-name (or dir default-directory)))
+         (default (directory-file-name (or default-dirname initial dir))))
     ;; Elisp way of getting the parent directory. If we get nil, that
     ;; means the default was a relative path with only one component,
     ;; so the parent directory is dir.
