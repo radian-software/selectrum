@@ -1042,7 +1042,9 @@ Otherwise, just eval BODY."
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
             history no-move-default-candidate
-            may-modify-candidates)
+            may-modify-candidates
+            minibuffer-completion-table
+            minibuffer-completion-predicate)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -1082,7 +1084,12 @@ is very confusing.
 
 MAY-MODIFY-CANDIDATES, if non-nil, means that Selectrum is
 allowed to modify the CANDIDATES list destructively. Otherwise a
-copy is made."
+copy is made.
+
+For MINIBUFFER-COMPLETION-TABLE and
+MINIBUFFER-COMPLETION-PREDICATE see `minibuffer-completion-table'
+and `minibuffer-completion-predicate'. They are used for internal
+purposes and compatibility to emacs completion API."
   (unless may-modify-candidates
     (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
@@ -1149,7 +1156,9 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    :default-candidate (or (car-safe def) def)
    :require-match (eq require-match t)
    :history hist
-   :may-modify-candidates t))
+   :may-modify-candidates t
+   :minibuffer-completion-table collection
+   :minibuffer-completion-predicate predicate))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1206,7 +1215,9 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
         :initial-input initial-input
         :history hist
         :default-candidate def
-        :may-modify-candidates t)))
+        :may-modify-candidates t
+        :minibuffer-completion-table table
+        :minibuffer-completion-predicate predicate)))
     (split-string res crm-separator t)))
 
 ;;;###autoload
@@ -1255,7 +1266,10 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (`0 (message "No match"))
       (`1 (setq result (car cands)))
       ( _ (setq result (selectrum-read
-                        "Completion: " cands :may-modify-candidates t))))
+                        "Completion: " cands
+                        :may-modify-candidates t
+                        :minibuffer-completion-table collection
+                        :minibuffer-completion-predicate predicate))))
     (when result
       (delete-region start end)
       (insert (substring-no-properties result)))
@@ -1310,7 +1324,9 @@ PREDICATE, see `read-buffer'."
      :require-match (eq require-match t)
      :history 'buffer-name-history
      :no-move-default-candidate t
-     :may-modify-candidates t)))
+     :may-modify-candidates t
+     :minibuffer-completion-table #'internal-complete-buffer
+     :minibuffer-completion-predicate predicate)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1355,7 +1371,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
      :initial-input (or (car-safe initial-input) initial-input)
      :history hist
      :require-match (eq require-match t)
-     :may-modify-candidates t)))
+     :may-modify-candidates t
+     :minibuffer-completion-table collection
+     :minibuffer-completion-predicate predicate)))
 
 ;;;###autoload
 (defun selectrum-read-file-name
