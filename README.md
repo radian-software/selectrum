@@ -300,6 +300,15 @@ Ivy, and copied them to be used for Selectrum as well:
 
 ### Complementary extensions
 
+Selectrum has a
+[wiki](https://github.com/raxod502/selectrum/wiki/Useful-Commands), on
+which people have contributed handy commands for doing things like
+finding buffers and recent files at the same time. It is rather like
+[Counsel](https://github.com/abo-abo/swiper#counsel) Feel free to add
+your own commands!
+
+Here are external packages that work well with Selectrum:
+
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
 
