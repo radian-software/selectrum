@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog].
   See [#27].
 
 ### Features
+* You can now give a prefix argument to
+  `selectrum-insert-current-candidate` to insert the candidate at a
+  given index directly ([#96])
 * Candidates inserted by `selectrum-insert-current-candidate` are now
   added to history ([#54]).
 * You can resume the last completion session using the
