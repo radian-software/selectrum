@@ -1089,7 +1089,7 @@ copy is made.
 For MINIBUFFER-COMPLETION-TABLE and
 MINIBUFFER-COMPLETION-PREDICATE see `minibuffer-completion-table'
 and `minibuffer-completion-predicate'. They are used for internal
-purposes and compatibility to emacs completion API."
+purposes and compatibility to Emacs completion API."
   (unless may-modify-candidates
     (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
