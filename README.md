@@ -305,9 +305,11 @@ Selectrum has a
 which people have contributed handy commands for doing things like
 finding buffers and recent files at the same time. It is rather like
 [Counsel](https://github.com/abo-abo/swiper#counsel) Feel free to add
-your own commands!
+your own commands! The wiki also contains configuration tips for
+external packages
+[here](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
 
-Here are external packages that work well with Selectrum:
+External packages that work well with Selectrum:
 
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
@@ -316,14 +318,18 @@ Here are external packages that work well with Selectrum:
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the
   tree based item navigation into a flat completion menu.
 
-* As an alternative to `prescient.el` (although it only works for
-  `M-x`) there is [Amx](https://github.com/DarwinAwardWinner/amx). It
-  has some extra features specific to `M-x`, like displaying
-  keybindings, ignoring uninteresting commands, and performing
-  alternate actions (such as `C-h f` instead of `RET` to look up docs
-  for a command instead of calling it). It is also reported that Amx
-  may be faster than `prescient.el` because it uses a different
-  sorting algorithm.
+* As an alternative sorting method to `prescient.el` (although it only
+  works for `M-x`) there is
+  [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
+  features specific to `M-x`, like displaying keybindings, ignoring
+  uninteresting commands, and performing alternate actions (such as
+  `C-h f` instead of `RET` to look up docs for a command instead of
+  calling it). It is also reported that Amx may be faster than
+  `prescient.el` because it uses a different sorting algorithm.
+
+* As an alternative filtering method to `prescient.el` there is
+  [orderless](https://github.com/oantolin/orderless). It supports many
+  different matching styles and integrates with `completion-styles`.
 
 ### But what is it doing to my Emacs??
 
