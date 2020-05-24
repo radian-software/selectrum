@@ -1217,54 +1217,70 @@ Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
   (let* ((input (buffer-substring-no-properties start end))
          (meta (completion-metadata input collection predicate))
+         (category (cdr (assq 'category meta)))
+         (bound (pcase category
+                  ('file start)
+                  (_ (+ start (car (completion-boundaries
+                                    input collection predicate ""))))))
+         (exit-func (plist-get completion-extra-properties
+                               :exit-function))
          (cands (nconc
                  (completion-all-completions input collection predicate
                                              (- end start) meta)
                  nil))
-         (annotation-func (plist-get completion-extra-properties
-                                     :annotation-function))
-         (docsig-func (plist-get completion-extra-properties
-                                 :company-docsig))
-         (exit-func (plist-get completion-extra-properties
-                               :exit-function))
-         (display-sort-func (cdr (assq 'display-sort-function meta)))
-         (cands (selectrum--map-destructive
-                 (lambda (cand)
-                   (propertize
-                    cand
-                    'selectrum-candidate-display-suffix
-                    (when annotation-func
-                      ;; Rule out situations where the annotation is nil.
-                      (when-let ((annotation (funcall annotation-func cand)))
-                        (propertize
-                         annotation
-                         'face 'selectrum-completion-annotation)))
-                    'selectrum-candidate-display-right-margin
-                    (when docsig-func
-                      (when-let ((docsig (funcall docsig-func cand)))
-                        (propertize
-                         (format "%s" docsig)
-                         'face 'selectrum-completion-docsig)))))
-                 cands))
-         (selectrum-should-sort-p selectrum-should-sort-p)
+         (exit-status nil)
          (result nil))
-    (when display-sort-func
-      (setq cands (funcall display-sort-func cands))
-      (setq selectrum-should-sort-p nil))
-    (pcase (length cands)
-      (`0 (message "No match"))
-      (`1 (setq result (car cands)))
-      ( _ (setq result (selectrum-read
-                        "Completion: " cands :may-modify-candidates t))))
-    (when result
-      (delete-region start end)
-      (insert (substring-no-properties result)))
-    (when exit-func
-      (let ((status
-             (cond
-              ((not (member result cands)) 'sole)
-              (t 'finished))))
-        (funcall exit-func result status)))))
+    (if (null cands)
+        (progn (unless completion-fail-discreetly (ding))
+               (message "No match"))
+      (pcase category
+        ('file (setq result (selectrum--completing-read-file-name
+                             "Completion: " collection predicate
+                             nil input))
+               (setq exit-status 'finished))
+        (_
+         (let* ((annotation-func (plist-get completion-extra-properties
+                                            :annotation-function))
+                (docsig-func (plist-get completion-extra-properties
+                                        :company-docsig))
+                (display-sort-func (cdr (assq 'display-sort-function meta)))
+                (cands (selectrum--map-destructive
+                        (lambda (cand)
+                          (propertize
+                           cand
+                           'selectrum-candidate-display-suffix
+                           (when annotation-func
+                             ;; Rule out situations where the annotation
+                             ;; is nil.
+                             (when-let ((annotation
+                                         (funcall annotation-func cand)))
+                               (propertize
+                                annotation
+                                'face 'selectrum-completion-annotation)))
+                           'selectrum-candidate-display-right-margin
+                           (when docsig-func
+                             (when-let ((docsig (funcall docsig-func cand)))
+                               (propertize
+                                (format "%s" docsig)
+                                'face 'selectrum-completion-docsig)))))
+                        cands))
+                (selectrum-should-sort-p selectrum-should-sort-p))
+           (when display-sort-func
+             (setq cands (funcall display-sort-func cands))
+             (setq selectrum-should-sort-p nil))
+           (pcase (length cands)
+             ;; We already rule out the situation where `cands' is empty.
+             (`1 (setq result (car cands)))
+             ( _ (setq result (selectrum-read
+                               "Completion: " cands
+                               :may-modify-candidates t))))
+           (setq exit-status
+                 (cond ((not (member result cands)) 'sole)
+                       (t 'finished))))))
+      (delete-region bound end)
+      (insert (substring-no-properties result))
+      (when exit-func
+        (funcall exit-func result exit-status)))))
 
 (defvar selectrum--old-completion-in-region-function nil
   "Previous value of `completion-in-region-function'.")
