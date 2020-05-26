@@ -265,10 +265,10 @@ matching and case-insensitive matching.
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
   candidate.
-* The `selectrum-completion-in-region` function can display annotations
-  if the `completion-in-region-function` backend offers them. Customize
-  the face `selectrum-completion-annotation` to change their
-  appearance.
+* The `selectrum-completion-in-region` function can display
+  annotations if the `completion-in-region-function` backend offers
+  them. Customize the face `selectrum-completion-annotation` to change
+  their appearance.
     * Customize the face `selectrum-completion-docsig` to change the
       appearance of function signatures show by
       `completion-in-region`.
