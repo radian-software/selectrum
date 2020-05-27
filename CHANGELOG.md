@@ -64,6 +64,13 @@ The format is based on [Keep a Changelog].
   Appearance can be configured using the faces
   `selectrum-completion-annotation`, `selectrum-completion-docsig`,
   and `completions-common-part` ([#86]).
+* `selectrum-read` accepts two additional keyword arguments
+  `minibuffer-completion-table` and
+  `minibuffer-completion-predicate`. These can be used to pass the
+  `completing-read` collection and predicate so they are available for
+  internal handling of completion API features and for other external
+  commands or packages which make use of them.
+
 
 ### Enhancements
 * `selectrum-read-file-name` which is used as
