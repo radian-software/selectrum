@@ -535,6 +535,16 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
+(defun selectrum--maybe-init-candidates-from-table ()
+  "Initialize `selectrum--preprocessed-candidates' if necessary."
+  (when (and (not selectrum--preprocessed-candidates)
+             minibuffer-completion-table)
+    (setq selectrum--preprocessed-candidates
+          (funcall selectrum-preprocess-candidates-function
+                   (selectrum--normalize-collection
+                    minibuffer-completion-table
+                    minibuffer-completion-predicate)))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
@@ -550,6 +560,7 @@ just rendering it to the screen and then checking."
           (bound (marker-position selectrum--end-of-input-marker))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
+        (selectrum--maybe-init-candidates-from-table)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
@@ -1051,7 +1062,8 @@ Return the selected string.
 CANDIDATES is a list of strings or a function to dynamically
 generate them. If CANDIDATES is a function, then it receives one
 argument, the current user input, and returns the list of
-strings.
+strings. If CANDIDATES are nil the candidates will be computed
+from MINIBUFFER-COMPLETION-TABLE.
 
 Instead of a list of strings, the function may alternatively
 return an alist with the following keys:
@@ -1151,7 +1163,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
   (selectrum-read
-   prompt (selectrum--normalize-collection collection predicate)
+   prompt nil
    ;; Don't pass `initial-input'. We use it internally but it's
    ;; deprecated in `completing-read' and doesn't work well with the
    ;; Selectrum paradigm except in specific cases that we control.
