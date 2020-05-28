@@ -475,6 +475,12 @@ This is used to implement `selectrum-repeat'.")
      selectrum--start-of-input-marker
      selectrum--end-of-input-marker)))
 
+(defun selectrum--current-input ()
+  "Get current minibuffer input."
+  (buffer-substring
+   selectrum--start-of-input-marker
+   selectrum--end-of-input-marker))
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
