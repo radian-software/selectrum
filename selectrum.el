@@ -541,15 +541,21 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
-(defun selectrum--maybe-init-candidates-from-table ()
-  "Initialize `selectrum--preprocessed-candidates' if necessary."
-  (when (and (not selectrum--preprocessed-candidates)
+(defun selectrum--init-candidates-from-table ()
+  "Initialize candidates from `minibuffer-completion-table'."
+ (when (and (not selectrum--preprocessed-candidates)
              minibuffer-completion-table)
-    (setq selectrum--preprocessed-candidates
-          (funcall selectrum-preprocess-candidates-function
-                   (selectrum--normalize-collection
-                    minibuffer-completion-table
-                    minibuffer-completion-predicate)))))
+    (let ((sortf (completion-metadata-get
+                  (completion-metadata
+                   (selectrum--current-input)
+                   minibuffer-completion-table
+                   minibuffer-completion-predicate)
+                  'display-sort-function)))
+      (setq selectrum--preprocessed-candidates
+            (funcall (or sortf selectrum-preprocess-candidates-function)
+                     (selectrum--normalize-collection
+                      minibuffer-completion-table
+                      minibuffer-completion-predicate))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -566,7 +572,7 @@ just rendering it to the screen and then checking."
           (bound (marker-position selectrum--end-of-input-marker))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
-        (selectrum--maybe-init-candidates-from-table)
+        (selectrum--init-candidates-from-table)
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
