@@ -359,26 +359,22 @@ If PREDICATE is non-nil, then it filters the collection as in
 
 (defun selectrum--get-annotation-suffix (string annotation-func)
   "Get `selectrum-candidate-display-suffix' value for annotation.
-
 Used to display STRING according to ANNOTATION-FUNC from
 metadata."
-  (when annotation-func
-    ;; Rule out situations where the annotation
-    ;; is nil.
-    (when-let ((annotation (funcall annotation-func string)))
-      (propertize
-       annotation
-       'face 'selectrum-completion-annotation))))
+  ;; Rule out situations where the annotation
+  ;; is nil.
+  (when-let ((annotation (funcall annotation-func string)))
+    (propertize
+     annotation
+     'face 'selectrum-completion-annotation)))
 
 (defun selectrum--get-margin-docsig (string docsig-func)
   "Get `selectrum-candidate-display-right-margin' value for docsig.
-
 Used to display STRING according to DOCSIG-FUNC from metadata."
-  (when docsig-func
-    (when-let ((docsig (funcall docsig-func string)))
-      (propertize
-       (format "%s" docsig)
-       'face 'selectrum-completion-docsig))))
+  (when-let ((docsig (funcall docsig-func string)))
+    (propertize
+     (format "%s" docsig)
+     'face 'selectrum-completion-docsig)))
 
 ;;;; Minibuffer state
 
@@ -498,6 +494,37 @@ This is used to implement `selectrum-repeat'.")
      selectrum--start-of-input-marker
      selectrum--end-of-input-marker)))
 
+(defun selectrum--get-meta (setting &optional table pred input)
+  "Get metadata SETTING from TABLE.
+TABLE defaults to `minibuffer-completion-table'.
+PRED defaults to `minibuffer-completion-predicate'.
+INPUT defaults to current selectrum input string."
+  (let ((input (or input (selectrum--current-input)))
+        (pred (or pred minibuffer-completion-predicate))
+        (table (or table minibuffer-completion-table)))
+    (when table
+      (completion-metadata-get
+       (completion-metadata input table pred) setting))))
+
+(defun selectrum--get-candidates-from-table (&optional table pred)
+  "Get candidates from TABLE.
+TABLE defaults to `minibuffer-completion-table'.
+PRED defaults to `minibuffer-completion-predicate'."
+  (let ((annotf (selectrum--get-meta 'annotation-function table pred))
+        (strings (selectrum--normalize-collection
+                  (or table minibuffer-completion-table)
+                  (or pred minibuffer-completion-predicate))))
+    (cond (annotf
+           (let ((cands ()))
+             (dolist (string strings (nreverse cands))
+               (push (propertize
+                      string
+                      'selectrum-candidate-display-suffix
+                      (selectrum--get-annotation-suffix
+                       string annotf))
+                     cands))))
+          (t strings))))
+
 (defun selectrum--current-input ()
   "Get current minibuffer input."
   (buffer-substring
@@ -564,33 +591,6 @@ just rendering it to the screen and then checking."
                 (run-with-idle-timer
                  0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
-(defun selectrum--init-candidates-from-table ()
-  "Initialize candidates from `minibuffer-completion-table'."
-  (when (and (not selectrum--preprocessed-candidates)
-             minibuffer-completion-table)
-    (let* ((metad (completion-metadata
-                   (selectrum--current-input)
-                   minibuffer-completion-table
-                   minibuffer-completion-predicate))
-           (sortf (completion-metadata-get
-                   metad
-                   'display-sort-function))
-           (annotf (completion-metadata-get
-                    metad
-                    'annotation-function))
-           (strings (selectrum--normalize-collection
-                     minibuffer-completion-table
-                     minibuffer-completion-predicate))
-           (cands ()))
-      (dolist (string strings)
-        (push (propertize string
-                          'selectrum-candidate-display-suffix
-                          (selectrum--get-annotation-suffix string annotf))
-              cands))
-      (setq selectrum--preprocessed-candidates
-            (funcall (or sortf selectrum-preprocess-candidates-function)
-                     (nreverse cands))))))
-
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
@@ -606,7 +606,13 @@ just rendering it to the screen and then checking."
           (bound (marker-position selectrum--end-of-input-marker))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
-        (selectrum--init-candidates-from-table)
+        (when (and (not selectrum--preprocessed-candidates)
+                   minibuffer-completion-table)
+          ;; No candidates were passed, initialize them from
+          ;; `minibuffer-completion-table'.
+          (setq selectrum--preprocessed-candidates
+                (funcall selectrum-preprocess-candidates-function
+                         (selectrum--get-candidates-from-table))))
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
@@ -840,6 +846,10 @@ into the user input area to start with."
       (insert initial-input)))
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
+  ;; If metadata specifies a custom sort function use it as
+  ;; `selectrum-preprocess-candidates-function' for this session.
+  (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
+    (setq-local selectrum-preprocess-candidates-function sortf))
   (setq selectrum--preprocessed-candidates
         (if (functionp candidates)
             candidates
@@ -1320,24 +1330,32 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                           (propertize
                            cand
                            'selectrum-candidate-display-suffix
-                           (selectrum--get-annotation-suffix
-                            cand annotation-func)
+                           (when annotation-func
+                             (selectrum--get-annotation-suffix
+                              cand annotation-func))
                            'selectrum-candidate-display-right-margin
-                           (selectrum--get-margin-docsig
-                            cand docsig-func)))
+                           (when docsig-func
+                             (selectrum--get-margin-docsig
+                              cand docsig-func))))
                         cands))
                 (selectrum-should-sort-p selectrum-should-sort-p))
            (when display-sort-func
              (setq cands (funcall display-sort-func cands))
+             ;; FIXME: This will set `selectrum-should-sort-p' for any
+             ;; recursive minibuffer sessions, too.
              (setq selectrum-should-sort-p nil))
            (pcase (length cands)
              ;; We already rule out the situation where `cands' is empty.
              (`1 (setq result (car cands)))
              ( _ (setq result (selectrum-read
                                "Completion: " cands
-                               :may-modify-candidates t
-                               :minibuffer-completion-table collection
-                               :minibuffer-completion-predicate predicate))))
+                               ;; Don't pass
+                               ;; `minibuffer-completion-table' and
+                               ;; `minibuffer-completion-predicate'
+                               ;; here because currently this function
+                               ;; handles all metadata for region
+                               ;; completion itself.
+                               :may-modify-candidates t))))
            (setq exit-status
                  (cond ((not (member result cands)) 'sole)
                        (t 'finished))))))
