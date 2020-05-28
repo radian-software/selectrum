@@ -357,6 +357,29 @@ If PREDICATE is non-nil, then it filters the collection as in
   (or (get-text-property 0 'selectrum-candidate-full candidate)
       candidate))
 
+(defun selectrum--get-annotation-suffix (string annotation-func)
+  "Get `selectrum-candidate-display-suffix' value for annotation.
+
+Used to display STRING according to ANNOTATION-FUNC from
+metadata."
+  (when annotation-func
+    ;; Rule out situations where the annotation
+    ;; is nil.
+    (when-let ((annotation (funcall annotation-func string)))
+      (propertize
+       annotation
+       'face 'selectrum-completion-annotation))))
+
+(defun selectrum--get-margin-docsig (string docsig-func)
+  "Get `selectrum-candidate-display-right-margin' value for docsig.
+
+Used to display STRING according to DOCSIG-FUNC from metadata."
+  (when docsig-func
+    (when-let ((docsig (funcall docsig-func string)))
+      (propertize
+       (format "%s" docsig)
+       'face 'selectrum-completion-docsig))))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -1286,20 +1309,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                           (propertize
                            cand
                            'selectrum-candidate-display-suffix
-                           (when annotation-func
-                             ;; Rule out situations where the annotation
-                             ;; is nil.
-                             (when-let ((annotation
-                                         (funcall annotation-func cand)))
-                               (propertize
-                                annotation
-                                'face 'selectrum-completion-annotation)))
+                           (selectrum--get-annotation-suffix
+                            cand annotation-func)
                            'selectrum-candidate-display-right-margin
-                           (when docsig-func
-                             (when-let ((docsig (funcall docsig-func cand)))
-                               (propertize
-                                (format "%s" docsig)
-                                'face 'selectrum-completion-docsig)))))
+                           (selectrum--get-margin-docsig
+                            cand docsig-func)))
                         cands))
                 (selectrum-should-sort-p selectrum-should-sort-p))
            (when display-sort-func
