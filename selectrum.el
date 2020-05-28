@@ -568,17 +568,28 @@ just rendering it to the screen and then checking."
   "Initialize candidates from `minibuffer-completion-table'."
   (when (and (not selectrum--preprocessed-candidates)
              minibuffer-completion-table)
-    (let ((sortf (completion-metadata-get
-                  (completion-metadata
+    (let* ((metad (completion-metadata
                    (selectrum--current-input)
                    minibuffer-completion-table
-                   minibuffer-completion-predicate)
-                  'display-sort-function)))
+                   minibuffer-completion-predicate))
+           (sortf (completion-metadata-get
+                   metad
+                   'display-sort-function))
+           (annotf (completion-metadata-get
+                    metad
+                    'annotation-function))
+           (strings (selectrum--normalize-collection
+                     minibuffer-completion-table
+                     minibuffer-completion-predicate))
+           (cands ()))
+      (dolist (string strings)
+        (push (propertize string
+                          'selectrum-candidate-display-suffix
+                          (selectrum--get-annotation-suffix string annotf))
+              cands))
       (setq selectrum--preprocessed-candidates
             (funcall (or sortf selectrum-preprocess-candidates-function)
-                     (selectrum--normalize-collection
-                      minibuffer-completion-table
-                      minibuffer-completion-predicate))))))
+                     (nreverse cands))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
