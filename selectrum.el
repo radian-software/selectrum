@@ -543,7 +543,7 @@ just rendering it to the screen and then checking."
 
 (defun selectrum--init-candidates-from-table ()
   "Initialize candidates from `minibuffer-completion-table'."
- (when (and (not selectrum--preprocessed-candidates)
+  (when (and (not selectrum--preprocessed-candidates)
              minibuffer-completion-table)
     (let ((sortf (completion-metadata-get
                   (completion-metadata
