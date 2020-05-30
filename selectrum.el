@@ -783,6 +783,10 @@ into the user input area to start with."
       (insert initial-input)))
   (setq selectrum--end-of-input-marker (point-marker))
   (set-marker-insertion-type selectrum--end-of-input-marker t)
+  ;; Adjust selectrum sorting if configured for command.
+  (when-let ((prop (memq 'selectrum-should-sort-p
+                         (symbol-plist selectrum--last-command))))
+    (setq-local selectrum-should-sort-p (cadr prop)))
   (setq selectrum--preprocessed-candidates
         (if (functionp candidates)
             candidates
