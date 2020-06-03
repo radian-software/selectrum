@@ -74,6 +74,8 @@ The format is based on [Keep a Changelog].
   `annotation-function` or `display-sort-function` in its metadata,
   Selectrum will use this information to annotate or sort the
   candidates accordingly ([#95]).
+* One can trigger an update of Selectrums completions UI manually by
+  calling `selectrum-exhibit` ([#95]).
 
 
 ### Enhancements
