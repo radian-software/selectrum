@@ -526,10 +526,13 @@ PRED defaults to `minibuffer-completion-predicate'."
           (t strings))))
 
 (defun selectrum--current-input ()
-  "Get current minibuffer input."
-  (buffer-substring
-   selectrum--start-of-input-marker
-   selectrum--end-of-input-marker))
+  "Get current Selectrum input."
+  (if (and selectrum--start-of-input-marker
+           selectrum--end-of-input-marker)
+      (buffer-substring
+       selectrum--start-of-input-marker
+       selectrum--end-of-input-marker)
+    ""))
 
 ;;;; Hook functions
 
