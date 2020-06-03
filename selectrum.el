@@ -534,6 +534,14 @@ PRED defaults to `minibuffer-completion-predicate'."
        selectrum--end-of-input-marker)
     ""))
 
+(defun selectrum-exhibit ()
+  "Trigger an update of Selectrums completion UI."
+  (when-let ((mini (active-minibuffer-window)))
+    (with-selected-window mini
+      (setq selectrum--preprocessed-candidates nil)
+      (setq selectrum--previous-input-string nil)
+      (selectrum--minibuffer-post-command-hook))))
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
