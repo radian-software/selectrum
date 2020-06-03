@@ -538,7 +538,9 @@ PRED defaults to `minibuffer-completion-predicate'."
   "Trigger an update of Selectrums completion UI."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
-      (setq selectrum--preprocessed-candidates nil)
+      (when (and minibuffer-completion-table
+                 (not (functionp selectrum--preprocessed-candidates)))
+        (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
       (selectrum--minibuffer-post-command-hook))))
 
