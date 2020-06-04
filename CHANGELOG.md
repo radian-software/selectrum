@@ -69,11 +69,11 @@ The format is based on [Keep a Changelog].
   `minibuffer-completion-predicate`. These can be used to pass the
   `completing-read` collection and predicate so they are available for
   internal handling of completion API features and for other external
-  commands or packages which make use of them ([#94]).
+  commands or packages which make use of them ([#94], [#95]).
 * If the completion table passed to `completing-read` provides
   `annotation-function` or `display-sort-function` in its metadata,
   Selectrum will use this information to annotate or sort the
-  candidates accordingly ([#95]).
+  candidates accordingly ([#82], [#95]).
 * One can trigger an update of Selectrums completions UI manually by
   calling `selectrum-exhibit` ([#95]).
 
@@ -188,6 +188,7 @@ The format is based on [Keep a Changelog].
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
 [#80]: https://github.com/raxod502/selectrum/issues/80
+[#82]: https://github.com/raxod502/selectrum/issues/82
 [#85]: https://github.com/raxod502/selectrum/pull/85
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
