@@ -134,7 +134,11 @@ how to fix it.
 * *To navigate into the currently selected directory while finding a
   file\:* type `TAB`. (What this actually does is insert the currently
   selected candidate into the minibuffer, which for `find-file` has
-  the effect of navigating into a directory.)
+  the effect of navigating into a directory.) With a positive prefix
+  argument, insert the candidate at that point in the list, counting
+  from one. See `selectrum-show-indices`. A non-positive prefix
+  argument inserts the candidate corresponding to
+  `selectrum--current-candidate-index`.
 * *To copy the current candidate:* type `M-w` or what is bind to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not

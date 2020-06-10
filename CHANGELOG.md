@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog].
   See [#27].
 
 ### Features
+* You can now give a prefix argument to
+  `selectrum-insert-current-candidate` to insert the candidate at a
+  given index directly ([#96]).
 * Candidates inserted by `selectrum-insert-current-candidate` are now
   added to history ([#54]).
 * You can resume the last completion session using the
@@ -178,6 +181,7 @@ The format is based on [Keep a Changelog].
 [#85]: https://github.com/raxod502/selectrum/pull/85
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
+[#96]: https://github.com/raxod502/selectrum/pull/96
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
