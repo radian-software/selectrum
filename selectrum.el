@@ -1126,6 +1126,8 @@ copy is made."
                ;; proper solution.
                (completing-read-function
                 #'selectrum-completing-read)
+               ;; <https://github.com/raxod502/selectrum/issues/99>
+               (icomplete-mode nil)
                (selectrum--active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
