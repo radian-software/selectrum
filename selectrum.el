@@ -394,9 +394,6 @@ dynamic candidate list, also
 input changes, and is subsequently passed to
 `selectrum-highlight-candidates-function'.")
 
-(defvar selectrum--result nil
-  "Return value for `selectrum-read'. Candidate string or list of them.")
-
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
@@ -862,32 +859,29 @@ Or if there is an active region, save the region to kill ring."
   "Exit minibuffer with given CANDIDATE.
 If `selectrum--crm-p' is non-nil exit with the choosen candidates
 plus CANDIDATE."
-  (remove-text-properties
-   0 (length candidate)
-   '(face selectrum-current-candidate) candidate)
-  (setq selectrum--result
-        (cond ((and selectrum--crm-p
-                    (string-match crm-separator
-                                  selectrum--previous-input-string))
-               (with-temp-buffer
-                 (insert selectrum--previous-input-string)
-                 (goto-char (point-min))
-                 (while (re-search-forward crm-separator nil t))
-                 (delete-region (point) (point-max))
-                 (insert (selectrum--get-full candidate))
-                 (buffer-string)))
-              (t
-               (apply
-                #'run-hook-with-args
-                'selectrum-candidate-selected-hook
-                candidate selectrum--read-args)
-               (selectrum--get-full candidate))))
-  (when (string-empty-p selectrum--result)
-    (setq selectrum--result (or selectrum--default-candidate "")))
-  (let ((inhibit-read-only t))
+  (let* ((result (cond ((and selectrum--crm-p
+                             (string-match crm-separator
+                                           selectrum--previous-input-string))
+                        (with-temp-buffer
+                          (insert selectrum--previous-input-string)
+                          (goto-char (point-min))
+                          (while (re-search-forward crm-separator nil t))
+                          (delete-region (point) (point-max))
+                          (insert (selectrum--get-full candidate))
+                          (buffer-string)))
+                       (t
+                        (apply
+                         #'run-hook-with-args
+                         'selectrum-candidate-selected-hook
+                         candidate selectrum--read-args)
+                        (selectrum--get-full candidate))))
+         (inhibit-read-only t))
     (erase-buffer)
-    (insert selectrum--result))
-  (exit-minibuffer))
+    (insert (substring-no-properties
+             (if (string-empty-p result)
+                 (or selectrum--default-candidate result)
+               result)))
+    (exit-minibuffer)))
 
 (defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
@@ -1022,7 +1016,6 @@ Otherwise, just eval BODY."
               selectrum--end-of-input-marker
               selectrum--preprocessed-candidates
               selectrum--refined-candidates
-              selectrum--result
               selectrum--match-required-p
               selectrum--move-default-candidate-p
               selectrum--default-candidate
@@ -1139,8 +1132,7 @@ copy is made."
                (selectrum--active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
-           (or history 'minibuffer-history))
-          selectrum--result)))))
+           (or history 'minibuffer-history)))))))
 
 ;;;###autoload
 (defun selectrum-completing-read
@@ -1512,10 +1504,11 @@ shadows correctly."
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (get-text-property
-     0 'selectrum--lib-path
-     (selectrum-read
-      "Library name: " lst :require-match t :may-modify-candidates t))))
+    (let ((res (selectrum-read
+                "Library name: " lst
+                :require-match t :may-modify-candidates t)))
+      (get-text-property
+       0 'selectrum--lib-path (car (member res lst))))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
