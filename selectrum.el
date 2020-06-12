@@ -535,7 +535,7 @@ PRED defaults to `minibuffer-completion-predicate'."
     ""))
 
 (defun selectrum-exhibit ()
-  "Trigger an update of Selectrums completion UI."
+  "Trigger an update of Selectrum's completion UI."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
