@@ -1171,7 +1171,7 @@ For MINIBUFFER-COMPLETION-TABLE and
 MINIBUFFER-COMPLETION-PREDICATE see `minibuffer-completion-table'
 and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. By passing
-theses as keyword arguments they will be dynamically bound as per
+these as keyword arguments they will be dynamically bound as per
 semantics of `cl-defun'."
   (unless may-modify-candidates
     (setq candidates (copy-sequence candidates)))
