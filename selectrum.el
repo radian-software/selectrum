@@ -510,7 +510,9 @@ INPUT defaults to current selectrum input string."
   "Get candidates from TABLE.
 TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'."
-  (let ((annotf (selectrum--get-meta 'annotation-function table pred))
+  (let ((annotf (or (selectrum--get-meta 'annotation-function table pred)
+                    (plist-get completion-extra-properties
+                               :annotation-function)))
         (strings (selectrum--normalize-collection
                   (or table minibuffer-completion-table)
                   (or pred minibuffer-completion-predicate))))

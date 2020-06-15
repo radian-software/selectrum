@@ -73,7 +73,8 @@ The format is based on [Keep a Changelog].
 * If the completion table passed to `completing-read` provides
   `annotation-function` or `display-sort-function` in its metadata,
   Selectrum will use this information to annotate or sort the
-  candidates accordingly ([#82], [#95]).
+  candidates accordingly. Annotations defined by
+  `completion-extra-properties` are handled, too ([#82], [#95]).
 * One can trigger an update of Selectrum's completions UI manually by
   calling `selectrum-exhibit` ([#95]).
 
