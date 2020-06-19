@@ -877,10 +877,9 @@ plus CANDIDATE."
                         (selectrum--get-full candidate))))
          (inhibit-read-only t))
     (erase-buffer)
-    (insert (substring-no-properties
-             (if (string-empty-p result)
-                 (or selectrum--default-candidate result)
-               result)))
+    (insert (if (string-empty-p result)
+                (or selectrum--default-candidate result)
+              result))
     (exit-minibuffer)))
 
 (defun selectrum-select-current-candidate (&optional arg)
@@ -1143,15 +1142,16 @@ copy is made."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
-  (selectrum-read
-   prompt (selectrum--normalize-collection collection predicate)
-   ;; Don't pass `initial-input'. We use it internally but it's
-   ;; deprecated in `completing-read' and doesn't work well with the
-   ;; Selectrum paradigm except in specific cases that we control.
-   :default-candidate (or (car-safe def) def)
-   :require-match (eq require-match t)
-   :history hist
-   :may-modify-candidates t))
+  (substring-no-properties
+   (selectrum-read
+    prompt (selectrum--normalize-collection collection predicate)
+    ;; Don't pass `initial-input'. We use it internally but it's
+    ;; deprecated in `completing-read' and doesn't work well with the
+    ;; Selectrum paradigm except in specific cases that we control.
+    :default-candidate (or (car-safe def) def)
+    :require-match (eq require-match t)
+    :history hist
+    :may-modify-candidates t)))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1209,7 +1209,8 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
         :history hist
         :default-candidate def
         :may-modify-candidates t)))
-    (split-string res crm-separator t)))
+    (mapcar #'substring-no-properties
+            (split-string res crm-separator t))))
 
 ;;;###autoload
 (defun selectrum-completion-in-region
@@ -1322,13 +1323,14 @@ PREDICATE, see `read-buffer'."
                       candidates)))
              `((candidates . ,candidates)
                (input . ,input))))))
-    (selectrum-read
-     prompt candidates
-     :default-candidate def
-     :require-match (eq require-match t)
-     :history 'buffer-name-history
-     :no-move-default-candidate t
-     :may-modify-candidates t)))
+    (substring-no-properties
+     (selectrum-read
+      prompt candidates
+      :default-candidate def
+      :require-match (eq require-match t)
+      :history 'buffer-name-history
+      :no-move-default-candidate t
+      :may-modify-candidates t))))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1367,13 +1369,14 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      (quit))))
              `((input . ,ematch)
                (candidates . ,cands))))))
-    (selectrum-read
-     prompt coll
-     :default-candidate (or (car-safe def) def)
-     :initial-input (or (car-safe initial-input) initial-input)
-     :history hist
-     :require-match (eq require-match t)
-     :may-modify-candidates t)))
+    (substring-no-properties
+     (selectrum-read
+      prompt coll
+      :default-candidate (or (car-safe def) def)
+      :initial-input (or (car-safe initial-input) initial-input)
+      :history hist
+      :require-match (eq require-match t)
+      :may-modify-candidates t))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1504,11 +1507,10 @@ shadows correctly."
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (let ((res (selectrum-read
-                "Library name: " lst
-                :require-match t :may-modify-candidates t)))
-      (get-text-property
-       0 'selectrum--lib-path (car (member res lst))))))
+    (get-text-property
+     0 'selectrum--lib-path
+     (selectrum-read
+      "Library name: " lst :require-match t :may-modify-candidates t))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
