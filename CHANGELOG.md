@@ -146,6 +146,8 @@ The format is based on [Keep a Changelog].
   fixed. Also, `TAB` now inserts the current candidate and not the
   whole path to the library, so that the result can be submitted
   directly ([#73]).
+* Empty string completion candidates are now ignored like in the
+  default completion UI ([#101]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -182,6 +184,7 @@ The format is based on [Keep a Changelog].
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
 [#96]: https://github.com/raxod502/selectrum/pull/96
+[#101]: https://github.com/raxod502/selectrum/pull/101
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)

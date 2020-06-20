@@ -578,6 +578,8 @@ just rendering it to the screen and then checking."
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                input selectrum--refined-candidates))
+        (setq selectrum--refined-candidates
+              (delete "" selectrum--refined-candidates))
         (if selectrum--repeat
             (progn
               (setq selectrum--current-candidate-index
