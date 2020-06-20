@@ -69,6 +69,8 @@ The format is based on [Keep a Changelog].
   and `completions-common-part` ([#86]).
 
 ### Enhancements
+* `icomplete-mode` is now automatically disabled when entering
+  Selectrum, to avoid conflicts ([#99]).
 * `selectrum-read-file-name` which is used as
   `read-file-name-function` now uses `read-file-name-default`
   internally. This means all default features of file completion
@@ -184,6 +186,7 @@ The format is based on [Keep a Changelog].
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
 [#96]: https://github.com/raxod502/selectrum/pull/96
+[#99]: https://github.com/raxod502/selectrum/issues/99
 [#101]: https://github.com/raxod502/selectrum/pull/101
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
