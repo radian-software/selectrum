@@ -919,13 +919,23 @@ ignores the currently selected candidate, if one exists."
       selectrum--start-of-input-marker
       selectrum--end-of-input-marker))))
 
-(defun selectrum-insert-current-candidate ()
-  "Insert current candidate into user input area."
-  (interactive)
-  (when selectrum--current-candidate-index
+(defun selectrum-insert-current-candidate (&optional arg)
+  "Insert current candidate into user input area.
+
+With optional prefix argument ARG, insert the candidate at that
+index (counting from one, clamped to fall within the candidate
+list). A null or non-positive ARG inserts the candidate corresponding to
+`selectrum--current-candidate-index'."
+  (interactive "P")
+  (when-let ((index (if (and arg
+                             selectrum--refined-candidates
+                             (> (prefix-numeric-value arg) 0))
+                        (min (1- (prefix-numeric-value arg))
+                             (1- (length selectrum--refined-candidates)))
+                      selectrum--current-candidate-index)))
     (delete-region selectrum--start-of-input-marker
                    selectrum--end-of-input-marker)
-    (let* ((candidate (nth selectrum--current-candidate-index
+    (let* ((candidate (nth index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
       (insert (if (not selectrum--crm-p)
