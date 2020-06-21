@@ -29,8 +29,8 @@
 
 (require 'selectrum)
 
-(declare-function helm "helm")
-(declare-function helm-get-current-source "helm")
+(declare-function helm "ext:helm")
+(declare-function helm-get-current-source "ext:helm")
 
 (cl-defun selectrum-helm--normalize-source (source &optional only-one)
   "Normalize single Helm SOURCE alist.

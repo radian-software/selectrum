@@ -134,7 +134,11 @@ how to fix it.
 * *To navigate into the currently selected directory while finding a
   file\:* type `TAB`. (What this actually does is insert the currently
   selected candidate into the minibuffer, which for `find-file` has
-  the effect of navigating into a directory.)
+  the effect of navigating into a directory.) With a positive prefix
+  argument, insert the candidate at that point in the list, counting
+  from one. See `selectrum-show-indices`. A non-positive prefix
+  argument inserts the candidate corresponding to
+  `selectrum--current-candidate-index`.
 * *To copy the current candidate:* type `M-w` or what is bind to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
@@ -265,10 +269,10 @@ matching and case-insensitive matching.
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
   candidate.
-* The `selectrum-completion-in-region` function can display annotations
-  if the `completion-in-region-function` backend offers them. Customize
-  the face `selectrum-completion-annotation` to change their
-  appearance.
+* The `selectrum-completion-in-region` function can display
+  annotations if the `completion-in-region-function` backend offers
+  them. Customize the face `selectrum-completion-annotation` to change
+  their appearance.
     * Customize the face `selectrum-completion-docsig` to change the
       appearance of function signatures show by
       `completion-in-region`.
@@ -305,9 +309,11 @@ Selectrum has a
 which people have contributed handy commands for doing things like
 finding buffers and recent files at the same time. It is rather like
 [Counsel](https://github.com/abo-abo/swiper#counsel) Feel free to add
-your own commands!
+your own commands! The wiki also contains configuration tips for
+external packages
+[here](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
 
-Here are external packages that work well with Selectrum:
+External packages that work well with Selectrum:
 
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
@@ -316,14 +322,18 @@ Here are external packages that work well with Selectrum:
   [flimenu](https://github.com/IvanMalison/flimenu) which turns the
   tree based item navigation into a flat completion menu.
 
-* As an alternative to `prescient.el` (although it only works for
-  `M-x`) there is [Amx](https://github.com/DarwinAwardWinner/amx). It
-  has some extra features specific to `M-x`, like displaying
-  keybindings, ignoring uninteresting commands, and performing
-  alternate actions (such as `C-h f` instead of `RET` to look up docs
-  for a command instead of calling it). It is also reported that Amx
-  may be faster than `prescient.el` because it uses a different
-  sorting algorithm.
+* As an alternative sorting method to `prescient.el` (although it only
+  works for `M-x`) there is
+  [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
+  features specific to `M-x`, like displaying keybindings, ignoring
+  uninteresting commands, and performing alternate actions (such as
+  `C-h f` instead of `RET` to look up docs for a command instead of
+  calling it). It is also reported that Amx may be faster than
+  `prescient.el` because it uses a different sorting algorithm.
+
+* As an alternative filtering method to `prescient.el` there is
+  [orderless](https://github.com/oantolin/orderless). It supports many
+  different matching styles and integrates with `completion-styles`.
 
 ### But what is it doing to my Emacs??
 
@@ -481,6 +491,17 @@ Technical points:
   needs to be preserved when entering a recursive Selectrum session.
   If so, you should add it to the list in
   `selectrum--save-global-state`.
+* By default, `debug-on-error` doesn't work for errors that happen on
+  `post-command-hook`. You can work around the issue like so:
+
+  ```elisp
+  (defun force-debug (func &rest args)
+    (condition-case e
+        (apply func args)
+      ((debug error) (signal (car e) (cdr e)))))
+
+  (advice-add #'selectrum--minibuffer-post-command-hook :around #'force-debug)
+  ```
 
 ## Caveats
 
