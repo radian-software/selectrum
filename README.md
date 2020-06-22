@@ -491,6 +491,17 @@ Technical points:
   needs to be preserved when entering a recursive Selectrum session.
   If so, you should add it to the list in
   `selectrum--save-global-state`.
+* By default, `debug-on-error` doesn't work for errors that happen on
+  `post-command-hook`. You can work around the issue like so:
+
+  ```elisp
+  (defun force-debug (func &rest args)
+    (condition-case e
+        (apply func args)
+      ((debug error) (signal (car e) (cdr e)))))
+
+  (advice-add #'selectrum--minibuffer-post-command-hook :around #'force-debug)
+  ```
 
 ## Caveats
 

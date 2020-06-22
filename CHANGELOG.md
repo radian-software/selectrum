@@ -67,8 +67,24 @@ The format is based on [Keep a Changelog].
   Appearance can be configured using the faces
   `selectrum-completion-annotation`, `selectrum-completion-docsig`,
   and `completions-common-part` ([#86]).
+* `selectrum-read` accepts two additional keyword arguments
+  `minibuffer-completion-table` and
+  `minibuffer-completion-predicate`. These can be used to pass the
+  `completing-read` collection and predicate so they are available for
+  internal handling of completion API features and for other external
+  commands or packages which make use of them ([#94], [#95]).
+* If the completion table passed to `completing-read` provides
+  `annotation-function` or `display-sort-function` in its metadata,
+  Selectrum will use this information to annotate or sort the
+  candidates accordingly. Annotations defined by
+  `completion-extra-properties` are handled, too ([#82], [#95]).
+* One can trigger an update of Selectrum's completions UI manually by
+  calling `selectrum-exhibit` ([#95]).
+
 
 ### Enhancements
+* `icomplete-mode` is now automatically disabled when entering
+  Selectrum, to avoid conflicts ([#99]).
 * `selectrum-read-file-name` which is used as
   `read-file-name-function` now uses `read-file-name-default`
   internally. This means all default features of file completion
@@ -146,6 +162,8 @@ The format is based on [Keep a Changelog].
   fixed. Also, `TAB` now inserts the current candidate and not the
   whole path to the library, so that the result can be submitted
   directly ([#73]).
+* Empty string completion candidates are now ignored like in the
+  default completion UI ([#101]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -178,10 +196,15 @@ The format is based on [Keep a Changelog].
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
 [#80]: https://github.com/raxod502/selectrum/issues/80
+[#82]: https://github.com/raxod502/selectrum/issues/82
 [#85]: https://github.com/raxod502/selectrum/pull/85
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
+[#94]: https://github.com/raxod502/selectrum/issues/94
+[#95]: https://github.com/raxod502/selectrum/pull/95
 [#96]: https://github.com/raxod502/selectrum/pull/96
+[#99]: https://github.com/raxod502/selectrum/issues/99
+[#101]: https://github.com/raxod502/selectrum/pull/101
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
