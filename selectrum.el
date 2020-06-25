@@ -1459,23 +1459,33 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                   (ematch (file-name-nondirectory input))
                   ;; Adjust original collection for Selectrum.
                   (cands
-                   (condition-case _
-                       (funcall collection dir
-                                (lambda (i)
-                                  (when (and (or (not predicate)
-                                                 (funcall predicate i))
-                                             (not (member
-                                                   i '("./" "../"))))
-                                    (prog1 t
-                                      (add-text-properties
-                                       0 (length i)
-                                       `(selectrum-candidate-full
-                                         ,(concat dir i))
-                                       i))))
-                                t)
-                     ;; May happen in case user quits out
-                     ;; of a TRAMP prompt.
-                     (quit))))
+                   (selectrum--map-destructive
+                    (lambda (i)
+                      (when (string-suffix-p "/" i)
+                        (setq i (substring i 0 (1- (length i))))
+                        (put-text-property
+                         0 (length i)
+                         'selectrum-candidate-display-suffix
+                         "/"
+                         i))
+                      i)
+                    (condition-case _
+                        (funcall collection dir
+                                 (lambda (i)
+                                   (when (and (or (not predicate)
+                                                  (funcall predicate i))
+                                              (not (member
+                                                    i '("./" "../"))))
+                                     (prog1 t
+                                       (add-text-properties
+                                        0 (length i)
+                                        `(selectrum-candidate-full
+                                          ,(concat dir i))
+                                        i))))
+                                 t)
+                      ;; May happen in case user quits out
+                      ;; of a TRAMP prompt.
+                      (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
     (selectrum-read
