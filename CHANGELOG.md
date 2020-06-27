@@ -80,6 +80,9 @@ The format is based on [Keep a Changelog].
   `completion-extra-properties` are handled, too ([#82], [#95]).
 * One can trigger an update of Selectrum's completions UI manually by
   calling `selectrum-exhibit` ([#95]).
+* You can now interact with candidates via the mouse. Left click
+  (`mouse-1`) selects the candidate, and right click (`mouse-3`)
+  inserts the candidate, just like `RET` and `TAB`, respectively.
 
 
 ### Enhancements

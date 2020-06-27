@@ -754,6 +754,25 @@ just rendering it to the screen and then checking."
                     (right-margin (get-text-property
                                    0 'selectrum-candidate-display-right-margin
                                    candidate)))
+                ;; Add the ability to interact with candidates via the mouse.
+                (add-text-properties
+                 0 (length displayed-candidate)
+                 (list
+                  'mouse-face 'highlight
+                  'help-echo
+                  "mouse-1: select candidate\nmouse-3: insert candidate"
+                  'keymap
+                  (let ((keymap (make-sparse-keymap)))
+                    (define-key keymap [mouse-1]
+                      `(lambda ()
+                         (interactive)
+                         (selectrum-select-current-candidate ,(1+ index))))
+                    (define-key keymap [mouse-3]
+                      `(lambda ()
+                         (interactive)
+                         (selectrum-insert-current-candidate ,(1+ index))))
+                    keymap))
+                 displayed-candidate)
                 (when (equal index highlighted-index)
                   (setq displayed-candidate
                         (copy-sequence displayed-candidate))
