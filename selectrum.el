@@ -717,7 +717,9 @@ just rendering it to the screen and then checking."
           (if (or (and highlighted-index
                        (< highlighted-index 0))
                   (and (not selectrum--match-required-p)
-                       (not displayed-candidates)))
+                       (not displayed-candidates))
+                  (not (member selectrum--default-candidate
+                               selectrum--refined-candidates)))
               (if (= (minibuffer-prompt-end) bound)
                   (let ((str
                          (propertize
@@ -725,8 +727,9 @@ just rendering it to the screen and then checking."
                                   (or selectrum--default-candidate 'none))
                           'face 'minibuffer-prompt))
                         (ol (make-overlay
-                             (minibuffer-prompt-end)
-                             (minibuffer-prompt-end))))
+                             ;; Put cursor after overlay.
+                             (1- (minibuffer-prompt-end))
+                             (1- (minibuffer-prompt-end)))))
                     (put-text-property 0 1 'cursor t str)
                     (overlay-put ol 'after-string str)
                     (setq selectrum--default-value-overlay ol))
