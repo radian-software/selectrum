@@ -718,8 +718,9 @@ just rendering it to the screen and then checking."
                        (< highlighted-index 0))
                   (and (not selectrum--match-required-p)
                        (not displayed-candidates))
-                  (not (member selectrum--default-candidate
-                               selectrum--refined-candidates)))
+                  (and selectrum--default-candidate
+                        (not (member selectrum--default-candidate
+                                     selectrum--refined-candidates))))
               (if (= (minibuffer-prompt-end) bound)
                   (let ((str
                          (propertize
