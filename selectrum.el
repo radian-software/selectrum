@@ -669,6 +669,9 @@ just rendering it to the screen and then checking."
                 (cond
                  ((null selectrum--refined-candidates)
                   nil)
+                 ((and selectrum--default-candidate
+                       (not (member selectrum--default-candidate selectrum--refined-candidates)))
+                  -1)
                  (selectrum--move-default-candidate-p
                   0)
                  (t
