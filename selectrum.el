@@ -671,7 +671,8 @@ just rendering it to the screen and then checking."
                   nil)
                  ((and selectrum--default-candidate
                        (string-empty-p (selectrum--current-input))
-                       (not (member selectrum--default-candidate selectrum--refined-candidates)))
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates)))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
@@ -730,7 +731,8 @@ just rendering it to the screen and then checking."
                          (propertize
                           (format " [default value: %S]"
                                   (or (and selectrum--default-candidate
-                                           (substring-no-properties selectrum--default-candidate))
+                                           (substring-no-properties
+                                            selectrum--default-candidate))
                                       'none))
                           'face 'minibuffer-prompt))
                         (ol (make-overlay
