@@ -728,7 +728,9 @@ just rendering it to the screen and then checking."
                   (let ((str
                          (propertize
                           (format " [default value: %S]"
-                                  (or selectrum--default-candidate 'none))
+                                  (or (and selectrum--default-candidate
+                                           (substring-no-properties selectrum--default-candidate))
+                                      'none))
                           'face 'minibuffer-prompt))
                         (ol (make-overlay
                              ;; Put cursor after overlay.
