@@ -670,6 +670,7 @@ just rendering it to the screen and then checking."
                  ((null selectrum--refined-candidates)
                   nil)
                  ((and selectrum--default-candidate
+                       (string-empty-p (selectrum--current-input))
                        (not (member selectrum--default-candidate selectrum--refined-candidates)))
                   -1)
                  (selectrum--move-default-candidate-p
