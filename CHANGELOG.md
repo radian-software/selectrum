@@ -80,7 +80,10 @@ The format is based on [Keep a Changelog].
   `completion-extra-properties` are handled, too ([#82], [#95]).
 * One can trigger an update of Selectrum's completions UI manually by
   calling `selectrum-exhibit` ([#95]).
-
+* You can now interact with candidates via the mouse. Left click
+  (`mouse-1`) selects the candidate, and right click (`mouse-3`)
+  inserts the candidate, just like `RET` and `TAB`, respectively. See
+  [#113] and [#118].
 
 ### Enhancements
 * `icomplete-mode` is now automatically disabled when entering
@@ -209,6 +212,8 @@ The format is based on [Keep a Changelog].
 [#101]: https://github.com/raxod502/selectrum/pull/101
 [#107]: https://github.com/raxod502/selectrum/issues/107
 [#108]: https://github.com/raxod502/selectrum/pull/108
+[#113]: https://github.com/raxod502/selectrum/issues/113
+[#118]: https://github.com/raxod502/selectrum/pull/118
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)

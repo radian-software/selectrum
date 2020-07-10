@@ -751,6 +751,25 @@ just rendering it to the screen and then checking."
                     (right-margin (get-text-property
                                    0 'selectrum-candidate-display-right-margin
                                    candidate)))
+                ;; Add the ability to interact with candidates via the mouse.
+                (add-text-properties
+                 0 (length displayed-candidate)
+                 (list
+                  'mouse-face 'highlight
+                  'help-echo
+                  "mouse-1: select candidate\nmouse-3: insert candidate"
+                  'keymap
+                  (let ((keymap (make-sparse-keymap)))
+                    (define-key keymap [mouse-1]
+                      `(lambda ()
+                         (interactive)
+                         (selectrum-select-current-candidate ,(1+ index))))
+                    (define-key keymap [mouse-3]
+                      `(lambda ()
+                         (interactive)
+                         (selectrum-insert-current-candidate ,(1+ index))))
+                    keymap))
+                 displayed-candidate)
                 (when (equal index highlighted-index)
                   (setq displayed-candidate
                         (copy-sequence displayed-candidate))
@@ -1453,23 +1472,33 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                   (ematch (file-name-nondirectory input))
                   ;; Adjust original collection for Selectrum.
                   (cands
-                   (condition-case _
-                       (funcall collection dir
-                                (lambda (i)
-                                  (when (and (or (not predicate)
-                                                 (funcall predicate i))
-                                             (not (member
-                                                   i '("./" "../"))))
-                                    (prog1 t
-                                      (add-text-properties
-                                       0 (length i)
-                                       `(selectrum-candidate-full
-                                         ,(concat dir i))
-                                       i))))
-                                t)
-                     ;; May happen in case user quits out
-                     ;; of a TRAMP prompt.
-                     (quit))))
+                   (selectrum--map-destructive
+                    (lambda (i)
+                      (when (string-suffix-p "/" i)
+                        (setq i (substring i 0 (1- (length i))))
+                        (put-text-property
+                         0 (length i)
+                         'selectrum-candidate-display-suffix
+                         "/"
+                         i))
+                      i)
+                    (condition-case _
+                        (funcall collection dir
+                                 (lambda (i)
+                                   (when (and (or (not predicate)
+                                                  (funcall predicate i))
+                                              (not (member
+                                                    i '("./" "../"))))
+                                     (prog1 t
+                                       (add-text-properties
+                                        0 (length i)
+                                        `(selectrum-candidate-full
+                                          ,(concat dir i))
+                                        i))))
+                                 t)
+                      ;; May happen in case user quits out
+                      ;; of a TRAMP prompt.
+                      (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
     (substring-no-properties
