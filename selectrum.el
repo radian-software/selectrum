@@ -741,7 +741,18 @@ just rendering it to the screen and then checking."
                              (1- (minibuffer-prompt-end)))))
                     (put-text-property 0 1 'cursor t str)
                     (overlay-put ol 'after-string str)
-                    (setq selectrum--default-value-overlay ol))
+                    (setq selectrum--default-value-overlay ol)
+                    (when (= -1 selectrum--current-candidate-index)
+                      (if (version< emacs-version "27")
+                          (font-lock-prepend-text-property
+                           18 (- (length str) 2)
+                           'face 'selectrum-current-candidate
+                           str)
+                        (add-face-text-property
+                         18 (- (length str) 2)
+                         'selectrum-current-candidate
+                         'append
+                         str))))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate)))
