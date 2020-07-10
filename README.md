@@ -549,6 +549,12 @@ which adds support for the `completing-read` interface, but I have
 been told that even this package does not handle all the cases
 correctly.
 
+There is a package
+[`ido-vertical-mode`](https://github.com/creichert/ido-vertical-mode.el)
+which makes Ido display candidates vertically instead of horizontally,
+but I suspect that the problems with `completing-read` non-compliance
+remain.
+
 ### Why not Helm?
 
 [Helm](https://github.com/emacs-helm/helm) is an installable package
