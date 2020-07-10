@@ -167,6 +167,8 @@ The format is based on [Keep a Changelog].
   directly ([#73]).
 * Empty string completion candidates are now ignored like in the
   default completion UI ([#101]).
+* Text properties are now stripped for standard completion functions
+  ([#107], [#108]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -208,6 +210,8 @@ The format is based on [Keep a Changelog].
 [#96]: https://github.com/raxod502/selectrum/pull/96
 [#99]: https://github.com/raxod502/selectrum/issues/99
 [#101]: https://github.com/raxod502/selectrum/pull/101
+[#107]: https://github.com/raxod502/selectrum/issues/107
+[#108]: https://github.com/raxod502/selectrum/pull/108
 [#113]: https://github.com/raxod502/selectrum/issues/113
 [#118]: https://github.com/raxod502/selectrum/pull/118
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
