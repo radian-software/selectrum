@@ -775,8 +775,7 @@ just rendering it to the screen and then checking."
                          18 (- (length str) 2)
                          'selectrum-current-candidate
                          'append
-                         str)))
-                    )
+                         str))))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate)))
