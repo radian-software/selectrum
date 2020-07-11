@@ -724,8 +724,9 @@ just rendering it to the screen and then checking."
                   (and (not selectrum--match-required-p)
                        (not displayed-candidates))
                   (and selectrum--default-candidate
-                        (not (member selectrum--default-candidate
-                                     selectrum--refined-candidates))))
+                       (not minibuffer-completing-file-name)
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates))))
               (if (= (minibuffer-prompt-end) bound)
                   (let ((str
                          (propertize
@@ -752,7 +753,8 @@ just rendering it to the screen and then checking."
                          18 (- (length str) 2)
                          'selectrum-current-candidate
                          'append
-                         str))))
+                         str)))
+                    )
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate)))
