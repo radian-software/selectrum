@@ -40,6 +40,7 @@
 (require 'cl-lib)
 (require 'crm)
 (require 'map)
+(require 'minibuf-eldef)
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
@@ -79,6 +80,13 @@ parts of the input."
   "Non-nil if preprocessing and refinement functions should sort.
 This is let-bound to nil in some contexts, and should be
 respected by user functions for optimal results.")
+
+(defvar selectrum--minibuffer-default-in-prompt-regexps
+  (let ((minibuffer-eldef-shorten-default nil))
+    (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
+                  (minibuffer-default--in-prompt-regexps)))
+  "Regexps for determining if the prompt message includes the default value.
+See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
 ;;;; User options
 
@@ -375,6 +383,20 @@ Used to display STRING according to DOCSIG-FUNC from metadata."
     (propertize
      (format "%s" docsig)
      'face 'selectrum-completion-docsig)))
+
+(defun selectrum--remove-default-from-prompt (prompt)
+  "Remove the indication of the default value from PROMPT.
+Selectrum has its own methods of indicating the default value, making
+other methods redundant."
+  (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+    (cl-dolist (matcher regexps prompt)
+      (let ((regex (if (stringp matcher) matcher (car matcher))))
+        (when (string-match regex prompt)
+          (cl-return
+           (replace-match "" nil nil prompt
+                          (if (consp matcher)
+                              (cadr matcher)
+                            0))))))))
 
 ;;;; Minibuffer state
 
@@ -1258,6 +1280,7 @@ semantics of `cl-defun'."
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
+               (prompt (selectrum--remove-default-from-prompt prompt))
                ;; Need to bind this back to its standard value due to
                ;; <https://github.com/raxod502/selectrum/issues/61>.
                ;; What happens is `selectrum-read-file-name' binds
