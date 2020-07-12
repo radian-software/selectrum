@@ -906,7 +906,12 @@ into the user input area to start with."
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
           (max (if (and selectrum--match-required-p
-                        (not (string-empty-p (selectrum--current-input))))
+                        (cond (minibuffer-completing-file-name
+                               (not (file-exists-p
+                                     (selectrum--current-input))))
+                              (t
+                               (not (string-empty-p
+                                     (selectrum--current-input))))))
                    0
                  -1)
                (1- selectrum--current-candidate-index)))))
@@ -1003,6 +1008,8 @@ Zero means to select the current user input."
                  selectrum--current-candidate-index)))
     (when (or (>= index 0)
               (not selectrum--match-required-p)
+              (and minibuffer-completing-file-name
+                   (file-exists-p (selectrum--current-input)))
               (string-empty-p
                (selectrum--current-input)))
       (selectrum--exit-with
