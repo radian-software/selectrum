@@ -386,17 +386,18 @@ Used to display STRING according to DOCSIG-FUNC from metadata."
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
-Selectrum has its own methods of indicating the default value, making
-other methods redundant."
-  (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
-    (cl-dolist (matcher regexps prompt)
-      (let ((regex (if (stringp matcher) matcher (car matcher))))
-        (when (string-match regex prompt)
-          (cl-return
-           (replace-match "" nil nil prompt
-                          (if (consp matcher)
-                              (cadr matcher)
-                            0))))))))
+Selectrum has its own methods for indicating the default value,
+making other methods redundant."
+  (save-match-data
+    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+      (cl-dolist (matcher regexps prompt)
+        (let ((regex (if (stringp matcher) matcher (car matcher))))
+          (when (string-match regex prompt)
+            (cl-return
+             (replace-match "" nil nil prompt
+                            (if (consp matcher)
+                                (cadr matcher)
+                              0)))))))))
 
 ;;;; Minibuffer state
 
