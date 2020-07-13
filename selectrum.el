@@ -677,6 +677,8 @@ just rendering it to the screen and then checking."
                            'file-directory-p)
                        (equal (selectrum--current-input)
                               selectrum--default-candidate))
+                  ;; When reading directories and the default is the
+                  ;; prompt, select it initially.
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
