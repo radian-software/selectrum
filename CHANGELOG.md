@@ -170,7 +170,7 @@ The format is based on [Keep a Changelog].
 * Text properties are now stripped for standard completion functions
   ([#107], [#108]).
 * You can now select and submit empty input and for file prompts
-  existing pathes when require-match is non-nil ([#67], [#125]).
+  existing paths when require-match is non-nil ([#67], [#125]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
