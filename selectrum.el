@@ -1562,8 +1562,8 @@ causes Selectrum to provide you with the first file inside the
 working directory as the default candidate. However, it would
 arguably be more semantically appropriate to use
 `read-directory-name', and this is especially important for
-Selectrum since this causes it to provide you with the working
-directory itself as the default candidate.
+Selectrum since this causes it to select the working directory
+initially.
 
 To test that this advice is working correctly, type \\[dired] and
 accept the default candidate. You should have opened the working
