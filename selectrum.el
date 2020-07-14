@@ -1006,8 +1006,8 @@ Zero means to select the current user input."
                    (min (1- (prefix-numeric-value arg))
                         (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
-    (when (or (>= index 0)
-              (not selectrum--match-required-p)
+    (when (or (not selectrum--match-required-p)
+              (and index (>= index 0))
               (and minibuffer-completing-file-name
                    (file-exists-p (selectrum--current-input)))
               (string-empty-p
