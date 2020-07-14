@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog].
 
   See [#27].
 
+* The function `selectrum-read-directory-name` is no longer available.
+
 ### Features
 * You can now give a prefix argument to
   `selectrum-insert-current-candidate` to insert the candidate at a
