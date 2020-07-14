@@ -469,6 +469,11 @@ This is used to implement `selectrum-repeat'.")
 (defvar selectrum--active-p nil
   "Non-nil means we are in a Selectrum session currently.")
 
+(defvar-local selectrum--init-p nil
+  "Non-nil means the current session is initializing.
+This is non-nil during the first call of
+`selectrum--minibuffer-post-command-hook'.")
+
 (defvar selectrum--minibuffer nil
   "Minibuffer currently in use.")
 
@@ -666,6 +671,15 @@ just rendering it to the screen and then checking."
                 (cond
                  ((null selectrum--refined-candidates)
                   nil)
+                 ((and selectrum--init-p
+                       minibuffer-completing-file-name
+                       (eq minibuffer-completion-predicate
+                           'file-directory-p)
+                       (equal (selectrum--current-input)
+                              selectrum--default-candidate))
+                  ;; When reading directories and the default is the
+                  ;; prompt, select it initially.
+                  -1)
                  (selectrum--move-default-candidate-p
                   0)
                  (t
@@ -849,7 +863,8 @@ just rendering it to the screen and then checking."
         (setq selectrum--ensure-centered-timer nil))
       (setq selectrum--ensure-centered-timer
             (run-with-idle-timer
-             0 nil #'selectrum--ensure-current-candidate-centered)))))
+             0 nil #'selectrum--ensure-current-candidate-centered))))
+  (setq-local selectrum--init-p nil))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
@@ -871,6 +886,7 @@ list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
+  (setq-local selectrum--init-p t)
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
@@ -1539,30 +1555,6 @@ PREDICATE, see `read-file-name'."
   "Previous value of `read-file-name-function'.")
 
 ;;;###autoload
-(defun selectrum-read-directory-name
-    (prompt &optional dir default-dirname mustmatch initial)
-  "Read directory name using Selectrum.
-Same as `read-directory-name' except it handles default
-candidates a bit better (in particular you can immediately press
-\\[selectrum-select-current-candidate] to use the current
-directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
-INITIAL, see `read-directory-name'."
-  (let* ((dir (expand-file-name (or dir default-directory)))
-         (default (directory-file-name (or default-dirname initial dir))))
-    ;; Elisp way of getting the parent directory. If we get nil, that
-    ;; means the default was a relative path with only one component,
-    ;; so the parent directory is dir.
-    (setq dir (or (file-name-directory
-                   (directory-file-name default))
-                  dir))
-    (selectrum-read-file-name
-     prompt dir
-     ;; show current dir first
-     (file-name-as-directory
-      (file-name-nondirectory default))
-     mustmatch nil #'file-directory-p)))
-
-;;;###autoload
 (defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
   "Make \\[dired] do the \"right thing\" with its default candidate.
 By default \\[dired] uses `read-file-name' internally, which
@@ -1570,8 +1562,8 @@ causes Selectrum to provide you with the first file inside the
 working directory as the default candidate. However, it would
 arguably be more semantically appropriate to use
 `read-directory-name', and this is especially important for
-Selectrum since this causes it to provide you with the working
-directory itself as the default candidate.
+Selectrum since this causes it to select the working directory
+initially.
 
 To test that this advice is working correctly, type \\[dired] and
 accept the default candidate. You should have opened the working
@@ -1755,8 +1747,6 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-completion-in-region)
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
-          (advice-add #'read-directory-name :override
-                      #'selectrum-read-directory-name)
           ;; No sharp quote because Dired may not be loaded yet.
           (advice-add 'dired-read-dir-and-switches :around
                       #'selectrum--fix-dired-read-dir-and-switches)
@@ -1791,8 +1781,6 @@ ARGS are standard as in all `:around' advice."
                       selectrum--old-completion-in-region-function))
       (advice-remove #'completing-read-multiple
                      #'selectrum-completing-read-multiple)
-      (advice-remove #'read-directory-name
-                     #'selectrum-read-directory-name)
       ;; No sharp quote because Dired may not be loaded yet.
       (advice-remove 'dired-read-dir-and-switches
                      #'selectrum--fix-dired-read-dir-and-switches)
