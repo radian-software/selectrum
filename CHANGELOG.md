@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog].
 
   See [#27].
 
+* The function `selectrum-read-directory-name` is no longer available.
+
 ### Features
 * You can now give a prefix argument to
   `selectrum-insert-current-candidate` to insert the candidate at a
@@ -95,8 +97,8 @@ The format is based on [Keep a Changelog].
   insert file names into the minibuffer (using
   `file-name-at-point-functions`) and you are able to use shortcuts
   like `//` or `~/` ([#50], [#52]).
-* When reading directories using `read-directory-name` the default is
-  sorted to the top instead of inserting it ([#50]).
+* When reading directories and the default is already in the prompt,
+  it gets selected so you can immediately submit it ([#126], [#127]).
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
   contents of the minibuffer, which allows you to have convenient
@@ -167,6 +169,10 @@ The format is based on [Keep a Changelog].
   directly ([#73]).
 * Empty string completion candidates are now ignored like in the
   default completion UI ([#101]).
+* Text properties are now stripped for standard completion functions
+  ([#107], [#108]).
+* You can now select and submit empty input and for file prompts
+  existing paths when require-match is non-nil ([#67], [#125]).
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -194,6 +200,7 @@ The format is based on [Keep a Changelog].
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
+[#67]: https://github.com/raxod502/selectrum/issues/67
 [#73]: https://github.com/raxod502/selectrum/pull/73
 [#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
@@ -208,8 +215,13 @@ The format is based on [Keep a Changelog].
 [#96]: https://github.com/raxod502/selectrum/pull/96
 [#99]: https://github.com/raxod502/selectrum/issues/99
 [#101]: https://github.com/raxod502/selectrum/pull/101
+[#107]: https://github.com/raxod502/selectrum/issues/107
+[#108]: https://github.com/raxod502/selectrum/pull/108
 [#113]: https://github.com/raxod502/selectrum/issues/113
 [#118]: https://github.com/raxod502/selectrum/pull/118
+[#125]: https://github.com/raxod502/selectrum/pull/125
+[#126]: https://github.com/raxod502/selectrum/issues/126
+[#127]: https://github.com/raxod502/selectrum/pull/127
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)

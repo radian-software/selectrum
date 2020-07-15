@@ -436,9 +436,6 @@ dynamic candidate list, also
 input changes, and is subsequently passed to
 `selectrum-highlight-candidates-function'.")
 
-(defvar selectrum--result nil
-  "Return value for `selectrum-read'. Candidate string or list of them.")
-
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
@@ -494,6 +491,11 @@ This is used to implement `selectrum-repeat'.")
 
 (defvar selectrum--active-p nil
   "Non-nil means we are in a Selectrum session currently.")
+
+(defvar-local selectrum--init-p nil
+  "Non-nil means the current session is initializing.
+This is non-nil during the first call of
+`selectrum--minibuffer-post-command-hook'.")
 
 (defvar selectrum--minibuffer nil
   "Minibuffer currently in use.")
@@ -697,6 +699,15 @@ just rendering it to the screen and then checking."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
+                 ((and selectrum--init-p
+                       minibuffer-completing-file-name
+                       (eq minibuffer-completion-predicate
+                           'file-directory-p)
+                       (equal (selectrum--current-input)
+                              selectrum--default-candidate))
+                  ;; When reading directories and the default is the
+                  ;; prompt, select it initially.
+                  -1)
                  (selectrum--move-default-candidate-p
                   0)
                  (t
@@ -899,7 +910,8 @@ just rendering it to the screen and then checking."
         (setq selectrum--ensure-centered-timer nil))
       (setq selectrum--ensure-centered-timer
             (run-with-idle-timer
-             0 nil #'selectrum--ensure-current-candidate-centered)))))
+             0 nil #'selectrum--ensure-current-candidate-centered))))
+  (setq-local selectrum--init-p nil))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
@@ -921,6 +933,7 @@ list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
+  (setq-local selectrum--init-p t)
   (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
@@ -955,7 +968,15 @@ into the user input area to start with."
   (interactive)
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (max (if selectrum--match-required-p 0 -1)
+          (max (if (and selectrum--match-required-p
+                        (cond (minibuffer-completing-file-name
+                               (not (file-exists-p
+                                     (selectrum--current-input))))
+                              (t
+                               (not (string-empty-p
+                                     (selectrum--current-input))))))
+                   0
+                 -1)
                (1- selectrum--current-candidate-index)))))
 
 (defun selectrum-next-candidate ()
@@ -1012,32 +1033,28 @@ Or if there is an active region, save the region to kill ring."
   "Exit minibuffer with given CANDIDATE.
 If `selectrum--crm-p' is non-nil exit with the choosen candidates
 plus CANDIDATE."
-  (remove-text-properties
-   0 (length candidate)
-   '(face selectrum-current-candidate) candidate)
-  (setq selectrum--result
-        (cond ((and selectrum--crm-p
-                    (string-match crm-separator
-                                  selectrum--previous-input-string))
-               (with-temp-buffer
-                 (insert selectrum--previous-input-string)
-                 (goto-char (point-min))
-                 (while (re-search-forward crm-separator nil t))
-                 (delete-region (point) (point-max))
-                 (insert (selectrum--get-full candidate))
-                 (buffer-string)))
-              (t
-               (apply
-                #'run-hook-with-args
-                'selectrum-candidate-selected-hook
-                candidate selectrum--read-args)
-               (selectrum--get-full candidate))))
-  (when (string-empty-p selectrum--result)
-    (setq selectrum--result (or selectrum--default-candidate "")))
-  (let ((inhibit-read-only t))
+  (let* ((result (cond ((and selectrum--crm-p
+                             (string-match crm-separator
+                                           selectrum--previous-input-string))
+                        (with-temp-buffer
+                          (insert selectrum--previous-input-string)
+                          (goto-char (point-min))
+                          (while (re-search-forward crm-separator nil t))
+                          (delete-region (point) (point-max))
+                          (insert (selectrum--get-full candidate))
+                          (buffer-string)))
+                       (t
+                        (apply
+                         #'run-hook-with-args
+                         'selectrum-candidate-selected-hook
+                         candidate selectrum--read-args)
+                        (selectrum--get-full candidate))))
+         (inhibit-read-only t))
     (erase-buffer)
-    (insert selectrum--result))
-  (exit-minibuffer))
+    (insert (if (string-empty-p result)
+                (or selectrum--default-candidate result)
+              result))
+    (exit-minibuffer)))
 
 (defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
@@ -1052,7 +1069,12 @@ Zero means to select the current user input."
                    (min (1- (prefix-numeric-value arg))
                         (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
-    (when (or index (not selectrum--match-required-p))
+    (when (or (not selectrum--match-required-p)
+              (and index (>= index 0))
+              (and minibuffer-completing-file-name
+                   (file-exists-p (selectrum--current-input)))
+              (string-empty-p
+               (selectrum--current-input)))
       (selectrum--exit-with
        (selectrum--get-candidate index)))))
 
@@ -1172,7 +1194,6 @@ Otherwise, just eval BODY."
               selectrum--end-of-input-marker
               selectrum--preprocessed-candidates
               selectrum--refined-candidates
-              selectrum--result
               selectrum--match-required-p
               selectrum--move-default-candidate-p
               selectrum--default-candidate
@@ -1302,8 +1323,7 @@ semantics of `cl-defun'."
                (selectrum--active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
-           (or history 'minibuffer-history))
-          selectrum--result)))))
+           (or history 'minibuffer-history)))))))
 
 ;;;###autoload
 (defun selectrum-completing-read
@@ -1314,17 +1334,18 @@ semantics of `cl-defun'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
-  (selectrum-read
-   prompt nil
-   ;; Don't pass `initial-input'. We use it internally but it's
-   ;; deprecated in `completing-read' and doesn't work well with the
-   ;; Selectrum paradigm except in specific cases that we control.
-   :default-candidate (or (car-safe def) def)
-   :require-match (eq require-match t)
-   :history hist
-   :may-modify-candidates t
-   :minibuffer-completion-table collection
-   :minibuffer-completion-predicate predicate))
+  (substring-no-properties
+   (selectrum-read
+    prompt nil
+    ;; Don't pass `initial-input'. We use it internally but it's
+    ;; deprecated in `completing-read' and doesn't work well with the
+    ;; Selectrum paradigm except in specific cases that we control.
+    :default-candidate (or (car-safe def) def)
+    :require-match (eq require-match t)
+    :history hist
+    :may-modify-candidates t
+    :minibuffer-completion-table collection
+    :minibuffer-completion-predicate predicate)))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1384,7 +1405,8 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
         :may-modify-candidates t
         :minibuffer-completion-table table
         :minibuffer-completion-predicate predicate)))
-    (split-string res crm-separator t)))
+    (mapcar #'substring-no-properties
+            (split-string res crm-separator t))))
 
 ;;;###autoload
 (defun selectrum-completion-in-region
@@ -1498,15 +1520,16 @@ PREDICATE, see `read-buffer'."
                       candidates)))
              `((candidates . ,candidates)
                (input . ,input))))))
-    (selectrum-read
-     prompt candidates
-     :default-candidate def
-     :require-match (eq require-match t)
-     :history 'buffer-name-history
-     :no-move-default-candidate t
-     :may-modify-candidates t
-     :minibuffer-completion-table #'internal-complete-buffer
-     :minibuffer-completion-predicate predicate)))
+    (substring-no-properties
+     (selectrum-read
+      prompt candidates
+      :default-candidate def
+      :require-match (eq require-match t)
+      :history 'buffer-name-history
+      :no-move-default-candidate t
+      :may-modify-candidates t
+      :minibuffer-completion-table #'internal-complete-buffer
+      :minibuffer-completion-predicate predicate))))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1555,15 +1578,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
-    (selectrum-read
-     prompt coll
-     :default-candidate (or (car-safe def) def)
-     :initial-input (or (car-safe initial-input) initial-input)
-     :history hist
-     :require-match (eq require-match t)
-     :may-modify-candidates t
-     :minibuffer-completion-table collection
-     :minibuffer-completion-predicate predicate)))
+    (substring-no-properties
+     (selectrum-read
+      prompt coll
+      :default-candidate (or (car-safe def) def)
+      :initial-input (or (car-safe initial-input) initial-input)
+      :history hist
+      :require-match (eq require-match t)
+      :may-modify-candidates t
+      :minibuffer-completion-table collection
+      :minibuffer-completion-predicate predicate))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1579,30 +1603,6 @@ PREDICATE, see `read-file-name'."
   "Previous value of `read-file-name-function'.")
 
 ;;;###autoload
-(defun selectrum-read-directory-name
-    (prompt &optional dir default-dirname mustmatch initial)
-  "Read directory name using Selectrum.
-Same as `read-directory-name' except it handles default
-candidates a bit better (in particular you can immediately press
-\\[selectrum-select-current-candidate] to use the current
-directory). For PROMPT, DIR, DEFAULT-DIRNAME, MUSTMATCH, and
-INITIAL, see `read-directory-name'."
-  (let* ((dir (expand-file-name (or dir default-directory)))
-         (default (directory-file-name (or default-dirname initial dir))))
-    ;; Elisp way of getting the parent directory. If we get nil, that
-    ;; means the default was a relative path with only one component,
-    ;; so the parent directory is dir.
-    (setq dir (or (file-name-directory
-                   (directory-file-name default))
-                  dir))
-    (selectrum-read-file-name
-     prompt dir
-     ;; show current dir first
-     (file-name-as-directory
-      (file-name-nondirectory default))
-     mustmatch nil #'file-directory-p)))
-
-;;;###autoload
 (defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
   "Make \\[dired] do the \"right thing\" with its default candidate.
 By default \\[dired] uses `read-file-name' internally, which
@@ -1610,8 +1610,8 @@ causes Selectrum to provide you with the first file inside the
 working directory as the default candidate. However, it would
 arguably be more semantically appropriate to use
 `read-directory-name', and this is especially important for
-Selectrum since this causes it to provide you with the working
-directory itself as the default candidate.
+Selectrum since this causes it to select the working directory
+initially.
 
 To test that this advice is working correctly, type \\[dired] and
 accept the default candidate. You should have opened the working
@@ -1795,8 +1795,6 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-completion-in-region)
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
-          (advice-add #'read-directory-name :override
-                      #'selectrum-read-directory-name)
           ;; No sharp quote because Dired may not be loaded yet.
           (advice-add 'dired-read-dir-and-switches :around
                       #'selectrum--fix-dired-read-dir-and-switches)
@@ -1831,8 +1829,6 @@ ARGS are standard as in all `:around' advice."
                       selectrum--old-completion-in-region-function))
       (advice-remove #'completing-read-multiple
                      #'selectrum-completing-read-multiple)
-      (advice-remove #'read-directory-name
-                     #'selectrum-read-directory-name)
       ;; No sharp quote because Dired may not be loaded yet.
       (advice-remove 'dired-read-dir-and-switches
                      #'selectrum--fix-dired-read-dir-and-switches)
