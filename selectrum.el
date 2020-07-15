@@ -252,11 +252,6 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
-(defcustom selectrum-fix-minibuffer-height nil
-  "Non-nil means the minibuffer always has the same height.
-Even if there are fewer candidates."
-  :type 'boolean)
-
 ;;;; Utility functions
 
 ;;;###autoload
@@ -553,6 +548,8 @@ PRED defaults to `minibuffer-completion-predicate'."
   "Update minibuffer in response to user input."
   (goto-char (max (point) selectrum--start-of-input-marker))
   (goto-char (min (point) selectrum--end-of-input-marker))
+  ;; For some reason this resets and thus can't be set in setup hook.
+  (setq-local truncate-lines t)
   (save-excursion
     (let ((inhibit-read-only t)
           ;; Don't record undo information while messing with the
@@ -808,11 +805,6 @@ candidate."
                 right-margin))
               (push ol selectrum--right-margin-overlays))))
         (cl-incf index))
-      ;; Simplest way to grow the minibuffer to size is to just
-      ;; insert some extra newlines :P
-      (when selectrum-fix-minibuffer-height
-        (dotimes (_ (- selectrum-num-candidates-displayed index))
-          (insert "\n")))
       (buffer-string))))
 
 (defun selectrum--minibuffer-exit-hook ()
@@ -838,6 +830,8 @@ into the user input area to start with."
   (setq-local selectrum--init-p t)
   (setq selectrum--candidates-overlay
         (make-overlay (point) (point) nil t t))
+  (enlarge-window (- selectrum-num-candidates-displayed
+                     (1- (window-height))))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
