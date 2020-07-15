@@ -135,6 +135,23 @@ The format is based on [Keep a Changelog].
   keyword argument `:may-modify-candidates` to re-enable the old
   behavior for cases where it is safe and the performance gains are
   useful. See [#74].
+* Working with the default candidate has been improved in cases where
+  it is not in the candidate list. Such candidates are currently shown
+  in the prompt message. For example, the command `lgrep` might
+  suggest searching through files matching `*.el` instead of just a
+  specific file. See [#120], [#122].
+  * While there is no user input, the default candidate remains
+    visible in the prompt message. Previously, it would be hidden when
+    the prompt line was not selected. Unchanged is the behavior is to
+    hide the default candidate when text is typed, so that it is only
+    visible when it can be submitted (similar to the effect of
+    `minibuffer-electric-default-mode`).
+  * The default candidate shown in the prompt message is now displayed
+    with the face `selectrum-current-candidate` when it is selected.
+  * Now that Selectrum always shows the default candidate when it can
+    be submitted, it now attempts to remove the default candidate from
+    prompt messages that already contain it. This decreases
+    redundancy.
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -167,6 +184,9 @@ The format is based on [Keep a Changelog].
   directly ([#73]).
 * Empty string completion candidates are now ignored like in the
   default completion UI ([#101]).
+* The default candidate is now first selected, even when it is not in
+  the candidate list, conforming with expectations. Previously, the
+  first candidate in the list was selected instead. See [#120].
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -210,6 +230,8 @@ The format is based on [Keep a Changelog].
 [#101]: https://github.com/raxod502/selectrum/pull/101
 [#113]: https://github.com/raxod502/selectrum/issues/113
 [#118]: https://github.com/raxod502/selectrum/pull/118
+[#120]: https://github.com/raxod502/selectrum/issues/120
+[#122]: https://github.com/raxod502/selectrum/pull/122
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
