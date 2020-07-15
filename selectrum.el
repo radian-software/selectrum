@@ -674,10 +674,11 @@ PRED defaults to `minibuffer-completion-predicate'."
                     (and (not selectrum--match-required-p)
                          (not displayed-candidates)))
                 (if (= (minibuffer-prompt-end) bound)
-                    (setq default (propertize
-                                   (format " [default value: %S]"
-                                           (or selectrum--default-candidate 'none))
-                                   'face 'minibuffer-prompt))
+                    (setq default
+                          (propertize
+                           (format " [default value: %S]"
+                                   (or selectrum--default-candidate 'none))
+                           'face 'minibuffer-prompt))
                   (add-text-properties
                    (minibuffer-prompt-end) bound
                    '(face selectrum-current-candidate)))
