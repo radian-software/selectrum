@@ -240,6 +240,14 @@ This allows you to select one directly by providing a prefix
 argument to `selectrum-select-current-candidate'."
   :type 'boolean)
 
+(defcustom selectrum-completing-read-multiple-show-help t
+  "Non-nil means to show help for `selectrum-completing-read-multiple'.
+
+This options controls insertion of additional usage information
+into the prompt when using commands which use
+`completing-read-multiple'."
+  :type 'boolean)
+
 (defcustom selectrum-right-margin-padding 1
   "The number of spaces to add after right margin text.
 This only takes effect when the
@@ -1309,7 +1317,11 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   "Read one or more choices using Selectrum.
 Replaces `completing-read-multiple'. For PROMPT, TABLE,
 PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF, and
-INHERIT-INPUT-METHOD, see `completing-read-multiple'."
+INHERIT-INPUT-METHOD, see `completing-read-multiple'.
+
+The option `selectrum-completing-read-multiple-show-help' can be
+used to control insertion of additional usage information into
+the prompt."
   (let* ((crm-completion-table table)
          (crm-separator crm-separator)
          (coll (all-completions "" #'crm--collection-fn predicate))
@@ -1334,19 +1346,20 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
      (minibuffer-with-setup-hook
          (lambda ()
            (setq-local selectrum--crm-p t)
-           (let ((inhibit-read-only t))
-             (save-excursion
-               (goto-char (minibuffer-prompt-end))
-               (when (search-backward ":" nil t)
-                 (insert
-                  (apply #'propertize
-                         (format " [add more using %s and %s]"
-                                 (substitute-command-keys
-                                  "\\[selectrum-insert-current-candidate]")
-                                 (if (equal crm-separator "[ \t]*,[ \t]*")
-                                     "\",\""
-                                   "crm-separator"))
-                         (text-properties-at (point))))))))
+           (when selectrum-completing-read-multiple-show-help
+             (let ((inhibit-read-only t))
+               (save-excursion
+                 (goto-char (minibuffer-prompt-end))
+                 (when (search-backward ":" nil t)
+                   (insert
+                    (apply #'propertize
+                           (format " [add more using %s and %s]"
+                                   (substitute-command-keys
+                                    "\\[selectrum-insert-current-candidate]")
+                                   (if (equal crm-separator "[ \t]*,[ \t]*")
+                                       "\",\""
+                                     "crm-separator"))
+                           (text-properties-at (point)))))))))
        (selectrum-read
         prompt
         candidates
