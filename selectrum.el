@@ -474,15 +474,6 @@ This is used to implement `selectrum-repeat'.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
-(defvar selectrum--minibuffer nil
-  "Minibuffer currently in use.")
-
-(defvar selectrum--current-candidate-bounds nil
-  "Cons cell of start and end of current candidate in minibuffer.")
-
-(defvar selectrum--ensure-centered-timer nil
-  "Timer to run `selectrum--ensure-current-candidate-centered'.")
-
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
@@ -558,55 +549,6 @@ PRED defaults to `minibuffer-completion-predicate'."
       ('matches         (format "%-4d " total))
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
-
-(defun selectrum--ensure-current-candidate-centered ()
-  "\"Scroll\" the minibuffer if needed to ensure current candidate visible.
-This needs to be run on an idle timer since `posn-at-point' won't
-work before redisplay.
-
-Note that the current implementation produces an undesirable
-gradual scrolling effect when browsing long candidates. This is
-hard to avoid since Emacs does not have a good interface for
-figuring out how many lines text will actually take up without
-just rendering it to the screen and then checking."
-  (when (and selectrum--active-p
-             (car selectrum--current-candidate-bounds)
-             (cdr selectrum--current-candidate-bounds))
-    (with-current-buffer selectrum--minibuffer
-      (let ((inhibit-read-only t))
-        (when (let ((start
-                     (cdr
-                      (posn-actual-col-row
-                       (posn-at-point
-                        (car selectrum--current-candidate-bounds)))))
-                    (end
-                     (cdr
-                      (posn-actual-col-row
-                       (posn-at-point
-                        (cdr selectrum--current-candidate-bounds)))))
-                    (showing-everything-p
-                     (posn-at-point (point-max)))
-                    (height (1- (window-body-height))))
-                (and (not showing-everything-p)
-                     (or (not start)
-                         (> start (/ height 2))
-                         (and (or (not end)
-                                  (>= end height))
-                              (> start 1)))))
-          (save-excursion
-            (goto-char (1+ selectrum--end-of-input-marker))
-            (delete-region
-             (point)
-             (save-excursion
-               (end-of-visual-line)
-               (condition-case _
-                   (forward-char)
-                 (end-of-buffer))
-               (point))))
-          ;; Redisplay and do it again.
-          (setq selectrum--ensure-centered-timer
-                (run-with-idle-timer
-                 0 nil #'selectrum--ensure-current-candidate-centered)))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -748,7 +690,6 @@ just rendering it to the screen and then checking."
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))
           (let ((index 0))
-            (setq selectrum--current-candidate-bounds (cons nil nil))
             (dolist (candidate (funcall
                                 selectrum-highlight-candidates-function
                                 input
@@ -812,9 +753,6 @@ just rendering it to the screen and then checking."
                      'selectrum-current-candidate
                      'append displayed-candidate)))
                 (insert "\n")
-                (when (equal index highlighted-index)
-                  (setf (car selectrum--current-candidate-bounds)
-                        (point-marker)))
                 (when selectrum-show-indices
                   (let* ((abs-index (+ index first-index-displayed))
                          (num (number-to-string (1+ abs-index)))
@@ -830,9 +768,6 @@ just rendering it to the screen and then checking."
                       'face
                       'minibuffer-prompt))))
                 (insert displayed-candidate)
-                (when (equal index highlighted-index)
-                  (setf (cdr selectrum--current-candidate-bounds)
-                        (point-marker)))
                 (when right-margin
                   (let ((ol (make-overlay (point) (point))))
                     (overlay-put
@@ -857,13 +792,7 @@ just rendering it to the screen and then checking."
         (set-marker-insertion-type selectrum--end-of-input-marker t)
         (selectrum--fix-set-minibuffer-message))
       (when keep-mark-active
-        (setq deactivate-mark nil))
-      (when selectrum--ensure-centered-timer
-        (cancel-timer selectrum--ensure-centered-timer)
-        (setq selectrum--ensure-centered-timer nil))
-      (setq selectrum--ensure-centered-timer
-            (run-with-idle-timer
-             0 nil #'selectrum--ensure-current-candidate-centered))))
+        (setq deactivate-mark nil))))
   (setq-local selectrum--init-p nil))
 
 (defun selectrum--minibuffer-exit-hook ()
@@ -887,7 +816,6 @@ into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq selectrum--minibuffer (current-buffer))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
@@ -1156,10 +1084,7 @@ Otherwise, just eval BODY."
               selectrum--default-value-overlay
               selectrum--right-margin-overlays
               selectrum--repeat
-              selectrum--active-p
-              selectrum--minibuffer
-              selectrum--current-candidate-bounds
-              selectrum--ensure-centered-timer)))
+              selectrum--active-p)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum--active-p
