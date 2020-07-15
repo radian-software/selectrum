@@ -663,35 +663,31 @@ PRED defaults to `minibuffer-completion-predicate'."
           (when selectrum--default-value-overlay
             (delete-overlay selectrum--default-value-overlay)
             (setq selectrum--default-value-overlay nil))
-          (if (or (and highlighted-index
-                       (< highlighted-index 0))
-                  (and (not selectrum--match-required-p)
-                       (not displayed-candidates)))
-              (if (= (minibuffer-prompt-end) bound)
-                  (let ((str
-                         (propertize
-                          (format " [default value: %S]"
-                                  (or selectrum--default-candidate 'none))
-                          'face 'minibuffer-prompt))
-                        (ol (make-overlay
-                             (minibuffer-prompt-end)
-                             (minibuffer-prompt-end))))
-                    (put-text-property 0 1 'cursor t str)
-                    (overlay-put ol 'after-string str)
-                    (setq selectrum--default-value-overlay ol))
-                (add-text-properties
-                 (minibuffer-prompt-end) bound
-                 '(face selectrum-current-candidate)))
-            (remove-text-properties
-             (minibuffer-prompt-end) bound
-             '(face selectrum-current-candidate)))
           (let ((text (selectrum--candidates-display-string
                        displayed-candidates
                        input
                        highlighted-index
-                       first-index-displayed)))
+                       first-index-displayed))
+                (default nil))
+            (if (or (and highlighted-index
+                         (< highlighted-index 0))
+                    (and (not selectrum--match-required-p)
+                         (not displayed-candidates)))
+                (if (= (minibuffer-prompt-end) bound)
+                    (setq default (propertize
+                                   (format " [default value: %S]"
+                                           (or selectrum--default-candidate 'none))
+                                   'face 'minibuffer-prompt))
+                  (add-text-properties
+                   (minibuffer-prompt-end) bound
+                   '(face selectrum-current-candidate)))
+              (remove-text-properties
+               (minibuffer-prompt-end) bound
+               '(face selectrum-current-candidate)))
             (move-overlay selectrum--candidates-overlay
                           (point) (point) (current-buffer))
+            (when default
+              (setq text (concat default text)))
             (put-text-property 0 1 'cursor t text)
             (overlay-put selectrum--candidates-overlay 'after-string text)))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
