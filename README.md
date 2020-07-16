@@ -335,6 +335,15 @@ External packages that work well with Selectrum:
   [orderless](https://github.com/oantolin/orderless). It supports many
   different matching styles and integrates with `completion-styles`.
 
+* For minibuffer actions and occur/export features there is
+  [embark](https://github.com/oantolin/embark/). Embark provides
+  features like ivy-actions/ivy-occur in a framework agnostic way.
+
+* For searching and manipulating the `kill-ring` there is
+  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring). Multi-line
+  candidates aren't well suited for minibuffer completion, thus you
+  might prefer a dedicated buffer for this.
+
 ### But what is it doing to my Emacs??
 
 By inspecting the source code of `selectrum-mode`, you will see that
