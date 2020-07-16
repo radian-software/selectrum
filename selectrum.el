@@ -475,9 +475,6 @@ Passed to various hook functions.")
 (defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
-(defvar selectrum--default-value-overlay nil
-  "Overlay used to show the default candidate when the input is selected.")
-
 (defvar selectrum--right-margin-overlays nil
   "A list of overlays used to display right margin text.")
 
@@ -694,9 +691,6 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (when selectrum--default-value-overlay
-        (delete-overlay selectrum--default-value-overlay)
-        (setq selectrum--default-value-overlay nil))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
@@ -713,30 +707,34 @@ PRED defaults to `minibuffer-completion-predicate'."
                                   selectrum--refined-candidates))))
             (if (= (minibuffer-prompt-end) bound)
                 (setq default
-                      (format "%s %s%s"
-                       (propertize
-                        " [default value:"
-                        'face 'minibuffer-prompt)
-                       (propertize (or (and selectrum--default-candidate
-                                            (substring-no-properties
-                                             selectrum--default-candidate))
-                                       'none)
-                                   'face
-                                   (if (and selectrum--current-candidate-index
-                                            (< selectrum--current-candidate-index 0))
-                                       'selectrum-current-candidate
-                                     'minibuffer-prompt))
-                       (propertize "]" 'face 'minibuffer-prompt)))
-              (add-text-properties
-               (minibuffer-prompt-end) bound
-               '(face selectrum-current-candidate)))
+                      (format " %s %s%s"
+                              (propertize
+                               "[default value:"
+                               'face 'minibuffer-prompt)
+                              (propertize
+                               (or (and selectrum--default-candidate
+                                        (substring-no-properties
+                                         selectrum--default-candidate))
+                                   'none)
+                               'face
+                               (if (and selectrum--current-candidate-index
+                                        (< selectrum--current-candidate-index
+                                           0))
+                                   'selectrum-current-candidate
+                                 'minibuffer-prompt))
+                              (propertize "]" 'face 'minibuffer-prompt)))
+              (unless (or (and highlighted-index
+                               (>= highlighted-index 0))
+                          selectrum--match-required-p)
+                (add-text-properties
+                 (minibuffer-prompt-end) bound
+                 '(face selectrum-current-candidate))))
           (remove-text-properties
            (minibuffer-prompt-end) bound
            '(face selectrum-current-candidate)))
         (move-overlay selectrum--candidates-overlay
                       (point-max) (point-max) (current-buffer))
-        (when default
-          (setq text (concat default text)))
+        (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
         (overlay-put selectrum--candidates-overlay 'after-string text)))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
@@ -757,7 +755,6 @@ and FIRST-INDEX-DISPLAYED is the index of the top most
 candidate."
   (let ((index 0))
     (with-temp-buffer
-      (insert " ")
       (dolist (candidate (funcall
                           selectrum-highlight-candidates-function
                           input
@@ -1113,7 +1110,6 @@ Otherwise, just eval BODY."
               selectrum--visual-input
               selectrum--read-args
               selectrum--count-overlay
-              selectrum--default-value-overlay
               selectrum--right-margin-overlays
               selectrum--repeat
               selectrum--active-p)))
