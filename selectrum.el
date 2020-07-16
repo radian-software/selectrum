@@ -40,6 +40,7 @@
 (require 'cl-lib)
 (require 'crm)
 (require 'map)
+(require 'minibuf-eldef)
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
@@ -79,6 +80,13 @@ parts of the input."
   "Non-nil if preprocessing and refinement functions should sort.
 This is let-bound to nil in some contexts, and should be
 respected by user functions for optimal results.")
+
+(defvar selectrum--minibuffer-default-in-prompt-regexps
+  (let ((minibuffer-eldef-shorten-default nil))
+    (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
+                  (minibuffer-default--in-prompt-regexps)))
+  "Regexps for determining if the prompt message includes the default value.
+See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
 ;;;; User options
 
@@ -236,6 +244,14 @@ This allows you to select one directly by providing a prefix
 argument to `selectrum-select-current-candidate'."
   :type 'boolean)
 
+(defcustom selectrum-completing-read-multiple-show-help t
+  "Non-nil means to show help for `selectrum-completing-read-multiple'.
+
+This options controls insertion of additional usage information
+into the prompt when using commands which use
+`completing-read-multiple'."
+  :type 'boolean)
+
 (defcustom selectrum-right-margin-padding 1
   "The number of spaces to add after right margin text.
 This only takes effect when the
@@ -366,6 +382,21 @@ Used to display STRING according to DOCSIG-FUNC from metadata."
     (propertize
      (format "%s" docsig)
      'face 'selectrum-completion-docsig)))
+
+(defun selectrum--remove-default-from-prompt (prompt)
+  "Remove the indication of the default value from PROMPT.
+Selectrum has its own methods for indicating the default value,
+making other methods redundant."
+  (save-match-data
+    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+      (cl-dolist (matcher regexps prompt)
+        (let ((regex (if (stringp matcher) matcher (car matcher))))
+          (when (string-match regex prompt)
+            (cl-return
+             (replace-match "" nil nil prompt
+                            (if (consp matcher)
+                                (cadr matcher)
+                              0)))))))))
 
 ;;;; Minibuffer state
 
@@ -609,6 +640,11 @@ PRED defaults to `minibuffer-completion-predicate'."
               (cond
                ((null selectrum--refined-candidates)
                 nil)
+               ((and selectrum--default-candidate
+                     (string-empty-p (selectrum--current-input))
+                     (not (member selectrum--default-candidate
+                                  selectrum--refined-candidates)))
+                -1)
                ((and selectrum--init-p
                      minibuffer-completing-file-name
                      (eq minibuffer-completion-predicate
@@ -670,13 +706,27 @@ PRED defaults to `minibuffer-completion-predicate'."
         (if (or (and highlighted-index
                      (< highlighted-index 0))
                 (and (not selectrum--match-required-p)
-                     (not displayed-candidates)))
+                     (not displayed-candidates))
+                (and selectrum--default-candidate
+                     (not minibuffer-completing-file-name)
+                     (not (member selectrum--default-candidate
+                                  selectrum--refined-candidates))))
             (if (= (minibuffer-prompt-end) bound)
                 (setq default
-                      (propertize
-                       (format " [default value: %S]"
-                               (or selectrum--default-candidate 'none))
-                       'face 'minibuffer-prompt))
+                      (format "%s %s%s"
+                       (propertize
+                        " [default value:"
+                        'face 'minibuffer-prompt)
+                       (propertize (or (and selectrum--default-candidate
+                                            (substring-no-properties
+                                             selectrum--default-candidate))
+                                       'none)
+                                   'face
+                                   (if (and selectrum--current-candidate-index
+                                            (< selectrum--current-candidate-index 0))
+                                       'selectrum-current-candidate
+                                     'minibuffer-prompt))
+                       (propertize "]" 'face 'minibuffer-prompt)))
               (add-text-properties
                (minibuffer-prompt-end) bound
                '(face selectrum-current-candidate)))
@@ -1163,6 +1213,7 @@ semantics of `cl-defun'."
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
+               (prompt (selectrum--remove-default-from-prompt prompt))
                ;; Need to bind this back to its standard value due to
                ;; <https://github.com/raxod502/selectrum/issues/61>.
                ;; What happens is `selectrum-read-file-name' binds
@@ -1216,7 +1267,11 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   "Read one or more choices using Selectrum.
 Replaces `completing-read-multiple'. For PROMPT, TABLE,
 PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF, and
-INHERIT-INPUT-METHOD, see `completing-read-multiple'."
+INHERIT-INPUT-METHOD, see `completing-read-multiple'.
+
+The option `selectrum-completing-read-multiple-show-help' can be
+used to control insertion of additional usage information into
+the prompt."
   (let* ((crm-completion-table table)
          (crm-separator crm-separator)
          (coll (all-completions "" #'crm--collection-fn predicate))
@@ -1241,19 +1296,20 @@ INHERIT-INPUT-METHOD, see `completing-read-multiple'."
      (minibuffer-with-setup-hook
          (lambda ()
            (setq-local selectrum--crm-p t)
-           (let ((inhibit-read-only t))
-             (save-excursion
-               (goto-char (minibuffer-prompt-end))
-               (when (search-backward ":" nil t)
-                 (insert
-                  (apply #'propertize
-                         (format " [add more using %s and %s]"
-                                 (substitute-command-keys
-                                  "\\[selectrum-insert-current-candidate]")
-                                 (if (equal crm-separator "[ \t]*,[ \t]*")
-                                     "\",\""
-                                   "crm-separator"))
-                         (text-properties-at (point))))))))
+           (when selectrum-completing-read-multiple-show-help
+             (let ((inhibit-read-only t))
+               (save-excursion
+                 (goto-char (minibuffer-prompt-end))
+                 (when (search-backward ":" nil t)
+                   (insert
+                    (apply #'propertize
+                           (format " [add more using %s and %s]"
+                                   (substitute-command-keys
+                                    "\\[selectrum-insert-current-candidate]")
+                                   (if (equal crm-separator "[ \t]*,[ \t]*")
+                                       "\",\""
+                                     "crm-separator"))
+                           (text-properties-at (point)))))))))
        (selectrum-read
         prompt
         candidates
