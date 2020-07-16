@@ -744,6 +744,18 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
 
+(defun selectrum--first-lines (candidates)
+  "Return list on single line CANDIDATES.
+For multi-line canidates only the the first line is taken into
+account (the truncation is indicated by '...')."
+  (let ((onelines ()))
+    (dolist (cand candidates (nreverse onelines))
+      (if-let ((nl (string-match "\n" cand)))
+          (push (concat (substring cand 0 nl)
+                        (propertize "..." 'face 'shadow))
+                onelines)
+        (push cand onelines)))))
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -755,10 +767,15 @@ and FIRST-INDEX-DISPLAYED is the index of the top most
 candidate."
   (let ((index 0))
     (with-temp-buffer
-      (dolist (candidate (funcall
-                          selectrum-highlight-candidates-function
-                          input
-                          candidates))
+      (dolist (candidate
+               (selectrum--first-lines
+                ;; First pass the candidates to the highlight function
+                ;; before stipping multi-lines because it might expect
+                ;; getting passed the same candidates as were passed
+                ;; to the filter function (for example `orderless'
+                ;; requires this).
+                (funcall selectrum-highlight-candidates-function
+                         input candidates)))
         (let ((displayed-candidate
                (concat
                 (get-text-property
