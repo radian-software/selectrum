@@ -824,7 +824,7 @@ into the user input area to start with."
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
   (setq selectrum--candidates-overlay
-        (make-overlay (point) (point) nil t t))
+        (make-overlay (point) (point) nil 'front-advance 'rear-advance))
   (enlarge-window (- selectrum-num-candidates-displayed
                      (1- (window-height))))
   (setq selectrum--start-of-input-marker (point-marker))
