@@ -715,7 +715,7 @@ PRED defaults to `minibuffer-completion-predicate'."
                                (or (and selectrum--default-candidate
                                         (substring-no-properties
                                          selectrum--default-candidate))
-                                   'none)
+                                   "\"\"")
                                'face
                                (if (and selectrum--current-candidate-index
                                         (< selectrum--current-candidate-index
