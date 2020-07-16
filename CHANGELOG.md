@@ -59,7 +59,10 @@ The format is based on [Keep a Changelog].
   `describe-face` (which delegate to `completing-read-multiple`
   internally) now use Selectrum by default. To select additional
   candidates within a supported command, use `TAB` and input
-  `crm-separator` (`,` by default). See [#53], [#80], [#74].
+  `crm-separator` (`,` by default). See [#53], [#80], [#74].  The user
+  option `selectrum-completing-read-multiple-show-help` can be used to
+  control display of additional usage information in the prompt
+  ([#130], [#132]).
 * We provide a `selectrum-completion-in-region` function now and
   install it on `completion-in-region-function` in `selectrum-mode`,
   so `completion-at-point` will use Selectrum when there is more than
@@ -222,6 +225,8 @@ The format is based on [Keep a Changelog].
 [#125]: https://github.com/raxod502/selectrum/pull/125
 [#126]: https://github.com/raxod502/selectrum/issues/126
 [#127]: https://github.com/raxod502/selectrum/pull/127
+[#130]: https://github.com/raxod502/selectrum/issues/130
+[#132]: https://github.com/raxod502/selectrum/pull/132
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
