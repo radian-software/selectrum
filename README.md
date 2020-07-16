@@ -168,6 +168,8 @@ editing bindings. So, for example:
   probably want to use a better binding for this command.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
+  `M-r` will invoke an improved version of history search with
+  completion.
 
 ### Sorting and filtering
 
