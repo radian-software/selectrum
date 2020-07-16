@@ -40,6 +40,7 @@
 (require 'cl-lib)
 (require 'crm)
 (require 'map)
+(require 'minibuf-eldef)
 (require 'regexp-opt)
 (require 'seq)
 (require 'subr-x)
@@ -79,6 +80,13 @@ parts of the input."
   "Non-nil if preprocessing and refinement functions should sort.
 This is let-bound to nil in some contexts, and should be
 respected by user functions for optimal results.")
+
+(defvar selectrum--minibuffer-default-in-prompt-regexps
+  (let ((minibuffer-eldef-shorten-default nil))
+    (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
+                  (minibuffer-default--in-prompt-regexps)))
+  "Regexps for determining if the prompt message includes the default value.
+See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
 ;;;; User options
 
@@ -384,6 +392,21 @@ Used to display STRING according to DOCSIG-FUNC from metadata."
      (format "%s" docsig)
      'face 'selectrum-completion-docsig)))
 
+(defun selectrum--remove-default-from-prompt (prompt)
+  "Remove the indication of the default value from PROMPT.
+Selectrum has its own methods for indicating the default value,
+making other methods redundant."
+  (save-match-data
+    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+      (cl-dolist (matcher regexps prompt)
+        (let ((regex (if (stringp matcher) matcher (car matcher))))
+          (when (string-match regex prompt)
+            (cl-return
+             (replace-match "" nil nil prompt
+                            (if (consp matcher)
+                                (cadr matcher)
+                              0)))))))))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -679,6 +702,11 @@ just rendering it to the screen and then checking."
                 (cond
                  ((null selectrum--refined-candidates)
                   nil)
+                 ((and selectrum--default-candidate
+                       (string-empty-p (selectrum--current-input))
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates)))
+                  -1)
                  ((and selectrum--init-p
                        minibuffer-completing-file-name
                        (eq minibuffer-completion-predicate
@@ -736,19 +764,38 @@ just rendering it to the screen and then checking."
           (if (or (and highlighted-index
                        (< highlighted-index 0))
                   (and (not selectrum--match-required-p)
-                       (not displayed-candidates)))
+                       (not displayed-candidates))
+                  (and selectrum--default-candidate
+                       (not minibuffer-completing-file-name)
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates))))
               (if (= (minibuffer-prompt-end) bound)
                   (let ((str
                          (propertize
                           (format " [default value: %S]"
-                                  (or selectrum--default-candidate 'none))
+                                  (or (and selectrum--default-candidate
+                                           (substring-no-properties
+                                            selectrum--default-candidate))
+                                      'none))
                           'face 'minibuffer-prompt))
                         (ol (make-overlay
-                             (minibuffer-prompt-end)
-                             (minibuffer-prompt-end))))
+                             ;; Put cursor after overlay.
+                             (1- (minibuffer-prompt-end))
+                             (1- (minibuffer-prompt-end)))))
                     (put-text-property 0 1 'cursor t str)
                     (overlay-put ol 'after-string str)
-                    (setq selectrum--default-value-overlay ol))
+                    (setq selectrum--default-value-overlay ol)
+                    (when (= -1 selectrum--current-candidate-index)
+                      (if (version< emacs-version "27")
+                          (font-lock-prepend-text-property
+                           18 (- (length str) 2)
+                           'face 'selectrum-current-candidate
+                           str)
+                        (add-face-text-property
+                         18 (- (length str) 2)
+                         'selectrum-current-candidate
+                         'append
+                         str))))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate)))
@@ -1264,6 +1311,7 @@ semantics of `cl-defun'."
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
+               (prompt (selectrum--remove-default-from-prompt prompt))
                ;; Need to bind this back to its standard value due to
                ;; <https://github.com/raxod502/selectrum/issues/61>.
                ;; What happens is `selectrum-read-file-name' binds
