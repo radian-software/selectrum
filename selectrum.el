@@ -796,9 +796,12 @@ just rendering it to the screen and then checking."
                          'selectrum-current-candidate
                          'append
                          str))))
-                (add-text-properties
-                 (minibuffer-prompt-end) bound
-                 '(face selectrum-current-candidate)))
+                (unless (or (and highlighted-index
+                                 (>= highlighted-index 0))
+                            selectrum--match-required-p)
+                  (add-text-properties
+                   (minibuffer-prompt-end) bound
+                   '(face selectrum-current-candidate))))
             (remove-text-properties
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))
