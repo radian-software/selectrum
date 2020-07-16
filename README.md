@@ -163,7 +163,9 @@ editing bindings. So, for example:
 * All your standard horizontal motion, selection, insertion, and
   deletion commands work as usual.
 * To delete your current input, just use `C-a C-k`.
-* To go up a directory, use `M-DEL` to delete it in the minibuffer.
+* To go up a directory, use `M-DEL` or `ESC C-backspace` (bound to
+  `backward-kill-sexp` which will move you exactly one level up). You
+  probably want to use a better binding for this command.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
 
