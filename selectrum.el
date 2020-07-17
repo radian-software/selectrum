@@ -252,6 +252,11 @@ into the prompt when using commands which use
 `completing-read-multiple'."
   :type 'boolean)
 
+(defcustom selectrum-fix-minibuffer-height nil
+  "Non-nil means the minibuffer always has the same height.
+Even if there are fewer candidates."
+  :type 'boolean)
+
 (defcustom selectrum-right-margin-padding 1
   "The number of spaces to add after right margin text.
 This only takes effect when the
@@ -691,6 +696,10 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
+      (when (not selectrum-fix-minibuffer-height)
+        (let ((needed (1+ (length displayed-candidates))))
+          (when (/= (window-height) needed)
+            (setf (window-height) needed))))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
