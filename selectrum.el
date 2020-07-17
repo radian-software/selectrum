@@ -747,12 +747,16 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defun selectrum--first-lines (candidates)
   "Return list on single line CANDIDATES.
 For multi-line canidates only the the first line is taken into
-account (the truncation is indicated by '...')."
+account (the truncation is indicated)."
   (let ((onelines ()))
     (dolist (cand candidates (nreverse onelines))
       (if-let ((nl (string-match "\n" cand)))
           (push (concat (substring cand 0 nl)
-                        (propertize "..." 'face 'shadow))
+                        (propertize
+                         (concat (or (and (char-displayable-p ?⬎)
+                                          "⬎")
+                                     "\\n")
+                                 "...") 'face 'shadow))
                 onelines)
         (push cand onelines)))))
 
