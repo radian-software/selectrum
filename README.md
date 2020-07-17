@@ -125,7 +125,8 @@ how to fix it.
   prefix argument, accept instead the candidate at that point in the
   list, counting from one. See `selectrum-show-indices`. The value
   zero means to accept exactly what you've typed, as in the next
-  bullet point.)
+  bullet point.) You can also click the left mouse button on a
+  candidate to choose it.
 * *To submit what you've typed, even if it's not a candidate:* you can
   use `<up>` or `C-p` to select the user input just like a regular
   candidate, and type `RET` as usual. (Alternatively, you can type
@@ -138,7 +139,8 @@ how to fix it.
   argument, insert the candidate at that point in the list, counting
   from one. See `selectrum-show-indices`. A non-positive prefix
   argument inserts the candidate corresponding to
-  `selectrum--current-candidate-index`.
+  `selectrum--current-candidate-index`. You can also right click on a
+  candidate to insert it into the minibuffer.
 * *To copy the current candidate:* type `M-w` or what is bind to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
