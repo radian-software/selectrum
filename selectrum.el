@@ -698,7 +698,7 @@ PRED defaults to `minibuffer-completion-predicate'."
                       selectrum-num-candidates-displayed))
       (when (not selectrum-fix-minibuffer-height)
         (let ((needed (1+ (length displayed-candidates))))
-          (when (> (window-height) needed)
+          (when (/= (window-height) needed)
             (setf (window-height) needed))))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
@@ -902,8 +902,9 @@ into the user input area to start with."
   (setq-local selectrum--init-p t)
   (setq selectrum--candidates-overlay
         (make-overlay (point) (point) nil 'front-advance 'rear-advance))
-  (enlarge-window (- selectrum-num-candidates-displayed
-                     (1- (window-height))))
+  (when selectrum-fix-minibuffer-height
+    (enlarge-window (- selectrum-num-candidates-displayed
+                       (1- (window-height)))))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
