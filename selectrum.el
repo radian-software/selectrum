@@ -204,6 +204,7 @@ strings."
     ([remap next-history-element]
      . selectrum-next-history-element)
     ("C-j"                                    . selectrum-submit-exact-input)
+    ("C-M-DEL"                                . backward-kill-sexp)
     ("TAB"
      . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
@@ -1547,6 +1548,12 @@ PREDICATE, see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
+(defvar selectrum--minibuffer-local-filename-syntax
+  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
+    (modify-syntax-entry ?\s "_" table)
+    table)
+  "Syntax table when reading file names with Selectrum.")
+
 (defun selectrum--completing-read-file-name
     (prompt collection &optional
             predicate require-match initial-input
@@ -1591,16 +1598,18 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
-    (substring-no-properties
-     (selectrum-read
-      prompt coll
-      :default-candidate (or (car-safe def) def)
-      :initial-input (or (car-safe initial-input) initial-input)
-      :history hist
-      :require-match (eq require-match t)
-      :may-modify-candidates t
-      :minibuffer-completion-table collection
-      :minibuffer-completion-predicate predicate))))
+    (let ((minibuffer-local-filename-syntax
+           selectrum--minibuffer-local-filename-syntax))
+      (substring-no-properties
+       (selectrum-read
+        prompt coll
+        :default-candidate (or (car-safe def) def)
+        :initial-input (or (car-safe initial-input) initial-input)
+        :history hist
+        :require-match (eq require-match t)
+        :may-modify-candidates t
+        :minibuffer-completion-table collection
+        :minibuffer-completion-predicate predicate)))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
