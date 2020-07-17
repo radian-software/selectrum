@@ -698,7 +698,7 @@ PRED defaults to `minibuffer-completion-predicate'."
                       selectrum-num-candidates-displayed))
       (when (not selectrum-fix-minibuffer-height)
         (let ((needed (1+ (length displayed-candidates))))
-          (when (/= (window-height) needed)
+          (when (> (window-height) needed)
             (setf (window-height) needed))))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
