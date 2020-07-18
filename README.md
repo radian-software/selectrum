@@ -165,7 +165,8 @@ editing bindings. So, for example:
 * All your standard horizontal motion, selection, insertion, and
   deletion commands work as usual.
 * To delete your current input, just use `C-a C-k`.
-* To edit the input use `M-DEL` or `C-M-DEL` to go up a directory.
+* To edit by word units use `M-DEL` like usual. To go up a directory
+  you can use `C-M-DEL` (bound to `backward-kill-sexp`).
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
   `M-r` will invoke an improved version of history search with
