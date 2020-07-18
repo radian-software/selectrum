@@ -203,8 +203,11 @@ strings."
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
+    ([remap backward-sexp]                    . selectrum-backward-sexp)
+    ([remap forward-sexp]                     . selectrum-forward-sexp)
+    ([remap backward-kill-sexp]               . selectrum-backward-kill-sexp)
+    ("C-M-DEL"                                . selectrum-backward-kill-sexp)
     ("C-j"                                    . selectrum-submit-exact-input)
-    ("C-M-DEL"                                . backward-kill-sexp)
     ("TAB"
      . selectrum-insert-current-candidate))
   "Keybindings enabled in minibuffer. This is not a keymap.
@@ -1182,6 +1185,44 @@ minibuffer."
             (selectrum--exit-with result)
           (insert result))))))
 
+(defvar selectrum--minibuffer-local-filename-syntax
+  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
+    (modify-syntax-entry ?\s "_" table)
+    table)
+  "Syntax table for sexp commands in file prompts.
+Derived from `minibuffer-local-filename-syntax'.")
+
+(defun selectrum--sexp-command (cmd)
+  "Call CMD with changed syntax table for file completions.
+Syntax table is set to
+`selectrum--minibuffer-local-filename-syntax'."
+  (if minibuffer-completing-file-name
+      (with-syntax-table selectrum--minibuffer-local-filename-syntax
+        (call-interactively cmd))
+    (call-interactively cmd)))
+
+(defun selectrum-backward-kill-sexp ()
+  "Forward to `backward-kill-sexp'.
+Adjusting sytnax table for file completions to
+`selectrum--minibuffer-local-filename-syntax'."
+  (interactive)
+  (selectrum--sexp-command 'backward-kill-sexp))
+
+(defun selectrum-forward-sexp ()
+  "Forward to `forward-sexp'.
+Adjusting sytnax table for file completions to
+`selectrum--minibuffer-local-filename-syntax'."
+  (interactive)
+  (selectrum--sexp-command 'forward-sexp))
+
+(defun selectrum-backward-sexp ()
+  "Forward to `backward-sexp'.
+Adjusting sytnax table for file completions to
+`selectrum--minibuffer-local-filename-syntax'."
+  (interactive)
+  (selectrum--sexp-command 'backward-sexp))
+
+
 ;;;; Main entry points
 
 (defmacro selectrum--let-maybe (pred varlist &rest body)
@@ -1548,12 +1589,6 @@ PREDICATE, see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
-(defvar selectrum--minibuffer-local-filename-syntax
-  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
-    (modify-syntax-entry ?\s "_" table)
-    table)
-  "Syntax table when reading file names with Selectrum.")
-
 (defun selectrum--completing-read-file-name
     (prompt collection &optional
             predicate require-match initial-input
@@ -1598,18 +1633,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
-    (let ((minibuffer-local-filename-syntax
-           selectrum--minibuffer-local-filename-syntax))
-      (substring-no-properties
-       (selectrum-read
-        prompt coll
-        :default-candidate (or (car-safe def) def)
-        :initial-input (or (car-safe initial-input) initial-input)
-        :history hist
-        :require-match (eq require-match t)
-        :may-modify-candidates t
-        :minibuffer-completion-table collection
-        :minibuffer-completion-predicate predicate)))))
+    (substring-no-properties
+     (selectrum-read
+      prompt coll
+      :default-candidate (or (car-safe def) def)
+      :initial-input (or (car-safe initial-input) initial-input)
+      :history hist
+      :require-match (eq require-match t)
+      :may-modify-candidates t
+      :minibuffer-completion-table collection
+      :minibuffer-completion-predicate predicate))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
