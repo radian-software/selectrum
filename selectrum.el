@@ -1210,7 +1210,7 @@ Adjusting syntax table for file completions to
 
 (defun selectrum-forward-sexp ()
   "Forward to `forward-sexp'.
-Adjusting sytnax table for file completions to
+Adjusting syntax table for file completions to
 `selectrum--minibuffer-local-filename-syntax'."
   (interactive)
   (selectrum--sexp-command 'forward-sexp))
