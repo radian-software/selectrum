@@ -252,7 +252,7 @@ into the prompt when using commands which use
 `completing-read-multiple'."
   :type 'boolean)
 
-(defcustom selectrum-fix-minibuffer-height nil
+(defcustom selectrum-fix-minibuffer-height t
   "Non-nil means the minibuffer always has the same height.
 Even if there are fewer candidates."
   :type 'boolean)
