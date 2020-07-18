@@ -203,10 +203,7 @@ strings."
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
-    ([remap backward-sexp]                    . selectrum-backward-sexp)
-    ([remap forward-sexp]                     . selectrum-forward-sexp)
-    ([remap backward-kill-sexp]               . selectrum-backward-kill-sexp)
-    ("C-M-DEL"                                . selectrum-backward-kill-sexp)
+    ("C-M-DEL"                                . backward-kill-sexp)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("TAB"
      . selectrum-insert-current-candidate))
@@ -1192,37 +1189,6 @@ minibuffer."
   "Syntax table for sexp commands in file prompts.
 Derived from `minibuffer-local-filename-syntax'.")
 
-(defun selectrum--sexp-command (cmd)
-  "Call CMD with changed syntax table for file completions.
-Syntax table is set to
-`selectrum--minibuffer-local-filename-syntax'."
-  (if minibuffer-completing-file-name
-      (with-syntax-table selectrum--minibuffer-local-filename-syntax
-        (call-interactively cmd))
-    (call-interactively cmd)))
-
-(defun selectrum-backward-kill-sexp ()
-  "Forward to `backward-kill-sexp'.
-Adjusting syntax table for file completions to
-`selectrum--minibuffer-local-filename-syntax'."
-  (interactive)
-  (selectrum--sexp-command 'backward-kill-sexp))
-
-(defun selectrum-forward-sexp ()
-  "Forward to `forward-sexp'.
-Adjusting syntax table for file completions to
-`selectrum--minibuffer-local-filename-syntax'."
-  (interactive)
-  (selectrum--sexp-command 'forward-sexp))
-
-(defun selectrum-backward-sexp ()
-  "Forward to `backward-sexp'.
-Adjusting syntax table for file completions to
-`selectrum--minibuffer-local-filename-syntax'."
-  (interactive)
-  (selectrum--sexp-command 'backward-sexp))
-
-
 ;;;; Main entry points
 
 (defmacro selectrum--let-maybe (pred varlist &rest body)
@@ -1651,8 +1617,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
+    (minibuffer-with-setup-hook
+        (:append (lambda ()
+                   (set-syntax-table
+                    selectrum--minibuffer-local-filename-syntax)))
+      (read-file-name-default
+       prompt dir default-filename mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
