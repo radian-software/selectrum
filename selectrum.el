@@ -1203,7 +1203,7 @@ Syntax table is set to
 
 (defun selectrum-backward-kill-sexp ()
   "Forward to `backward-kill-sexp'.
-Adjusting sytnax table for file completions to
+Adjusting syntax table for file completions to
 `selectrum--minibuffer-local-filename-syntax'."
   (interactive)
   (selectrum--sexp-command 'backward-kill-sexp))
