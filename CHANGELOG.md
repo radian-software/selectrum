@@ -54,6 +54,10 @@ The format is based on [Keep a Changelog].
     be submitted, it now attempts to remove the default candidate from
     prompt messages that already contain it. This decreases
     redundancy.
+* When reading file names spaces are now considered symbol
+  constituents which means you can use s-expression commands to
+  navigate and edit the input more efficently. A binding for
+  `backward-kill-sexp` was added to go up a directory with `C-M-DEL`.
 
 ### Bugs fixed
 * Empty string completion candidates are now ignored like in the
