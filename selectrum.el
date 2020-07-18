@@ -1189,8 +1189,9 @@ minibuffer."
   (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
     (modify-syntax-entry ?\s "_" table)
     table)
-  "Syntax table for sexp commands in file prompts.
-Derived from `minibuffer-local-filename-syntax'.")
+  "Syntax table for reading file names.
+Same as `minibuffer-local-filename-syntax' but considers spaces
+as symbol constituents.")
 
 ;;;; Main entry points
 
