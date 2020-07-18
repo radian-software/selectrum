@@ -166,7 +166,10 @@ editing bindings. So, for example:
   deletion commands work as usual.
 * To delete your current input, just use `C-a C-k`.
 * To edit by word units use `M-DEL` like usual. To go up a directory
-  you can use `C-M-DEL` (bound to `backward-kill-sexp`).
+  you can use `C-M-DEL` (bound to `backward-kill-sexp`). Be aware that
+  on some Linux distributions, this binding is used to kill the X
+  server, which can cause loss of unsaved work. In that case, you can
+  also use Emacs default binding `ESC C-DEL`.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
   `M-r` will invoke an improved version of history search with
