@@ -8,7 +8,7 @@
 ;; Keywords: extensions
 ;; Package-Requires: ((emacs "25.1"))
 ;; SPDX-License-Identifier: MIT
-;; Version: 1.0
+;; Version: 2.0
 
 ;;; Commentary:
 
@@ -797,9 +797,12 @@ just rendering it to the screen and then checking."
                          'selectrum-current-candidate
                          'append
                          str))))
-                (add-text-properties
-                 (minibuffer-prompt-end) bound
-                 '(face selectrum-current-candidate)))
+                (unless (or (and highlighted-index
+                                 (>= highlighted-index 0))
+                            selectrum--match-required-p)
+                  (add-text-properties
+                   (minibuffer-prompt-end) bound
+                   '(face selectrum-current-candidate))))
             (remove-text-properties
              (minibuffer-prompt-end) bound
              '(face selectrum-current-candidate)))

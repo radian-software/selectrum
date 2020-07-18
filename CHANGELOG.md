@@ -5,6 +5,87 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Breaking changes
+* The function `selectrum-read-directory-name` is no longer available.
+* When reading directories and the default is already in the prompt,
+  it gets selected so you can immediately submit it ([#126], [#127]).
+  In correspondence with this change, the initial working directory
+  for `read-directory-name` is now unchanged from the Emacs default,
+  rather than being the parent directory.
+
+### Features
+* The user option `selectrum-completing-read-multiple-show-help` can
+  be used to control display of additional usage information in the
+  prompt in a `completing-read-multiple` session ([#130], [#132]).
+* `selectrum-read` accepts two additional keyword arguments
+  `minibuffer-completion-table` and
+  `minibuffer-completion-predicate`. These can be used to pass the
+  `completing-read` collection and predicate so they are available for
+  internal handling of completion API features and for other external
+  commands or packages which make use of them ([#94], [#95]).
+* If the completion table passed to `completing-read` provides
+  `annotation-function` or `display-sort-function` in its metadata,
+  Selectrum will use this information to annotate or sort the
+  candidates accordingly. Annotations defined by
+  `completion-extra-properties` are handled, too ([#82], [#95]).
+* One can trigger an update of Selectrum's completions UI manually by
+  calling `selectrum-exhibit` ([#95]).
+* You can now interact with candidates via the mouse. Left click
+  (`mouse-1`) selects the candidate, and right click (`mouse-3`)
+  inserts the candidate, just like `RET` and `TAB`, respectively. See
+  [#113] and [#118].
+
+### Enhancements
+* `icomplete-mode` is now automatically disabled when entering
+  Selectrum, to avoid conflicts ([#99]).
+* Working with the default candidate has been improved in cases where
+  it is not in the candidate list. Such candidates are currently shown
+  in the prompt message. For example, the command `lgrep` might
+  suggest searching through files matching `*.el` instead of just a
+  specific file. See [#120], [#122].
+  * While there is no user input, the default candidate remains
+    visible in the prompt message. Previously, it would be hidden when
+    the prompt line was not selected. Unchanged is the behavior is to
+    hide the default candidate when text is typed, so that it is only
+    visible when it can be submitted (similar to the effect of
+    `minibuffer-electric-default-mode`).
+  * The default candidate shown in the prompt message is now displayed
+    with the face `selectrum-current-candidate` when it is selected.
+  * Now that Selectrum always shows the default candidate when it can
+    be submitted, it now attempts to remove the default candidate from
+    prompt messages that already contain it. This decreases
+    redundancy.
+
+### Bugs fixed
+* Empty string completion candidates are now ignored like in the
+  default completion UI ([#101]).
+* Text properties are now stripped for standard completion functions
+  ([#107], [#108]).
+* You can now select and submit empty input and for file prompts
+  existing paths when require-match is non-nil ([#67], [#125]).
+* The default candidate is now first selected, even when it is not in
+  the candidate list, conforming with expectations. Previously, the
+  first candidate in the list was selected instead. See [#120].
+
+[#67]: https://github.com/raxod502/selectrum/issues/67
+[#82]: https://github.com/raxod502/selectrum/issues/82
+[#94]: https://github.com/raxod502/selectrum/issues/94
+[#95]: https://github.com/raxod502/selectrum/pull/95
+[#99]: https://github.com/raxod502/selectrum/issues/99
+[#101]: https://github.com/raxod502/selectrum/pull/101
+[#107]: https://github.com/raxod502/selectrum/issues/107
+[#108]: https://github.com/raxod502/selectrum/pull/108
+[#113]: https://github.com/raxod502/selectrum/issues/113
+[#118]: https://github.com/raxod502/selectrum/pull/118
+[#120]: https://github.com/raxod502/selectrum/issues/120
+[#122]: https://github.com/raxod502/selectrum/pull/122
+[#125]: https://github.com/raxod502/selectrum/pull/125
+[#126]: https://github.com/raxod502/selectrum/issues/126
+[#127]: https://github.com/raxod502/selectrum/pull/127
+[#130]: https://github.com/raxod502/selectrum/issues/130
+[#132]: https://github.com/raxod502/selectrum/pull/132
+
+## 2.0 (released 2020-07-18)
+### Breaking changes
 * The way to dynamically generate the candidate list has changed.
   Instead of rebinding `selectrum-preprocess-candidates-function` and
   `selectrum-refine-candidates-function`, you simply pass a function
@@ -21,8 +102,6 @@ The format is based on [Keep a Changelog].
   can't be done equivalently in the CANDIDATES function.)
 
   See [#27].
-
-* The function `selectrum-read-directory-name` is no longer available.
 
 ### Features
 * You can now give a prefix argument to
@@ -59,10 +138,7 @@ The format is based on [Keep a Changelog].
   `describe-face` (which delegate to `completing-read-multiple`
   internally) now use Selectrum by default. To select additional
   candidates within a supported command, use `TAB` and input
-  `crm-separator` (`,` by default). See [#53], [#80], [#74].  The user
-  option `selectrum-completing-read-multiple-show-help` can be used to
-  control display of additional usage information in the prompt
-  ([#130], [#132]).
+  `crm-separator` (`,` by default). See [#53], [#80], [#74].
 * We provide a `selectrum-completion-in-region` function now and
   install it on `completion-in-region-function` in `selectrum-mode`,
   so `completion-at-point` will use Selectrum when there is more than
@@ -72,27 +148,8 @@ The format is based on [Keep a Changelog].
   Appearance can be configured using the faces
   `selectrum-completion-annotation`, `selectrum-completion-docsig`,
   and `completions-common-part` ([#86]).
-* `selectrum-read` accepts two additional keyword arguments
-  `minibuffer-completion-table` and
-  `minibuffer-completion-predicate`. These can be used to pass the
-  `completing-read` collection and predicate so they are available for
-  internal handling of completion API features and for other external
-  commands or packages which make use of them ([#94], [#95]).
-* If the completion table passed to `completing-read` provides
-  `annotation-function` or `display-sort-function` in its metadata,
-  Selectrum will use this information to annotate or sort the
-  candidates accordingly. Annotations defined by
-  `completion-extra-properties` are handled, too ([#82], [#95]).
-* One can trigger an update of Selectrum's completions UI manually by
-  calling `selectrum-exhibit` ([#95]).
-* You can now interact with candidates via the mouse. Left click
-  (`mouse-1`) selects the candidate, and right click (`mouse-3`)
-  inserts the candidate, just like `RET` and `TAB`, respectively. See
-  [#113] and [#118].
 
 ### Enhancements
-* `icomplete-mode` is now automatically disabled when entering
-  Selectrum, to avoid conflicts ([#99]).
 * `selectrum-read-file-name` which is used as
   `read-file-name-function` now uses `read-file-name-default`
   internally. This means all default features of file completion
@@ -100,8 +157,6 @@ The format is based on [Keep a Changelog].
   insert file names into the minibuffer (using
   `file-name-at-point-functions`) and you are able to use shortcuts
   like `//` or `~/` ([#50], [#52]).
-* When reading directories and the default is already in the prompt,
-  it gets selected so you can immediately submit it ([#126], [#127]).
 * In `read-file-name`, when a default is provided (for example in the
   `dired-do-rename` command), we actually use it as the initial
   contents of the minibuffer, which allows you to have convenient
@@ -140,23 +195,6 @@ The format is based on [Keep a Changelog].
   keyword argument `:may-modify-candidates` to re-enable the old
   behavior for cases where it is safe and the performance gains are
   useful. See [#74].
-* Working with the default candidate has been improved in cases where
-  it is not in the candidate list. Such candidates are currently shown
-  in the prompt message. For example, the command `lgrep` might
-  suggest searching through files matching `*.el` instead of just a
-  specific file. See [#120], [#122].
-  * While there is no user input, the default candidate remains
-    visible in the prompt message. Previously, it would be hidden when
-    the prompt line was not selected. Unchanged is the behavior is to
-    hide the default candidate when text is typed, so that it is only
-    visible when it can be submitted (similar to the effect of
-    `minibuffer-electric-default-mode`).
-  * The default candidate shown in the prompt message is now displayed
-    with the face `selectrum-current-candidate` when it is selected.
-  * Now that Selectrum always shows the default candidate when it can
-    be submitted, it now attempts to remove the default candidate from
-    prompt messages that already contain it. This decreases
-    redundancy.
 
 ### Bugs fixed
 * You can now use the undo system in the minibuffer. Previously,
@@ -187,15 +225,6 @@ The format is based on [Keep a Changelog].
   fixed. Also, `TAB` now inserts the current candidate and not the
   whole path to the library, so that the result can be submitted
   directly ([#73]).
-* Empty string completion candidates are now ignored like in the
-  default completion UI ([#101]).
-* Text properties are now stripped for standard completion functions
-  ([#107], [#108]).
-* You can now select and submit empty input and for file prompts
-  existing paths when require-match is non-nil ([#67], [#125]).
-* The default candidate is now first selected, even when it is not in
-  the candidate list, conforming with expectations. Previously, the
-  first candidate in the list was selected instead. See [#120].
 
 [#4]: https://github.com/raxod502/selectrum/issues/4
 [#12]: https://github.com/raxod502/selectrum/issues/12
@@ -217,38 +246,22 @@ The format is based on [Keep a Changelog].
 [#42]: https://github.com/raxod502/selectrum/issues/42
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
+[#50]: https://github.com/raxod502/selectrum/pull/50
 [#52]: https://github.com/raxod502/selectrum/issues/52
 [#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
 [#55]: https://github.com/raxod502/selectrum/issues/55
 [#57]: https://github.com/raxod502/selectrum/pull/57
 [#62]: https://github.com/raxod502/selectrum/pull/62
-[#67]: https://github.com/raxod502/selectrum/issues/67
 [#73]: https://github.com/raxod502/selectrum/pull/73
 [#74]: https://github.com/raxod502/selectrum/pull/74
 [#76]: https://github.com/raxod502/selectrum/pull/76
 [#77]: https://github.com/raxod502/selectrum/pull/77
 [#80]: https://github.com/raxod502/selectrum/issues/80
-[#82]: https://github.com/raxod502/selectrum/issues/82
 [#85]: https://github.com/raxod502/selectrum/pull/85
 [#86]: https://github.com/raxod502/selectrum/pull/86
 [#89]: https://github.com/raxod502/selectrum/pull/89
-[#94]: https://github.com/raxod502/selectrum/issues/94
-[#95]: https://github.com/raxod502/selectrum/pull/95
 [#96]: https://github.com/raxod502/selectrum/pull/96
-[#99]: https://github.com/raxod502/selectrum/issues/99
-[#101]: https://github.com/raxod502/selectrum/pull/101
-[#107]: https://github.com/raxod502/selectrum/issues/107
-[#108]: https://github.com/raxod502/selectrum/pull/108
-[#113]: https://github.com/raxod502/selectrum/issues/113
-[#118]: https://github.com/raxod502/selectrum/pull/118
-[#120]: https://github.com/raxod502/selectrum/issues/120
-[#122]: https://github.com/raxod502/selectrum/pull/122
-[#125]: https://github.com/raxod502/selectrum/pull/125
-[#126]: https://github.com/raxod502/selectrum/issues/126
-[#127]: https://github.com/raxod502/selectrum/pull/127
-[#130]: https://github.com/raxod502/selectrum/issues/130
-[#132]: https://github.com/raxod502/selectrum/pull/132
 [raxod502/ctrlf#41]: https://github.com/raxod502/ctrlf/issues/41
 
 ## 1.0 (released 2020-03-23)
