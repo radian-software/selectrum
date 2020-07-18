@@ -1217,7 +1217,7 @@ Adjusting syntax table for file completions to
 
 (defun selectrum-backward-sexp ()
   "Forward to `backward-sexp'.
-Adjusting sytnax table for file completions to
+Adjusting syntax table for file completions to
 `selectrum--minibuffer-local-filename-syntax'."
   (interactive)
   (selectrum--sexp-command 'backward-sexp))
