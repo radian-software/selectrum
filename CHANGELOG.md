@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
-## Unreleased
+## 2.0 (released 2020-07-18)
 ### Breaking changes
 * The way to dynamically generate the candidate list has changed.
   Instead of rebinding `selectrum-preprocess-candidates-function` and
@@ -167,6 +167,7 @@ The format is based on [Keep a Changelog].
 [#42]: https://github.com/raxod502/selectrum/issues/42
 [#44]: https://github.com/raxod502/selectrum/pull/44
 [#49]: https://github.com/raxod502/selectrum/issues/49
+[#50]: https://github.com/raxod502/selectrum/pull/50
 [#52]: https://github.com/raxod502/selectrum/issues/52
 [#53]: https://github.com/raxod502/selectrum/issues/53
 [#54]: https://github.com/raxod502/selectrum/pull/54
