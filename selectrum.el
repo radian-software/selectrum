@@ -254,7 +254,9 @@ into the prompt when using commands which use
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer always has the same height.
-Even if there are fewer candidates."
+Even if there are fewer candidates. If this option is nil the
+minibuffer height is determined by the initial number of
+candidates."
   :type 'boolean)
 
 (defcustom selectrum-right-margin-padding 1
