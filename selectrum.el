@@ -252,7 +252,7 @@ into the prompt when using commands which use
 `completing-read-multiple'."
   :type 'boolean)
 
-(defcustom selectrum-fix-minibuffer-height t
+(defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer always has the same height.
 Even if there are fewer candidates."
   :type 'boolean)
@@ -696,7 +696,8 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (when (not selectrum-fix-minibuffer-height)
+      (when (and selectrum--init-p
+                 (not selectrum-fix-minibuffer-height))
         (let ((needed (1+ (length displayed-candidates))))
           (when (/= (window-height) needed)
             (setf (window-height) needed))))
