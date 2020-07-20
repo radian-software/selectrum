@@ -757,18 +757,34 @@ PRED defaults to `minibuffer-completion-predicate'."
     (setq-local selectrum--init-p nil)))
 
 (defun selectrum--first-lines (candidates)
-  "Return list on single line CANDIDATES.
+  "Return list of single line CANDIDATES.
 For multi-line canidates only the the first line is taken into
-account (the truncation is indicated)."
+account (leading empty lines are skipped, truncation is
+indicated)."
   (let ((onelines ()))
     (dolist (cand candidates (nreverse onelines))
-      (if-let ((nl (string-match "\n" cand))
-               (line (substring cand 0 nl)))
-          (push (concat line
-                        (propertize
-                         "\\n..." 'face 'warning))
-                onelines)
-        (push cand onelines)))))
+      (push
+       (cond ((not (string-match "\n" cand))
+              cand)
+             ((string= "\n" cand)
+              (propertize
+               "\\n" 'face 'warning))
+             (t
+              (with-temp-buffer
+                (insert cand)
+                (goto-char (point-min))
+                (concat
+                 (when (and (> (skip-chars-forward " \t\n\r\f\v") 1)
+                            (not
+                             (eq (line-beginning-position)
+                                 (point-min))))
+                   (propertize "...\\n" 'face 'warning))
+                 (buffer-substring (line-beginning-position)
+                                   (line-end-position))
+                 (unless (= (line-end-position) (point-max))
+                   (propertize
+                    "\\n..." 'face 'warning))))))
+       onelines))))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
