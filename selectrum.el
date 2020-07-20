@@ -762,13 +762,11 @@ For multi-line canidates only the the first line is taken into
 account (the truncation is indicated)."
   (let ((onelines ()))
     (dolist (cand candidates (nreverse onelines))
-      (if-let ((nl (string-match "\n" cand)))
-          (push (concat (substring cand 0 nl)
+      (if-let ((nl (string-match "\n" cand))
+               (line (substring cand 0 nl)))
+          (push (concat line
                         (propertize
-                         (concat (or (and (char-displayable-p ?⬎)
-                                          "⬎")
-                                     "\\n")
-                                 "...") 'face 'shadow))
+                         "\\n..." 'face 'warning))
                 onelines)
         (push cand onelines)))))
 
