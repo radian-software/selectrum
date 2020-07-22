@@ -59,8 +59,19 @@ The format is based on [Keep a Changelog].
   navigate and edit the input more efficently. A binding for
   `backward-kill-sexp` was added to go up a directory with `C-M-DEL`
   ([#138]).
+* Compliance to default minibuffer API has been further improved by
+  using an overlay for candidates display. Previously code which
+  assumed that the minibuffer only contains user input would be likely
+  to fail ([#124]). This also means `minibuffer-contents` now returns
+  the current input only as expected ([#116], [#133]).
+* Multiline candidates are now truncated to display only the first
+  line (skipping potentially leading empty lines). This way the
+  display works better (no gradual scrolling effect) but matched parts
+  of a multiline candidate might be hidden ([#133]).
 
 ### Bugs fixed
+* Incremental history search via `isearch` wasn't working which has
+  been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
   default completion UI ([#101]).
 * Text properties are now stripped for standard completion functions
@@ -84,14 +95,17 @@ The format is based on [Keep a Changelog].
 [#107]: https://github.com/raxod502/selectrum/issues/107
 [#108]: https://github.com/raxod502/selectrum/pull/108
 [#113]: https://github.com/raxod502/selectrum/issues/113
+[#116]: https://github.com/raxod502/selectrum/issues/116
 [#118]: https://github.com/raxod502/selectrum/pull/118
 [#120]: https://github.com/raxod502/selectrum/issues/120
 [#122]: https://github.com/raxod502/selectrum/pull/122
+[#124]: https://github.com/raxod502/selectrum/issues/124
 [#125]: https://github.com/raxod502/selectrum/pull/125
 [#126]: https://github.com/raxod502/selectrum/issues/126
 [#127]: https://github.com/raxod502/selectrum/pull/127
 [#130]: https://github.com/raxod502/selectrum/issues/130
 [#132]: https://github.com/raxod502/selectrum/pull/132
+[#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 
