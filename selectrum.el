@@ -199,6 +199,7 @@ strings."
     ([remap kill-ring-save]                   . selectrum-kill-ring-save)
     ([remap previous-matching-history-element]
      . selectrum-select-from-history)
+    ("C-M-DEL"                                . backward-kill-sexp)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("TAB"
      . selectrum-insert-current-candidate))
@@ -1087,20 +1088,17 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                         (min (1- (prefix-numeric-value arg))
                              (1- (length selectrum--refined-candidates)))
                       selectrum--current-candidate-index)))
-    (delete-region selectrum--start-of-input-marker
-                   selectrum--end-of-input-marker)
+    (if (or (not selectrum--crm-p)
+            (not (re-search-backward crm-separator
+                                     (minibuffer-prompt-end) t)))
+        (delete-region selectrum--start-of-input-marker
+                       selectrum--end-of-input-marker)
+      (goto-char (match-end 0))
+      (delete-region (point) selectrum--end-of-input-marker))
     (let* ((candidate (nth index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert (if (not selectrum--crm-p)
-                  full
-                (let ((string ""))
-                  (dolist (str (butlast
-                                (split-string
-                                 selectrum--previous-input-string
-                                 crm-separator)))
-                    (setq string (concat string str ",")))
-                  (concat string full))))
+      (insert full)
       (add-to-history minibuffer-history-variable full)
       (apply
        #'run-hook-with-args
@@ -1127,6 +1125,14 @@ minibuffer."
         (if selectrum--active-p
             (selectrum--exit-with result)
           (insert result))))))
+
+(defvar selectrum--minibuffer-local-filename-syntax
+  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
+    (modify-syntax-entry ?\s "_" table)
+    table)
+  "Syntax table for reading file names.
+Same as `minibuffer-local-filename-syntax' but considers spaces
+as symbol constituents.")
 
 ;;;; Main entry points
 
@@ -1552,8 +1558,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
+    (minibuffer-with-setup-hook
+        (:append (lambda ()
+                   (set-syntax-table
+                    selectrum--minibuffer-local-filename-syntax)))
+      (read-file-name-default
+       prompt dir default-filename mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
