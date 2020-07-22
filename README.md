@@ -522,9 +522,9 @@ Technical points:
 
 ## Caveats
 
-* There is currently no support for alternate actions, although there
-  are plans for how this feature could be implemented without
-  descending into the madness of how Ivy and Helm do it.
+* There is no built-in support for alternate actions on minibuffer
+  candidates but you can add those using
+  [embark](https://github.com/oantolin/embark/).
 * In Emacs 25 and earlier, `M-x ffap` is basically completely broken.
   This is because in old versions of Emacs, `ffap` worked by calling
   `completing-read` directly with a special completion table function,
