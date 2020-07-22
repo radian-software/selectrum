@@ -70,6 +70,10 @@ The format is based on [Keep a Changelog].
 * The default candidate is now first selected, even when it is not in
   the candidate list, conforming with expectations. Previously, the
   first candidate in the list was selected instead. See [#120].
+* `selectrum-insert-current-candidate` now works correctly for
+  `completing-read-multiple` when `crm-separator` has a non default
+  value. Previously it would replace the separator with commas when
+  adding new candidates ([#140]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#82]: https://github.com/raxod502/selectrum/issues/82
@@ -89,6 +93,7 @@ The format is based on [Keep a Changelog].
 [#130]: https://github.com/raxod502/selectrum/issues/130
 [#132]: https://github.com/raxod502/selectrum/pull/132
 [#138]: https://github.com/raxod502/selectrum/pull/138
+[#140]: https://github.com/raxod502/selectrum/pull/140
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

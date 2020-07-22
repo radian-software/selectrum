@@ -1115,20 +1115,17 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                         (min (1- (prefix-numeric-value arg))
                              (1- (length selectrum--refined-candidates)))
                       selectrum--current-candidate-index)))
-    (delete-region selectrum--start-of-input-marker
-                   selectrum--end-of-input-marker)
+    (if (or (not selectrum--crm-p)
+            (not (re-search-backward crm-separator
+                                     (minibuffer-prompt-end) t)))
+        (delete-region selectrum--start-of-input-marker
+                       selectrum--end-of-input-marker)
+      (goto-char (match-end 0))
+      (delete-region (point) selectrum--end-of-input-marker))
     (let* ((candidate (nth index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert (if (not selectrum--crm-p)
-                  full
-                (let ((string ""))
-                  (dolist (str (butlast
-                                (split-string
-                                 selectrum--previous-input-string
-                                 crm-separator)))
-                    (setq string (concat string str ",")))
-                  (concat string full))))
+      (insert full)
       (add-to-history minibuffer-history-variable full)
       (apply
        #'run-hook-with-args
