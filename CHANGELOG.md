@@ -64,10 +64,10 @@ The format is based on [Keep a Changelog].
   assumed that the minibuffer only contains user input would be likely
   to fail ([#124]). This also means `minibuffer-contents` now returns
   the current input only as expected ([#116], [#133]).
-* Multiline candidates are now truncated to display only the first
-  line (skipping potentially leading empty lines). This way the
-  display works better (no gradual scrolling effect) but matched parts
-  of a multiline candidate might be hidden ([#133]).
+* Multiline candidates are now merged into a single line. This
+  improves the display (there is no gradual scrolling effect anymore)
+  but the line might be to long to display. In this case you can
+  scroll the hidden parts into view ([#133]).
 
 ### Bugs fixed
 * Incremental history search via `isearch` wasn't working which has
