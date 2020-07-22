@@ -522,7 +522,7 @@ This is non-nil during the first call of
 TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'.
 INPUT defaults to current selectrum input string."
-  (let ((input (or input (selectrum--current-input)))
+  (let ((input (or input (minibuffer-contents)))
         (pred (or pred minibuffer-completion-predicate))
         (table (or table minibuffer-completion-table)))
     (when table
@@ -549,15 +549,6 @@ PRED defaults to `minibuffer-completion-predicate'."
                        string annotf))
                      cands))))
           (t strings))))
-
-(defun selectrum--current-input ()
-  "Get current Selectrum input."
-  (if (and selectrum--start-of-input-marker
-           selectrum--end-of-input-marker)
-      (buffer-substring
-       selectrum--start-of-input-marker
-       selectrum--end-of-input-marker)
-    ""))
 
 (defun selectrum-exhibit ()
   "Trigger an update of Selectrum's completion UI."
@@ -646,7 +637,7 @@ PRED defaults to `minibuffer-completion-predicate'."
                ((null selectrum--refined-candidates)
                 nil)
                ((and selectrum--default-candidate
-                     (string-empty-p (selectrum--current-input))
+                     (string-empty-p (minibuffer-contents))
                      (not (member selectrum--default-candidate
                                   selectrum--refined-candidates)))
                 -1)
@@ -654,7 +645,7 @@ PRED defaults to `minibuffer-completion-predicate'."
                      minibuffer-completing-file-name
                      (eq minibuffer-completion-predicate
                          'file-directory-p)
-                     (equal (selectrum--current-input)
+                     (equal (minibuffer-contents)
                             selectrum--default-candidate))
                 ;; When reading directories and the default is the
                 ;; prompt, select it initially.
@@ -956,10 +947,10 @@ into the user input area to start with."
           (max (if (and selectrum--match-required-p
                         (cond (minibuffer-completing-file-name
                                (not (file-exists-p
-                                     (selectrum--current-input))))
+                                     (minibuffer-contents))))
                               (t
                                (not (string-empty-p
-                                     (selectrum--current-input))))))
+                                     (minibuffer-contents))))))
                    0
                  -1)
                (1- selectrum--current-candidate-index)))))
@@ -1057,9 +1048,9 @@ Zero means to select the current user input."
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
-                   (file-exists-p (selectrum--current-input)))
+                   (file-exists-p (minibuffer-contents)))
               (string-empty-p
-               (selectrum--current-input)))
+               (minibuffer-contents)))
       (selectrum--exit-with
        (selectrum--get-candidate index)))))
 
