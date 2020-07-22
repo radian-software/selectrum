@@ -54,6 +54,11 @@ The format is based on [Keep a Changelog].
     be submitted, it now attempts to remove the default candidate from
     prompt messages that already contain it. This decreases
     redundancy.
+* When reading file names spaces are now considered symbol
+  constituents which means you can use s-expression commands to
+  navigate and edit the input more efficently. A binding for
+  `backward-kill-sexp` was added to go up a directory with `C-M-DEL`
+  ([#138]).
 
 ### Bugs fixed
 * Empty string completion candidates are now ignored like in the
@@ -87,6 +92,7 @@ The format is based on [Keep a Changelog].
 [#127]: https://github.com/raxod502/selectrum/pull/127
 [#130]: https://github.com/raxod502/selectrum/issues/130
 [#132]: https://github.com/raxod502/selectrum/pull/132
+[#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 
 ## 2.0 (released 2020-07-18)

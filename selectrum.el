@@ -203,6 +203,7 @@ strings."
      . selectrum-previous-history-element)
     ([remap next-history-element]
      . selectrum-next-history-element)
+    ("C-M-DEL"                                . backward-kill-sexp)
     ("C-j"                                    . selectrum-submit-exact-input)
     ("TAB"
      . selectrum-insert-current-candidate))
@@ -1181,6 +1182,14 @@ minibuffer."
             (selectrum--exit-with result)
           (insert result))))))
 
+(defvar selectrum--minibuffer-local-filename-syntax
+  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
+    (modify-syntax-entry ?\s "_" table)
+    table)
+  "Syntax table for reading file names.
+Same as `minibuffer-local-filename-syntax' but considers spaces
+as symbol constituents.")
+
 ;;;; Main entry points
 
 (defmacro selectrum--let-maybe (pred varlist &rest body)
@@ -1609,8 +1618,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (read-file-name-default
-     prompt dir default-filename mustmatch initial predicate)))
+    (minibuffer-with-setup-hook
+        (:append (lambda ()
+                   (set-syntax-table
+                    selectrum--minibuffer-local-filename-syntax)))
+      (read-file-name-default
+       prompt dir default-filename mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")

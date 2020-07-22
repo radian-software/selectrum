@@ -125,7 +125,8 @@ how to fix it.
   prefix argument, accept instead the candidate at that point in the
   list, counting from one. See `selectrum-show-indices`. The value
   zero means to accept exactly what you've typed, as in the next
-  bullet point.)
+  bullet point.) You can also click the left mouse button on a
+  candidate to choose it.
 * *To submit what you've typed, even if it's not a candidate:* you can
   use `<up>` or `C-p` to select the user input just like a regular
   candidate, and type `RET` as usual. (Alternatively, you can type
@@ -138,7 +139,8 @@ how to fix it.
   argument, insert the candidate at that point in the list, counting
   from one. See `selectrum-show-indices`. A non-positive prefix
   argument inserts the candidate corresponding to
-  `selectrum--current-candidate-index`.
+  `selectrum--current-candidate-index`. You can also right click on a
+  candidate to insert it into the minibuffer.
 * *To copy the current candidate:* type `M-w` or what is bind to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
@@ -163,9 +165,15 @@ editing bindings. So, for example:
 * All your standard horizontal motion, selection, insertion, and
   deletion commands work as usual.
 * To delete your current input, just use `C-a C-k`.
-* To go up a directory, use `M-DEL` to delete it in the minibuffer.
+* To edit by word units use `M-DEL` like usual. To go up a directory
+  you can use `C-M-DEL` (bound to `backward-kill-sexp`). Be aware that
+  on some Linux distributions, this binding is used to kill the X
+  server, which can cause loss of unsaved work. In that case, you can
+  also use Emacs default binding `ESC C-DEL`.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
+  `M-r` will invoke an improved version of history search with
+  completion.
 
 ### Sorting and filtering
 
