@@ -54,6 +54,9 @@ The format is based on [Keep a Changelog].
     be submitted, it now attempts to remove the default candidate from
     prompt messages that already contain it. This decreases
     redundancy.
+* When there is no default value the prompt shows `[default-value :
+  ""]` to indicate that you would submit the empty string. Previously
+  it showed `[default-value: none]` ([#133]).
 * When reading file names spaces are now considered symbol
   constituents which means you can use s-expression commands to
   navigate and edit the input more efficently. A binding for
@@ -62,12 +65,14 @@ The format is based on [Keep a Changelog].
 * Compliance to default minibuffer API has been further improved by
   using an overlay for candidates display. Previously code which
   assumed that the minibuffer only contains user input would be likely
-  to fail ([#124]). This also means `minibuffer-contents` now returns
-  only the current input as expected ([#116], [#133]).
-* Multiline candidates are now merged into a single line. This
-  improves the display (there is no gradual scrolling effect anymore)
-  but the line might be to long to display. In this case you can
-  scroll the hidden parts into view ([#133]).
+  to fail ([#124]). This also means inside the minibuffer
+  `minibuffer-contents` now returns only the current input as expected
+  ([#116], [#133]).
+* Multiline candidates are now merged into a single line so there is
+  no gradual scrolling effect anymore when going through the candidate
+  list. The matched line is shown in front of the merged lines. Merged
+  lines can be to long for display but you can scroll hidden parts
+  into view (using `scroll-right`/`scroll-left`) ([#133]).
 
 ### Bugs fixed
 * Incremental history search via `isearch` wasn't working which has
