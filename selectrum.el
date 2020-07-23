@@ -757,12 +757,22 @@ Multiline canidates are merged into a single line."
        (cond ((not (string-match "\n" cand))
               cand)
              (t
-              (replace-regexp-in-string
-               "\n" (propertize
-                     "\\\\n" 'face 'warning)
+              (concat
+               (unless (string-empty-p (minibuffer-contents))
+                 ;; Show first matched line.
+                 (concat
+                  (replace-regexp-in-string
+                   "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                   (car
+                    (funcall selectrum-refine-candidates-function
+                             (minibuffer-contents)
+                             (split-string cand "\n"))))
+                  (propertize " -> " 'face 'success)))
                (replace-regexp-in-string
-                "[ \t][ \t]+"
-                (propertize ".." 'face 'shadow) cand))))
+                "\n" (propertize "\\\\n" 'face 'warning)
+                (replace-regexp-in-string
+                 "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                 cand)))))
        onelines))))
 
 (defun selectrum--candidates-display-string (candidates
@@ -774,17 +784,18 @@ INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index
 and FIRST-INDEX-DISPLAYED is the index of the top most
 candidate."
-  (let ((index 0))
+  (let ((index 0)
+        (lines
+         (selectrum--first-lines
+          ;; First pass the candidates to the highlight function
+          ;; before stipping multi-lines because it might expect
+          ;; getting passed the same candidates as were passed
+          ;; to the filter function (for example `orderless'
+          ;; requires this).
+          (funcall selectrum-highlight-candidates-function
+                   input candidates))))
     (with-temp-buffer
-      (dolist (candidate
-               (selectrum--first-lines
-                ;; First pass the candidates to the highlight function
-                ;; before stipping multi-lines because it might expect
-                ;; getting passed the same candidates as were passed
-                ;; to the filter function (for example `orderless'
-                ;; requires this).
-                (funcall selectrum-highlight-candidates-function
-                         input candidates)))
+      (dolist (candidate lines)
         (let ((displayed-candidate
                (concat
                 (get-text-property
