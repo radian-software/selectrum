@@ -768,11 +768,12 @@ Multiline canidates are merged into a single line."
                              (minibuffer-contents)
                              (split-string cand "\n"))))
                   (propertize " -> " 'face 'success)))
+               ;; Truncate the rest.
                (replace-regexp-in-string
                 "\n" (propertize "\\\\n" 'face 'warning)
                 (replace-regexp-in-string
                  "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                 cand)))))
+                 (substring cand 0 (min 1000 (length cand))))))))
        onelines))))
 
 (defun selectrum--candidates-display-string (candidates

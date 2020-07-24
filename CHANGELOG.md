@@ -68,11 +68,10 @@ The format is based on [Keep a Changelog].
   to fail ([#124]). This also means inside the minibuffer
   `minibuffer-contents` now returns only the current input as expected
   ([#116], [#133]).
-* Multiline candidates are now merged into a single line so there is
-  no gradual scrolling effect anymore when going through the candidate
-  list. The matched line is shown in front of the merged lines. Merged
-  lines can be to long for display but you can scroll hidden parts
-  into view (using `scroll-right`/`scroll-left`) ([#133]).
+* Multiline candidates are now merged into a single truncated line so
+  there is no gradual scrolling effect anymore when going through the
+  candidate list. The matched line is shown in front of the merged
+  lines ([#133]).
 
 ### Bugs fixed
 * Incremental history search via `isearch` wasn't working which has
