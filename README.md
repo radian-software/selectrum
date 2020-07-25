@@ -141,7 +141,7 @@ how to fix it.
   argument inserts the candidate corresponding to
   `selectrum--current-candidate-index`. You can also right click on a
   candidate to insert it into the minibuffer.
-* *To copy the current candidate:* type `M-w` or what is bind to
+* *To copy the current candidate:* type `M-w` or what is bound to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
   modified when Transient Mark mode is disabled.
@@ -316,7 +316,7 @@ Selectrum has a
 [wiki](https://github.com/raxod502/selectrum/wiki/Useful-Commands), on
 which people have contributed handy commands for doing things like
 finding buffers and recent files at the same time. It is rather like
-[Counsel](https://github.com/abo-abo/swiper#counsel) Feel free to add
+[Counsel](https://github.com/abo-abo/swiper#counsel). Feel free to add
 your own commands! The wiki also contains configuration tips for
 external packages
 [here](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
@@ -331,7 +331,7 @@ External packages that work well with Selectrum:
   tree based item navigation into a flat completion menu.
 
 * As an alternative sorting method to `prescient.el` (although it only
-  works for `M-x`) there is
+  works for `M-x`), there is
   [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
   features specific to `M-x`, like displaying keybindings, ignoring
   uninteresting commands, and performing alternate actions (such as
@@ -339,7 +339,7 @@ External packages that work well with Selectrum:
   calling it). It is also reported that Amx may be faster than
   `prescient.el` because it uses a different sorting algorithm.
 
-* As an alternative filtering method to `prescient.el` there is
+* As an alternative filtering method to `prescient.el`, there is
   [orderless](https://github.com/oantolin/orderless). It supports many
   different matching styles and integrates with `completion-styles`.
 
