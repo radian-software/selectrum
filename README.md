@@ -164,7 +164,8 @@ editing bindings. So, for example:
 
 * All your standard horizontal motion, selection, insertion, and
   deletion commands work as usual.
-* To delete your current input, just use `C-a C-k`.
+* To delete your current input, just use `C-a C-k` or `C-S-backspace`
+  (bound to `kill-whole-line`).
 * To edit by word units use `M-DEL` like usual. To go up a directory
   you can use `C-M-DEL` (bound to `backward-kill-sexp`). Be aware that
   on some Linux distributions, this binding is used to kill the X
