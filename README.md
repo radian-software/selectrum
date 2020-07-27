@@ -164,13 +164,18 @@ editing bindings. So, for example:
 
 * All your standard horizontal motion, selection, insertion, and
   deletion commands work as usual.
-* To delete your current input, just use `C-a C-k`.
+* To delete your current input, just use `C-a C-k` or `C-S-backspace`
+  (bound to `kill-whole-line`).
 * To edit by word units use `M-DEL` like usual. To go up a directory
   you can use `C-M-DEL` (bound to `backward-kill-sexp`). Be aware that
   on some Linux distributions, this binding is used to kill the X
-  server, which can cause loss of unsaved work. In that case, you can
-  also use Emacs default binding `ESC C-DEL`.
+  server, which can force-quit all programs you opened. Therefore,
+  accidentally killing the X server can cause data corruption and loss
+  of unsaved work. In such cases, you can instead use `ESC C-DEL`,
+  which Emacs helpfully binds by default.
 * To navigate to your home directory, you can just use `C-a C-k ~/`.
+  Alternatively, like in default completion, you can type `~/` after a
+  `/` to ignore the preceding input and move to the home directory.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
   `M-r` will invoke an improved version of history search with
   completion.
