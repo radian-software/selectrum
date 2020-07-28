@@ -773,7 +773,9 @@ Multiline canidates are merged into a single line."
                 "\n" (propertize "\\\\n" 'face 'warning)
                 (replace-regexp-in-string
                  "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                 (substring cand 0 (min 1000 (length cand))))))))
+                 (concat
+                  (substring cand 0 (min 1000 (length cand)))
+                  (propertize "..." 'face 'warning)))))))
        onelines))))
 
 (defun selectrum--candidates-display-string (candidates
