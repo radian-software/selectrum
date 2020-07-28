@@ -70,8 +70,8 @@ The format is based on [Keep a Changelog].
   ([#116], [#133]).
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
-  candidate list. The matched line is shown in front of the merged
-  lines ([#133]).
+  candidate list. The first matched line is shown in front of the
+  merged lines ([#133]).
 
 ### Bugs fixed
 * Incremental history search via `isearch` wasn't working which has
