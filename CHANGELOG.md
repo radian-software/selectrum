@@ -54,13 +54,28 @@ The format is based on [Keep a Changelog].
     be submitted, it now attempts to remove the default candidate from
     prompt messages that already contain it. This decreases
     redundancy.
+* When there is no default value the prompt shows `[default-value :
+  ""]` to indicate that you would submit the empty string. Previously
+  it showed `[default-value: none]` ([#133]).
 * When reading file names spaces are now considered symbol
   constituents which means you can use s-expression commands to
   navigate and edit the input more efficently. A binding for
   `backward-kill-sexp` was added to go up a directory with `C-M-DEL`
   ([#138]).
+* Compliance to default minibuffer API has been further improved by
+  using an overlay for candidates display. Previously code which
+  assumed that the minibuffer only contains user input would be likely
+  to fail ([#124]). This also means inside the minibuffer
+  `minibuffer-contents` now returns only the current input as expected
+  ([#116], [#133]).
+* Multiline candidates are now merged into a single truncated line so
+  there is no gradual scrolling effect anymore when going through the
+  candidate list. The first matched line is shown in front of the
+  merged lines ([#133]).
 
 ### Bugs fixed
+* Incremental history search via `isearch` wasn't working which has
+  been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
   default completion UI ([#101]).
 * Text properties are now stripped for standard completion functions
@@ -84,14 +99,17 @@ The format is based on [Keep a Changelog].
 [#107]: https://github.com/raxod502/selectrum/issues/107
 [#108]: https://github.com/raxod502/selectrum/pull/108
 [#113]: https://github.com/raxod502/selectrum/issues/113
+[#116]: https://github.com/raxod502/selectrum/issues/116
 [#118]: https://github.com/raxod502/selectrum/pull/118
 [#120]: https://github.com/raxod502/selectrum/issues/120
 [#122]: https://github.com/raxod502/selectrum/pull/122
+[#124]: https://github.com/raxod502/selectrum/issues/124
 [#125]: https://github.com/raxod502/selectrum/pull/125
 [#126]: https://github.com/raxod502/selectrum/issues/126
 [#127]: https://github.com/raxod502/selectrum/pull/127
 [#130]: https://github.com/raxod502/selectrum/issues/130
 [#132]: https://github.com/raxod502/selectrum/pull/132
+[#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 
