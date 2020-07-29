@@ -276,6 +276,22 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
+(defcustom selectrum-horizontal-whitespace-indicator ".."
+  "String used to indicate horizontal whitespace when displaying candidates."
+  :type 'string)
+
+(defcustom selectrum-matching-line-indicator " -> "
+  "String used to indicate which line of a candidate matches the query."
+  :type 'string)
+
+(defcustom selectrum-newline-indicator "\\\\n"
+  "String used to indicate line endings when displaying candidates."
+  :type 'string)
+
+(defcustom selectrum-truncated-candidate-indicator "..."
+  "String used to indicate that the candidate has been truncated."
+  :type 'string)
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -762,22 +778,26 @@ Multiline canidates are merged into a single line."
                  ;; Show first matched line.
                  (concat
                   (replace-regexp-in-string
-                   "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                   "[ \t][ \t]+" (propertize selectrum-horizontal-whitespace-indicator
+                                             'face 'shadow)
                    (car
                     (funcall selectrum-refine-candidates-function
                              (minibuffer-contents)
                              (split-string cand "\n"))))
-                  (propertize " -> " 'face 'success)))
+                  (propertize selectrum-matching-line-indicator
+                              'face 'success)))
                ;; Truncate the rest.
                (replace-regexp-in-string
-                "\n" (propertize "\\\\n" 'face 'warning)
+                "\n" (propertize selectrum-newline-indicator 'face 'warning)
                 (replace-regexp-in-string
-                 "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                 "[ \t][ \t]+" (propertize selectrum-horizontal-whitespace-indicator
+                                           'face 'shadow)
                  (if (< (length cand) 1000)
                      cand
                    (concat
                     (substring cand 0 1000)
-                    (propertize "..." 'face 'warning))))))))
+                    (propertize selectrum-truncated-candidate-indicator
+                                'face 'warning))))))))
        onelines))))
 
 (defun selectrum--candidates-display-string (candidates
