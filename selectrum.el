@@ -778,8 +778,9 @@ Multiline canidates are merged into a single line."
                  ;; Show first matched line.
                  (concat
                   (replace-regexp-in-string
-                   "[ \t][ \t]+" (propertize selectrum-horizontal-whitespace-indicator
-                                             'face 'shadow)
+                   "[ \t][ \t]+"
+                   (propertize selectrum-horizontal-whitespace-indicator
+                               'face 'shadow)
                    (car
                     (funcall selectrum-refine-candidates-function
                              (minibuffer-contents)
@@ -790,8 +791,9 @@ Multiline canidates are merged into a single line."
                (replace-regexp-in-string
                 "\n" (propertize selectrum-newline-indicator 'face 'warning)
                 (replace-regexp-in-string
-                 "[ \t][ \t]+" (propertize selectrum-horizontal-whitespace-indicator
-                                           'face 'shadow)
+                 "[ \t][ \t]+"
+                 (propertize selectrum-horizontal-whitespace-indicator
+                             'face 'shadow)
                  (if (< (length cand) 1000)
                      cand
                    (concat
