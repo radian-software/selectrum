@@ -71,7 +71,8 @@ The format is based on [Keep a Changelog].
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
   candidate list. The first matched line is shown in front of the
-  merged lines ([#133]).
+  merged lines ([#133]). The strings used to indicate these
+  transformations are customizable ([#147]).
 
 ### Bugs fixed
 * Incremental history search via `isearch` wasn't working which has
@@ -112,6 +113,7 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#147]: https://github.com/raxod502/selectrum/pull/147
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
