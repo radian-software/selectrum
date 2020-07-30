@@ -760,14 +760,16 @@ Multiline canidates are merged into a single line."
               (concat
                (unless (string-empty-p (minibuffer-contents))
                  ;; Show first matched line.
-                 (concat
-                  (replace-regexp-in-string
-                   "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                   (car
-                    (funcall selectrum-refine-candidates-function
-                             (minibuffer-contents)
-                             (split-string cand "\n"))))
-                  (propertize " -> " 'face 'success)))
+                 (when-let ((match
+                             (car
+                              (funcall selectrum-refine-candidates-function
+                                       (minibuffer-contents)
+                                       (split-string cand "\n")))))
+                   (concat
+                    (replace-regexp-in-string
+                     "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                     match)
+                    (propertize " -> " 'face 'success))))
                ;; Truncate the rest.
                (replace-regexp-in-string
                 "\n" (propertize "\\\\n" 'face 'warning)
