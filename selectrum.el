@@ -257,7 +257,9 @@ into the prompt when using commands which use
   "Non-nil means the minibuffer always has the same height.
 Even if there are fewer candidates. If this option is nil the
 minibuffer height is determined by the initial number of
-candidates."
+candidates. For dynamic collections the minibuffer height will
+grow when more candidates need to be displayed until
+`selectrum-num-candidates-displayed' is reached."
   :type 'boolean)
 
 (defcustom selectrum-right-margin-padding 1
@@ -690,11 +692,11 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (when selectrum--init-p
-        (let ((n (1+ (if selectrum-fix-minibuffer-height
-                         selectrum-num-candidates-displayed
-                       (length displayed-candidates)))))
-          (setf (window-height) n)))
+      (let ((n (1+ (if selectrum-fix-minibuffer-height
+                       selectrum-num-candidates-displayed
+                     (max (1- (window-height)) ; grow only
+                          (length displayed-candidates))))))
+        (setf (window-height) n))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
