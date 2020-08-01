@@ -369,11 +369,6 @@ If PREDICATE is non-nil, then it filters the collection as in
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
 
-(defun selectrum--get-full (candidate)
-  "Get full form of CANDIDATE by inspecting text properties."
-  (or (get-text-property 0 'selectrum-candidate-full candidate)
-      candidate))
-
 (defun selectrum--get-annotation-suffix (string annotation-func)
   "Get `selectrum-candidate-display-suffix' value for annotation.
 Used to display STRING according to ANNOTATION-FUNC from
@@ -498,8 +493,8 @@ Passed to various hook functions.")
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
 
-(defvar selectrum--active-p nil
-  "Non-nil means we are in a Selectrum session currently.")
+(defvar selectrum-active-p nil
+  "Non-nil means Selectrum is currently active.")
 
 (defvar-local selectrum--init-p nil
   "Non-nil means the current session is initializing.
@@ -510,6 +505,56 @@ This is non-nil during the first call of
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
 ;;;;; Minibuffer state utility functions
+
+(defun selectrum-get-current-candidate (&optional notfull)
+  "Return currently selected Selectrum candidate.
+If NOTFULL is non-nil don't use canonical representation of
+candidate as per `selectrum-candidate-full' text property."
+  (when (and selectrum-active-p
+             selectrum--current-candidate-index)
+    (if notfull
+        (selectrum--get-candidate
+         selectrum--current-candidate-index)
+      (selectrum--get-full
+       (selectrum--get-candidate
+        selectrum--current-candidate-index)))))
+
+(defun selectrum-get-current-candidates (&optional notfull)
+  "Get list of current Selectrum candidates.
+If NOTFULL is non-nil don't use canonical representation of
+candidates as per `selectrum-candidate-full' text property."
+  (when (and selectrum-active-p
+             selectrum--refined-candidates)
+    (if notfull
+        selectrum--refined-candidates
+      (cl-loop for cand in selectrum--refined-candidates
+               collect (selectrum--get-full cand)))))
+
+(defun selectrum-get-current-input ()
+  "Get current Selectrum user input."
+  (when selectrum-active-p
+    (with-selected-window (active-minibuffer-window)
+      (minibuffer-contents))))
+
+(defun selectrum-set-selected-candidate (&optional string)
+  "Set currently selected candidate to STRING.
+STRING defaults to `minibuffer-contents'. This function skips
+recomputation of candidates. This is useful for injecting
+candidates on minibuffer invocation and immediately exit with
+them afterwards."
+  (when selectrum-active-p
+    (with-selected-window (active-minibuffer-window)
+      (let ((string (or string (minibuffer-contents))))
+        (setq selectrum--refined-candidates
+              (list string))
+        (setq selectrum--current-candidate-index 0)
+        ;; Skip updates.
+        (setq selectrum--previous-input-string string)))))
+
+(defun selectrum--get-full (candidate)
+  "Get full form of CANDIDATE by inspecting text properties."
+  (or (get-text-property 0 'selectrum-candidate-full candidate)
+      candidate))
 
 (defun selectrum--get-candidate (index)
   "Get candidate at given INDEX. Negative means get the current user input."
@@ -1008,9 +1053,7 @@ Or if there is an active region, save the region to kill ring."
       (call-interactively #'kill-ring-save)
     (when selectrum--current-candidate-index
       (kill-new
-       (selectrum--get-full
-        (selectrum--get-candidate
-         selectrum--current-candidate-index))))))
+       (selectrum-get-current-candidate)))))
 
 (defun selectrum--exit-with (candidate)
   "Exit minibuffer with given CANDIDATE.
@@ -1120,7 +1163,7 @@ minibuffer."
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
-        (if selectrum--active-p
+        (if selectrum-active-p
             (selectrum--exit-with result)
           (insert result))))))
 
@@ -1161,10 +1204,10 @@ Otherwise, just eval BODY."
               selectrum--count-overlay
               selectrum--right-margin-overlays
               selectrum--repeat
-              selectrum--active-p)))
+              selectrum-active-p)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
-       selectrum--active-p
+       selectrum-active-p
        (,@(mapcar
            (lambda (var)
              `(,var ,var))
@@ -1275,7 +1318,7 @@ semantics of `cl-defun'."
                 #'selectrum-completing-read)
                ;; <https://github.com/raxod502/selectrum/issues/99>
                (icomplete-mode nil)
-               (selectrum--active-p t))
+               (selectrum-active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
            (or history 'minibuffer-history)))))))
@@ -1689,7 +1732,7 @@ user input area, not at the end of the candidate list.
 
 This is an `:after' advice for `set-minibuffer-message'."
   (selectrum--when-compile (boundp 'minibuffer-message-overlay)
-    (when (and (bound-and-true-p selectrum--active-p)
+    (when (and (bound-and-true-p selectrum-active-p)
                (overlayp minibuffer-message-overlay))
       (move-overlay minibuffer-message-overlay
                     selectrum--end-of-input-marker
@@ -1713,7 +1756,7 @@ not at the end of the candidate list.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
-  (if (bound-and-true-p selectrum--active-p)
+  (if (bound-and-true-p selectrum-active-p)
       (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
                  ((symbol-function #'make-overlay)
                   (lambda (_beg _end &rest args)
