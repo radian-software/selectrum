@@ -958,6 +958,9 @@ CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
+  ;; Avoid wrong minibuffer height. Minibuffer height is currently
+  ;; determined by amount of lines and not actual display height.
+  (setq-local line-spacing nil)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
