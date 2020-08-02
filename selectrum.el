@@ -737,11 +737,6 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (let ((n (1+ (if selectrum-fix-minibuffer-height
-                       selectrum-num-candidates-displayed
-                     (max (1- (window-height)) ; grow only
-                          (length displayed-candidates))))))
-        (setf (window-height) n))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
@@ -788,12 +783,29 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
         (overlay-put selectrum--candidates-overlay 'after-string text)))
+    (selectrum--update-minibuffer-height)
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
     (selectrum--fix-set-minibuffer-message)
     (when keep-mark-active
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
+
+(defun selectrum--update-minibuffer-height ()
+  "Set minibuffer height for candidates display."
+  (let ((n (1+ selectrum-num-candidates-displayed))
+        (win (active-minibuffer-window)))
+    ;; Set min initial height.
+    (when (and selectrum-fix-minibuffer-height
+               selectrum--init-p)
+      (with-selected-window win
+        (setf (window-height) n)))
+    (let ((dheight (cdr (window-text-pixel-size win)))
+          (wheight (window-pixel-height win)))
+      ;; Grow if needed.
+      (when (> dheight wheight)
+        (window-resize
+         win (- dheight wheight) nil nil 'pixelwise)))))
 
 (defun selectrum--first-lines (candidates)
   "Return list of single line CANDIDATES.
@@ -958,14 +970,12 @@ CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. INITIAL-INPUT, if provided, is inserted
 into the user input area to start with."
-  ;; Avoid wrong minibuffer height. Minibuffer height is currently
-  ;; determined by amount of lines and not actual display height.
-  (setq-local line-spacing nil)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq selectrum--candidates-overlay
-        (make-overlay (point) (point) nil 'front-advance 'rear-advance))
+  (unless selectrum--candidates-overlay
+    (setq selectrum--candidates-overlay
+          (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
