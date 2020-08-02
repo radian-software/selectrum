@@ -49,7 +49,7 @@ The format is based on [Keep a Changelog].
     visible when it can be submitted (similar to the effect of
     `minibuffer-electric-default-mode`).
   * The default candidate shown in the prompt message is now displayed
-    with the face `selectrum-current-candidate` when it is selected.
+    with the face `selectrum-current-candidate` when it is selected.51
   * Now that Selectrum always shows the default candidate when it can
     be submitted, it now attempts to remove the default candidate from
     prompt messages that already contain it. This decreases
@@ -67,7 +67,8 @@ The format is based on [Keep a Changelog].
   assumed that the minibuffer only contains user input would be likely
   to fail ([#124]). This also means inside the minibuffer
   `minibuffer-contents` now returns only the current input as expected
-  ([#116], [#133]).
+  ([#116], [#133]). In order to avoid wrong minibuffer heights
+  `line-spacing` got disabled for Selectrum sessions ([#151], [#154]).
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
   candidate list. The first matched line is shown in front of the
@@ -112,6 +113,8 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#151]: https://github.com/raxod502/selectrum/issues/151
+[#154]: https://github.com/raxod502/selectrum/pull/154
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
