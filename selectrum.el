@@ -1151,21 +1151,25 @@ list). A null or non-positive ARG inserts the candidate corresponding to
 If Selectrum isn't active, insert this candidate into the
 minibuffer."
   (interactive)
-  (let ((selectrum-should-sort-p nil)
-        (enable-recursive-minibuffers t)
-        (history (symbol-value minibuffer-history-variable)))
-    (when (eq history t)
-      (user-error "No history is recorded for this command"))
-    (let ((result
-           (let ((selectrum-candidate-inserted-hook nil)
-                 (selectrum-candidate-selected-hook nil))
-             (selectrum-read "History: " history :history t))))
-      (if (and selectrum--match-required-p
-               (not (member result selectrum--refined-candidates)))
-          (user-error "That history element is not one of the candidates")
-        (if selectrum-active-p
-            (selectrum--exit-with result)
-          (insert result))))))
+  (when-let ((result
+              (condition-case nil
+                  (let ((selectrum-should-sort-p nil)
+                        (enable-recursive-minibuffers t)
+                        (history (symbol-value minibuffer-history-variable))
+                        (selectrum-candidate-inserted-hook nil)
+                        (selectrum-candidate-selected-hook nil))
+                    (when (eq history t)
+                      (user-error "No history is recorded for this command"))
+                    (selectrum-read "History: " history :history t))
+                ;; Allow to continue with the command history search
+                ;; was invoked from.
+                (quit))))
+    (if (and selectrum--match-required-p
+             (not (member result selectrum--refined-candidates)))
+        (user-error "That history element is not one of the candidates")
+      (if selectrum-active-p
+          (selectrum--exit-with result)
+        (insert result)))))
 
 (defvar selectrum--minibuffer-local-filename-syntax
   (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
