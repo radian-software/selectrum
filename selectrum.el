@@ -782,8 +782,8 @@ PRED defaults to `minibuffer-completion-predicate'."
                       (point-max) (point-max) (current-buffer))
         (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
-        (overlay-put selectrum--candidates-overlay 'after-string text)))
-    (selectrum--update-minibuffer-height)
+        (overlay-put selectrum--candidates-overlay 'after-string text))
+      (selectrum--update-minibuffer-height first-index-displayed))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
     (selectrum--fix-set-minibuffer-message)
@@ -791,8 +791,9 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
 
-(defun selectrum--update-minibuffer-height ()
-  "Set minibuffer height for candidates display."
+(defun selectrum--update-minibuffer-height (first)
+  "Set minibuffer height for candidates display.
+FIRST is the index of the first displayed candidate."
   (let ((n (1+ selectrum-num-candidates-displayed))
         (win (active-minibuffer-window)))
     ;; Set min initial height.
@@ -800,12 +801,17 @@ PRED defaults to `minibuffer-completion-predicate'."
                selectrum--init-p)
       (with-selected-window win
         (setf (window-height) n)))
-    (let ((dheight (cdr (window-text-pixel-size win)))
-          (wheight (window-pixel-height win)))
-      ;; Grow if needed.
-      (when (> dheight wheight)
-        (window-resize
-         win (- dheight wheight) nil nil 'pixelwise)))))
+    ;; Grow if needed.
+    (when (or selectrum--init-p
+              ;; Don't allow growing while typing.
+              (and selectrum--current-candidate-index
+                   (/= selectrum--current-candidate-index
+                       first)))
+      (let ((dheight (cdr (window-text-pixel-size win)))
+            (wheight (window-pixel-height win)))
+        (when (> dheight wheight)
+          (window-resize
+           win (- dheight wheight) nil nil 'pixelwise))))))
 
 (defun selectrum--first-lines (candidates)
   "Return list of single line CANDIDATES.
