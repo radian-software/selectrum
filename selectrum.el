@@ -1348,17 +1348,17 @@ in the case the table isn't a named function.
 
 The values are plists using the following keys:
 
-:transformer:
+:transformer
 
   A function to transform the completion table. Receives the
   original completion table and completion predicate. Should
   return a completion table which should be used instead.
 
-:handler:
+:handler
 
   A function to be used as `completing-read-function' for the
   table. This handler gets passed the original table or the
-  result of :transformer: if specified.")
+  result of :transformer if specified.")
 
 (defun selectrum--get-collection-name (collection)
   "Get symbol for completion COLLECTION.
