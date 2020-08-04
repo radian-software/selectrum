@@ -1350,7 +1350,7 @@ The values are plists using the following keys:
 
 :transformer:
 
-  A function to transform the completion table. Reveives the
+  A function to transform the completion table. Receives the
   original completion table and completion predicate. Should
   return a completion table which should be used instead.
 
