@@ -1352,7 +1352,13 @@ The values are plists using the following keys:
 
   A function to transform the completion table. Receives the
   original completion table and completion predicate. Should
-  return a completion table which should be used instead.
+  return a completion table which should be used instead. If
+  passed a completion function the transformer should also return
+  a completion function so the table doesn't get initialized
+  before `selectrum--minibuffer-post-command-hook' runs. This can
+  be useful when one wants to skip the initial computation of the
+  table. With `completing-read-default' the computation happens
+  only after pressing TAB and this allows to mimic this behavior.
 
 :handler
 
@@ -1373,13 +1379,14 @@ The symbol is used to identify COLLECTION in
 (defun selectrum--locate-file-completion-transformer (collection pred)
   "Remove duplicates and directories from COLLECTION.
 PRED is the completion predicate."
-  (delete-dups
-   (funcall collection ""
-            (lambda (cand)
-              (and (not (string-match "/\\'" cand))
-                   (or (not pred)
-                       (funcall pred cand))))
-            t)))
+  (lambda (_string _pred _flag)
+    (delete-dups
+     (funcall collection ""
+              (lambda (cand)
+                (and (not (string-match "/\\'" cand))
+                     (or (not pred)
+                         (funcall pred cand))))
+              t))))
 
 (defvar org-last-tags-completion-table)
 (defun selectrum--org-tags-completion-transformer (_collection _pred)
