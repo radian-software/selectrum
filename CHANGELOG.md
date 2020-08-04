@@ -74,6 +74,12 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* Commands which used `locate-file-completion-table` such as
+  `load-library`, `locate-library` and `finder-commentary` would
+  display duplicates and included directories which has been fixed
+  ([#136], [#156]).
+* `org-set-tags-command` completion wasn't working after the first
+  inserted tag which has been fixed ([#139], [#156]).
 * Incremental history search via `isearch` wasn't working which has
   been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
@@ -110,8 +116,11 @@ The format is based on [Keep a Changelog].
 [#130]: https://github.com/raxod502/selectrum/issues/130
 [#132]: https://github.com/raxod502/selectrum/pull/132
 [#133]: https://github.com/raxod502/selectrum/pull/133
+[#136]: https://github.com/raxod502/selectrum/issues/136
 [#138]: https://github.com/raxod502/selectrum/pull/138
+[#139]: https://github.com/raxod502/selectrum/issues/139
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#156]: https://github.com/raxod502/selectrum/pull/156
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
