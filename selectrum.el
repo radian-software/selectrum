@@ -1323,6 +1323,84 @@ semantics of `cl-defun'."
            prompt nil keymap nil
            (or history 'minibuffer-history)))))))
 
+(defvar selectrum--completing-read-handler-alist
+  '((locate-file-completion-table
+     :transformer selectrum--locate-file-completion-transformer)
+    (org-tags-completion-function
+     :transformer selectrum--org-tags-completion-transformer
+     :handler selectrum--org-tags-completing-handler)
+    (org-agenda-filter-completion-function
+     ;; This table was mentioned on the org mailing list to have the
+     ;; same problems as org-tags-completion-function. Seems not to be
+     ;; as easy to simply delegate it to `completing-read-multiple'
+     ;; for now just remap it to use default completion.
+     :handler completing-read-default))
+  "Used to handle some special case completion tables.
+
+Some dynamic completion tables are specifically designed for
+`completing-read-default'. To make those tables work under the
+Selectrum paradigm this list contains information how to handle
+such tables by `selectrum-completing-read'.
+
+The keys are either the completion table symbols themselves or
+the symbol determined by `selectrum--get-collection-name'
+in the case the table isn't a named function.
+
+The values are plists using the following keys:
+
+:transformer:
+
+  A function to transform the completion table. Reveives the
+  original completion table and completion predicate. Should
+  return a completion table which should be used instead.
+
+:handler:
+
+  A function to be used as `completing-read-function' for the
+  table. This handler gets passed the original table or the
+  result of :transformer: if specified.")
+
+(defun selectrum--get-collection-name (collection)
+  "Get symbol for completion COLLECTION.
+The symbol is used to identify COLLECTION in
+`selectrum--completing-read-handler-alist'"
+  (cond ((and (byte-code-function-p collection)
+              (ignore-errors
+                (eq 'locate-file-completion-table
+                    (aref (aref collection 2) 0))))
+         'locate-file-completion-table)))
+
+(defun selectrum--locate-file-completion-transformer (collection pred)
+  "Remove duplicates and directories from COLLECTION.
+PRED is the completion predicate."
+  (delete-dups
+   (funcall collection ""
+            (lambda (cand)
+              (and (not (string-match "/\\'" cand))
+                   (or (not pred)
+                       (funcall pred cand))))
+            t)))
+
+(defvar org-last-tags-completion-table)
+(defun selectrum--org-tags-completion-transformer (_collection _pred)
+  "Return candidates for `org-tags-completion-function'."
+  (delete-dups (mapcar #'car org-last-tags-completion-table)))
+
+(defun selectrum--org-tags-completing-handler
+    (prompt collection &optional
+            predicate _require-match initial-input
+            hist def inherit-input-method)
+  "Handler for `org-tags-completion-function'.
+See `selectrum--completing-read-handler-alist'. For PROMPT,
+COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF,
+and INHERIT-INPUT-METHOD, see `completing-read'."
+  (let ((crm-separator ":\\|,\\|\\s-"))
+    (mapconcat #'identity
+               (completing-read-multiple
+                prompt collection predicate nil
+                initial-input hist def inherit-input-method)
+               ":")))
+
 ;;;###autoload
 (defun selectrum-completing-read
     (prompt collection &optional
@@ -1332,18 +1410,33 @@ semantics of `cl-defun'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
-  (substring-no-properties
-   (selectrum-read
-    prompt nil
-    ;; Don't pass `initial-input'. We use it internally but it's
-    ;; deprecated in `completing-read' and doesn't work well with the
-    ;; Selectrum paradigm except in specific cases that we control.
-    :default-candidate (or (car-safe def) def)
-    :require-match (eq require-match t)
-    :history hist
-    :may-modify-candidates t
-    :minibuffer-completion-table collection
-    :minibuffer-completion-predicate predicate)))
+  (let* ((name (or (and (symbolp collection) collection)
+                   (selectrum--get-collection-name collection)))
+         (props (and name
+                     (cdr (assq name
+                                selectrum--completing-read-handler-alist))))
+         (transformer (and props (plist-get props :transformer)))
+         (collection (if transformer
+                         (funcall transformer collection predicate)
+                       collection))
+         (handler (and props (plist-get props :handler))))
+    (substring-no-properties
+     (cond (handler
+            (funcall handler
+                     prompt collection predicate require-match initial-input
+                     hist def inherit-input-method))
+           (t
+            (selectrum-read
+             prompt nil
+             ;; Don't pass `initial-input'. We use it internally but it's
+             ;; deprecated in `completing-read' and doesn't work well with the
+             ;; Selectrum paradigm except in specific cases that we control.
+             :default-candidate (or (car-safe def) def)
+             :require-match (eq require-match t)
+             :history hist
+             :may-modify-candidates t
+             :minibuffer-completion-table collection
+             :minibuffer-completion-predicate predicate))))))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
