@@ -75,6 +75,9 @@ The format is based on [Keep a Changelog].
   that performs this transformation ([#147]).
 
 ### Bugs fixed
+* Dynamic collection functions can now reuse their returned
+  candidates. Previously Selectrum could modify them even when the
+  `:may-modify-candidates` argument wasn't passed to `selectrum-read`.
 * Incremental history search via `isearch` wasn't working which has
   been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
@@ -90,6 +93,10 @@ The format is based on [Keep a Changelog].
   `completing-read-multiple` when `crm-separator` has a non default
   value. Previously it would replace the separator with commas when
   adding new candidates ([#140]).
+* `selectrum-insert-current-candidate` now works from
+  `selectrum-select-from-history` and other commands which ignore
+  history by setting `minibuffer-history-variable` to `t`. Previously
+  an error would be thrown ([#152]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#82]: https://github.com/raxod502/selectrum/issues/82
@@ -113,7 +120,11 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+<<<<<<< HEAD
 [#147]: https://github.com/raxod502/selectrum/pull/147
+=======
+[#152]: https://github.com/raxod502/selectrum/pull/152
+>>>>>>> upstream/master
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
