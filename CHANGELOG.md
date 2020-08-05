@@ -89,6 +89,10 @@ The format is based on [Keep a Changelog].
   `completing-read-multiple` when `crm-separator` has a non default
   value. Previously it would replace the separator with commas when
   adding new candidates ([#140]).
+* `selectrum-insert-current-candidate` now works from
+  `selectrum-select-from-history` and other commands which ignore
+  history by setting `minibuffer-history-variable` to `t`. Previously
+  an error would be thrown ([#152]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#82]: https://github.com/raxod502/selectrum/issues/82
@@ -112,6 +116,7 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#152]: https://github.com/raxod502/selectrum/pull/152
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

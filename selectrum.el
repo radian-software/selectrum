@@ -1140,7 +1140,8 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
       (insert full)
-      (add-to-history minibuffer-history-variable full)
+      (unless (eq t minibuffer-history-variable)
+        (add-to-history minibuffer-history-variable full))
       (apply
        #'run-hook-with-args
        'selectrum-candidate-inserted-hook
