@@ -657,7 +657,11 @@ PRED defaults to `minibuffer-completion-predicate'."
                                     (setq input (or (alist-get 'input result)
                                                     input))
                                     (setq selectrum--visual-input input)
-                                    (alist-get 'candidates result))))
+                                    ;; Avoid modifying the returned
+                                    ;; candidates to let the function
+                                    ;; reuse them.
+                                    (copy-sequence
+                                     (alist-get 'candidates result)))) )
                      selectrum--preprocessed-candidates)))
         (setq selectrum--total-num-candidates (length cands))
         (setq selectrum--refined-candidates

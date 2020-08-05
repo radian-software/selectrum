@@ -74,6 +74,9 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* Dynamic collection functions can now reuse their returned
+  candidates. Previously Selectrum could modify them even when the
+  `:may-modify-candidates` argument wasn't passed to `selectrum-read`.
 * Incremental history search via `isearch` wasn't working which has
   been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
