@@ -283,7 +283,25 @@ This option is a workaround for 2 problems:
     (truncation :indicator "..."   :face shadow)
     (newline    :indicator "\\\\n" :face warning)
     (whitespace :indicator ".."    :face shadow))
-  "Transformation indicators.")
+  "A list of indicators that Selectrum uses to represent
+transformations when formatting and displaying candidates. This
+formatting does not affect the actual value of a candidate. By
+default, multi-line candidates are flattened, long candidates are
+truncated, repeated whitespace is shortened, and the matching
+line in a multi-line candidate is displayed at the front.
+
+These values affect the behavior of `selectrum--ensure-single-lines',
+which does the formatting by replacing the found pattern (except
+for indicating a match, in which case the indicator is inserted
+between the matched line and the candidate).
+
+There are two values that make a transformation:
+1. A string to indicate the display change, such as \"..\", which
+   replaces repeated whitespace.
+2. A face with which to display the indicator, such as `shadow'.
+
+In this way, a transformation is represented, e.g., as
+`(whitespace :indicator \"..\" :face shadow)'.")
 
 ;;;; Utility functions
 
