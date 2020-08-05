@@ -1376,8 +1376,7 @@ The symbol is used to identify COLLECTION in
   (cond ((and (memq real-this-command
                     '(load-library
                       locate-library
-                      finder-commentary
-                      find-library))
+                      finder-commentary))
               (byte-code-function-p collection)
               (ignore-errors
                 (eq 'locate-file-completion-table
