@@ -76,7 +76,8 @@ The format is based on [Keep a Changelog].
 ### Bugs fixed
 * Commands which used `locate-file-completion-table` such as
   `load-library`, `locate-library` and `finder-commentary` would
-  display duplicates and included directories which has been fixed
+  display duplicates and included directories which has been fixed.
+  They also correctly handle load path shadows like `find-library` now
   ([#136], [#156]).
 * `org-set-tags-command` completion wasn't working after the first
   inserted tag which has been fixed ([#139], [#156]).
