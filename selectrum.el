@@ -807,12 +807,13 @@ currently displayed candidates."
         (setf (window-height) n)))
     ;; Adjust if needed
     (when (or selectrum--init-p
-              ;; Allow size change when navigating but not while
-              ;; typing.
               (and selectrum--current-candidate-index
+                   ;; Allow size change when navigating, not while
+                   ;; typing.
                    (/= first highlighted)
-                   (>= (length cands)
-                       selectrum-num-candidates-displayed)))
+                   ;; Don't allow shrink for less candidates.
+                   (= (length cands)
+                      selectrum-num-candidates-displayed)))
       (let ((dheight (cdr (window-text-pixel-size win)))
             (wheight (window-pixel-height win)))
         (when (/= dheight wheight)
