@@ -1412,7 +1412,7 @@ COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT, HIST, DEF,
 and INHERIT-INPUT-METHOD, see `completing-read'."
   (let ((crm-separator ":\\|,\\|\\s-"))
     (mapconcat #'identity
-               (completing-read-multiple
+               (selectrum-completing-read-multiple
                 prompt collection predicate nil
                 initial-input hist def inherit-input-method)
                ":")))
