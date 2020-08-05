@@ -278,6 +278,13 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
+(defcustom selectrum-candidate-transformations
+  '((match      :indicator "->"    :face success)
+    (truncation :indicator "..."   :face shadow)
+    (newline    :indicator "\\\\n" :face warning)
+    (whitespace :indicator ".."    :face shadow))
+  "Transformation indicators.")
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -802,7 +809,24 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defun selectrum--first-lines (candidates)
   "Return list of single line CANDIDATES.
 Multiline canidates are merged into a single line."
-  (let ((onelines ()))
+  (let* ((onelines ())
+        (match-transformation (alist-get 'match selectrum-candidate-transformations))
+        (match-display (plist-get match-transformation :indicator))
+        (match-face (plist-get match-transformation :face))
+
+        (truncation-transformation (alist-get 'truncation selectrum-candidate-transformations))
+        (truncation-display (plist-get truncation-transformation :indicator))
+        (truncation-face (plist-get truncation-transformation :face))
+
+        (newline-transformation (alist-get 'newline selectrum-candidate-transformations))
+        (newline-display (plist-get newline-transformation :indicator))
+        (newline-face (plist-get newline-transformation :face))
+
+        (whitespace-transformation (alist-get 'whitespace selectrum-candidate-transformations))
+        (whitespace-display (plist-get whitespace-transformation :indicator))
+        (whitespace-face (plist-get whitespace-transformation :face)))
+
+
     (dolist (cand candidates (nreverse onelines))
       (push
        (cond ((not (string-match "\n" cand))
@@ -818,14 +842,19 @@ Multiline canidates are merged into a single line."
                                        (split-string cand "\n")))))
                    (concat
                     (replace-regexp-in-string
-                     "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                     match)
-                    (propertize " -> " 'face 'success))))
+                     "[ \t][ \t]+"
+                     (propertize whitespace-display 'face whitespace-face)
+                     (car
+                      (funcall selectrum-refine-candidates-function
+                               (minibuffer-contents)
+                               (split-string cand "\n"))))
+                    (propertize match-display 'face match-face))))
                ;; Truncate the rest.
                (replace-regexp-in-string
-                "\n" (propertize "\\\\n" 'face 'warning)
+                "\n" (propertize newline-display 'face newline-face)
                 (replace-regexp-in-string
-                 "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                 "[ \t][ \t]+"
+                 (propertize whitespace-display 'face whitespace-face)
                  (if (< (length cand) 1000)
                      cand
                    (concat
