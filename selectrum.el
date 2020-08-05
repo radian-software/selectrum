@@ -1388,59 +1388,7 @@ The symbol is used to identify COLLECTION in
   "Get list of available library paths.
 Handles load path shadows appropriately."
   (lambda (_string _pred _flag)
-    (eval-and-compile
-      (require 'find-func))
-    (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
-          (table (make-hash-table :test #'equal))
-          (lst nil))
-      (dolist (dir (or find-function-source-path load-path))
-        (condition-case _
-            (mapc
-             (lambda (entry)
-               (unless (string-match-p "^\\.\\.?$" entry)
-                 (let ((base (file-name-base entry)))
-                   (puthash base (cons entry (gethash base table)) table))))
-             (directory-files dir 'full suffix-regexp 'nosort))
-          (file-error)))
-      (maphash
-       (lambda (_ paths)
-         (setq paths (nreverse (seq-uniq paths)))
-         (cl-block nil
-           (let ((num-components 1)
-                 (max-components (apply #'max (mapcar (lambda (path)
-                                                        (1+ (cl-count ?/ path)))
-                                                      paths))))
-             (while t
-               (let ((abbrev-paths
-                      (seq-uniq
-                       (mapcar (lambda (path)
-                                 (file-name-sans-extension
-                                  (selectrum--trailing-components
-                                   num-components path)))
-                               paths))))
-                 (when (or (= num-components max-components)
-                           (= (length paths) (length abbrev-paths)))
-                   (let ((candidate-paths
-                          (mapcar
-                           (lambda (path)
-                             (let ((name (file-name-base
-                                          (file-name-sans-extension path))))
-                               (propertize
-                                name
-                                'selectrum-candidate-display-prefix
-                                (file-name-directory
-                                 (file-name-sans-extension
-                                  (selectrum--trailing-components
-                                   num-components path)))
-                                'fixedcase 'literal
-                                'selectrum--candidate-insert name
-                                'selectrum-candidate-full path)))
-                           paths)))
-                     (setq lst (nconc candidate-paths lst)))
-                   (cl-return)))
-               (cl-incf num-components)))))
-       table)
-      lst)))
+    (selectrum--locate-library-completions)))
 
 (defun selectrum--locate-file-completion-transformer (collection pred)
   "Remove duplicates and directories from COLLECTION.
@@ -1813,6 +1761,61 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
+(defun selectrum--locate-library-completions ()
+  (eval-and-compile
+    (require 'find-func))
+  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
+        (table (make-hash-table :test #'equal))
+        (lst nil))
+    (dolist (dir (or find-function-source-path load-path))
+      (condition-case _
+          (mapc
+           (lambda (entry)
+             (unless (string-match-p "^\\.\\.?$" entry)
+               (let ((base (file-name-base entry)))
+                 (puthash base (cons entry (gethash base table)) table))))
+           (directory-files dir 'full suffix-regexp 'nosort))
+        (file-error)))
+    (maphash
+     (lambda (_ paths)
+       (setq paths (nreverse (seq-uniq paths)))
+       (cl-block nil
+         (let ((num-components 1)
+               (max-components (apply #'max (mapcar (lambda (path)
+                                                      (1+ (cl-count ?/ path)))
+                                                    paths))))
+           (while t
+             (let ((abbrev-paths
+                    (seq-uniq
+                     (mapcar (lambda (path)
+                               (file-name-sans-extension
+                                (selectrum--trailing-components
+                                 num-components path)))
+                             paths))))
+               (when (or (= num-components max-components)
+                         (= (length paths) (length abbrev-paths)))
+                 (let ((candidate-paths
+                        (mapcar
+                         (lambda (path)
+                           (let ((name (file-name-base
+                                        (file-name-sans-extension path))))
+                             (propertize
+                              name
+                              'selectrum-candidate-display-prefix
+                              (file-name-directory
+                               (file-name-sans-extension
+                                (selectrum--trailing-components
+                                 num-components path)))
+                              'fixedcase 'literal
+                              'selectrum--candidate-insert name
+                              'selectrum-candidate-full path)))
+                         paths)))
+                   (setq lst (nconc candidate-paths lst)))
+                 (cl-return)))
+             (cl-incf num-components)))))
+     table)
+    lst))
+
 ;;;###autoload
 (defun selectrum-read-library-name ()
   "Read and return a library name.
@@ -1820,8 +1823,7 @@ Similar to `read-library-name' except it handles `load-path'
 shadows correctly."
   (selectrum-read
    "Library name: "
-   (funcall (selectrum--locate-library-transformer nil nil)
-            nil nil nil)
+   (selectrum--locate-library-completions)
    :require-match t :may-modify-candidates t))
 
 (defun selectrum-repeat ()
