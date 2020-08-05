@@ -1341,8 +1341,9 @@ semantics of `cl-defun'."
 
 Some dynamic completion tables are specifically designed for
 `completing-read-default'. To make those tables work under the
-Selectrum paradigm this list contains information how to handle
-such tables by `selectrum-completing-read'.
+Selectrum paradigm or to fix other problematic tables this list
+contains information how to handle them in
+`selectrum-completing-read'.
 
 The keys are either the name determined by
 `selectrum--get-collection-name' or the completion table
@@ -1386,59 +1387,60 @@ The symbol is used to identify COLLECTION in
 (defun selectrum--locate-library-transformer (_collection _predicate)
   "Get list of available library paths.
 Handles load path shadows appropriately."
-  (eval-and-compile
-    (require 'find-func))
-  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
-        (table (make-hash-table :test #'equal))
-        (lst nil))
-    (dolist (dir (or find-function-source-path load-path))
-      (condition-case _
-          (mapc
-           (lambda (entry)
-             (unless (string-match-p "^\\.\\.?$" entry)
-               (let ((base (file-name-base entry)))
-                 (puthash base (cons entry (gethash base table)) table))))
-           (directory-files dir 'full suffix-regexp 'nosort))
-        (file-error)))
-    (maphash
-     (lambda (_ paths)
-       (setq paths (nreverse (seq-uniq paths)))
-       (cl-block nil
-         (let ((num-components 1)
-               (max-components (apply #'max (mapcar (lambda (path)
-                                                      (1+ (cl-count ?/ path)))
-                                                    paths))))
-           (while t
-             (let ((abbrev-paths
-                    (seq-uniq
-                     (mapcar (lambda (path)
-                               (file-name-sans-extension
-                                (selectrum--trailing-components
-                                 num-components path)))
-                             paths))))
-               (when (or (= num-components max-components)
-                         (= (length paths) (length abbrev-paths)))
-                 (let ((candidate-paths
-                        (mapcar
-                         (lambda (path)
-                           (let ((name (file-name-base
-                                        (file-name-sans-extension path))))
-                             (propertize
-                              name
-                              'selectrum-candidate-display-prefix
-                              (file-name-directory
-                               (file-name-sans-extension
-                                (selectrum--trailing-components
-                                 num-components path)))
-                              'fixedcase 'literal
-                              'selectrum--candidate-insert name
-                              'selectrum-candidate-full path)))
-                         paths)))
-                   (setq lst (nconc candidate-paths lst)))
-                 (cl-return)))
-             (cl-incf num-components)))))
-     table)
-    lst))
+  (lambda (_string _pred _flag)
+    (eval-and-compile
+      (require 'find-func))
+    (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
+          (table (make-hash-table :test #'equal))
+          (lst nil))
+      (dolist (dir (or find-function-source-path load-path))
+        (condition-case _
+            (mapc
+             (lambda (entry)
+               (unless (string-match-p "^\\.\\.?$" entry)
+                 (let ((base (file-name-base entry)))
+                   (puthash base (cons entry (gethash base table)) table))))
+             (directory-files dir 'full suffix-regexp 'nosort))
+          (file-error)))
+      (maphash
+       (lambda (_ paths)
+         (setq paths (nreverse (seq-uniq paths)))
+         (cl-block nil
+           (let ((num-components 1)
+                 (max-components (apply #'max (mapcar (lambda (path)
+                                                        (1+ (cl-count ?/ path)))
+                                                      paths))))
+             (while t
+               (let ((abbrev-paths
+                      (seq-uniq
+                       (mapcar (lambda (path)
+                                 (file-name-sans-extension
+                                  (selectrum--trailing-components
+                                   num-components path)))
+                               paths))))
+                 (when (or (= num-components max-components)
+                           (= (length paths) (length abbrev-paths)))
+                   (let ((candidate-paths
+                          (mapcar
+                           (lambda (path)
+                             (let ((name (file-name-base
+                                          (file-name-sans-extension path))))
+                               (propertize
+                                name
+                                'selectrum-candidate-display-prefix
+                                (file-name-directory
+                                 (file-name-sans-extension
+                                  (selectrum--trailing-components
+                                   num-components path)))
+                                'fixedcase 'literal
+                                'selectrum--candidate-insert name
+                                'selectrum-candidate-full path)))
+                           paths)))
+                     (setq lst (nconc candidate-paths lst)))
+                   (cl-return)))
+               (cl-incf num-components)))))
+       table)
+      lst)))
 
 (defun selectrum--locate-file-completion-transformer (collection pred)
   "Remove duplicates and directories from COLLECTION.
@@ -1811,6 +1813,17 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
+;;;###autoload
+(defun selectrum-read-library-name ()
+  "Read and return a library name.
+Similar to `read-library-name' except it handles `load-path'
+shadows correctly."
+  (selectrum-read
+   "Library name: "
+   (funcall (selectrum--locate-library-transformer nil nil)
+            nil nil nil)
+   :require-match t :may-modify-candidates t))
+
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
   (interactive)
@@ -1910,6 +1923,10 @@ ARGS are standard as in all `:around' advice."
           ;; No sharp quote because Dired may not be loaded yet.
           (advice-add 'dired-read-dir-and-switches :around
                       #'selectrum--fix-dired-read-dir-and-switches)
+          ;; No sharp quote because `read-library-name' is not defined
+          ;; in older Emacs versions.
+          (advice-add 'read-library-name :override
+                      #'selectrum-read-library-name)
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
           ;; No sharp quote because `set-minibuffer-message' is not
@@ -1940,6 +1957,9 @@ ARGS are standard as in all `:around' advice."
       ;; No sharp quote because Dired may not be loaded yet.
       (advice-remove 'dired-read-dir-and-switches
                      #'selectrum--fix-dired-read-dir-and-switches)
+      ;; No sharp quote because `read-library-name' is not defined
+      ;; in older Emacs versions.
+      (advice-add 'read-library-name :override #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
       ;; No sharp quote because `set-minibuffer-message' is not
       ;; defined in older Emacs versions.
