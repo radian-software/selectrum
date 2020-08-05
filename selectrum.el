@@ -1606,6 +1606,7 @@ PREDICATE, see `read-file-name'."
     (minibuffer-with-setup-hook
         (:append (lambda ()
                    (when (and default-filename
+                              ;; ./ should be omitted.
                               (not (equal
                                     (expand-file-name default-filename)
                                     (expand-file-name default-directory))))
@@ -1623,15 +1624,19 @@ PREDICATE, see `read-file-name'."
        prompt dir
        ;; We don't pass default-candidate here to avoid that
        ;; submitting the selected prompt results in the default file
-       ;; name. Instead we set `selectrum--default-candidate' in the
-       ;; setup hook above so it gets sorted to the top. This gives
-       ;; the same convenience as in default completion (where you
-       ;; press RET at the prompt to get the default). The downside is
-       ;; that this convenience is gone when sorting is disabled or
-       ;; the default-filename is outside the prompting directory but
-       ;; this should be rare and seems to be weird for default
-       ;; completion as well.
-       (or dir default-directory)
+       ;; name. Instead we pass the initial prompt as default so it
+       ;; gets returned when submitted. In addition to that we set
+       ;; `selectrum--default-candidate' in the setup hook above so
+       ;; the actual default gets sorted to the top. This should give
+       ;; the same convenience as in default completion (where you can
+       ;; press RET at the initial prompt to get the default). The
+       ;; downside is that this convenience is gone when sorting is
+       ;; disabled or the default-filename is outside the prompting
+       ;; directory but this should be rare and seems to be a weird
+       ;; case for default completion as well.
+       (concat
+        (or dir default-directory)
+        initial)
        mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
