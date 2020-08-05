@@ -1354,12 +1354,12 @@ The values are plists using the following keys:
 :transformer
 
   A function to transform the completion table. Receives the
-  original completion table and completion predicate. Should
-  return a completion table which should be used instead. If
-  passed a completion function the transformer should also return
-  a completion function so the table doesn't get initialized
-  before `selectrum--minibuffer-post-command-hook' runs. This can
-  be useful when one wants to skip the initial computation of the
+  original completion table and should return a completion table
+  which should be used instead. If passed a completion function
+  the transformer should also return a completion function so the
+  table doesn't get initialized before
+  `selectrum--minibuffer-post-command-hook' runs. This can be
+  useful when one wants to skip the initial computation of the
   table. With `completing-read-default' the computation happens
   only after pressing TAB and this allows to mimic this behavior.
 
@@ -1383,28 +1383,24 @@ The symbol is used to identify COLLECTION in
                     (aref (aref collection 2) 0))))
          'selectrum-locate-library)))
 
-(defun selectrum--locate-library-transformer (_collection _predicate)
-  "Get list of available library paths.
-Handles load path shadows appropriately."
-  (lambda (_string _pred _flag)
-    (selectrum--locate-library-completions)))
-
-(defun selectrum--locate-file-completion-transformer (collection pred)
-  "Remove duplicates and directories from COLLECTION.
-PRED is the completion predicate."
-  (lambda (_string _pred _flag)
-    (delete-dups
-     (funcall collection ""
-              (lambda (cand)
-                (and (not (string-match "/\\'" cand))
-                     (or (not pred)
-                         (funcall pred cand))))
-              t))))
+(defun selectrum--locate-library-transformer (collection)
+  "Return table for COLLECTION.
+See `selectrum-locate-library' in
+`selectrum--completing-read-handler-alist'."
+  (lambda (string pred flag)
+    (if (eq flag t)
+        (selectrum--locate-library-completions)
+      (funcall collection string pred flag))))
 
 (defvar org-last-tags-completion-table)
-(defun selectrum--org-tags-completion-transformer (_collection _pred)
-  "Return candidates for `org-tags-completion-function'."
-  (delete-dups (mapcar #'car org-last-tags-completion-table)))
+(defun selectrum--org-tags-completion-transformer (collection)
+  "Return table for COLLECTION.
+See `org-tags-completion-function' in
+`selectrum--completing-read-handler-alist'."
+  (lambda (string pred flag)
+    (if (eq flag t)
+        (delete-dups (mapcar #'car org-last-tags-completion-table))
+      (funcall collection string pred flag))))
 
 (defun selectrum--org-tags-completing-handler
     (prompt collection &optional
@@ -1437,7 +1433,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
                                 selectrum--completing-read-handler-alist))))
          (transformer (and props (plist-get props :transformer)))
          (collection (if transformer
-                         (funcall transformer collection predicate)
+                         (funcall transformer collection)
                        collection))
          (handler (and props (plist-get props :handler))))
     (substring-no-properties
@@ -1760,11 +1756,15 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
-(defun selectrum--locate-library-completions ()
-  "Get list of candidates for library completions."
+(defun selectrum--locate-library-completions (&optional suffixes)
+  "Get list of candidates for library completions.
+SUFFIXES defaults to the value returned by
+`find-library-suffixes'."
   (eval-and-compile
     (require 'find-func))
-  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
+  (let ((suffix-regexp (concat (regexp-opt
+                                (or suffixes
+                                    (find-library-suffixes))) "\\'"))
         (table (make-hash-table :test #'equal))
         (lst nil))
     (dolist (dir (or find-function-source-path load-path))
