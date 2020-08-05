@@ -276,47 +276,6 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
-(defun selectrum-default-format-multi-line-function (candidates)
-  "Default value of `selectrum-format-multi-line-function'.
-Format multi-line candidates in CANDIDATES, merging them into a
-single line. Additionally, the matching line in a multi-line
-candidate is prepended to the candidate's displayed form."
-  (let ((onelines ()))
-    (dolist (cand candidates (nreverse onelines))
-      (push
-       (cond ((not (string-match "\n" cand))
-              cand)
-             (t
-              (concat
-               (unless (string-empty-p (minibuffer-contents))
-                 ;; Show first matched line.
-                 (concat
-                  (replace-regexp-in-string
-                   "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                   (car
-                    (funcall selectrum-refine-candidates-function
-                             (minibuffer-contents)
-                             (split-string cand "\n"))))
-                  (propertize " -> " 'face 'success)))
-               ;; Truncate the rest.
-               (replace-regexp-in-string
-                "\n" (propertize "\\\\n" 'face 'warning)
-                (replace-regexp-in-string
-                 "[ \t][ \t]+" (propertize ".." 'face 'shadow)
-                 (if (< (length cand) 1000)
-                     cand
-                   (concat
-                    (substring cand 0 1000)
-                    (propertize "..." 'face 'warning))))))))
-       onelines))))
-
-(defcustom selectrum-format-multi-line-function
-  #'selectrum-default-format-multi-line-function
-  "Function used to flatten multi-line candidates into a single line.
-Receives the list of candidates (strings), and returns a list of
-formatted candidates (strings)."
-  :type 'function)
-
 ;;;; Utility functions
 
 ;;;###autoload
@@ -789,6 +748,38 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
 
+(defun selectrum--first-lines (candidates)
+  "Return list of single line CANDIDATES.
+Multiline canidates are merged into a single line."
+  (let ((onelines ()))
+    (dolist (cand candidates (nreverse onelines))
+      (push
+       (cond ((not (string-match "\n" cand))
+              cand)
+             (t
+              (concat
+               (unless (string-empty-p (minibuffer-contents))
+                 ;; Show first matched line.
+                 (concat
+                  (replace-regexp-in-string
+                   "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                   (car
+                    (funcall selectrum-refine-candidates-function
+                             (minibuffer-contents)
+                             (split-string cand "\n"))))
+                  (propertize " -> " 'face 'success)))
+               ;; Truncate the rest.
+               (replace-regexp-in-string
+                "\n" (propertize "\\\\n" 'face 'warning)
+                (replace-regexp-in-string
+                 "[ \t][ \t]+" (propertize ".." 'face 'shadow)
+                 (if (< (length cand) 1000)
+                     cand
+                   (concat
+                    (substring cand 0 1000)
+                    (propertize "..." 'face 'warning))))))))
+       onelines))))
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -799,14 +790,15 @@ for display. HIGHLIGHTED-INDEX is the currently selected index
 and FIRST-INDEX-DISPLAYED is the index of the top most
 candidate."
   (let ((index 0)
-        (lines (funcall selectrum-format-multi-line-function
-                        ;; First pass the candidates to the highlight function
-                        ;; before stripping multi-lines because it might expect
-                        ;; getting passed the same candidates as were passed
-                        ;; to the filter function (for example `orderless'
-                        ;; requires this).
-                        (funcall selectrum-highlight-candidates-function
-                                 input candidates))))
+        (lines
+         (selectrum--first-lines
+          ;; First pass the candidates to the highlight function
+          ;; before stipping multi-lines because it might expect
+          ;; getting passed the same candidates as were passed
+          ;; to the filter function (for example `orderless'
+          ;; requires this).
+          (funcall selectrum-highlight-candidates-function
+                   input candidates))))
     (with-temp-buffer
       (dolist (candidate lines)
         (let ((displayed-candidate
