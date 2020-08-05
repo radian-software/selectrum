@@ -1762,6 +1762,7 @@ For large enough N, return PATH unchanged."
       (match-string 0 path))))
 
 (defun selectrum--locate-library-completions ()
+  "Get list of candidates for library completions."
   (eval-and-compile
     (require 'find-func))
   (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
