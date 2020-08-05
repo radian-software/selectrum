@@ -783,7 +783,9 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
         (overlay-put selectrum--candidates-overlay 'after-string text))
-      (selectrum--update-minibuffer-height first-index-displayed))
+      (selectrum--update-minibuffer-height first-index-displayed
+                                           highlighted-index
+                                           displayed-candidates))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
     (selectrum--fix-set-minibuffer-message)
@@ -791,9 +793,11 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
 
-(defun selectrum--update-minibuffer-height (first)
+(defun selectrum--update-minibuffer-height (first highlighted cands)
   "Set minibuffer height for candidates display.
-FIRST is the index of the first displayed candidate."
+FIRST is the index of the first displayed candidate. HIGHLIGHTED
+is the index if the highlighted candidate. CANDS are the
+currently displayed candidates."
   (let ((n (1+ selectrum-num-candidates-displayed))
         (win (active-minibuffer-window)))
     ;; Set min initial height.
@@ -806,8 +810,9 @@ FIRST is the index of the first displayed candidate."
               ;; Allow size change when navigating but not while
               ;; typing.
               (and selectrum--current-candidate-index
-                   (/= selectrum--current-candidate-index
-                       first)))
+                   (/= first highlighted)
+                   (>= (length cands)
+                       selectrum-num-candidates-displayed)))
       (let ((dheight (cdr (window-text-pixel-size win)))
             (wheight (window-pixel-height win)))
         (when (/= dheight wheight)
