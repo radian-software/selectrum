@@ -778,9 +778,8 @@ PRED defaults to `minibuffer-completion-predicate'."
                                    'selectrum-current-candidate
                                  'minibuffer-prompt))
                               (propertize "]" 'face 'minibuffer-prompt)))
-              (unless (or (and highlighted-index
-                               (>= highlighted-index 0))
-                          selectrum--match-required-p)
+              (when (and highlighted-index
+                         (< highlighted-index 0))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate))))
@@ -1606,10 +1605,34 @@ PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
     (minibuffer-with-setup-hook
         (:append (lambda ()
+                   (when (and default-filename
+                              (not (equal
+                                    (expand-file-name default-filename)
+                                    (expand-file-name default-directory))))
+                     (setq selectrum--default-candidate
+                           ;; Sort for directories needs any final
+                           ;; slash removed.
+                           (directory-file-name
+                            ;; The candidates are sorted by their
+                            ;; relative names.
+                            (file-relative-name default-filename
+                                                default-directory))))
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
       (read-file-name-default
-       prompt dir default-filename mustmatch initial predicate))))
+       prompt dir
+       ;; We don't pass default-candidate here to avoid that
+       ;; submitting the selected prompt results in the default file
+       ;; name. Instead we set `selectrum--default-candidate' in the
+       ;; setup hook above so it gets sorted to the top. This gives
+       ;; the same convenience as in default completion (where you
+       ;; press RET at the prompt to get the default). The downside is
+       ;; that this convenience is gone when sorting is disabled or
+       ;; the default-filename is outside the prompting directory but
+       ;; this should be rare and seems to be weird for default
+       ;; completion as well.
+       (or dir default-directory)
+       mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
