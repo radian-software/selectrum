@@ -801,15 +801,16 @@ FIRST is the index of the first displayed candidate."
                selectrum--init-p)
       (with-selected-window win
         (setf (window-height) n)))
-    ;; Grow if needed.
+    ;; Adjust if needed
     (when (or selectrum--init-p
-              ;; Don't allow growing while typing.
+              ;; Allow size change when navigating but not while
+              ;; typing.
               (and selectrum--current-candidate-index
                    (/= selectrum--current-candidate-index
                        first)))
       (let ((dheight (cdr (window-text-pixel-size win)))
             (wheight (window-pixel-height win)))
-        (when (> dheight wheight)
+        (when (/= dheight wheight)
           (window-resize
            win (- dheight wheight) nil nil 'pixelwise))))))
 
