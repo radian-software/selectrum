@@ -1756,15 +1756,13 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
-(defun selectrum--locate-library-completions (&optional suffixes)
+(defun selectrum--locate-library-completions ()
   "Get list of candidates for library completions.
 SUFFIXES defaults to the value returned by
 `find-library-suffixes'."
   (eval-and-compile
     (require 'find-func))
-  (let ((suffix-regexp (concat (regexp-opt
-                                (or suffixes
-                                    (find-library-suffixes))) "\\'"))
+  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
         (table (make-hash-table :test #'equal))
         (lst nil))
     (dolist (dir (or find-function-source-path load-path))
