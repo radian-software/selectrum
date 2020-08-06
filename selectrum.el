@@ -1623,13 +1623,13 @@ PREDICATE, see `read-file-name'."
                       completing-read-function))
           (buf (current-buffer)))
       (setq-local completing-read-function
-            (lambda (&rest args)
-              (when (buffer-live-p buf)
-                (with-current-buffer buf
-                  (if local
-                      (setq-local completing-read-function local)
-                    (kill-local-variable 'completing-read-function))))
-              (apply #'selectrum--completing-read-file-name args)))
+                  (lambda (&rest args)
+                    (when (buffer-live-p buf)
+                      (with-current-buffer buf
+                        (if local
+                            (setq-local completing-read-function local)
+                          (kill-local-variable 'completing-read-function))))
+                    (apply #'selectrum--completing-read-file-name args)))
       (read-file-name-default
        prompt dir
        ;; We don't pass default-candidate here to avoid that
