@@ -1609,27 +1609,17 @@ PREDICATE, see `read-file-name'."
                                               default-directory))))
                  (set-syntax-table
                   selectrum--minibuffer-local-filename-syntax)))
-    ;; <https://github.com/raxod502/selectrum/issues/61>. Previously
-    ;; `completing-read-function' was let bind. When you invoke
-    ;; another Selectrum command recursively then it inherits that
-    ;; binding, even if the new Selectrum command is not reading file
-    ;; names. This causes an error. We circumvented that by rebinding
-    ;; it in the next `selectrum-read' call but this only works if the
-    ;; users default `completing-read-function' is
-    ;; `selectrum-completing-read'. So instead of let binding it we
-    ;; now set it temporarily to a function which resets the variable
-    ;; when called.
-    (let ((local (and (local-variable-p 'completing-read-function)
-                      completing-read-function))
-          (buf (current-buffer)))
-      (setq-local completing-read-function
-                  (lambda (&rest args)
-                    (when (buffer-live-p buf)
-                      (with-current-buffer buf
-                        (if local
-                            (setq-local completing-read-function local)
-                          (kill-local-variable 'completing-read-function))))
-                    (apply #'selectrum--completing-read-file-name args)))
+    (let* ((crf completing-read-function)
+           ;; <https://github.com/raxod502/selectrum/issues/61>. When
+           ;; you invoke another Selectrum command recursively then it
+           ;; inherits the `completing-read-function' binding, even if
+           ;; the new Selectrum command is not reading file names.
+           ;; This would cause an error so we use the function to
+           ;; reset the variable when called.
+           (completing-read-function
+            (lambda (&rest args)
+              (setq completing-read-function crf)
+              (apply #'selectrum--completing-read-file-name args))))
       (read-file-name-default
        prompt dir
        ;; We don't pass default-candidate here to avoid that
