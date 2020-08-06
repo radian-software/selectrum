@@ -686,7 +686,8 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq selectrum--current-candidate-index
               (cond
                ((null selectrum--refined-candidates)
-                nil)
+                (when (not selectrum--match-required-p)
+                  -1))
                ((and selectrum--default-candidate
                      (string-empty-p (minibuffer-contents))
                      (not (member selectrum--default-candidate
@@ -778,9 +779,8 @@ PRED defaults to `minibuffer-completion-predicate'."
                                    'selectrum-current-candidate
                                  'minibuffer-prompt))
                               (propertize "]" 'face 'minibuffer-prompt)))
-              (unless (or (and highlighted-index
-                               (>= highlighted-index 0))
-                          selectrum--match-required-p)
+              (when (and highlighted-index
+                         (< highlighted-index 0))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate))))
@@ -1609,10 +1609,42 @@ PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
     (minibuffer-with-setup-hook
         (:append (lambda ()
+                   (when (and default-filename
+                              ;; ./ should be omitted.
+                              (not (equal
+                                    (expand-file-name default-filename)
+                                    (expand-file-name default-directory))))
+                     (setq selectrum--default-candidate
+                           ;; Sort for directories needs any final
+                           ;; slash removed.
+                           (directory-file-name
+                            ;; The candidate should be sorted by it's
+                            ;; relative name.
+                            (file-relative-name default-filename
+                                                default-directory))))
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
       (read-file-name-default
-       prompt dir default-filename mustmatch initial predicate))))
+       prompt dir
+       ;; We don't pass default-candidate here to avoid that
+       ;; submitting the selected prompt results in the default file
+       ;; name. This is the stock Emacs behavior where there is no
+       ;; concept of an active selection. Instead we pass the initial
+       ;; prompt as default so it gets returned when submitted. In
+       ;; addition to that we set `selectrum--default-candidate' in
+       ;; the setup hook above so the actual default gets sorted to
+       ;; the top. This should give the same convenience as in default
+       ;; completion (where you can press RET at the initial prompt to
+       ;; get the default). The downside is that this convenience is
+       ;; gone when sorting is disabled or the default-filename is
+       ;; outside the prompting directory but this should be rare
+       ;; case.
+       (concat
+        (expand-file-name
+         (or dir
+             default-directory))
+        initial)
+       mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")

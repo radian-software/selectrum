@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* If the `default-filename` passed to `selectrum-read-file-name` is an
+  absolute path it will still be sorted to the top when it is
+  contained in the prompting directory ([#160]).
 * `icomplete-mode` is now automatically disabled when entering
   Selectrum, to avoid conflicts ([#99]).
 * Working with the default candidate has been improved in cases where
@@ -74,6 +77,17 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* When selecting file name prompts and submitting them the result will
+  be the selected prompt. Previously it could be the default file name
+  passed to `selectrum-read-file-name` which is the behavior of
+  default completion where there is no concept of an active selection
+  ([#157], [#160]).
+* When there are no candidates and a match isn't required the prompt
+  will now be shown as selected to indicate one can submit the input
+  ([#160]).
+* If the `mustmatch` argument to `read-directory-name` was non-nil the
+  selection of the prompt wasn't visible which has been fixed ([#157],
+  [#160]).
 * If a predicate was passed to `read-buffer` an error would be thrown
   which has been fixed ([#159], [#161]).
 * Dynamic collection functions can now reuse their returned
@@ -122,7 +136,9 @@ The format is based on [Keep a Changelog].
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 [#152]: https://github.com/raxod502/selectrum/pull/152
+[#157]: https://github.com/raxod502/selectrum/issues/157
 [#159]: https://github.com/raxod502/selectrum/issues/159
+[#160]: https://github.com/raxod502/selectrum/pull/160
 [#161]: https://github.com/raxod502/selectrum/pull/161
 
 ## 2.0 (released 2020-07-18)
