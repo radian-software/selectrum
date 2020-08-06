@@ -1613,7 +1613,7 @@ PREDICATE, see `read-file-name'."
                               ;; ./ should be omitted.
                               (not (equal
                                     (expand-file-name default-filename)
-                                    (expand-file-name default-directory))))
+                                    default-directory)))
                      (setq selectrum--default-candidate
                            ;; Sort for directories needs any final
                            ;; slash removed.
@@ -1640,7 +1640,8 @@ PREDICATE, see `read-file-name'."
        ;; outside the prompting directory but this should be rare
        ;; case.
        (concat
-        (or dir default-directory)
+        (or (and dir (expand-file-name dir))
+            default-directory)
         initial)
        mustmatch initial predicate))))
 
