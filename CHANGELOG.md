@@ -74,6 +74,8 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* If a predicate was passed to `read-buffer` an error would be thrown
+  which has been fixed ([#159], [#161]).
 * Dynamic collection functions can now reuse their returned
   candidates. Previously Selectrum could modify them even when the
   `:may-modify-candidates` argument wasn't passed to `selectrum-read`.
@@ -120,6 +122,8 @@ The format is based on [Keep a Changelog].
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 [#152]: https://github.com/raxod502/selectrum/pull/152
+[#159]: https://github.com/raxod502/selectrum/issues/159
+[#161]: https://github.com/raxod502/selectrum/pull/161
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

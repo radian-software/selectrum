@@ -1506,28 +1506,31 @@ less appropriate. It also allows you to view hidden buffers,
 which is otherwise impossible due to tricky behavior of Emacs'
 completion machinery. For PROMPT, DEF, REQUIRE-MATCH, and
 PREDICATE, see `read-buffer'."
-  (let ((selectrum-should-sort-p nil)
-        (candidates
-         (lambda (input)
-           (let* ((buffers (mapcar #'buffer-name (buffer-list)))
-                  (candidates (if predicate
-                                  (cl-delete-if-not predicate buffers)
-                                buffers)))
-             (if (string-prefix-p " " input)
-                 (progn
-                   (setq input (substring input 1))
-                   (setq candidates
-                         (cl-delete-if-not
-                          (lambda (name)
-                            (string-prefix-p " " name))
-                          candidates)))
-               (setq candidates
-                     (cl-delete-if
-                      (lambda (name)
-                        (string-prefix-p " " name))
-                      candidates)))
-             `((candidates . ,candidates)
-               (input . ,input))))))
+  (let* ((selectrum-should-sort-p nil)
+         (buffalist (mapcar (lambda (buf)
+                              (cons (buffer-name buf) buf))
+                            (buffer-list)))
+         (buffers (mapcar #'car (if predicate
+                                    (cl-delete-if-not predicate buffalist)
+                                  buffalist)))
+         (candidates
+          (lambda (input)
+            (let ((candidates (copy-sequence buffers)))
+              (if (string-prefix-p " " input)
+                  (progn
+                    (setq input (substring input 1))
+                    (setq candidates
+                          (cl-delete-if-not
+                           (lambda (name)
+                             (string-prefix-p " " name))
+                           candidates)))
+                (setq candidates
+                      (cl-delete-if
+                       (lambda (name)
+                         (string-prefix-p " " name))
+                       candidates)))
+              `((candidates . ,candidates)
+                (input . ,input))))))
     (substring-no-properties
      (selectrum-read
       prompt candidates
