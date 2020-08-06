@@ -1957,9 +1957,9 @@ ARGS are standard as in all `:around' advice."
       ;; No sharp quote because Dired may not be loaded yet.
       (advice-remove 'dired-read-dir-and-switches
                      #'selectrum--fix-dired-read-dir-and-switches)
-      ;; No sharp quote because `read-library-name' is not defined
-      ;; in older Emacs versions.
-      (advice-add 'read-library-name :override #'selectrum-read-library-name)
+      ;; No sharp quote because `read-library-name' is not defined in
+      ;; older Emacs versions.
+      (advice-remove 'read-library-name #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
       ;; No sharp quote because `set-minibuffer-message' is not
       ;; defined in older Emacs versions.
