@@ -279,10 +279,10 @@ This option is a workaround for 2 problems:
   :type 'integer)
 
 (defcustom selectrum-candidate-transformations
-  '((match      :indicator "->"    :face success)
-    (truncation :indicator "..."   :face shadow)
-    (newline    :indicator "\\\\n" :face warning)
-    (whitespace :indicator ".."    :face shadow))
+  '((match      :indicator "->"  :face success)
+    (truncation :indicator "..." :face shadow)
+    (newline    :indicator "\\n" :face warning)
+    (whitespace :indicator ".."  :face shadow))
   "A list of indicators that Selectrum uses to represent
 transformations when formatting and displaying candidates. This
 formatting does not affect the actual value of a candidate. By
@@ -824,61 +824,56 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
 
-(defun selectrum--first-lines (candidates)
+(defun selectrum--ensure-single-lines (candidates)
   "Return list of single line CANDIDATES.
-Multiline canidates are merged into a single line."
-  (let* ((onelines ())
-        (match-transformation (alist-get 'match selectrum-candidate-transformations))
-        (match-display (plist-get match-transformation :indicator))
-        (match-face (plist-get match-transformation :face))
+Multi-line canidates are merged into a single line."
+  (let* ((single-line-candidates ())
 
-        (truncation-transformation (alist-get 'truncation selectrum-candidate-transformations))
-        (truncation-display (plist-get truncation-transformation :indicator))
-        (truncation-face (plist-get truncation-transformation :face))
+         ;; The indicators are the same for all multi-line candidates, and so
+         ;; only need to be gotten from `selectrum-candidate-transformations'
+         ;; once.
+         (match-transformation (alist-get 'match selectrum-candidate-transformations))
+         (match-display (plist-get match-transformation :indicator))
+         (match-face (plist-get match-transformation :face))
+         (truncation-transformation (alist-get 'truncation selectrum-candidate-transformations))
+         (truncation-display (plist-get truncation-transformation :indicator))
+         (truncation-face (plist-get truncation-transformation :face))
+         (newline-transformation (alist-get 'newline selectrum-candidate-transformations))
+         (newline-display (plist-get newline-transformation :indicator))
+         (newline-face (plist-get newline-transformation :face))
+         (whitespace-transformation (alist-get 'whitespace selectrum-candidate-transformations))
+         (whitespace-display (plist-get whitespace-transformation :indicator))
+         (whitespace-face (plist-get whitespace-transformation :face)))
 
-        (newline-transformation (alist-get 'newline selectrum-candidate-transformations))
-        (newline-display (plist-get newline-transformation :indicator))
-        (newline-face (plist-get newline-transformation :face))
-
-        (whitespace-transformation (alist-get 'whitespace selectrum-candidate-transformations))
-        (whitespace-display (plist-get whitespace-transformation :indicator))
-        (whitespace-face (plist-get whitespace-transformation :face)))
-
-
-    (dolist (cand candidates (nreverse onelines))
+    (dolist (cand candidates (nreverse single-line-candidates))
       (push
-       (cond ((not (string-match "\n" cand))
-              cand)
-             (t
-              (concat
-               (unless (string-empty-p (minibuffer-contents))
-                 ;; Show first matched line.
-                 (when-let ((match
-                             (car
-                              (funcall selectrum-refine-candidates-function
-                                       (minibuffer-contents)
-                                       (split-string cand "\n")))))
-                   (concat
-                    (replace-regexp-in-string
-                     "[ \t][ \t]+"
-                     (propertize whitespace-display 'face whitespace-face)
-                     (car
-                      (funcall selectrum-refine-candidates-function
-                               (minibuffer-contents)
-                               (split-string cand "\n"))))
-                    (propertize match-display 'face match-face))))
-               ;; Truncate the rest.
-               (replace-regexp-in-string
-                "\n" (propertize newline-display 'face newline-face)
-                (replace-regexp-in-string
-                 "[ \t][ \t]+"
-                 (propertize whitespace-display 'face whitespace-face)
-                 (if (< (length cand) 1000)
-                     cand
-                   (concat
-                    (substring cand 0 1000)
-                    (propertize "..." 'face 'warning))))))))
-       onelines))))
+       (if (string-match-p "\n" cand)
+           (replace-regexp-in-string
+            "\n" (propertize newline-display 'face newline-face)
+            (replace-regexp-in-string
+             "[ \t][ \t]+"
+             (propertize whitespace-display 'face whitespace-face)
+             (concat (unless (string-empty-p (minibuffer-contents))
+                       ;; Show first matched line.
+                       (when-let ((match
+                                   (car
+                                    (funcall
+                                     selectrum-refine-candidates-function
+                                     (minibuffer-contents)
+                                     (split-string cand "\n")))))
+                         (concat match
+                                 (propertize match-display 'face match-face))))
+                     (if (< (length cand) 1000)
+                         cand
+                       (concat
+                        (substring cand 0 1000)
+                        (propertize "..." 'face 'warning))))
+             ;; Replacements should be fixed-case and literal, to make things
+             ;; simpler.
+             t t)
+            t t)
+         cand)
+       single-line-candidates))))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
@@ -891,7 +886,7 @@ and FIRST-INDEX-DISPLAYED is the index of the top most
 candidate."
   (let ((index 0)
         (lines
-         (selectrum--first-lines
+         (selectrum--ensure-single-lines
           ;; First pass the candidates to the highlight function
           ;; before stipping multi-lines because it might expect
           ;; getting passed the same candidates as were passed
