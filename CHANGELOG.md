@@ -43,6 +43,9 @@ The format is based on [Keep a Changelog].
   passed to `selectrum-read-file-name` which is the behavior of
   default completion where there is no concept of an active selection
   ([#157], [#160]).
+* When there are no candidates and a match isn't required the prompt
+  will be shown as selected to indicate one can submit the input
+  ([#160]).
 * `icomplete-mode` is now automatically disabled when entering
   Selectrum, to avoid conflicts ([#99]).
 * Working with the default candidate has been improved in cases where
