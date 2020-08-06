@@ -1307,20 +1307,6 @@ semantics of `cl-defun'."
                (max-mini-window-height
                 (1+ selectrum-num-candidates-displayed))
                (prompt (selectrum--remove-default-from-prompt prompt))
-               ;; Need to bind this back to its standard value due to
-               ;; <https://github.com/raxod502/selectrum/issues/61>.
-               ;; What happens is `selectrum-read-file-name' binds
-               ;; `completing-read-function' to
-               ;; `selectrum--completing-read-file-name', so if you
-               ;; invoke another Selectrum command recursively then it
-               ;; inherits that binding, even if the new Selectrum
-               ;; command is not reading file names. This causes an
-               ;; error. Arguably this solution is a bit of a hack but
-               ;; it should work "well enough" for now. If we
-               ;; encounter more trouble then we shall come up with a
-               ;; proper solution.
-               (completing-read-function
-                #'selectrum-completing-read)
                ;; <https://github.com/raxod502/selectrum/issues/99>
                (icomplete-mode nil)
                (selectrum-active-p t))
@@ -1606,24 +1592,40 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (let ((completing-read-function #'selectrum--completing-read-file-name))
-    (minibuffer-with-setup-hook
-        (:append (lambda ()
-                   (when (and default-filename
-                              ;; ./ should be omitted.
-                              (not (equal
-                                    (expand-file-name default-filename)
-                                    (expand-file-name default-directory))))
-                     (setq selectrum--default-candidate
-                           ;; Sort for directories needs any final
-                           ;; slash removed.
-                           (directory-file-name
-                            ;; The candidate should be sorted by it's
-                            ;; relative name.
-                            (file-relative-name default-filename
-                                                default-directory))))
-                   (set-syntax-table
-                    selectrum--minibuffer-local-filename-syntax)))
+  (minibuffer-with-setup-hook
+      (:append (lambda ()
+                 (when (and default-filename
+                            ;; ./ should be omitted.
+                            (not (equal
+                                  (expand-file-name default-filename)
+                                  (expand-file-name default-directory))))
+                   (setq selectrum--default-candidate
+                         ;; Sort for directories needs any final
+                         ;; slash removed.
+                         (directory-file-name
+                          ;; The candidate should be sorted by it's
+                          ;; relative name.
+                          (file-relative-name default-filename
+                                              default-directory))))
+                 (set-syntax-table
+                  selectrum--minibuffer-local-filename-syntax)))
+    ;; <https://github.com/raxod502/selectrum/issues/61>. When let
+    ;; binding `completing-read-function' and you invoke another
+    ;; Selectrum command recursively then it inherits that binding,
+    ;; even if the new Selectrum command is not reading file names.
+    ;; This causes an error. Previously we rebound it in the next
+    ;; `selectrum-read' call but this only works if the users default
+    ;; `completing-read-function' is `selectrum-completing-read'. So
+    ;; instead of let binding it we set it temporarily to a function
+    ;; which resets the variable when called.
+    (let ((crf completing-read-function)
+          (buf (current-buffer)))
+      (setq completing-read-function
+            (lambda (&rest args)
+              (when (buffer-live-p buf)
+                (with-current-buffer buf
+                  (setq completing-read-function crf)))
+              (apply #'selectrum--completing-read-file-name args)))
       (read-file-name-default
        prompt dir
        ;; We don't pass default-candidate here to avoid that
