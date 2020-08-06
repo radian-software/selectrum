@@ -1619,14 +1619,16 @@ PREDICATE, see `read-file-name'."
     ;; `selectrum-completing-read'. So instead of let binding it we
     ;; now set it temporarily to a function which resets the variable
     ;; when called.
-    (let ((crf completing-read-function)
+    (let ((local (and (local-variable-p 'completing-read-function)
+                      completing-read-function))
           (buf (current-buffer)))
-      (setq completing-read-function
+      (setq-local completing-read-function
             (lambda (&rest args)
-              (if (buffer-live-p buf)
-                  (with-current-buffer buf
-                    (setq completing-read-function crf))
-                (setq completing-read-function crf))
+              (when (buffer-live-p buf)
+                (with-current-buffer buf
+                  (if local
+                      (setq-local completing-read-function local)
+                    (kill-local-variable 'completing-read-function))))
               (apply #'selectrum--completing-read-file-name args)))
       (read-file-name-default
        prompt dir
