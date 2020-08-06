@@ -686,7 +686,8 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq selectrum--current-candidate-index
               (cond
                ((null selectrum--refined-candidates)
-                nil)
+                (when (not selectrum--match-required-p)
+                  -1))
                ((and selectrum--default-candidate
                      (string-empty-p (minibuffer-contents))
                      (not (member selectrum--default-candidate
