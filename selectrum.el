@@ -301,7 +301,16 @@ There are two values that make a transformation:
 2. A face with which to display the indicator, such as `shadow'.
 
 In this way, a transformation is represented, e.g., as
-`(whitespace :indicator \"..\" :face shadow)'.")
+`(whitespace :indicator \"..\" :face shadow)'."
+  :options '(match truncation newline whitespace)
+  :type  '(alist :key-type (choice (const match)
+                                   (const truncation)
+                                   (const newline)
+                                   (const whitespace))
+                 :value-type (list (const :indicator)
+                                   (string :tag "Indicator string")
+                                   (const :face)
+                                   (face :tag "Indicator face"))))
 
 ;;;; Utility functions
 
