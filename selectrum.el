@@ -1623,9 +1623,10 @@ PREDICATE, see `read-file-name'."
           (buf (current-buffer)))
       (setq completing-read-function
             (lambda (&rest args)
-              (when (buffer-live-p buf)
-                (with-current-buffer buf
-                  (setq completing-read-function crf)))
+              (if (buffer-live-p buf)
+                  (with-current-buffer buf
+                    (setq completing-read-function crf))
+                (setq completing-read-function crf))
               (apply #'selectrum--completing-read-file-name args)))
       (read-file-name-default
        prompt dir
