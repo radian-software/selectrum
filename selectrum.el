@@ -1609,15 +1609,16 @@ PREDICATE, see `read-file-name'."
                                               default-directory))))
                  (set-syntax-table
                   selectrum--minibuffer-local-filename-syntax)))
-    ;; <https://github.com/raxod502/selectrum/issues/61>. When let
-    ;; binding `completing-read-function' and you invoke another
-    ;; Selectrum command recursively then it inherits that binding,
-    ;; even if the new Selectrum command is not reading file names.
-    ;; This causes an error. Previously we rebound it in the next
-    ;; `selectrum-read' call but this only works if the users default
-    ;; `completing-read-function' is `selectrum-completing-read'. So
-    ;; instead of let binding it we set it temporarily to a function
-    ;; which resets the variable when called.
+    ;; <https://github.com/raxod502/selectrum/issues/61>. Previously
+    ;; `completing-read-function' was let bind. When you invoke
+    ;; another Selectrum command recursively then it inherits that
+    ;; binding, even if the new Selectrum command is not reading file
+    ;; names. This causes an error. We circumvented that by rebinding
+    ;; it in the next `selectrum-read' call but this only works if the
+    ;; users default `completing-read-function' is
+    ;; `selectrum-completing-read'. So instead of let binding it we
+    ;; now set it temporarily to a function which resets the variable
+    ;; when called.
     (let ((crf completing-read-function)
           (buf (current-buffer)))
       (setq completing-read-function
