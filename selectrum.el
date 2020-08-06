@@ -841,16 +841,20 @@ Multi-line canidates are merged into a single line."
          ;; The indicators are the same for all multi-line candidates, and so
          ;; only need to be gotten from `selectrum-candidate-transformations'
          ;; once.
-         (match-transformation (alist-get 'match selectrum-candidate-transformations))
+         (match-transformation
+          (alist-get 'match selectrum-candidate-transformations))
          (match-display (plist-get match-transformation :indicator))
          (match-face (plist-get match-transformation :face))
-         (truncation-transformation (alist-get 'truncation selectrum-candidate-transformations))
+         (truncation-transformation
+          (alist-get 'truncation selectrum-candidate-transformations))
          (truncation-display (plist-get truncation-transformation :indicator))
          (truncation-face (plist-get truncation-transformation :face))
-         (newline-transformation (alist-get 'newline selectrum-candidate-transformations))
+         (newline-transformation
+          (alist-get 'newline selectrum-candidate-transformations))
          (newline-display (plist-get newline-transformation :indicator))
          (newline-face (plist-get newline-transformation :face))
-         (whitespace-transformation (alist-get 'whitespace selectrum-candidate-transformations))
+         (whitespace-transformation
+          (alist-get 'whitespace selectrum-candidate-transformations))
          (whitespace-display (plist-get whitespace-transformation :indicator))
          (whitespace-face (plist-get whitespace-transformation :face)))
 
@@ -875,7 +879,8 @@ Multi-line canidates are merged into a single line."
                          cand
                        (concat
                         (substring cand 0 1000)
-                        (propertize truncation-display 'face truncation-face))))
+                        (propertize truncation-display
+                                    'face truncation-face))))
              ;; Replacements should be fixed-case and literal, to make things
              ;; simpler.
              t t)
