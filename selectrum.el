@@ -856,18 +856,17 @@ Multi-line canidates are merged into a single line."
              (concat (unless (string-empty-p (minibuffer-contents))
                        ;; Show first matched line.
                        (when-let ((match
-                                   (car
-                                    (funcall
-                                     selectrum-refine-candidates-function
-                                     (minibuffer-contents)
-                                     (split-string cand "\n")))))
+                                   (car (funcall
+                                         selectrum-refine-candidates-function
+                                         (minibuffer-contents)
+                                         (split-string cand "\n")))))
                          (concat match
                                  (propertize match-display 'face match-face))))
                      (if (< (length cand) 1000)
                          cand
                        (concat
                         (substring cand 0 1000)
-                        (propertize "..." 'face 'warning))))
+                        (propertize truncation-display 'face truncation-face))))
              ;; Replacements should be fixed-case and literal, to make things
              ;; simpler.
              t t)
