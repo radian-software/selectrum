@@ -302,7 +302,6 @@ There are two values that make a transformation:
 
 In this way, a transformation is represented, e.g., as
 `(whitespace :indicator \"..\" :face shadow)'."
-  :options '(match truncation newline whitespace)
   :type  '(alist :key-type (choice (const match)
                                    (const truncation)
                                    (const newline)
