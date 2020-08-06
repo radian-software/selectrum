@@ -1617,8 +1617,8 @@ PREDICATE, see `read-file-name'."
                            ;; Sort for directories needs any final
                            ;; slash removed.
                            (directory-file-name
-                            ;; The candidates are sorted by their
-                            ;; relative names.
+                            ;; The candidate should be sorted by it's
+                            ;; relative name.
                             (file-relative-name default-filename
                                                 default-directory))))
                    (set-syntax-table
@@ -1627,16 +1627,17 @@ PREDICATE, see `read-file-name'."
        prompt dir
        ;; We don't pass default-candidate here to avoid that
        ;; submitting the selected prompt results in the default file
-       ;; name. Instead we pass the initial prompt as default so it
-       ;; gets returned when submitted. In addition to that we set
-       ;; `selectrum--default-candidate' in the setup hook above so
-       ;; the actual default gets sorted to the top. This should give
-       ;; the same convenience as in default completion (where you can
-       ;; press RET at the initial prompt to get the default). The
-       ;; downside is that this convenience is gone when sorting is
-       ;; disabled or the default-filename is outside the prompting
-       ;; directory but this should be rare and seems to be a weird
-       ;; case for default completion as well.
+       ;; name. This is the stock Emacs behavior where there is no
+       ;; concept of an active selection. Instead we pass the initial
+       ;; prompt as default so it gets returned when submitted. In
+       ;; addition to that we set `selectrum--default-candidate' in
+       ;; the setup hook above so the actual default gets sorted to
+       ;; the top. This should give the same convenience as in default
+       ;; completion (where you can press RET at the initial prompt to
+       ;; get the default). The downside is that this convenience is
+       ;; gone when sorting is disabled or the default-filename is
+       ;; outside the prompting directory but this should be rare
+       ;; case.
        (concat
         (or dir default-directory)
         initial)
