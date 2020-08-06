@@ -657,7 +657,11 @@ PRED defaults to `minibuffer-completion-predicate'."
                                     (setq input (or (alist-get 'input result)
                                                     input))
                                     (setq selectrum--visual-input input)
-                                    (alist-get 'candidates result))))
+                                    ;; Avoid modifying the returned
+                                    ;; candidates to let the function
+                                    ;; reuse them.
+                                    (copy-sequence
+                                     (alist-get 'candidates result)))) )
                      selectrum--preprocessed-candidates)))
         (setq selectrum--total-num-candidates (length cands))
         (setq selectrum--refined-candidates
@@ -682,7 +686,8 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq selectrum--current-candidate-index
               (cond
                ((null selectrum--refined-candidates)
-                nil)
+                (when (not selectrum--match-required-p)
+                  -1))
                ((and selectrum--default-candidate
                      (string-empty-p (minibuffer-contents))
                      (not (member selectrum--default-candidate
@@ -769,9 +774,8 @@ PRED defaults to `minibuffer-completion-predicate'."
                                    'selectrum-current-candidate
                                  'minibuffer-prompt))
                               (propertize "]" 'face 'minibuffer-prompt)))
-              (unless (or (and highlighted-index
-                               (>= highlighted-index 0))
-                          selectrum--match-required-p)
+              (when (and highlighted-index
+                         (< highlighted-index 0))
                 (add-text-properties
                  (minibuffer-prompt-end) bound
                  '(face selectrum-current-candidate))))
@@ -1166,7 +1170,8 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
       (insert full)
-      (add-to-history minibuffer-history-variable full)
+      (unless (eq t minibuffer-history-variable)
+        (add-to-history minibuffer-history-variable full))
       (apply
        #'run-hook-with-args
        'selectrum-candidate-inserted-hook
@@ -1527,28 +1532,31 @@ less appropriate. It also allows you to view hidden buffers,
 which is otherwise impossible due to tricky behavior of Emacs'
 completion machinery. For PROMPT, DEF, REQUIRE-MATCH, and
 PREDICATE, see `read-buffer'."
-  (let ((selectrum-should-sort-p nil)
-        (candidates
-         (lambda (input)
-           (let* ((buffers (mapcar #'buffer-name (buffer-list)))
-                  (candidates (if predicate
-                                  (cl-delete-if-not predicate buffers)
-                                buffers)))
-             (if (string-prefix-p " " input)
-                 (progn
-                   (setq input (substring input 1))
-                   (setq candidates
-                         (cl-delete-if-not
-                          (lambda (name)
-                            (string-prefix-p " " name))
-                          candidates)))
-               (setq candidates
-                     (cl-delete-if
-                      (lambda (name)
-                        (string-prefix-p " " name))
-                      candidates)))
-             `((candidates . ,candidates)
-               (input . ,input))))))
+  (let* ((selectrum-should-sort-p nil)
+         (buffalist (mapcar (lambda (buf)
+                              (cons (buffer-name buf) buf))
+                            (buffer-list)))
+         (buffers (mapcar #'car (if predicate
+                                    (cl-delete-if-not predicate buffalist)
+                                  buffalist)))
+         (candidates
+          (lambda (input)
+            (let ((candidates (copy-sequence buffers)))
+              (if (string-prefix-p " " input)
+                  (progn
+                    (setq input (substring input 1))
+                    (setq candidates
+                          (cl-delete-if-not
+                           (lambda (name)
+                             (string-prefix-p " " name))
+                           candidates)))
+                (setq candidates
+                      (cl-delete-if
+                       (lambda (name)
+                         (string-prefix-p " " name))
+                       candidates)))
+              `((candidates . ,candidates)
+                (input . ,input))))))
     (substring-no-properties
      (selectrum-read
       prompt candidates
@@ -1627,10 +1635,42 @@ PREDICATE, see `read-file-name'."
   (let ((completing-read-function #'selectrum--completing-read-file-name))
     (minibuffer-with-setup-hook
         (:append (lambda ()
+                   (when (and default-filename
+                              ;; ./ should be omitted.
+                              (not (equal
+                                    (expand-file-name default-filename)
+                                    (expand-file-name default-directory))))
+                     (setq selectrum--default-candidate
+                           ;; Sort for directories needs any final
+                           ;; slash removed.
+                           (directory-file-name
+                            ;; The candidate should be sorted by it's
+                            ;; relative name.
+                            (file-relative-name default-filename
+                                                default-directory))))
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
       (read-file-name-default
-       prompt dir default-filename mustmatch initial predicate))))
+       prompt dir
+       ;; We don't pass default-candidate here to avoid that
+       ;; submitting the selected prompt results in the default file
+       ;; name. This is the stock Emacs behavior where there is no
+       ;; concept of an active selection. Instead we pass the initial
+       ;; prompt as default so it gets returned when submitted. In
+       ;; addition to that we set `selectrum--default-candidate' in
+       ;; the setup hook above so the actual default gets sorted to
+       ;; the top. This should give the same convenience as in default
+       ;; completion (where you can press RET at the initial prompt to
+       ;; get the default). The downside is that this convenience is
+       ;; gone when sorting is disabled or the default-filename is
+       ;; outside the prompting directory but this should be rare
+       ;; case.
+       (concat
+        (expand-file-name
+         (or dir
+             default-directory))
+        initial)
+       mustmatch initial predicate))))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")

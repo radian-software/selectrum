@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* If the `default-filename` passed to `selectrum-read-file-name` is an
+  absolute path it will still be sorted to the top when it is
+  contained in the prompting directory ([#160]).
 * `icomplete-mode` is now automatically disabled when entering
   Selectrum, to avoid conflicts ([#99]).
 * Working with the default candidate has been improved in cases where
@@ -79,6 +82,22 @@ The format is based on [Keep a Changelog].
   candidates containing unicode characters or other means which
   changed the display height such as `line-spacing` ([#146], [#151],
   [#154]).
+* When selecting file name prompts and submitting them the result will
+  be the selected prompt. Previously it could be the default file name
+  passed to `selectrum-read-file-name` which is the behavior of
+  default completion where there is no concept of an active selection
+  ([#157], [#160]).
+* When there are no candidates and a match isn't required the prompt
+  will now be shown as selected to indicate one can submit the input
+  ([#160]).
+* If the `mustmatch` argument to `read-directory-name` was non-nil the
+  selection of the prompt wasn't visible which has been fixed ([#157],
+  [#160]).
+* If a predicate was passed to `read-buffer` an error would be thrown
+  which has been fixed ([#159], [#161]).
+* Dynamic collection functions can now reuse their returned
+  candidates. Previously Selectrum could modify them even when the
+  `:may-modify-candidates` argument wasn't passed to `selectrum-read`.
 * Incremental history search via `isearch` wasn't working which has
   been fixed ([#124], [#133]).
 * Empty string completion candidates are now ignored like in the
@@ -94,6 +113,10 @@ The format is based on [Keep a Changelog].
   `completing-read-multiple` when `crm-separator` has a non default
   value. Previously it would replace the separator with commas when
   adding new candidates ([#140]).
+* `selectrum-insert-current-candidate` now works from
+  `selectrum-select-from-history` and other commands which ignore
+  history by setting `minibuffer-history-variable` to `t`. Previously
+  an error would be thrown ([#152]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#82]: https://github.com/raxod502/selectrum/issues/82
@@ -119,7 +142,12 @@ The format is based on [Keep a Changelog].
 [#140]: https://github.com/raxod502/selectrum/pull/140
 [#146]: https://github.com/raxod502/selectrum/issues/146
 [#151]: https://github.com/raxod502/selectrum/issues/151
+[#152]: https://github.com/raxod502/selectrum/pull/152
 [#154]: https://github.com/raxod502/selectrum/pull/154
+[#157]: https://github.com/raxod502/selectrum/issues/157
+[#159]: https://github.com/raxod502/selectrum/issues/159
+[#160]: https://github.com/raxod502/selectrum/pull/160
+[#161]: https://github.com/raxod502/selectrum/pull/161
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
