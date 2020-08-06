@@ -71,8 +71,8 @@ The format is based on [Keep a Changelog].
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
   candidate list. The first matched line is shown in front of the
-  merged lines ([#133]). A user option exists to change the function
-  that performs this transformation ([#147]).
+  merged lines ([#133]). The indicators used in these transformations
+  are customizable ([#147]).
 
 ### Bugs fixed
 * Dynamic collection functions can now reuse their returned
@@ -120,11 +120,8 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
-<<<<<<< HEAD
 [#147]: https://github.com/raxod502/selectrum/pull/147
-=======
 [#152]: https://github.com/raxod502/selectrum/pull/152
->>>>>>> upstream/master
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
