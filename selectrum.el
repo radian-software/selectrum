@@ -794,7 +794,6 @@ PRED defaults to `minibuffer-completion-predicate'."
         (overlay-put selectrum--candidates-overlay 'after-string text)))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
-    (selectrum--fix-set-minibuffer-message)
     (when keep-mark-active
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
@@ -1756,29 +1755,6 @@ shadows correctly."
     (call-interactively selectrum--last-command)))
 
 ;;;###autoload
-(defun selectrum--fix-set-minibuffer-message (&rest _)
-  "Move the minibuffer message overlay to the right place.
-This advice fixes the overlay placed by `set-minibuffer-message',
-which is different from the one placed by `minibuffer-message'.
-
-By default the overlay is placed at the end, but in the case of
-Selectrum this means after all the candidates. We want to move it
-instead to just after the user input.
-
-To test that this advice is working correctly, type \\[find-file]
-and enter \"/sudo::\", then authenticate. The overlay indicating
-that authentication was successful should appear right after the
-user input area, not at the end of the candidate list.
-
-This is an `:after' advice for `set-minibuffer-message'."
-  (selectrum--when-compile (boundp 'minibuffer-message-overlay)
-    (when (and (bound-and-true-p selectrum-active-p)
-               (overlayp minibuffer-message-overlay))
-      (move-overlay minibuffer-message-overlay
-                    selectrum--end-of-input-marker
-                    selectrum--end-of-input-marker))))
-
-;;;###autoload
 (defun selectrum--fix-minibuffer-message (func &rest args)
   "Move the minibuffer message overlay to the right place.
 This advice fixes the overlay placed by `minibuffer-message',
@@ -1850,10 +1826,6 @@ ARGS are standard as in all `:around' advice."
                       #'selectrum-read-library-name)
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
-          ;; No sharp quote because `set-minibuffer-message' is not
-          ;; defined in older Emacs versions.
-          (advice-add 'set-minibuffer-message :after
-                      #'selectrum--fix-set-minibuffer-message)
           (define-key minibuffer-local-map
             [remap previous-matching-history-element]
             'selectrum-select-from-history))
@@ -1882,10 +1854,6 @@ ARGS are standard as in all `:around' advice."
       ;; older Emacs versions.
       (advice-remove 'read-library-name #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
-      ;; No sharp quote because `set-minibuffer-message' is not
-      ;; defined in older Emacs versions.
-      (advice-remove 'set-minibuffer-message
-                     #'selectrum--fix-set-minibuffer-message)
       (when (eq (lookup-key minibuffer-local-map
                             [remap previous-matching-history-element])
                 #'selectrum-select-from-history)
