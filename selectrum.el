@@ -1303,7 +1303,8 @@ and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. By passing
 these as keyword arguments they will be dynamically bound as per
 semantics of `cl-defun'."
-  (unless may-modify-candidates
+  (unless (or may-modify-candidates
+              (functionp candidates))
     (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
