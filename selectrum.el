@@ -804,20 +804,20 @@ currently displayed candidates."
   (let ((n (1+ selectrum-num-candidates-displayed))
         (win (active-minibuffer-window)))
     (when (and win
-               ;; don't try to resize a minibuffer frame
+               ;; Don't try to resize a minibuffer frame.
                (not (frame-root-window-p win)))
       ;; Set min initial height.
       (when (and selectrum-fix-minibuffer-height
                  selectrum--init-p)
         (with-selected-window win
           (setf (window-height) n)))
-      ;; Adjust if needed
+      ;; Adjust if needed.
       (when (or selectrum--init-p
                 (and selectrum--current-candidate-index
                      ;; Allow size change when navigating, not while
                      ;; typing.
                      (/= first highlighted)
-                     ;; Don't allow shrink for less candidates.
+                     ;; Don't allow shrinking.
                      (= (length cands)
                         selectrum-num-candidates-displayed)))
         (let ((dheight (cdr (window-text-pixel-size win)))
