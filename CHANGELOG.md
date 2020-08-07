@@ -77,6 +77,11 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* The mininbuffer height is now determined by the actual height of
+  displayed candidates. Previously the height could be off for
+  candidates containing unicode characters or other means which
+  changed the display height such as `line-spacing` ([#146], [#151],
+  [#154]).
 * When passing a named function or compiled lambda as `candidates`
   argument to `selectrum-read` an error would be thrown, which has
   been fixed ([#163]).
@@ -138,7 +143,10 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#146]: https://github.com/raxod502/selectrum/issues/146
+[#151]: https://github.com/raxod502/selectrum/issues/151
 [#152]: https://github.com/raxod502/selectrum/pull/152
+[#154]: https://github.com/raxod502/selectrum/pull/154
 [#157]: https://github.com/raxod502/selectrum/issues/157
 [#159]: https://github.com/raxod502/selectrum/issues/159
 [#160]: https://github.com/raxod502/selectrum/pull/160

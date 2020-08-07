@@ -742,11 +742,6 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (let ((n (1+ (if selectrum-fix-minibuffer-height
-                       selectrum-num-candidates-displayed
-                     (max (1- (window-height)) ; grow only
-                          (length displayed-candidates))))))
-        (setf (window-height) n))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
@@ -791,12 +786,44 @@ PRED defaults to `minibuffer-completion-predicate'."
                       (point-max) (point-max) (current-buffer))
         (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
-        (overlay-put selectrum--candidates-overlay 'after-string text)))
+        (overlay-put selectrum--candidates-overlay 'after-string text))
+      (selectrum--update-minibuffer-height first-index-displayed
+                                           highlighted-index
+                                           displayed-candidates))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
     (when keep-mark-active
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
+
+(defun selectrum--update-minibuffer-height (first highlighted cands)
+  "Set minibuffer height for candidates display.
+FIRST is the index of the first displayed candidate. HIGHLIGHTED
+is the index if the highlighted candidate. CANDS are the
+currently displayed candidates."
+  (when-let ((n (1+ selectrum-num-candidates-displayed))
+             (win (active-minibuffer-window)))
+    ;; Don't attempt to resize a minibuffer frame.
+    (unless (frame-root-window-p win)
+      ;; Set min initial height.
+      (when (and selectrum-fix-minibuffer-height
+                 selectrum--init-p)
+        (with-selected-window win
+          (setf (window-height) n)))
+      ;; Adjust if needed.
+      (when (or selectrum--init-p
+                (and selectrum--current-candidate-index
+                     ;; Allow size change when navigating, not while
+                     ;; typing.
+                     (/= first highlighted)
+                     ;; Don't allow shrinking.
+                     (= (length cands)
+                        selectrum-num-candidates-displayed)))
+        (let ((dheight (cdr (window-text-pixel-size win)))
+              (wheight (window-pixel-height win)))
+          (when (/= dheight wheight)
+            (window-resize
+             win (- dheight wheight) nil nil 'pixelwise)))))))
 
 (defun selectrum--first-lines (candidates)
   "Return list of single line CANDIDATES.
@@ -964,8 +991,9 @@ into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq selectrum--candidates-overlay
-        (make-overlay (point) (point) nil 'front-advance 'rear-advance))
+  (unless selectrum--candidates-overlay
+    (setq selectrum--candidates-overlay
+          (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
