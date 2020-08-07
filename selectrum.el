@@ -480,9 +480,6 @@ Passed to various hook functions.")
 (defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
-(defvar selectrum--right-margin-overlays nil
-  "A list of overlays used to display right margin text.")
-
 (defvar selectrum--last-command nil
   "Name of last interactive command that invoked Selectrum.")
 
@@ -714,8 +711,6 @@ PRED defaults to `minibuffer-completion-predicate'."
                  'before-string (selectrum--count-info))
     (overlay-put selectrum--count-overlay
                  'priority 1)
-    (while selectrum--right-margin-overlays
-      (delete-overlay (pop selectrum--right-margin-overlays)))
     (setq input (or selectrum--visual-input input))
     (let* ((first-index-displayed
             (if selectrum--current-candidate-index
@@ -955,18 +950,23 @@ candidate."
                 'minibuffer-prompt))))
           (insert displayed-candidate)
           (when right-margin
-            (let ((ol (make-overlay (point) (point))))
-              (overlay-put
-               ol 'after-string
-               (concat
-                (propertize
-                 " "
-                 'display
-                 `(space :align-to (- right-fringe
-                                      ,(string-width right-margin)
-                                      selectrum-right-margin-padding)))
-                right-margin))
-              (push ol selectrum--right-margin-overlays))))
+            (insert
+             (concat
+              (propertize
+               " "
+               'face
+               (when (and right-margin
+                          (equal index highlighted-index))
+                 'selectrum-current-candidate)
+               'display
+               `(space :align-to (- right-fringe
+                                    ,(string-width right-margin)
+                                    selectrum-right-margin-padding)))
+              (propertize right-margin
+                          'face
+                          (when (and right-margin
+                                     (equal index highlighted-index))
+                            'selectrum-current-candidate))))))
         (cl-incf index))
       (buffer-string))))
 
@@ -977,9 +977,7 @@ candidate."
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
   (when (overlayp selectrum--count-overlay)
     (delete-overlay selectrum--count-overlay))
-  (setq selectrum--count-overlay nil)
-  (while selectrum--right-margin-overlays
-    (delete-overlay (pop selectrum--right-margin-overlays))))
+  (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
     (candidates &key default-candidate initial-input)
@@ -1234,7 +1232,6 @@ Otherwise, just eval BODY."
               selectrum--visual-input
               selectrum--read-args
               selectrum--count-overlay
-              selectrum--right-margin-overlays
               selectrum--repeat
               selectrum-active-p)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
