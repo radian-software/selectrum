@@ -1797,12 +1797,11 @@ not at the end of the candidate list.
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
   (if (bound-and-true-p selectrum-active-p)
-      (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
-                 ((symbol-function #'make-overlay)
-                  (lambda (_beg _end &rest args)
-                    (apply orig-make-overlay
-                           selectrum--end-of-input-marker
-                           selectrum--end-of-input-marker
+      (cl-letf* ((orig-put-text-property (symbol-function #'put-text-property))
+                 ((symbol-function #'put-text-property)
+                  (lambda (beg end key val &rest args)
+                    (apply orig-put-text-property
+                           beg end key (if (eq key 'cursor) 1 val)
                            args))))
         (apply func args))
     (apply func args)))
