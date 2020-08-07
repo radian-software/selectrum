@@ -77,6 +77,9 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* When passing a named function or compiled lambda as `candidates`
+  argument to `selectrum-read` an error would be thrown, which has
+  been fixed ([#163]).
 * When selecting file name prompts and submitting them the result will
   be the selected prompt. Previously it could be the default file name
   passed to `selectrum-read-file-name` which is the behavior of
@@ -140,6 +143,7 @@ The format is based on [Keep a Changelog].
 [#159]: https://github.com/raxod502/selectrum/issues/159
 [#160]: https://github.com/raxod502/selectrum/pull/160
 [#161]: https://github.com/raxod502/selectrum/pull/161
+[#163]: https://github.com/raxod502/selectrum/pull/163
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
