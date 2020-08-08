@@ -870,20 +870,28 @@ Multi-line canidates are merged into a single line."
          ;; once.
          (selectrum--match-transformation
           (alist-get 'match selectrum-multiline-display-settings))
-         (selectrum--match-display (car selectrum--match-transformation))
-         (selectrum--match-face (cadr selectrum--match-transformation))
+         (selectrum--match-display
+          (car selectrum--match-transformation))
+         (selectrum--match-face
+          (cadr selectrum--match-transformation))
          (selectrum--truncation-transformation
           (alist-get 'truncation selectrum-multiline-display-settings))
-         (selectrum--truncation-display (car selectrum--truncation-transformation))
-         (selectrum--truncation-face (cadr selectrum--truncation-transformation))
+         (selectrum--truncation-display
+          (car selectrum--truncation-transformation))
+         (selectrum--truncation-face
+          (cadr selectrum--truncation-transformation))
          (selectrum--newline-transformation
           (alist-get 'newline selectrum-multiline-display-settings))
-         (selectrum--newline-display (car selectrum--newline-transformation))
-         (selectrum--newline-face (cadr selectrum--newline-transformation))
+         (selectrum--newline-display
+          (car selectrum--newline-transformation))
+         (selectrum--newline-face
+          (cadr selectrum--newline-transformation))
          (selectrum--whitespace-transformation
           (alist-get 'whitespace selectrum-multiline-display-settings))
-         (selectrum--whitespace-display (car selectrum--whitespace-transformation))
-         (selectrum--whitespace-face (cadr selectrum--whitespace-transformation)))
+         (selectrum--whitespace-display
+          (car selectrum--whitespace-transformation))
+         (selectrum--whitespace-face
+          (cadr selectrum--whitespace-transformation)))
 
     (dolist (cand candidates (nreverse single-line-candidates))
       (push
