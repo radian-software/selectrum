@@ -1640,9 +1640,9 @@ PREDICATE, see `read-file-name'."
            ;; recursively then it inherits the
            ;; `completing-read-function' binding, and unless it's
            ;; another file reading command using
-           ;; `selectrum--completing-read-file-name' will cause an
-           ;; error. To circumvent this we use the function to reset
-           ;; the variable when called.
+           ;; `selectrum--completing-read-file-name' this will cause
+           ;; an error. To circumvent this we use the function to
+           ;; reset the variable when called.
            (completing-read-function
             (lambda (&rest args)
               (setq completing-read-function crf)
