@@ -1167,9 +1167,7 @@ list). A null or non-positive ARG inserts the candidate corresponding to
       (delete-region (point) selectrum--end-of-input-marker))
     (let* ((candidate (nth index
                            selectrum--refined-candidates))
-           (full
-            (or (get-text-property 0 'selectrum--candidate-insert candidate)
-                (selectrum--get-full candidate))))
+           (full (selectrum--get-full candidate)))
       (insert full)
       (unless (eq t minibuffer-history-variable)
         (add-to-history minibuffer-history-variable full))
@@ -1402,10 +1400,17 @@ The symbol is used to identify COLLECTION in
 (defun selectrum--locate-library-transformer (collection)
   "Return table for COLLECTION.
 See `selectrum-locate-library' in
-`selectrum--completing-read-handler-alist'."
+`selectrum--completing-read-handler-alist' and
+`selectrum--get-collection-name'."
   (lambda (string pred flag)
     (if (eq flag t)
-        (selectrum--locate-library-completions)
+        (delete-dups
+         (selectrum--get-candidates-from-table
+          collection
+          (lambda (cand)
+            (and (or (not pred)
+                     (funcall pred cand))
+                 (not (directory-name-p cand))))))
       (funcall collection string pred flag))))
 
 (defvar org-last-tags-completion-table)
@@ -1819,10 +1824,11 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
-(defun selectrum--locate-library-completions ()
-  "Get list of candidates for library completions.
-SUFFIXES defaults to the value returned by
-`find-library-suffixes'."
+;;;###autoload
+(defun selectrum-read-library-name ()
+  "Read and return a library name.
+Similar to `read-library-name' except it handles `load-path'
+shadows correctly."
   (eval-and-compile
     (require 'find-func))
   (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
@@ -1856,36 +1862,26 @@ SUFFIXES defaults to the value returned by
                (when (or (= num-components max-components)
                          (= (length paths) (length abbrev-paths)))
                  (let ((candidate-paths
-                        (mapcar
-                         (lambda (path)
-                           (let ((name (file-name-base
-                                        (file-name-sans-extension path))))
-                             (propertize
-                              name
-                              'selectrum-candidate-display-prefix
-                              (file-name-directory
-                               (file-name-sans-extension
-                                (selectrum--trailing-components
-                                 num-components path)))
-                              'fixedcase 'literal
-                              'selectrum--candidate-insert name
-                              'selectrum-candidate-full path)))
-                         paths)))
+                        (mapcar (lambda (path)
+                                  (propertize
+                                   (file-name-base
+                                    (file-name-sans-extension path))
+                                   'selectrum-candidate-display-prefix
+                                   (file-name-directory
+                                    (file-name-sans-extension
+                                     (selectrum--trailing-components
+                                      num-components path)))
+                                   'fixedcase 'literal
+                                   'selectrum--lib-path path))
+                                paths)))
                    (setq lst (nconc candidate-paths lst)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    lst))
-
-;;;###autoload
-(defun selectrum-read-library-name ()
-  "Read and return a library name.
-Similar to `read-library-name' except it handles `load-path'
-shadows correctly."
-  (selectrum-read
-   "Library name: "
-   (selectrum--locate-library-completions)
-   :require-match t :may-modify-candidates t))
+    (get-text-property
+     0 'selectrum--lib-path
+     (selectrum-read
+      "Library name: " lst :require-match t :may-modify-candidates t))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."

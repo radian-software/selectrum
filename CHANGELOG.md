@@ -156,19 +156,16 @@ The format is based on [Keep a Changelog].
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#139]: https://github.com/raxod502/selectrum/issues/139
 [#140]: https://github.com/raxod502/selectrum/pull/140
-<<<<<<< HEAD
-[#156]: https://github.com/raxod502/selectrum/pull/156
-=======
 [#146]: https://github.com/raxod502/selectrum/issues/146
 [#151]: https://github.com/raxod502/selectrum/issues/151
 [#152]: https://github.com/raxod502/selectrum/pull/152
 [#154]: https://github.com/raxod502/selectrum/pull/154
+[#156]: https://github.com/raxod502/selectrum/pull/156
 [#157]: https://github.com/raxod502/selectrum/issues/157
 [#159]: https://github.com/raxod502/selectrum/issues/159
 [#160]: https://github.com/raxod502/selectrum/pull/160
 [#161]: https://github.com/raxod502/selectrum/pull/161
 [#163]: https://github.com/raxod502/selectrum/pull/163
->>>>>>> master
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
