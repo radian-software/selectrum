@@ -1780,19 +1780,15 @@ shadows correctly."
 
 ;;;###autoload
 (defun selectrum--fix-minibuffer-message (func &rest args)
-  "Move the minibuffer message overlay to the right place.
-This advice fixes the overlay placed by `minibuffer-message',
-which is different from the one placed by
-`set-minibuffer-message'.
-
-By default the overlay is placed at the end, but in the case of
-Selectrum this means after all the candidates. We want to move it
-instead to just after the user input.
+  "Ensure the cursor stays at the front of the minibuffer message.
+This advice adjusts where the cursor gets placed for the overlay
+of `minibuffer-message'.
 
 To test that this advice is working correctly, type \\[find-file]
 twice in a row. The overlay indicating that recursive minibuffers
 are not allowed should appear right after the user input area,
-not at the end of the candidate list.
+not at the end of the candidate list and the cursor should stay
+at the front.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
