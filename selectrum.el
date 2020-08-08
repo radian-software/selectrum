@@ -480,9 +480,6 @@ Passed to various hook functions.")
 (defvar selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
-(defvar selectrum--right-margin-overlays nil
-  "A list of overlays used to display right margin text.")
-
 (defvar selectrum--last-command nil
   "Name of last interactive command that invoked Selectrum.")
 
@@ -714,8 +711,6 @@ PRED defaults to `minibuffer-completion-predicate'."
                  'before-string (selectrum--count-info))
     (overlay-put selectrum--count-overlay
                  'priority 1)
-    (while selectrum--right-margin-overlays
-      (delete-overlay (pop selectrum--right-margin-overlays)))
     (setq input (or selectrum--visual-input input))
     (let* ((first-index-displayed
             (if selectrum--current-candidate-index
@@ -742,11 +737,6 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq displayed-candidates
             (seq-take displayed-candidates
                       selectrum-num-candidates-displayed))
-      (let ((n (1+ (if selectrum-fix-minibuffer-height
-                       selectrum-num-candidates-displayed
-                     (max (1- (window-height)) ; grow only
-                          (length displayed-candidates))))))
-        (setf (window-height) n))
       (let ((text (selectrum--candidates-display-string
                    displayed-candidates
                    input
@@ -791,13 +781,44 @@ PRED defaults to `minibuffer-completion-predicate'."
                       (point-max) (point-max) (current-buffer))
         (setq text (concat (or default " ") text))
         (put-text-property 0 1 'cursor t text)
-        (overlay-put selectrum--candidates-overlay 'after-string text)))
+        (overlay-put selectrum--candidates-overlay 'after-string text))
+      (selectrum--update-minibuffer-height first-index-displayed
+                                           highlighted-index
+                                           displayed-candidates))
     (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
     (set-marker-insertion-type selectrum--end-of-input-marker t)
-    (selectrum--fix-set-minibuffer-message)
     (when keep-mark-active
       (setq deactivate-mark nil))
     (setq-local selectrum--init-p nil)))
+
+(defun selectrum--update-minibuffer-height (first highlighted cands)
+  "Set minibuffer height for candidates display.
+FIRST is the index of the first displayed candidate. HIGHLIGHTED
+is the index if the highlighted candidate. CANDS are the
+currently displayed candidates."
+  (when-let ((n (1+ selectrum-num-candidates-displayed))
+             (win (active-minibuffer-window)))
+    ;; Don't attempt to resize a minibuffer frame.
+    (unless (frame-root-window-p win)
+      ;; Set min initial height.
+      (when (and selectrum-fix-minibuffer-height
+                 selectrum--init-p)
+        (with-selected-window win
+          (setf (window-height) n)))
+      ;; Adjust if needed.
+      (when (or selectrum--init-p
+                (and selectrum--current-candidate-index
+                     ;; Allow size change when navigating, not while
+                     ;; typing.
+                     (/= first highlighted)
+                     ;; Don't allow shrinking.
+                     (= (length cands)
+                        selectrum-num-candidates-displayed)))
+        (let ((dheight (cdr (window-text-pixel-size win)))
+              (wheight (window-pixel-height win)))
+          (when (/= dheight wheight)
+            (window-resize
+             win (- dheight wheight) nil nil 'pixelwise)))))))
 
 (defun selectrum--first-lines (candidates)
   "Return list of single line CANDIDATES.
@@ -929,18 +950,23 @@ candidate."
                 'minibuffer-prompt))))
           (insert displayed-candidate)
           (when right-margin
-            (let ((ol (make-overlay (point) (point))))
-              (overlay-put
-               ol 'after-string
-               (concat
-                (propertize
-                 " "
-                 'display
-                 `(space :align-to (- right-fringe
-                                      ,(string-width right-margin)
-                                      selectrum-right-margin-padding)))
-                right-margin))
-              (push ol selectrum--right-margin-overlays))))
+            (insert
+             (concat
+              (propertize
+               " "
+               'face
+               (when (and right-margin
+                          (equal index highlighted-index))
+                 'selectrum-current-candidate)
+               'display
+               `(space :align-to (- right-fringe
+                                    ,(string-width right-margin)
+                                    selectrum-right-margin-padding)))
+              (propertize right-margin
+                          'face
+                          (when (and right-margin
+                                     (equal index highlighted-index))
+                            'selectrum-current-candidate))))))
         (cl-incf index))
       (buffer-string))))
 
@@ -951,9 +977,7 @@ candidate."
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
   (when (overlayp selectrum--count-overlay)
     (delete-overlay selectrum--count-overlay))
-  (setq selectrum--count-overlay nil)
-  (while selectrum--right-margin-overlays
-    (delete-overlay (pop selectrum--right-margin-overlays))))
+  (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
     (candidates &key default-candidate initial-input)
@@ -965,8 +989,9 @@ into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq selectrum--candidates-overlay
-        (make-overlay (point) (point) nil 'front-advance 'rear-advance))
+  (unless selectrum--candidates-overlay
+    (setq selectrum--candidates-overlay
+          (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
   (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
@@ -1207,7 +1232,6 @@ Otherwise, just eval BODY."
               selectrum--visual-input
               selectrum--read-args
               selectrum--count-overlay
-              selectrum--right-margin-overlays
               selectrum--repeat
               selectrum-active-p)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
@@ -1277,7 +1301,8 @@ and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. By passing
 these as keyword arguments they will be dynamically bound as per
 semantics of `cl-defun'."
-  (unless may-modify-candidates
+  (unless (or may-modify-candidates
+              (functionp candidates))
     (setq candidates (copy-sequence candidates)))
   (selectrum--save-global-state
     (setq selectrum--read-args (cl-list* prompt candidates args))
@@ -1753,29 +1778,6 @@ shadows correctly."
     (call-interactively selectrum--last-command)))
 
 ;;;###autoload
-(defun selectrum--fix-set-minibuffer-message (&rest _)
-  "Move the minibuffer message overlay to the right place.
-This advice fixes the overlay placed by `set-minibuffer-message',
-which is different from the one placed by `minibuffer-message'.
-
-By default the overlay is placed at the end, but in the case of
-Selectrum this means after all the candidates. We want to move it
-instead to just after the user input.
-
-To test that this advice is working correctly, type \\[find-file]
-and enter \"/sudo::\", then authenticate. The overlay indicating
-that authentication was successful should appear right after the
-user input area, not at the end of the candidate list.
-
-This is an `:after' advice for `set-minibuffer-message'."
-  (selectrum--when-compile (boundp 'minibuffer-message-overlay)
-    (when (and (bound-and-true-p selectrum-active-p)
-               (overlayp minibuffer-message-overlay))
-      (move-overlay minibuffer-message-overlay
-                    selectrum--end-of-input-marker
-                    selectrum--end-of-input-marker))))
-
-;;;###autoload
 (defun selectrum--fix-minibuffer-message (func &rest args)
   "Move the minibuffer message overlay to the right place.
 This advice fixes the overlay placed by `minibuffer-message',
@@ -1794,12 +1796,11 @@ not at the end of the candidate list.
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
   (if (bound-and-true-p selectrum-active-p)
-      (cl-letf* ((orig-make-overlay (symbol-function #'make-overlay))
-                 ((symbol-function #'make-overlay)
-                  (lambda (_beg _end &rest args)
-                    (apply orig-make-overlay
-                           selectrum--end-of-input-marker
-                           selectrum--end-of-input-marker
+      (cl-letf* ((orig-put-text-property (symbol-function #'put-text-property))
+                 ((symbol-function #'put-text-property)
+                  (lambda (beg end key val &rest args)
+                    (apply orig-put-text-property
+                           beg end key (if (eq key 'cursor) 1 val)
                            args))))
         (apply func args))
     (apply func args)))
@@ -1848,10 +1849,6 @@ ARGS are standard as in all `:around' advice."
                       #'selectrum-read-library-name)
           (advice-add #'minibuffer-message :around
                       #'selectrum--fix-minibuffer-message)
-          ;; No sharp quote because `set-minibuffer-message' is not
-          ;; defined in older Emacs versions.
-          (advice-add 'set-minibuffer-message :after
-                      #'selectrum--fix-set-minibuffer-message)
           (define-key minibuffer-local-map
             [remap previous-matching-history-element]
             'selectrum-select-from-history))
@@ -1880,10 +1877,6 @@ ARGS are standard as in all `:around' advice."
       ;; older Emacs versions.
       (advice-remove 'read-library-name #'selectrum-read-library-name)
       (advice-remove #'minibuffer-message #'selectrum--fix-minibuffer-message)
-      ;; No sharp quote because `set-minibuffer-message' is not
-      ;; defined in older Emacs versions.
-      (advice-remove 'set-minibuffer-message
-                     #'selectrum--fix-set-minibuffer-message)
       (when (eq (lookup-key minibuffer-local-map
                             [remap previous-matching-history-element])
                 #'selectrum-select-from-history)

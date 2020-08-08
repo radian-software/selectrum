@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* If `selectrum-candidate-display-right-margin` is used the margin is
+  included in the highlighting of the selected candidate so it's
+  easier to see to which candidate the margin belongs to.
 * If the `default-filename` passed to `selectrum-read-file-name` is an
   absolute path it will still be sorted to the top when it is
   contained in the prompting directory ([#160]).
@@ -77,6 +80,14 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
+* The mininbuffer height is now determined by the actual height of
+  displayed candidates. Previously the height could be off for
+  candidates containing unicode characters or other means which
+  changed the display height such as `line-spacing` ([#146], [#151],
+  [#154]).
+* When passing a named function or compiled lambda as `candidates`
+  argument to `selectrum-read` an error would be thrown, which has
+  been fixed ([#163]).
 * When selecting file name prompts and submitting them the result will
   be the selected prompt. Previously it could be the default file name
   passed to `selectrum-read-file-name` which is the behavior of
@@ -135,11 +146,15 @@ The format is based on [Keep a Changelog].
 [#133]: https://github.com/raxod502/selectrum/pull/133
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
+[#146]: https://github.com/raxod502/selectrum/issues/146
+[#151]: https://github.com/raxod502/selectrum/issues/151
 [#152]: https://github.com/raxod502/selectrum/pull/152
+[#154]: https://github.com/raxod502/selectrum/pull/154
 [#157]: https://github.com/raxod502/selectrum/issues/157
 [#159]: https://github.com/raxod502/selectrum/issues/159
 [#160]: https://github.com/raxod502/selectrum/pull/160
 [#161]: https://github.com/raxod502/selectrum/pull/161
+[#163]: https://github.com/raxod502/selectrum/pull/163
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
