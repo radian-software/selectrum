@@ -278,11 +278,11 @@ This option is a workaround for 2 problems:
   wrapping."
   :type 'integer)
 
-(defcustom selectrum-candidate-transformations
-  '((match      :indicator "->"  :face success)
-    (truncation :indicator "..." :face shadow)
-    (newline    :indicator "\\n" :face warning)
-    (whitespace :indicator ".."  :face shadow))
+(defcustom selectrum-multiline-display-settings
+  '((match      "->"  success)
+    (truncation "..." shadow)
+    (newline    "\\n" warning)
+    (whitespace ".."  shadow))
   "Indicators used to represent transformations in displayed candidates.
 This formatting does not affect the actual value of a candidate.
 By default, in the case of multi-line candidates, said candidates
@@ -290,26 +290,28 @@ are flattened, long candidates are truncated, repeated whitespace
 is shortened, and the matching line in a multi-line candidate is
 displayed at the front.
 
-These values affect the behavior of `selectrum--ensure-single-lines',
-which does the formatting by replacing the found pattern (except
-for indicating a match, in which case the indicator is inserted
-between the matched line and the candidate).
+When customizing this option, all indicators must be present in
+the list. They are \"match\", \"truncation\", \"newline\", and
+\"whitespace\".
 
 There are two values that make a transformation:
 1. A string to indicate the display change, such as \"..\", which
    replaces repeated whitespace.
 2. A face with which to display the indicator, such as `shadow'.
 
-In this way, a transformation is represented, e.g., as
-`(whitespace :indicator \"..\" :face shadow)'."
-  :type  '(alist :key-type (choice (const match)
-                                   (const truncation)
-                                   (const newline)
-                                   (const whitespace))
-                 :value-type (list (const :indicator)
-                                   (string :tag "Indicator string")
-                                   (const :face)
-                                   (face :tag "Indicator face"))))
+In this way, a setting is represented, e.g., as
+`(whitespace \"..\" shadow)'."
+  :type '(repeat (list :tag "Display settings"
+                       (choice (const :tag "Matching line"
+                                      match)
+                               (const :tag "Line truncation"
+                                      truncation)
+                               (const :tag "New lines"
+                                      newline)
+                               (const :tag "Repeated whitespace"
+                                      whitespace))
+                       (string :tag "Indicator string")
+                       (face :tag "Indicator face"))))
 
 ;;;; Utility functions
 
@@ -838,33 +840,35 @@ Multi-line canidates are merged into a single line."
   (let* ((single-line-candidates ())
 
          ;; The indicators are the same for all multi-line candidates, and so
-         ;; only need to be gotten from `selectrum-candidate-transformations'
+         ;; only need to be gotten from `selectrum-multiline-display-settings'
          ;; once.
-         (match-transformation
-          (alist-get 'match selectrum-candidate-transformations))
-         (match-display (plist-get match-transformation :indicator))
-         (match-face (plist-get match-transformation :face))
-         (truncation-transformation
-          (alist-get 'truncation selectrum-candidate-transformations))
-         (truncation-display (plist-get truncation-transformation :indicator))
-         (truncation-face (plist-get truncation-transformation :face))
-         (newline-transformation
-          (alist-get 'newline selectrum-candidate-transformations))
-         (newline-display (plist-get newline-transformation :indicator))
-         (newline-face (plist-get newline-transformation :face))
-         (whitespace-transformation
-          (alist-get 'whitespace selectrum-candidate-transformations))
-         (whitespace-display (plist-get whitespace-transformation :indicator))
-         (whitespace-face (plist-get whitespace-transformation :face)))
+         (selectrum--match-transformation
+          (alist-get 'match selectrum-multiline-display-settings))
+         (selectrum--match-display (car selectrum--match-transformation))
+         (selectrum--match-face (cadr selectrum--match-transformation))
+         (selectrum--truncation-transformation
+          (alist-get 'truncation selectrum-multiline-display-settings))
+         (selectrum--truncation-display (car selectrum--truncation-transformation))
+         (selectrum--truncation-face (cadr selectrum--truncation-transformation))
+         (selectrum--newline-transformation
+          (alist-get 'newline selectrum-multiline-display-settings))
+         (selectrum--newline-display (car selectrum--newline-transformation))
+         (selectrum--newline-face (cadr selectrum--newline-transformation))
+         (selectrum--whitespace-transformation
+          (alist-get 'whitespace selectrum-multiline-display-settings))
+         (selectrum--whitespace-display (car selectrum--whitespace-transformation))
+         (selectrum--whitespace-face (cadr selectrum--whitespace-transformation)))
 
     (dolist (cand candidates (nreverse single-line-candidates))
       (push
        (if (string-match-p "\n" cand)
            (replace-regexp-in-string
-            "\n" (propertize newline-display 'face newline-face)
+            "\n" (propertize selectrum--newline-display
+                             'face selectrum--newline-face)
             (replace-regexp-in-string
              "[ \t][ \t]+"
-             (propertize whitespace-display 'face whitespace-face)
+             (propertize selectrum--whitespace-display
+                         'face selectrum--whitespace-face)
              (concat (unless (string-empty-p (minibuffer-contents))
                        ;; Show first matched line.
                        (when-let ((match
@@ -873,13 +877,14 @@ Multi-line canidates are merged into a single line."
                                          (minibuffer-contents)
                                          (split-string cand "\n")))))
                          (concat match
-                                 (propertize match-display 'face match-face))))
+                                 (propertize selectrum--match-display
+                                             'face selectrum--match-face))))
                      (if (< (length cand) 1000)
                          cand
                        (concat
                         (substring cand 0 1000)
-                        (propertize truncation-display
-                                    'face truncation-face))))
+                        (propertize selectrum--truncation-display
+                                    'face selectrum--truncation-face))))
              ;; Replacements should be fixed-case and literal, to make things
              ;; simpler.
              t t)
