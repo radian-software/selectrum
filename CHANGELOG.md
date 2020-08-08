@@ -37,7 +37,7 @@ The format is based on [Keep a Changelog].
 ### Enhancements
 * If `selectrum-candidate-display-right-margin` is used the margin is
   included in the highlighting of the selected candidate so it's
-  easier to see to which candidate the margin belongs to.
+  easier to see to which candidate the margin belongs to ([#166]).
 * If the `default-filename` passed to `selectrum-read-file-name` is an
   absolute path it will still be sorted to the top when it is
   contained in the prompting directory ([#160]).
@@ -155,6 +155,7 @@ The format is based on [Keep a Changelog].
 [#160]: https://github.com/raxod502/selectrum/pull/160
 [#161]: https://github.com/raxod502/selectrum/pull/161
 [#163]: https://github.com/raxod502/selectrum/pull/163
+[#166]: https://github.com/raxod502/selectrum/pull/166
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
