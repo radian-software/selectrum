@@ -1635,10 +1635,11 @@ PREDICATE, see `read-file-name'."
                  (set-syntax-table
                   selectrum--minibuffer-local-filename-syntax)))
     (let* ((crf completing-read-function)
-           ;; <https://github.com/raxod502/selectrum/issues/61>. When
-           ;; you invoke another `completing-read' command recursively
-           ;; then it inherits the `completing-read-function' binding,
-           ;; and unless it's another file reading command using
+           ;; See <https://github.com/raxod502/selectrum/issues/61>.
+           ;; When you invoke another `completing-read' command
+           ;; recursively then it inherits the
+           ;; `completing-read-function' binding, and unless it's
+           ;; another file reading command using
            ;; `selectrum--completing-read-file-name' will cause an
            ;; error. To circumvent this we use the function to reset
            ;; the variable when called.
