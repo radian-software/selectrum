@@ -80,7 +80,7 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]).
 
 ### Bugs fixed
-* The mininbuffer height is now determined by the actual height of
+* The minibuffer height is now determined by the actual height of
   displayed candidates. Previously the height could be off for
   candidates containing unicode characters or other means which
   changed the display height such as `line-spacing` ([#146], [#151],
