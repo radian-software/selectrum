@@ -796,15 +796,16 @@ PRED defaults to `minibuffer-completion-predicate'."
 FIRST is the index of the first displayed candidate. HIGHLIGHTED
 is the index if the highlighted candidate. CANDS are the
 currently displayed candidates."
-  (when-let ((n (1+ selectrum-num-candidates-displayed))
+  (when-let ((n (if selectrum-fix-minibuffer-height
+                    (1+ selectrum-num-candidates-displayed)
+                  (max (window-height)               ; grow only
+                       (1+ (length cands)))))
              (win (active-minibuffer-window)))
     ;; Don't attempt to resize a minibuffer frame.
     (unless (frame-root-window-p win)
       ;; Set min initial height.
-      (when (and selectrum-fix-minibuffer-height
-                 selectrum--init-p)
-        (with-selected-window win
-          (setf (window-height) n)))
+      (with-selected-window win
+        (setf (window-height) n))
       ;; Adjust if needed.
       (when (or selectrum--init-p
                 (and selectrum--current-candidate-index
