@@ -85,7 +85,7 @@ The format is based on [Keep a Changelog].
   candidates containing unicode characters or other means which
   changed the display height such as `line-spacing` ([#146], [#151],
   [#154]).
-* When passing a named function or compiled lambda as `candidates`
+* When passing a named function or compiled lambda as CANDIDATES
   argument to `selectrum-read` an error would be thrown, which has
   been fixed ([#163]).
 * When selecting file name prompts and submitting them the result will
@@ -96,7 +96,7 @@ The format is based on [Keep a Changelog].
 * When there are no candidates and a match isn't required the prompt
   will now be shown as selected to indicate one can submit the input
   ([#160]).
-* If the `mustmatch` argument to `read-directory-name` was non-nil the
+* If the MUSTMATCH argument to `read-directory-name` was non-nil the
   selection of the prompt wasn't visible which has been fixed ([#157],
   [#160]).
 * If a predicate was passed to `read-buffer` an error would be thrown
