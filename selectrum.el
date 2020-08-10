@@ -868,41 +868,35 @@ Multi-line canidates are merged into a single line."
          ;; The indicators are the same for all multi-line candidates, and so
          ;; only need to be gotten from `selectrum-multiline-display-settings'
          ;; once.
-         (selectrum--match-transformation
+         ;; - Matching lines
+         (match/transformation
           (alist-get 'match selectrum-multiline-display-settings))
-         (selectrum--match-display
-          (car selectrum--match-transformation))
-         (selectrum--match-face
-          (cadr selectrum--match-transformation))
-         (selectrum--truncation-transformation
+         (match/display (car match/transformation))
+         (match/face (cadr match/transformation))
+         ;; - Truncated candidate
+         (truncation/transformation
           (alist-get 'truncation selectrum-multiline-display-settings))
-         (selectrum--truncation-display
-          (car selectrum--truncation-transformation))
-         (selectrum--truncation-face
-          (cadr selectrum--truncation-transformation))
-         (selectrum--newline-transformation
+         (truncation/display (car truncation/transformation))
+         (truncation/face (cadr truncation/transformation))
+         ;; - Newlines
+         (newline/transformation
           (alist-get 'newline selectrum-multiline-display-settings))
-         (selectrum--newline-display
-          (car selectrum--newline-transformation))
-         (selectrum--newline-face
-          (cadr selectrum--newline-transformation))
-         (selectrum--whitespace-transformation
+         (newline/display (car newline/transformation))
+         (newline/face (cadr newline/transformation))
+         ;; - Repeated whitespace
+         (whitespace/transformation
           (alist-get 'whitespace selectrum-multiline-display-settings))
-         (selectrum--whitespace-display
-          (car selectrum--whitespace-transformation))
-         (selectrum--whitespace-face
-          (cadr selectrum--whitespace-transformation)))
+         (whitespace/display (car whitespace/transformation))
+         (whitespace/face (cadr whitespace/transformation)))
 
     (dolist (cand candidates (nreverse single-line-candidates))
       (push
        (if (string-match-p "\n" cand)
            (replace-regexp-in-string
-            "\n" (propertize selectrum--newline-display
-                             'face selectrum--newline-face)
+            "\n" (propertize newline/display 'face newline/face)
             (replace-regexp-in-string
              "[ \t][ \t]+"
-             (propertize selectrum--whitespace-display
-                         'face selectrum--whitespace-face)
+             (propertize whitespace/display 'face whitespace/face)
              (concat (unless (string-empty-p (minibuffer-contents))
                        ;; Show first matched line.
                        (when-let ((match
@@ -911,14 +905,13 @@ Multi-line canidates are merged into a single line."
                                          (minibuffer-contents)
                                          (split-string cand "\n")))))
                          (concat match
-                                 (propertize selectrum--match-display
-                                             'face selectrum--match-face))))
+                                 (propertize match/display 'face match/face))))
                      (if (< (length cand) 1000)
                          cand
                        (concat
                         (substring cand 0 1000)
-                        (propertize selectrum--truncation-display
-                                    'face selectrum--truncation-face))))
+                        (propertize truncation/display
+                                    'face truncation/face))))
              ;; Replacements should be fixed-case and literal, to make things
              ;; simpler.
              t t)
