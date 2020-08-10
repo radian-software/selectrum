@@ -914,8 +914,8 @@ Multi-line canidates are merged into a single line."
                                     'face truncation/face))))
              ;; Replacements should be fixed-case and literal, to make things
              ;; simpler.
-             t t)
-            t t)
+             'fixed-case 'literal)
+            'fixed-case 'literal)
          cand)
        single/lines))))
 
