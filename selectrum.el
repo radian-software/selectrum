@@ -863,7 +863,7 @@ currently displayed candidates."
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single line CANDIDATES.
 Multi-line canidates are merged into a single line."
-  (let* ((single-line-candidates ())
+  (let* ((single/lines ())
 
          ;; The indicators are the same for all multi-line candidates, and so
          ;; only need to be gotten from `selectrum-multiline-display-settings'
@@ -889,7 +889,7 @@ Multi-line canidates are merged into a single line."
          (whitespace/display (car whitespace/transformation))
          (whitespace/face (cadr whitespace/transformation)))
 
-    (dolist (cand candidates (nreverse single-line-candidates))
+    (dolist (cand candidates (nreverse single/lines))
       (push
        (if (string-match-p "\n" cand)
            (replace-regexp-in-string
@@ -917,7 +917,7 @@ Multi-line canidates are merged into a single line."
              t t)
             t t)
          cand)
-       single-line-candidates))))
+       single/lines))))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
