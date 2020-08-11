@@ -74,8 +74,8 @@ The format is based on [Keep a Changelog].
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
   candidate list. The first matched line is shown in front of the
-  merged lines ([#133]). The indicators used in these transformations
-  are customizable ([#147]).
+  merged lines ([#133]). The indicators used to represent this
+  formatting are customizable ([#147]).
 
 ### Bugs fixed
 * The mininbuffer height is now determined by the actual height of
