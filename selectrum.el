@@ -1803,6 +1803,32 @@ ARGS are standard as in all `:around' advice."
         (apply func args))
     (apply func args)))
 
+(defvar selectrum--old-minibuffer-default-add-function nil)
+
+;;;###autoload
+(defun selectrum-minibuffer-default-add-function ()
+  "Meant to be used as `minibuffer-default-add-function'."
+  (with-selected-window (minibuffer-selected-window)
+    (delete-dups
+     (delq nil
+           (list (thing-at-point 'symbol)
+                 (thing-at-point 'list)
+                 (ffap-guesser)
+                 (thing-at-point-url-at-point))))))
+
+;;;###autoload
+(defun selectrum-complete-path-at-point ()
+  "Meant to be used for `completion-at-point-functions'."
+  (let ((fn (ffap-file-at-point))
+        (fap (thing-at-point 'filename)))
+    (when (and (or fn
+                   (equal "/" fap))
+               (save-excursion
+                 (search-backward fap (line-beginning-position) t)))
+      (list (match-beginning 0)
+            (match-end 0)
+            #'completion-file-name-table))))
+
 ;; You may ask why we copy the entire minor-mode definition into the
 ;; autoloads file, and autoload several private functions as well.
 ;; This is because enabling `selectrum-mode' does not actually require
@@ -1836,6 +1862,12 @@ ARGS are standard as in all `:around' advice."
                 (default-value 'completion-in-region-function))
           (setq-default completion-in-region-function
                         #'selectrum-completion-in-region)
+          (setq selectrum--old-minibuffer-default-add-function
+                minibuffer-default-add-function)
+          (setq minibuffer-default-add-function
+                #'selectrum-minibuffer-default-add-function)
+          (add-hook 'completion-at-point-functions
+                    #'selectrum-complete-path-at-point 'append)
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
@@ -1866,6 +1898,12 @@ ARGS are standard as in all `:around' advice."
                    #'selectrum-completion-in-region)
         (setq-default completion-in-region-function
                       selectrum--old-completion-in-region-function))
+      (when (equal (default-value 'minibuffer-default-add-function)
+                   #'selectrum-minibuffer-default-add-function)
+        (setq-default minibuffer-default-add-function
+                      selectrum--old-minibuffer-default-add-function))
+      (remove-hook 'completion-at-point-functions
+                   #'selectrum-complete-path-at-point)
       (advice-remove #'completing-read-multiple
                      #'selectrum-completing-read-multiple)
       ;; No sharp quote because Dired may not be loaded yet.
@@ -1880,6 +1918,11 @@ ARGS are standard as in all `:around' advice."
                 #'selectrum-select-from-history)
         (define-key minibuffer-local-map
           [remap previous-matching-history-element] nil)))))
+
+(with-eval-after-load "embark-autoloads"
+  (add-hook 'selectrum-mode-hook 'selectrum-config-embark)
+  (when selectrum-mode
+    (selectrum-config-embark)))
 
 ;;;; Closing remarks
 
