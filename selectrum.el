@@ -939,7 +939,7 @@ candidate."
         (lines
          (selectrum--ensure-single-lines
           ;; First pass the candidates to the highlight function
-          ;; before stipping multi-lines because it might expect
+          ;; before stripping multi-lines because it might expect
           ;; getting passed the same candidates as were passed
           ;; to the filter function (for example `orderless'
           ;; requires this).
