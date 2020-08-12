@@ -293,8 +293,8 @@ candidate. This formatting does not affect the actual value of a
 candidate.
 
 When customizing this option, all indicators must be present in
-the list. They are \"match\", \"truncation\", \"newline\", and
-\"whitespace\".
+the list. They are `match', `truncation', `newline', and
+`whitespace'.
 
 There are two values that make a transformation:
 1. A string to indicate the display change, such as `\"..\"', which
