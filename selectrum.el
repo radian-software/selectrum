@@ -283,26 +283,36 @@ This option is a workaround for 2 problems:
     (truncation "..." shadow)
     (newline    "\\n" warning)
     (whitespace ".."  shadow))
-  "Indicators used to represent formatting in multi-line candidates.
+  "Settings used to configure the formatting of multi-line candidates.
 
 Currently, multi-line candidates are flattened, stripped of
 repeated whitespace, and, if need be, truncated. Additionally,
 when a multi-line candidate matches the user's input, the
 matching line is also displayed at the beginning of the
-candidate. This formatting does not affect the actual value of a
-candidate.
+candidate. This option affects how such formatting looks.
 
-When customizing this option, all indicators must be present in
-the list. They are `match', `truncation', `newline', and
-`whitespace'.
+This formatting does not affect the actual value of a candidate.
 
-There are two values that make a transformation:
-1. A string to indicate the display change, such as `\"..\"', which
-   replaces repeated whitespace.
-2. A face to assign to the indicator string, such as `shadow'.
+When customizing this option, a setting for each transformation
+(defined below) must be present in the list.
 
-Therefore, a setting is represented, e.g., as
-`(whitespace \"..\" shadow)'."
+There are three values that make a setting:
+1. A symbol from the following list:
+   - `newline' determines the string used to replace line breaks in the
+   candidate, which flattens the candidate into one line.
+   - `whitespace' determines the string used to replace repeated
+   whitespace, which shortens the candidate.
+   - `truncation' determines the string to append to a flattened and
+   truncated candidate.
+   - `match' determines the string to insert between the matching
+    line and the flattened candidate.
+2. A string to indicate the display change.
+3. A face to assign to the indicator string.
+
+Therefore, a setting is represented as a list with three
+elements: a symbol, a string, and a face, in that order.
+This option is itself a list of 4 sub-lists, one for each
+setting."
   :type '(repeat (list :tag "Display settings"
                        (choice (const :tag "Matching line"
                                       match)
