@@ -283,23 +283,25 @@ This option is a workaround for 2 problems:
     (truncation "..." shadow)
     (newline    "\\n" warning)
     (whitespace ".."  shadow))
-  "Indicators used to represent transformations in displayed candidates.
-This formatting does not affect the actual value of a candidate.
-By default, in the case of multi-line candidates, said candidates
-are flattened, long candidates are truncated, repeated whitespace
-is shortened, and the matching line in a multi-line candidate is
-displayed at the front.
+  "Indicators used to represent formatting in multi-line candidates.
+
+Currently, multi-line candidates are flattened, stripped of
+repeated whitespace, and, if need be, truncated. Additionally,
+when a multi-line candidate matches the user's input, the
+matching line is also displayed at the beginning of the
+candidate. This formatting does not affect the actual value of a
+candidate.
 
 When customizing this option, all indicators must be present in
 the list. They are \"match\", \"truncation\", \"newline\", and
 \"whitespace\".
 
 There are two values that make a transformation:
-1. A string to indicate the display change, such as \"..\", which
+1. A string to indicate the display change, such as `\"..\"', which
    replaces repeated whitespace.
-2. A face with which to display the indicator, such as `shadow'.
+2. A face to assign to the indicator string, such as `shadow'.
 
-In this way, a setting is represented, e.g., as
+Therefore, a setting is represented, e.g., as
 `(whitespace \"..\" shadow)'."
   :type '(repeat (list :tag "Display settings"
                        (choice (const :tag "Matching line"
@@ -862,7 +864,12 @@ currently displayed candidates."
 
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single line CANDIDATES.
-Multi-line canidates are merged into a single line."
+Multi-line candidates are merged into a single line. The resulting
+single-line candidates are then shortened by replacing repeated
+whitespace and maybe truncating the result.
+
+These changes are indicated by strings defined in
+`selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
          ;; The indicators are the same for all multi-line candidates, and so
