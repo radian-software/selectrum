@@ -294,7 +294,7 @@ candidate. This option affects how such formatting looks.
 This formatting does not affect the actual value of a candidate.
 
 When customizing this option, a setting for each transformation
-(defined below) must be present in the list.
+\(defined below) must be present in the list.
 
 There are three values that make a setting:
 1. A symbol from the following list:
