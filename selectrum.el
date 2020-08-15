@@ -873,18 +873,19 @@ currently displayed candidates."
              win (- dheight wheight) nil nil 'pixelwise)))))))
 
 (defun selectrum--ensure-single-lines (candidates)
-  "Return list of single line CANDIDATES.
+  "Return list of single-line CANDIDATES.
 Multi-line candidates are merged into a single line. The resulting
 single-line candidates are then shortened by replacing repeated
 whitespace and maybe truncating the result.
 
-These changes are indicated by strings defined in
+The specific details of the formatting are determined by
 `selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
-         ;; The indicators are the same for all multi-line candidates, and so
-         ;; only need to be gotten from `selectrum-multiline-display-settings'
-         ;; once.
+         ;; The formatting settings are the same for all multi-line
+         ;; candidates, and so only need to be gotten once from
+         ;; `selectrum-multiline-display-settings'.
+         ;;
          ;; - Matching lines
          (match/transformation
           (alist-get 'match selectrum-multiline-display-settings))
