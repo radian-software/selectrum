@@ -542,10 +542,12 @@ candidates as per `selectrum-candidate-full' text property."
 
 (defun selectrum-set-selected-candidate (&optional string)
   "Set currently selected candidate to STRING.
-STRING defaults to `minibuffer-contents'. This function skips
-recomputation of candidates. This is useful for injecting a
-candidate in `minibuffer-setup-hook' and immediately exit with it
-afterwards."
+STRING defaults to `minibuffer-contents'. Computation of
+candidates is skipped from there on. This is useful for injecting
+a candidate in `minibuffer-setup-hook' and immediately exit with
+it afterwards. With default completion there is no computation
+triggered initially and this function can be used to mimic this
+behavior."
   (when selectrum-active-p
     (with-selected-window (active-minibuffer-window)
       (let ((string (or string (minibuffer-contents))))
