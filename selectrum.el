@@ -1634,7 +1634,10 @@ PREDICATE, see `read-file-name'."
                           (file-relative-name default-filename
                                               default-directory))))
                  (set-syntax-table
-                  selectrum--minibuffer-local-filename-syntax)))
+                  selectrum--minibuffer-local-filename-syntax)
+                 ;; make `<C-backspace>' to delete the whole file-name
+                 ;; instead of part
+                 (superword-mode +1)))
     (let* ((crf completing-read-function)
            ;; See <https://github.com/raxod502/selectrum/issues/61>.
            ;; When you invoke another `completing-read' command
