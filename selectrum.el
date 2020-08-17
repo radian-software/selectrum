@@ -497,7 +497,7 @@ This is used to implement `selectrum-repeat'.")
   "If selectrum should skip updates.
 
 In normal operation Selectrum checks for updating its UI after
-each command. When this variabele is non-nil the computation of
+each command. When this variable is non-nil the computation of
 updates is skipped.")
 
 (defvar-local selectrum--init-p nil
