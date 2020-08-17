@@ -77,7 +77,8 @@ The format is based on [Keep a Changelog].
 * Multiline candidates are now merged into a single truncated line so
   there is no gradual scrolling effect anymore when going through the
   candidate list. The first matched line is shown in front of the
-  merged lines ([#133]).
+  merged lines ([#133]). This formatting is customizable via
+  `selectrum-multiline-display-settings` ([#147]).
 
 ### Bugs fixed
 * The minibuffer height is now determined by the actual height of
@@ -147,6 +148,7 @@ The format is based on [Keep a Changelog].
 [#138]: https://github.com/raxod502/selectrum/pull/138
 [#140]: https://github.com/raxod502/selectrum/pull/140
 [#146]: https://github.com/raxod502/selectrum/issues/146
+[#147]: https://github.com/raxod502/selectrum/pull/147
 [#151]: https://github.com/raxod502/selectrum/issues/151
 [#152]: https://github.com/raxod502/selectrum/pull/152
 [#154]: https://github.com/raxod502/selectrum/pull/154
