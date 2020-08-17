@@ -239,6 +239,17 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
+(defcustom selectrum-history-style 'candidate
+  "The style for adding candidate to history.
+
+Possible values are:
+
+- \\='candidate: add the current selected candidate to history.
+- \\='input: add the current input to history."
+  :type '(choice
+          (const :tag "Selected candidate" 'candidate)
+          (const :tag "Current input" 'input)))
+
 (defcustom selectrum-show-indices nil
   "Non-nil means to number the candidates (starting from 1).
 This allows you to select one directly by providing a prefix
@@ -402,12 +413,6 @@ making other methods redundant."
                             (if (consp matcher)
                                 (cadr matcher)
                               0)))))))))
-
-(defun selectrum--add-to-history (history-var item)
-  "Add HISTORY-VAR the ITEM when the item is not empty.
-If HISTORY-VAR is not provided, then will add to `minibuffer-history'."
-  (when (> (length item) 0)
-    (add-to-history (or history-var 'minibuffer-history) item)))
 
 ;;;; Minibuffer state
 
@@ -612,6 +617,24 @@ PRED defaults to `minibuffer-completion-predicate'."
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
       (selectrum--minibuffer-post-command-hook))))
+
+(defun selectrum--add-current-history ()
+  "Add item to history list for the completing.
+
+Item will be the selected candidate when `selectrum-history-style'
+is 'candidate, or be the current input string when `selectrum-history-style'
+is 'input.
+
+The default behavior is 'candidate."
+  (let ((item (cond ((eq selectrum-history-style 'candidate)
+                     (selectrum-get-current-candidate))
+                    ((eq selectrum-history-style 'input)
+                     (buffer-substring-no-properties
+                      selectrum--start-of-input-marker
+                      selectrum--end-of-input-marker)))))
+    (when (> (length item) 0)
+      (add-to-history (or selectrum--current-history 'minibuffer-history)
+                      item))))
 
 ;;;; Hook functions
 
@@ -1136,11 +1159,7 @@ Zero means to select the current user input."
                    (min (1- (prefix-numeric-value arg))
                         (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
-    ;; add current input into history
-    (selectrum--add-to-history selectrum--current-history
-                               (buffer-substring-no-properties
-                                selectrum--start-of-input-marker
-                                selectrum--end-of-input-marker))
+    (selectrum--add-current-history)
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
@@ -1156,11 +1175,10 @@ This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
   (unless selectrum--match-required-p
-    (let ((input (buffer-substring-no-properties
-                  selectrum--start-of-input-marker
-                  selectrum--end-of-input-marker)))
-      (selectrum--add-to-history selectrum--current-history input)
-      (selectrum--exit-with input))))
+    (selectrum--add-current-history)
+    (selectrum--exit-with (buffer-substring-no-properties
+                           selectrum--start-of-input-marker
+                           selectrum--end-of-input-marker))))
 
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
