@@ -403,6 +403,12 @@ making other methods redundant."
                                 (cadr matcher)
                               0)))))))))
 
+(defun selectrum--add-to-history (history-var item)
+  "Add HISTORY-VAR the ITEM when the item is not empty.
+If HISTORY-VAR is not provided, then will add to `minibuffer-history'."
+  (when (> (length item) 0)
+    (add-to-history (or history-var 'minibuffer-history) item)))
+
 ;;;; Minibuffer state
 
 (defvar selectrum--start-of-input-marker nil
@@ -497,6 +503,9 @@ This is used to implement `selectrum-repeat'.")
   "Non-nil means the current session is initializing.
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
+
+(defvar-local selectrum--current-history nil
+  "Saved the history-var of completing.")
 
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
@@ -981,15 +990,17 @@ candidate."
   (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate initial-input)
+    (candidates &key default-candidate initial-input history)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. INITIAL-INPUT, if provided, is inserted
-into the user input area to start with."
+into the user input area to start with. HISTORY, if provided, is
+used as the history-variable."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
+  (setq selectrum--current-history history)
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
@@ -1125,6 +1136,11 @@ Zero means to select the current user input."
                    (min (1- (prefix-numeric-value arg))
                         (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
+    ;; add current input into history
+    (selectrum--add-to-history selectrum--current-history
+                               (buffer-substring-no-properties
+                                selectrum--start-of-input-marker
+                                selectrum--end-of-input-marker))
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
@@ -1140,10 +1156,11 @@ This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
   (unless selectrum--match-required-p
-    (selectrum--exit-with
-     (buffer-substring-no-properties
-      selectrum--start-of-input-marker
-      selectrum--end-of-input-marker))))
+    (let ((input (buffer-substring-no-properties
+                  selectrum--start-of-input-marker
+                  selectrum--end-of-input-marker)))
+      (selectrum--add-to-history selectrum--current-history input)
+      (selectrum--exit-with input))))
 
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
@@ -1327,7 +1344,8 @@ semantics of `cl-defun'."
             (selectrum--minibuffer-setup-hook
              candidates
              :default-candidate default-candidate
-             :initial-input initial-input))
+             :initial-input initial-input
+             :history history))
         (let* ((minibuffer-allow-text-properties t)
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
@@ -1335,6 +1353,7 @@ semantics of `cl-defun'."
                (prompt (selectrum--remove-default-from-prompt prompt))
                ;; <https://github.com/raxod502/selectrum/issues/99>
                (icomplete-mode nil)
+               (history-add-new-input nil)
                (selectrum-active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
