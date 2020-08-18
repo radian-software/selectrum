@@ -633,7 +633,7 @@ The default behavior is 'candidate."
                       selectrum--start-of-input-marker
                       selectrum--end-of-input-marker)))))
     (when (> (length item) 0)
-      (add-to-history (or selectrum--current-history 'minibuffer-history)
+      (add-to-history selectrum--current-history
                       item))))
 
 ;;;; Hook functions
