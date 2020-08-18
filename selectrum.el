@@ -1363,7 +1363,7 @@ semantics of `cl-defun'."
              candidates
              :default-candidate default-candidate
              :initial-input initial-input
-             :history history))
+             :history (or history 'minibuffer-history)))
         (let* ((minibuffer-allow-text-properties t)
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
