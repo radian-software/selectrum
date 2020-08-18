@@ -510,7 +510,7 @@ This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
 (defvar-local selectrum--current-history nil
-  "Saved the history-var of completing.")
+  "The value of `minibuffer-history-variable' for the current session.")
 
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
