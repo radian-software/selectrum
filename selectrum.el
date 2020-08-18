@@ -619,7 +619,7 @@ PRED defaults to `minibuffer-completion-predicate'."
       (selectrum--minibuffer-post-command-hook))))
 
 (defun selectrum--add-current-history ()
-  "Add item to history list for the completing.
+  "Add candidate to history.
 
 Item will be the selected candidate when `selectrum-history-style'
 is 'candidate, or be the current input string when `selectrum-history-style'
