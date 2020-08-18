@@ -96,6 +96,22 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
+(defcustom selectrum-auto-configure nil
+  "Whether `selectrum-mode' runs configuration setups.
+This variable needs to be set before activating `selectrum-mode'
+to take affect. The setups are defined by
+`selectrum-config-hook'."
+  :type 'boolean)
+
+(defcustom selectrum-config-hook
+  '(selectrum-setup-completion-at-point-functions
+    selectrum-setup-minibuffer-default-add-function
+    selectrum-setup-embark)
+  "Hook to auto configure Selectrum.
+Function in this hook are called when `selectrum-mode' is toggled
+and `selectrum-auto-configure' is non-nil."
+  :type 'hook)
+
 (defcustom selectrum-num-candidates-displayed 10
   "Maximum number of candidates which are displayed at the same time.
 The height of the minibuffer will be this number of rows plus one
@@ -1803,31 +1819,7 @@ ARGS are standard as in all `:around' advice."
         (apply func args))
     (apply func args)))
 
-(defvar selectrum--old-minibuffer-default-add-function nil)
-
-;;;###autoload
-(defun selectrum-minibuffer-default-add-function ()
-  "Meant to be used as `minibuffer-default-add-function'."
-  (with-selected-window (minibuffer-selected-window)
-    (delete-dups
-     (delq nil
-           (list (thing-at-point 'symbol)
-                 (thing-at-point 'list)
-                 (ffap-guesser)
-                 (thing-at-point-url-at-point))))))
-
-;;;###autoload
-(defun selectrum-complete-path-at-point ()
-  "Meant to be used for `completion-at-point-functions'."
-  (let ((fn (ffap-file-at-point))
-        (fap (thing-at-point 'filename)))
-    (when (and (or fn
-                   (equal "/" fap))
-               (save-excursion
-                 (search-backward fap (line-beginning-position) t)))
-      (list (match-beginning 0)
-            (match-end 0)
-            #'completion-file-name-table))))
+(defvar selectrum--auto-configured nil)
 
 ;; You may ask why we copy the entire minor-mode definition into the
 ;; autoloads file, and autoload several private functions as well.
@@ -1862,12 +1854,10 @@ ARGS are standard as in all `:around' advice."
                 (default-value 'completion-in-region-function))
           (setq-default completion-in-region-function
                         #'selectrum-completion-in-region)
-          (setq selectrum--old-minibuffer-default-add-function
-                minibuffer-default-add-function)
-          (setq minibuffer-default-add-function
-                #'selectrum-minibuffer-default-add-function)
-          (add-hook 'completion-at-point-functions
-                    #'selectrum-complete-path-at-point 'append)
+          (when selectrum-auto-configure
+            (require 'selectrum-config)
+            (setq selectrum--auto-configured t)
+            (run-hooks 'selectrum-config-hook))
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
@@ -1898,12 +1888,6 @@ ARGS are standard as in all `:around' advice."
                    #'selectrum-completion-in-region)
         (setq-default completion-in-region-function
                       selectrum--old-completion-in-region-function))
-      (when (equal (default-value 'minibuffer-default-add-function)
-                   #'selectrum-minibuffer-default-add-function)
-        (setq-default minibuffer-default-add-function
-                      selectrum--old-minibuffer-default-add-function))
-      (remove-hook 'completion-at-point-functions
-                   #'selectrum-complete-path-at-point)
       (advice-remove #'completing-read-multiple
                      #'selectrum-completing-read-multiple)
       ;; No sharp quote because Dired may not be loaded yet.
@@ -1917,12 +1901,11 @@ ARGS are standard as in all `:around' advice."
                             [remap previous-matching-history-element])
                 #'selectrum-select-from-history)
         (define-key minibuffer-local-map
-          [remap previous-matching-history-element] nil)))))
+          [remap previous-matching-history-element] nil))
+      (when selectrum--auto-configured
+        (setq selectrum--auto-configured nil)
+        (run-hooks 'selectrum-config-hook)))))
 
-(with-eval-after-load "embark-autoloads"
-  (add-hook 'selectrum-mode-hook 'selectrum-config-embark)
-  (when selectrum-mode
-    (selectrum-config-embark)))
 
 ;;;; Closing remarks
 
