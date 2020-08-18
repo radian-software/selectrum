@@ -621,11 +621,7 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defun selectrum--add-current-history ()
   "Add candidate to history.
 
-Item will be the selected candidate when `selectrum-history-style'
-is 'candidate, or be the current input string when `selectrum-history-style'
-is 'input.
-
-The default behavior is 'candidate."
+What gets added is determined by `selectrum-history-style'."
   (let ((item (cond ((eq selectrum-history-style 'candidate)
                      (selectrum-get-current-candidate))
                     ((eq selectrum-history-style 'input)
@@ -1144,6 +1140,9 @@ plus CANDIDATE."
     (insert (if (string-empty-p result)
                 (or selectrum--default-candidate result)
               result))
+    (when history-add-new-input
+      (selectrum--add-current-history))
+    (setq-local history-add-new-input nil)
     (exit-minibuffer)))
 
 (defun selectrum-select-current-candidate (&optional arg)
@@ -1159,7 +1158,6 @@ Zero means to select the current user input."
                    (min (1- (prefix-numeric-value arg))
                         (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
-    (selectrum--add-current-history)
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
@@ -1175,7 +1173,6 @@ This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
   (unless selectrum--match-required-p
-    (selectrum--add-current-history)
     (selectrum--exit-with (buffer-substring-no-properties
                            selectrum--start-of-input-marker
                            selectrum--end-of-input-marker))))
@@ -1371,7 +1368,6 @@ semantics of `cl-defun'."
                (prompt (selectrum--remove-default-from-prompt prompt))
                ;; <https://github.com/raxod502/selectrum/issues/99>
                (icomplete-mode nil)
-               (history-add-new-input nil)
                (selectrum-active-p t))
           (read-from-minibuffer
            prompt nil keymap nil
