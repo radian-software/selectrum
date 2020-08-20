@@ -1882,13 +1882,24 @@ at the front.
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
   (if (bound-and-true-p selectrum-active-p)
-      (cl-letf* ((orig-put-text-property (symbol-function #'put-text-property))
-                 ((symbol-function #'put-text-property)
-                  (lambda (beg end key val &rest args)
-                    (apply orig-put-text-property
-                           beg end key (if (eq key 'cursor) 1 val)
-                           args))))
-        (apply func args))
+      (run-at-time
+       0 nil
+       (lambda ()
+         (cl-letf* ((orig-put-text-property
+                     (symbol-function #'put-text-property))
+                    ((symbol-function #'put-text-property)
+                     (lambda (beg end key val &rest args)
+                       (apply orig-put-text-property
+                              beg end key (if (eq key 'cursor) 1 val)
+                              args)))
+                    (orig-make-overlay
+                     (symbol-function #'make-overlay))
+                    ((symbol-function #'make-overlay)
+                     (lambda (&rest args)
+                       (let ((ov (apply orig-make-overlay args)))
+                         (overlay-put ov 'priority 1100)
+                         ov))))
+           (apply func args))))
     (apply func args)))
 
 ;; You may ask why we copy the entire minor-mode definition into the
