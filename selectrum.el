@@ -1871,13 +1871,14 @@ shadows correctly."
 (defun selectrum--fix-minibuffer-message (func &rest args)
   "Ensure the cursor stays at the front of the minibuffer message.
 This advice adjusts where the cursor gets placed for the overlay
-of `minibuffer-message'.
+of `minibuffer-message' and ensures the overlay gets displayed at
+the right place without blocking the display of candidates.
 
 To test that this advice is working correctly, type \\[find-file]
-twice in a row. The overlay indicating that recursive minibuffers
-are not allowed should appear right after the user input area,
-not at the end of the candidate list and the cursor should stay
-at the front.
+twice in a row with `enable-recursive-minibuffers' set to nil.
+The overlay indicating that recursive minibuffers are not allowed
+should appear right after the user input area, not at the end of
+the candidate list and the cursor should stay at the front.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
