@@ -1871,24 +1871,41 @@ shadows correctly."
 (defun selectrum--fix-minibuffer-message (func &rest args)
   "Ensure the cursor stays at the front of the minibuffer message.
 This advice adjusts where the cursor gets placed for the overlay
-of `minibuffer-message'.
+of `minibuffer-message' and ensures the overlay gets displayed at
+the right place without blocking the display of candidates.
 
 To test that this advice is working correctly, type \\[find-file]
-twice in a row. The overlay indicating that recursive minibuffers
-are not allowed should appear right after the user input area,
-not at the end of the candidate list and the cursor should stay
-at the front.
+twice in a row with `enable-recursive-minibuffers' set to nil.
+The overlay indicating that recursive minibuffers are not allowed
+should appear right after the user input area, not at the end of
+the candidate list and the cursor should stay at the front.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
   (if (bound-and-true-p selectrum-active-p)
-      (cl-letf* ((orig-put-text-property (symbol-function #'put-text-property))
-                 ((symbol-function #'put-text-property)
-                  (lambda (beg end key val &rest args)
-                    (apply orig-put-text-property
-                           beg end key (if (eq key 'cursor) 1 val)
-                           args))))
-        (apply func args))
+      ;; Delay execution so candidates get displayed first.
+      (run-at-time
+       0 nil
+       (lambda ()
+         (cl-letf* ((orig-put-text-property
+                     (symbol-function #'put-text-property))
+                    ((symbol-function #'put-text-property)
+                     (lambda (beg end key val &rest args)
+                       ;; Set cursor property like
+                       ;; `set-minibuffer-message' in Emacs 27.
+                       (apply orig-put-text-property
+                              beg end key (if (eq key 'cursor) 1 val)
+                              args)))
+                    (orig-make-overlay
+                     (symbol-function #'make-overlay))
+                    ((symbol-function #'make-overlay)
+                     (lambda (&rest args)
+                       (let ((ov (apply orig-make-overlay args)))
+                         ;; Set overlay priority like
+                         ;; `set-minibuffer-message' in Emacs 27.
+                         (overlay-put ov 'priority 1100)
+                         ov))))
+           (apply func args))))
     (apply func args)))
 
 ;; You may ask why we copy the entire minor-mode definition into the
