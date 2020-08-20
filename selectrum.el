@@ -1883,6 +1883,7 @@ the candidate list and the cursor should stay at the front.
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
   (if (bound-and-true-p selectrum-active-p)
+      ;; Delay execution so candidates get displayed first.
       (run-at-time
        0 nil
        (lambda ()
@@ -1890,6 +1891,8 @@ ARGS are standard as in all `:around' advice."
                      (symbol-function #'put-text-property))
                     ((symbol-function #'put-text-property)
                      (lambda (beg end key val &rest args)
+                       ;; Set cursor property like
+                       ;; `set-minibuffer-message' in Emacs 27.
                        (apply orig-put-text-property
                               beg end key (if (eq key 'cursor) 1 val)
                               args)))
@@ -1898,6 +1901,8 @@ ARGS are standard as in all `:around' advice."
                     ((symbol-function #'make-overlay)
                      (lambda (&rest args)
                        (let ((ov (apply orig-make-overlay args)))
+                         ;; Set overlay priority like
+                         ;; `set-minibuffer-message' in Emacs 27.
                          (overlay-put ov 'priority 1100)
                          ov))))
            (apply func args))))
