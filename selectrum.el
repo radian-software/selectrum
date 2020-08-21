@@ -239,16 +239,9 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
-(defcustom selectrum-history-style 'candidate
-  "The style for adding candidate to history.
-
-Possible values are:
-
-- \\='candidate: add the current selected candidate to history.
-- \\='input: add the current input to history."
-  :type '(choice
-          (const :tag "Selected candidate" 'candidate)
-          (const :tag "Current input" 'input)))
+(defcustom selectrum-history-use-input nil
+  ""
+  :type 'boolean)
 
 (defcustom selectrum-show-indices nil
   "Non-nil means to number the candidates (starting from 1).
@@ -509,9 +502,6 @@ This is used to implement `selectrum-repeat'.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
-(defvar-local selectrum--current-history nil
-  "The value of `minibuffer-history-variable' for the current session.")
-
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
@@ -619,18 +609,15 @@ PRED defaults to `minibuffer-completion-predicate'."
       (selectrum--minibuffer-post-command-hook))))
 
 (defun selectrum--add-current-history ()
-  "Add candidate to history.
-
-What gets added is determined by `selectrum-history-style'."
-  (let ((item (cond ((eq selectrum-history-style 'candidate)
-                     (selectrum-get-current-candidate))
-                    ((eq selectrum-history-style 'input)
+  ""
+  (let ((item (cond (selectrum-history-use-input
                      (buffer-substring-no-properties
                       selectrum--start-of-input-marker
-                      selectrum--end-of-input-marker)))))
+                      selectrum--end-of-input-marker))
+                    (t
+                     (selectrum-get-current-candidate)))))
     (when (> (length item) 0)
-      (add-to-history selectrum--current-history
-                      item))))
+      (add-to-history minibuffer-history-variable item))))
 
 ;;;; Hook functions
 
@@ -1019,7 +1006,6 @@ used as the history-variable."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq-local selectrum--current-history history)
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
