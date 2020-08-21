@@ -187,6 +187,8 @@ strings."
     ([remap next-line]                        . selectrum-next-candidate)
     ([remap previous-line-or-history-element] . selectrum-previous-candidate)
     ([remap next-line-or-history-element]     . selectrum-next-candidate)
+    ([remap previous-history-element]         . selectrum-previous-history-element)
+    ([remap next-history-element]             . selectrum-next-history-element)
     ([remap exit-minibuffer]
      . selectrum-select-current-candidate)
     ([remap scroll-down-command]              . selectrum-previous-page)
@@ -608,17 +610,33 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq selectrum--previous-input-string nil)
       (selectrum--minibuffer-post-command-hook))))
 
-(defun selectrum--add-current-history ()
-  ""
-  (let ((item (cond (selectrum-history-use-input
-                     (buffer-substring-no-properties
-                      selectrum--start-of-input-marker
-                      selectrum--end-of-input-marker))
-                    (t
-                     (selectrum-get-current-candidate)))))
-    (when (> (length item) 0)
-      (add-to-history minibuffer-history-variable item))))
+(defvar selectrum--input-history nil)
 
+(defun selectrum--get-current-history-var ()
+  (if (not selectrum-history-use-input)
+      minibuffer-history-variable
+    (unless selectrum--input-history
+      (setq-local selectrum--input-history
+                  (mapcar (lambda (item)
+                            (or (get-text-property
+                                 0 'selectrum--input-history item)
+                                item))
+                          ;; TODO: test with buffer local histvar in emacs 27
+                          (symbol-value minibuffer-history-variable))))
+    'selectrum--input-history))
+
+(defun selectrum-previous-history-element ()
+  (interactive)
+  (let ((minibuffer-history-variable
+         (selectrum--get-current-history-var)))
+    (call-interactively 'previous-history-element)))
+
+(defun selectrum-next-history-element ()
+  (interactive)
+  (let ((minibuffer-history-variable
+         (selectrum--get-current-history-var)))
+    (call-interactively 'next-history-element)))
+             
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -1006,6 +1024,7 @@ used as the history-variable."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
+  (setq selectrum--input-history nil)
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
@@ -1122,13 +1141,22 @@ plus CANDIDATE."
                          candidate selectrum--read-args)
                         (selectrum--get-full candidate))))
          (inhibit-read-only t))
+    (when history-add-new-input
+      (let ((item (propertize
+                   result
+                   'selectrum--input-history
+                   (buffer-substring-no-properties
+                    selectrum--start-of-input-marker
+                    selectrum--end-of-input-marker))))
+        (when (> (length item) 0)
+          ;; Respect local history variables.
+          (with-current-buffer (window-buffer (minibuffer-selected-window))
+            (add-to-history minibuffer-history-variable item))))
+      (setq-local history-add-new-input nil))
     (erase-buffer)
     (insert (if (string-empty-p result)
                 (or selectrum--default-candidate result)
               result))
-    (when history-add-new-input
-      (selectrum--add-current-history))
-    (setq-local history-add-new-input nil)
     (exit-minibuffer)))
 
 (defun selectrum-select-current-candidate (&optional arg)
