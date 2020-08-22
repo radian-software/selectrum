@@ -1402,7 +1402,10 @@ If Selectrum isn't active, don't exit after submission."
                    (setq-local selectrum-candidate-selected-hook nil))
                (catch 'insert-action
                  (completing-read
-                  "History (press TAB to insert input history): "
+                  (format
+                   "History (press %s to insert input history): "
+                   (substitute-command-keys
+                    "\\[selectrum-insert-current-candidate]"))
                   (lambda (string pred action)
                     (if (eq action 'metadata)
                         '(metadata
