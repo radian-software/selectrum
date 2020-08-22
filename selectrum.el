@@ -679,24 +679,33 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defvar-local selectrum--input-history nil
   "Input history for current session.")
 
+(defun selectrum--minibuffer-history-value ()
+  "Get current value of `minibuffer-history-variable'."
+  (let* ((value (if (fboundp 'minibuffer-history-value)
+                    (minibuffer-history-value)
+                  (symbol-value minibuffer-history-variable))))
+    (if (not selectrum-history-use-input)
+        value
+      ;; Init session history one time.
+      (unless selectrum--input-history
+        (setq-local selectrum--input-history
+                    (mapcar (lambda (item)
+                              (or (get-text-property
+                                   0 'selectrum--input-history item)
+                                  item))
+                            value)))
+      selectrum--input-history)))
+
 (defun selectrum--get-current-history-var ()
-  "Get symbol to be used as `minibuffer-history-variable'."
+  "Get symbol to be used as `minibuffer-history-variable'.
+This will initialize `selectrum--input-history-variable' if
+needed."
   (if (or (not selectrum-history-use-input)
           (eq t minibuffer-history-variable))
       minibuffer-history-variable
-    ;; Init session history one time.
-    (unless selectrum--input-history
-      (setq-local selectrum--input-history
-                  (mapcar (lambda (item)
-                            (or (get-text-property
-                                 0 'selectrum--input-history item)
-                                item))
-                          (if (fboundp 'minibuffer-history-value)
-                              (minibuffer-history-value)
-                            (symbol-value minibuffer-history-variable)))))
     ;; Point history var to current session history.
     (setq selectrum--input-history-variable
-          selectrum--input-history)
+          (selectrum--minibuffer-history-value))
     'selectrum--input-history-variable))
 
 (defun selectrum-toggle-history-format ()
@@ -706,13 +715,11 @@ the minibuffer accordingly."
   (interactive)
   (setq selectrum-history-use-input
         (not selectrum-history-use-input))
-  (let ((n (1- minibuffer-history-position)))
-    (when (>= n 0)
-      (delete-minibuffer-contents)
-      (insert
-       (nth n (symbol-value
-               (selectrum--get-current-history-var)))))))
-
+  (when (> minibuffer-history-position 0)
+    (delete-minibuffer-contents)
+    (insert
+     (nth (1- minibuffer-history-position)
+          (selectrum--minibuffer-history-value)))))
 
 (defun selectrum-previous-history-element (n)
   "Forward to `previous-history-element'.
@@ -1357,10 +1364,8 @@ minibuffer."
          (enable-recursive-minibuffers t)
          (minibuffer-history-variable
           (selectrum--get-current-history-var))
-         (history (if (fboundp 'minibuffer-history-value)
-                      (minibuffer-history-value)
-                    (symbol-value minibuffer-history-variable))))
-    (when (eq history t)
+         (history (selectrum--minibuffer-history-value)))
+    (when (eq minibuffer-history-variable t)
       (user-error "No history is recorded for this command"))
     (let ((result
            (let ((selectrum-candidate-inserted-hook nil)
