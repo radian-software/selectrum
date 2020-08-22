@@ -247,8 +247,8 @@ Possible values are:
 (defcustom selectrum-history-use-input t
   "Whether to use input for history.
 If non-nil selectrum will provide input history, otherwise the
-history items will contain the selected candidates. You can
-toggle the history format dynamically using
+history will contain the selected candidates. You can toggle the
+history format dynamically using
 `selectrum-toggle-history-format'."
   :type 'boolean)
 
@@ -674,14 +674,15 @@ PRED defaults to `minibuffer-completion-predicate'."
       (selectrum--minibuffer-post-command-hook))))
 
 (defvar selectrum--input-history-variable nil
-  "Stores the history input as `minibuffer-history-variable'.")
+  "Stores the input history as `minibuffer-history-variable'.")
 
 (defvar-local selectrum--input-history nil
   "Input history for current session.")
 
 (defun selectrum--minibuffer-history-value ()
-  "Get current value of `minibuffer-history-variable'.
-Depending on `selectrum-history-use-input' the history will
+  "Get minibuffer history for current session.
+Can be a list or history items or t if history should be ignored.
+Depending on `selectrum-history-use-input' the history list will
 contain the input or the selected items."
   (or (eq t minibuffer-history-variable)
       (let* ((value (if (fboundp 'minibuffer-history-value)
@@ -700,9 +701,7 @@ contain the input or the selected items."
           selectrum--input-history))))
 
 (defun selectrum--get-current-history-var ()
-  "Get symbol to be used as `minibuffer-history-variable'.
-This will initialize `selectrum--input-history-variable' if
-needed."
+  "Get symbol for current `minibuffer-history-variable'."
   (or (eq t minibuffer-history-variable)
       (if (not selectrum-history-use-input)
           minibuffer-history-variable
@@ -712,7 +711,7 @@ needed."
         'selectrum--input-history-variable)))
 
 (defun selectrum--add-to-history (item)
-  "Add ITEM to `minibuffer-history-variable'."
+  "Add ITEM to current minibuffer history."
   (unless (eq t minibuffer-history-variable)
     (if (fboundp 'minibuffer-history-value)
         ;; Respect possibly local history variable.
@@ -1337,8 +1336,8 @@ list). A null or non-positive ARG inserts the candidate corresponding to
 
 (defun selectrum-toggle-history-format ()
   "Toggle current history format.
-Toggles the value of `selectrum-history-use-input' and updates
-the minibuffer accordingly."
+Toggles between selection and input history. See
+also `selectrum-history-use-input'."
   (interactive)
   (setq selectrum-history-use-input
         (not selectrum-history-use-input))
@@ -1426,7 +1425,7 @@ If Selectrum isn't active, don't exit after submission."
 
 (defun selectrum-insert-input-history ()
   "Insert input history item.
-To be used from `selectrum-select-from-history'"
+Only to be used from `selectrum-select-from-history'"
   (interactive)
   (throw 'insert-action
          (propertize (get-text-property
