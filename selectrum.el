@@ -720,39 +720,6 @@ needed."
           (add-to-history minibuffer-history-variable item))
       (add-to-history minibuffer-history-variable item))))
 
-(defun selectrum-toggle-history-format ()
-  "Toggle current history format.
-Toggles the value of `selectrum-history-use-input' and updates
-the minibuffer accordingly."
-  (interactive)
-  (setq selectrum-history-use-input
-        (not selectrum-history-use-input))
-  (minibuffer-message "Toggled to %s history"
-                      (if selectrum-history-use-input
-                          "input"
-                        "selection"))
-  (when (> minibuffer-history-position 0)
-    (delete-minibuffer-contents)
-    (insert
-     (nth (1- minibuffer-history-position)
-          (selectrum--minibuffer-history-value)))))
-
-(defun selectrum-previous-history-element (n)
-  "Forward to `previous-history-element'.
-With argument N, it uses the Nth previous element."
-  (interactive "p")
-  (let ((minibuffer-history-variable
-         (selectrum--get-current-history-var)))
-    (previous-history-element n)))
-
-(defun selectrum-next-history-element (n)
-  "Forward to `next-history-element'.
-With argument N, it uses the Nth following element."
-  (interactive "p")
-  (let ((minibuffer-history-variable
-         (selectrum--get-current-history-var)))
-    (next-history-element n)))
-
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -1366,6 +1333,39 @@ list). A null or non-positive ARG inserts the candidate corresponding to
        #'run-hook-with-args
        'selectrum-candidate-inserted-hook
        candidate selectrum--read-args))))
+
+(defun selectrum-toggle-history-format ()
+  "Toggle current history format.
+Toggles the value of `selectrum-history-use-input' and updates
+the minibuffer accordingly."
+  (interactive)
+  (setq selectrum-history-use-input
+        (not selectrum-history-use-input))
+  (minibuffer-message "Toggled to %s history"
+                      (if selectrum-history-use-input
+                          "input"
+                        "selection"))
+  (when (> minibuffer-history-position 0)
+    (delete-minibuffer-contents)
+    (insert
+     (nth (1- minibuffer-history-position)
+          (selectrum--minibuffer-history-value)))))
+
+(defun selectrum-previous-history-element (n)
+  "Forward to `previous-history-element'.
+With argument N, it uses the Nth previous element."
+  (interactive "p")
+  (let ((minibuffer-history-variable
+         (selectrum--get-current-history-var)))
+    (previous-history-element n)))
+
+(defun selectrum-next-history-element (n)
+  "Forward to `next-history-element'.
+With argument N, it uses the Nth following element."
+  (interactive "p")
+  (let ((minibuffer-history-variable
+         (selectrum--get-current-history-var)))
+    (next-history-element n)))
 
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
