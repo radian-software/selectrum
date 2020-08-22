@@ -681,7 +681,8 @@ PRED defaults to `minibuffer-completion-predicate'."
 
 (defun selectrum--get-current-history-var ()
   "Get symbol to be used as `minibuffer-history-variable'."
-  (if (not selectrum-history-use-input)
+  (if (or (not selectrum-history-use-input)
+          (eq t minibuffer-history-variable))
       minibuffer-history-variable
     ;; Init session history one time.
     (unless selectrum--input-history
@@ -690,9 +691,9 @@ PRED defaults to `minibuffer-completion-predicate'."
                             (or (get-text-property
                                  0 'selectrum--input-history item)
                                 item))
-                          (buffer-local-value
-                           minibuffer-history-variable
-                           (window-buffer (minibuffer-selected-window))))))
+                          (if (fboundp 'minibuffer-history-value)
+                              (minibuffer-history-value)
+                            (symbol-value minibuffer-history-variable)))))
     ;; Point history var to current session history.
     (setq selectrum--input-history-variable
           selectrum--input-history)
@@ -1352,9 +1353,13 @@ list). A null or non-positive ARG inserts the candidate corresponding to
 If Selectrum isn't active, insert this candidate into the
 minibuffer."
   (interactive)
-  (let ((selectrum-should-sort-p nil)
-        (enable-recursive-minibuffers t)
-        (history (symbol-value minibuffer-history-variable)))
+  (let* ((selectrum-should-sort-p nil)
+         (enable-recursive-minibuffers t)
+         (minibuffer-history-variable
+          (selectrum--get-current-history-var))
+         (history (if (fboundp 'minibuffer-history-value)
+                      (minibuffer-history-value)
+                    (symbol-value minibuffer-history-variable))))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
     (let ((result
