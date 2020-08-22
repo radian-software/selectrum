@@ -711,6 +711,15 @@ needed."
               (selectrum--minibuffer-history-value))
         'selectrum--input-history-variable)))
 
+(defun selectrum--add-to-history (item)
+  "Add ITEM to `minibuffer-history-variable'."
+  (unless (eq t minibuffer-history-variable)
+    (if (fboundp 'minibuffer-history-value)
+        ;; Respect possibly local history variable.
+        (with-current-buffer (window-buffer (minibuffer-selected-window))
+          (add-to-history minibuffer-history-variable item))
+      (add-to-history minibuffer-history-variable item))))
+
 (defun selectrum-toggle-history-format ()
   "Toggle current history format.
 Toggles the value of `selectrum-history-use-input' and updates
@@ -1285,10 +1294,7 @@ plus CANDIDATE."
                    (buffer-substring-no-properties
                     selectrum--start-of-input-marker
                     selectrum--end-of-input-marker))))
-        (when (> (length item) 0)
-          ;; Respect possibly local history variable.
-          (with-current-buffer (window-buffer (minibuffer-selected-window))
-            (add-to-history minibuffer-history-variable item))))
+        (selectrum--add-to-history item))
       ;; Don't auto add history item for this session.
       (setq-local history-add-new-input nil))
     (erase-buffer)
@@ -1355,8 +1361,7 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
       (insert full)
-      (unless (eq t minibuffer-history-variable)
-        (add-to-history minibuffer-history-variable full))
+      (selectrum--add-to-history full)
       (apply
        #'run-hook-with-args
        'selectrum-candidate-inserted-hook
