@@ -187,8 +187,11 @@ strings."
     ([remap next-line]                        . selectrum-next-candidate)
     ([remap previous-line-or-history-element] . selectrum-previous-candidate)
     ([remap next-line-or-history-element]     . selectrum-next-candidate)
-    ([remap previous-history-element]         . selectrum-previous-history-element)
+    ([remap previous-history-element]
+     . selectrum-previous-history-element)
     ([remap next-history-element]             . selectrum-next-history-element)
+    ("M-j"
+     . selectrum-toggle-history-format)
     ([remap exit-minibuffer]
      . selectrum-select-current-candidate)
     ([remap scroll-down-command]              . selectrum-previous-page)
@@ -695,7 +698,21 @@ PRED defaults to `minibuffer-completion-predicate'."
           selectrum--input-history)
     'selectrum--input-history-variable))
 
+(defun selectrum-toggle-history-format ()
+  "Toggle current history format.
+Toggles the value of `selectrum-history-use-input' and updates
+the minibuffer accordingly."
   (interactive)
+  (setq selectrum-history-use-input
+        (not selectrum-history-use-input))
+  (let ((n (1- minibuffer-history-position)))
+    (when (>= n 0)
+      (delete-minibuffer-contents)
+      (insert
+       (nth n (symbol-value
+               (selectrum--get-current-history-var)))))))
+
+
 (defun selectrum-previous-history-element (n)
   "Forward to `previous-history-element'.
 With argument N, it uses the Nth previous element."
