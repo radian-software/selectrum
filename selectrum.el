@@ -717,8 +717,8 @@ needed."
     (if (fboundp 'minibuffer-history-value)
         ;; Respect possibly local history variable.
         (with-current-buffer (window-buffer (minibuffer-selected-window))
-          (add-to-history minibuffer-history-variable item))
-      (add-to-history minibuffer-history-variable item))))
+          (add-to-history minibuffer-history-variable item nil 'keep-all))
+      (add-to-history minibuffer-history-variable item nil 'keep-all))))
 
 ;;;; Hook functions
 
@@ -1255,12 +1255,13 @@ plus CANDIDATE."
                         (selectrum--get-full candidate))))
          (inhibit-read-only t))
     (when history-add-new-input
-      (let ((item (propertize
-                   result
-                   'selectrum--input-history
-                   (buffer-substring-no-properties
-                    selectrum--start-of-input-marker
-                    selectrum--end-of-input-marker))))
+      (let*  ((input (buffer-substring-no-properties
+                      selectrum--start-of-input-marker
+                      selectrum--end-of-input-marker))
+              (item (propertize
+                     result
+                     'selectrum--input-history
+                     (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
       ;; Don't auto add history item for this session.
       (setq-local history-add-new-input nil))
