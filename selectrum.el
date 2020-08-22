@@ -241,8 +241,12 @@ Possible values are:
           (const :tag "Count matches and show current match"
                  'current/matches)))
 
-(defcustom selectrum-history-use-input nil
-  ""
+(defcustom selectrum-history-use-input t
+  "Whether to use input for history.
+This is the default format used for history. If non-nil selectrum
+will provide input history, otherwise the history items will
+contain the selected candidates. You can toggle the history
+format dynamically using `selectrum-toggle-history-format'."
   :type 'boolean)
 
 (defcustom selectrum-show-indices nil
@@ -666,36 +670,48 @@ PRED defaults to `minibuffer-completion-predicate'."
       (setq selectrum--previous-input-string nil)
       (selectrum--minibuffer-post-command-hook))))
 
-(defvar selectrum--input-history nil)
+(defvar selectrum--input-history-variable nil
+  "Stores the history input as `minibuffer-history-variable'.")
+
+(defvar-local selectrum--input-history nil
+  "Input history for current session.")
 
 (defun selectrum--get-current-history-var ()
+  "Get symbol to be used as `minibuffer-history-variable'."
   (if (not selectrum-history-use-input)
       minibuffer-history-variable
+    ;; Init session history one time.
     (unless selectrum--input-history
-      (setq selectrum--input-history
-            (mapcar (lambda (item)
-                      (or (get-text-property
-                           0 'selectrum--input-history item)
-                          item))
-                    ;; Emacs 27 added support for buffer local
-                    ;; history variables.
-                    (if (fboundp 'minibuffer-history-value)
-                        (minibuffer-history-value)
-                      (symbol-value minibuffer-history-variable)))))
-    'selectrum--input-history))
+      (setq-local selectrum--input-history
+                  (mapcar (lambda (item)
+                            (or (get-text-property
+                                 0 'selectrum--input-history item)
+                                item))
+                          (buffer-local-value
+                           minibuffer-history-variable
+                           (window-buffer (minibuffer-selected-window))))))
+    ;; Point history var to current session history.
+    (setq selectrum--input-history-variable
+          selectrum--input-history)
+    'selectrum--input-history-variable))
 
-(defun selectrum-previous-history-element ()
   (interactive)
+(defun selectrum-previous-history-element (n)
+  "Forward to `previous-history-element'.
+With argument N, it uses the Nth previous element."
+  (interactive "p")
   (let ((minibuffer-history-variable
          (selectrum--get-current-history-var)))
-    (call-interactively 'previous-history-element)))
+    (previous-history-element n)))
 
-(defun selectrum-next-history-element ()
-  (interactive)
+(defun selectrum-next-history-element (n)
+  "Forward to `next-history-element'.
+With argument N, it uses the Nth following element."
+  (interactive "p")
   (let ((minibuffer-history-variable
          (selectrum--get-current-history-var)))
-    (call-interactively 'next-history-element)))
-             
+    (next-history-element n)))
+
 ;;;; Hook functions
 
 (defun selectrum--count-info ()
@@ -1105,17 +1121,15 @@ candidate."
   (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate initial-input history)
+    (candidates &key default-candidate initial-input)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. INITIAL-INPUT, if provided, is inserted
-into the user input area to start with. HISTORY, if provided, is
-used as the history-variable."
+into the user input area to start with."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (setq selectrum--input-history nil)
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
@@ -1240,9 +1254,10 @@ plus CANDIDATE."
                     selectrum--start-of-input-marker
                     selectrum--end-of-input-marker))))
         (when (> (length item) 0)
-          ;; Respect local history variables.
+          ;; Respect possibly local history variable.
           (with-current-buffer (window-buffer (minibuffer-selected-window))
             (add-to-history minibuffer-history-variable item))))
+      ;; Don't auto add history item for this session.
       (setq-local history-add-new-input nil))
     (erase-buffer)
     (insert (if (string-empty-p result)
@@ -1278,9 +1293,10 @@ This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
   (unless selectrum--match-required-p
-    (selectrum--exit-with (buffer-substring-no-properties
-                           selectrum--start-of-input-marker
-                           selectrum--end-of-input-marker))))
+    (selectrum--exit-with
+     (buffer-substring-no-properties
+      selectrum--start-of-input-marker
+      selectrum--end-of-input-marker))))
 
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
@@ -1464,8 +1480,7 @@ semantics of `cl-defun'."
             (selectrum--minibuffer-setup-hook
              candidates
              :default-candidate default-candidate
-             :initial-input initial-input
-             :history (or history 'minibuffer-history)))
+             :initial-input initial-input))
         (let* ((minibuffer-allow-text-properties t)
                (resize-mini-windows 'grow-only)
                (max-mini-window-height
