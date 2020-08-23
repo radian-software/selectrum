@@ -1384,7 +1384,7 @@ If Selectrum isn't active, don't exit after submission."
                               (if (or (equal item input)
                                       (string-empty-p input))
                                   (propertize item 'input item)
-                                ;; Allow to match agains both.
+                                ;; Allow to match against both.
                                 (propertize
                                  (concat item
                                          (propertize " -- " 'face 'bold)
