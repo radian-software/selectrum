@@ -1387,8 +1387,11 @@ If Selectrum isn't active, don't exit after submission."
                                 ;; Allow to match against both.
                                 (propertize
                                  (concat item
-                                         (propertize " -- " 'face 'bold)
-                                         input)
+                                         " ["
+                                         (propertize
+                                          input
+                                          'face 'italic)
+                                         "]")
                                  'selectrum-candidate-full item
                                  'input input)))
                             history input/history))
