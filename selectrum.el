@@ -177,44 +177,55 @@ propertized candidates. Do not modify the input list or
 strings."
   :type 'function)
 
-(defcustom selectrum-minibuffer-bindings
-  '(([remap keyboard-quit]                    . abort-recursive-edit)
+(defvar selectrum-minibuffer-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map minibuffer-local-map)
+
+    (define-key map [remap keyboard-quit] #'abort-recursive-edit)
     ;; This is bound in `minibuffer-local-map' by loading `delsel', so
     ;; we have to account for it too.
-    ([remap minibuffer-keyboard-quit]         . abort-recursive-edit)
+    (define-key map [remap minibuffer-keyboard-quit]
+      #'abort-recursive-edit)
     ;; Override both the arrow keys and C-n/C-p.
-    ([remap previous-line]                    . selectrum-previous-candidate)
-    ([remap next-line]                        . selectrum-next-candidate)
-    ([remap previous-line-or-history-element] . selectrum-previous-candidate)
-    ([remap next-line-or-history-element]     . selectrum-next-candidate)
-    ([remap previous-history-element]
-     . selectrum-previous-history-element)
-    ([remap next-history-element]             . selectrum-next-history-element)
-    ("M-j"
-     . selectrum-toggle-history-format)
-    ([remap exit-minibuffer]
-     . selectrum-select-current-candidate)
-    ([remap scroll-down-command]              . selectrum-previous-page)
-    ([remap scroll-up-command]                . selectrum-next-page)
+    (define-key map [remap previous-line]
+      #'selectrum-previous-candidate)
+    (define-key map [remap next-line]
+      #'selectrum-next-candidate)
+    (define-key map [remap previous-line-or-history-element]
+      #'selectrum-previous-candidate)
+    (define-key map [remap next-line-or-history-element]
+      #'selectrum-next-candidate)
+    (define-key map [remap previous-history-element]
+      #'selectrum-previous-history-element)
+    (define-key map [remap next-history-element]
+      #'selectrum-next-history-element)
+    (define-key map (kbd "M-j")
+      #'selectrum-toggle-history-format)
+    (define-key map [remap exit-minibuffer]
+      #'selectrum-select-current-candidate)
+    (define-key map [remap scroll-down-command]
+      #'selectrum-previous-page)
+    (define-key map [remap scroll-up-command]
+      #'selectrum-next-page)
     ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
     ;; `beginning-of-buffer' for Emacs <=26.
-    ([remap minibuffer-beginning-of-buffer]   . selectrum-goto-beginning)
-    ([remap beginning-of-buffer]              . selectrum-goto-beginning)
-    ([remap end-of-buffer]                    . selectrum-goto-end)
-    ([remap kill-ring-save]                   . selectrum-kill-ring-save)
-    ([remap previous-matching-history-element]
-     . selectrum-select-from-history)
-    ("C-M-DEL"                                . backward-kill-sexp)
-    ("C-j"                                    . selectrum-submit-exact-input)
-    ("TAB"
-     . selectrum-insert-current-candidate))
-  "Keybindings enabled in minibuffer. This is not a keymap.
-Rather it is an alist that is converted into a keymap just before
-entering the minibuffer. The keys are strings or raw key events
-and the values are command symbols."
-  :type '(alist
-          :key-type sexp
-          :value-type function))
+    (define-key map [remap minibuffer-beginning-of-buffer]
+      #'selectrum-goto-beginning)
+    (define-key map [remap beginning-of-buffer]
+      #'selectrum-goto-beginning)
+    (define-key map [remap end-of-buffer]
+      #'selectrum-goto-end)
+    (define-key map [remap kill-ring-save]
+      #'selectrum-kill-ring-save)
+    (define-key map [remap previous-matching-history-element]
+      #'selectrum-select-from-history)
+    (define-key map (kbd "C-M-DEL") #'backward-kill-sexp)
+    (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
+    (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
+
+    ;; Return the map.
+    map)
+  "Keymap used by Selectrum in the minibuffer.")
 
 (defcustom selectrum-candidate-selected-hook nil
   "Normal hook run when the user selects a candidate.
@@ -1551,33 +1562,23 @@ semantics of `cl-defun'."
       (setq selectrum--last-prefix-arg current-prefix-arg))
     (setq selectrum--match-required-p require-match)
     (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
-    (let ((keymap (make-sparse-keymap)))
-      (set-keymap-parent keymap minibuffer-local-map)
-      ;; Use `map-apply' instead of `map-do' as the latter is not
-      ;; available in Emacs 25.
-      (map-apply
-       (lambda (key cmd)
-         (when (stringp key)
-           (setq key (kbd key)))
-         (define-key keymap key cmd))
-       selectrum-minibuffer-bindings)
-      (minibuffer-with-setup-hook
-          (lambda ()
-            (selectrum--minibuffer-setup-hook
-             candidates
-             :default-candidate default-candidate
-             :initial-input initial-input))
-        (let* ((minibuffer-allow-text-properties t)
-               (resize-mini-windows 'grow-only)
-               (max-mini-window-height
-                (1+ selectrum-num-candidates-displayed))
-               (prompt (selectrum--remove-default-from-prompt prompt))
-               ;; <https://github.com/raxod502/selectrum/issues/99>
-               (icomplete-mode nil)
-               (selectrum-active-p t))
-          (read-from-minibuffer
-           prompt nil keymap nil
-           (or history 'minibuffer-history)))))))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          (selectrum--minibuffer-setup-hook
+           candidates
+           :default-candidate default-candidate
+           :initial-input initial-input))
+      (let* ((minibuffer-allow-text-properties t)
+             (resize-mini-windows 'grow-only)
+             (max-mini-window-height
+              (1+ selectrum-num-candidates-displayed))
+             (prompt (selectrum--remove-default-from-prompt prompt))
+             ;; <https://github.com/raxod502/selectrum/issues/99>
+             (icomplete-mode nil)
+             (selectrum-active-p t))
+        (read-from-minibuffer
+         prompt nil selectrum-minibuffer-map nil
+         (or history 'minibuffer-history))))))
 
 ;;;###autoload
 (defun selectrum-completing-read
