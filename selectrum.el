@@ -1344,7 +1344,7 @@ also `selectrum-history-use-input'."
   (minibuffer-message "Toggled to %s history"
                       (if selectrum-history-use-input
                           "input"
-                        "selection"))
+                        "candidate"))
   (when (> minibuffer-history-position 0)
     (delete-minibuffer-contents)
     (insert
