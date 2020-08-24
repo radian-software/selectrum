@@ -1472,7 +1472,8 @@ Otherwise, just eval BODY."
               selectrum--read-args
               selectrum--count-overlay
               selectrum--repeat
-              selectrum-active-p)))
+              selectrum-active-p
+              selectrum-history-use-input)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum-active-p
