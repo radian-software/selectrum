@@ -1417,9 +1417,10 @@ If Selectrum isn't active, don't exit after submission."
                (catch 'insert-action
                  (completing-read
                   (format
-                   "History (press %s to insert input history): "
+                   "History (press %s to insert %s): "
                    (substitute-command-keys
-                    "\\[selectrum-insert-current-candidate]"))
+                    "\\[selectrum-insert-current-candidate]")
+                   (propertize "input history" 'face 'italic))
                   (lambda (string pred action)
                     (if (eq action 'metadata)
                         '(metadata
