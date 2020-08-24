@@ -156,8 +156,7 @@ how to fix it.
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
 the next candidate. If you don't like the standard Selectrum bindings,
-you can change them by customizing `selectrum-minibuffer-bindings`,
-and your changes will take effect right away.
+you can change them in `selectrum-minibuffer-map`.
 
 The keybindings listed above are the *only* ones changed from standard
 editing bindings. So, for example:

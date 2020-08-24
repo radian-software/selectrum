@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog].
   In correspondence with this change, the initial working directory
   for `read-directory-name` is now unchanged from the Emacs default,
   rather than being the parent directory.
+* Selectrum now uses a keymap (`selectrum-minibuffer-map`) instead of
+  an alist (`selectrum-minibuffer-bindings`, now removed) for
+  configuring bindings ([#186]). This better meets users'
+  expectations, and allows other packages (e.g., General) to better
+  work with Selectrum's keybindings ([#71]).
 
 ### Features
 * The user option `selectrum-completing-read-multiple-show-help` can
@@ -126,6 +131,7 @@ The format is based on [Keep a Changelog].
   an error would be thrown ([#152]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
+[#71]: https://github.com/raxod502/selectrum/issues/71
 [#82]: https://github.com/raxod502/selectrum/issues/82
 [#94]: https://github.com/raxod502/selectrum/issues/94
 [#95]: https://github.com/raxod502/selectrum/pull/95
@@ -158,6 +164,7 @@ The format is based on [Keep a Changelog].
 [#161]: https://github.com/raxod502/selectrum/pull/161
 [#163]: https://github.com/raxod502/selectrum/pull/163
 [#166]: https://github.com/raxod502/selectrum/pull/166
+[#186]: https://github.com/raxod502/selectrum/pull/186
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
