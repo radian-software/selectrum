@@ -247,8 +247,8 @@ Possible values are:
 (defcustom selectrum-history-use-input t
   "Whether to use input for history.
 If non-nil selectrum will provide input history, otherwise the
-history will contain the selected candidates. You can toggle the
-history format dynamically using
+history will contain the previously selected candidates. You can
+toggle the history format dynamically using
 `selectrum-toggle-history-format'."
   :type 'boolean)
 
