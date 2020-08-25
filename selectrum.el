@@ -687,8 +687,8 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defvar selectrum--input-history-variable nil
   "Stores the input history as `minibuffer-history-variable'.")
 
-(defvar-local selectrum--input-history nil
-  "Input history for current session.")
+(defvar-local selectrum--input-history-cache nil
+  "Cache input history for current session.")
 
 (defun selectrum--minibuffer-history-value ()
   "Get minibuffer history for current session.
@@ -702,14 +702,14 @@ contain the input or the previously selected candidates."
         (if (not selectrum-history-use-input)
             value
           ;; Init session history one time.
-          (unless selectrum--input-history
-            (setq-local selectrum--input-history
+          (unless selectrum--input-history-cache
+            (setq-local selectrum--input-history-cache
                         (mapcar (lambda (item)
                                   (or (get-text-property
-                                       0 'selectrum--input-history item)
+                                       0 'selectrum--input-history-cache item)
                                       item))
                                 value)))
-          selectrum--input-history))))
+          selectrum--input-history-cache))))
 
 (defun selectrum--get-current-history-var ()
   "Get symbol of current `minibuffer-history-variable'."
@@ -1270,7 +1270,7 @@ plus CANDIDATE."
                       selectrum--end-of-input-marker))
               (item (propertize
                      result
-                     'selectrum--input-history
+                     'selectrum--input-history-cache
                      (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
       ;; History was already handled above don't additionally add
