@@ -1407,6 +1407,7 @@ If Selectrum isn't active, don't exit after submission."
                                  'selectrum-candidate-full item
                                  'input input)))
                             history input/history))
+                  (sactive selectrum-active-p)
                   (enable-recursive-minibuffers t))
              (minibuffer-with-setup-hook
                  (lambda ()
@@ -1417,11 +1418,12 @@ If Selectrum isn't active, don't exit after submission."
                    (setq-local selectrum-candidate-selected-hook nil))
                (catch 'insert-action
                  (completing-read
-                  (format
-                   "History (press %s to insert %s): "
-                   (substitute-command-keys
-                    "\\[selectrum-insert-current-candidate]")
-                   (propertize "input history" 'face 'italic))
+                  (if (not sactive) "History: "
+                    (format
+                     "History (press %s to insert %s): "
+                     (substitute-command-keys
+                      "\\[selectrum-insert-current-candidate]")
+                     (propertize "input history" 'face 'italic)))
                   (lambda (string pred action)
                     (if (eq action 'metadata)
                         '(metadata
