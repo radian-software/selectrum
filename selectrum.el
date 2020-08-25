@@ -1351,8 +1351,8 @@ list). A null or non-positive ARG inserts the candidate corresponding to
 Toggles between input history and previously selected candidate
 history. See `selectrum-history-use-input'."
   (interactive)
-  (setq selectrum-history-use-input
-        (not selectrum-history-use-input))
+  (setq-local selectrum-history-use-input
+              (not selectrum-history-use-input))
   (minibuffer-message "Toggled to %s history"
                       (if selectrum-history-use-input
                           "input"
@@ -1487,8 +1487,7 @@ Otherwise, just eval BODY."
               selectrum--read-args
               selectrum--count-overlay
               selectrum--repeat
-              selectrum-active-p
-              selectrum-history-use-input)))
+              selectrum-active-p)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum-active-p
