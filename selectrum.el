@@ -692,9 +692,9 @@ PRED defaults to `minibuffer-completion-predicate'."
 
 (defun selectrum--minibuffer-history-value ()
   "Get minibuffer history for current session.
-Can be a list or history items or t if history should be ignored.
+Can be a list of history items or t if history should be ignored.
 Depending on `selectrum-history-use-input' the history list will
-contain the input or the selected items."
+contain the input or the previously selected candidates."
   (or (eq t minibuffer-history-variable)
       (let* ((value (if (fboundp 'minibuffer-history-value)
                         (minibuffer-history-value)
@@ -712,7 +712,7 @@ contain the input or the selected items."
           selectrum--input-history))))
 
 (defun selectrum--get-current-history-var ()
-  "Get symbol for current `minibuffer-history-variable'."
+  "Get symbol of current `minibuffer-history-variable'."
   (or (eq t minibuffer-history-variable)
       (if (not selectrum-history-use-input)
           minibuffer-history-variable
@@ -1273,7 +1273,7 @@ plus CANDIDATE."
                      'selectrum--input-history
                      (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
-      ;; Don't auto add history item for this session.
+      ;; Don't add history we handled it above.
       (setq-local history-add-new-input nil))
     (erase-buffer)
     (insert (if (string-empty-p result)
@@ -1347,8 +1347,8 @@ list). A null or non-positive ARG inserts the candidate corresponding to
 
 (defun selectrum-toggle-history-format ()
   "Toggle current history format.
-Toggles between selection and input history. See
-also `selectrum-history-use-input'."
+Toggles between input history and previously selected candidate
+history. See `selectrum-history-use-input'."
   (interactive)
   (setq selectrum-history-use-input
         (not selectrum-history-use-input))
