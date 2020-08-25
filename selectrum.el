@@ -1273,7 +1273,8 @@ plus CANDIDATE."
                      'selectrum--input-history
                      (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
-      ;; Don't add history we handled it above.
+      ;; History was already handled above don't additionally add
+      ;; minibuffer contents on exit.
       (setq-local history-add-new-input nil))
     (erase-buffer)
     (insert (if (string-empty-p result)
