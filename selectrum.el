@@ -1411,6 +1411,7 @@ If Selectrum isn't active, don't exit after submission."
                   (enable-recursive-minibuffers t))
              (minibuffer-with-setup-hook
                  (lambda ()
+                   (use-local-map (copy-keymap (current-local-map)))
                    (define-key (current-local-map)
                      [remap selectrum-insert-current-candidate]
                      'selectrum-insert-input-history)
