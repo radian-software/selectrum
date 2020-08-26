@@ -265,11 +265,13 @@ into the prompt when using commands which use
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer always has the same height.
-Even if there are fewer candidates. If this option is nil the
-minibuffer height is determined by the initial number of
-candidates. For dynamic collections the minibuffer height will
-grow when more candidates need to be displayed until
-`selectrum-num-candidates-displayed' is reached."
+In this case the height will be set to
+`selectrum-num-candidates-displayed' lines and will stay at this
+height even if there are fewer candidates or the display height
+of the candidates take up more space. If this option is nil the
+minibuffer height will be determined by the actual display height
+of the initial number of candidates and adjusts dynamically to
+display up to `selectrum-num-candidates-displayed' candidates."
   :type 'boolean)
 
 (defcustom selectrum-right-margin-padding 1
@@ -874,19 +876,20 @@ currently displayed candidates."
       (with-selected-window win
         (setf (window-height) n))
       ;; Adjust if needed.
-      (when (or selectrum--init-p
-                (and selectrum--current-candidate-index
-                     ;; Allow size change when navigating, not while
-                     ;; typing.
-                     (/= first highlighted)
-                     ;; Don't allow shrinking.
-                     (= (length cands)
-                        selectrum-num-candidates-displayed)))
-        (let ((dheight (cdr (window-text-pixel-size win)))
-              (wheight (window-pixel-height win)))
-          (when (/= dheight wheight)
-            (window-resize
-             win (- dheight wheight) nil nil 'pixelwise)))))))
+      (unless selectrum-fix-minibuffer-height
+        (when (or selectrum--init-p
+                  (and selectrum--current-candidate-index
+                       ;; Allow size change when navigating, not while
+                       ;; typing.
+                       (/= first highlighted)
+                       ;; Don't allow shrinking.
+                       (= (length cands)
+                          selectrum-num-candidates-displayed)))
+          (let ((dheight (cdr (window-text-pixel-size win)))
+                (wheight (window-pixel-height win)))
+            (when (/= dheight wheight)
+              (window-resize
+               win (- dheight wheight) nil nil 'pixelwise))))))))
 
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single-line CANDIDATES.
