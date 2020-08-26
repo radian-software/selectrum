@@ -1271,7 +1271,8 @@ plus CANDIDATE."
               (item (propertize
                      (substring-no-properties result)
                      'selectrum--input-history
-                     (if (string-empty-p input) result input))))
+                     (substring-no-properties
+                      (if (string-empty-p input) result input)))))
         (selectrum--add-to-history item))
       ;; History was already handled above don't additionally add
       ;; minibuffer contents on exit.
