@@ -874,19 +874,20 @@ currently displayed candidates."
       (with-selected-window win
         (setf (window-height) n))
       ;; Adjust if needed.
-      (when (or selectrum--init-p
-                (and selectrum--current-candidate-index
-                     ;; Allow size change when navigating, not while
-                     ;; typing.
-                     (/= first highlighted)
-                     ;; Don't allow shrinking.
-                     (= (length cands)
-                        selectrum-num-candidates-displayed)))
-        (let ((dheight (cdr (window-text-pixel-size win)))
-              (wheight (window-pixel-height win)))
-          (when (/= dheight wheight)
-            (window-resize
-             win (- dheight wheight) nil nil 'pixelwise)))))))
+      (unless selectrum-fix-minibuffer-height
+        (when (or selectrum--init-p
+                  (and selectrum--current-candidate-index
+                       ;; Allow size change when navigating, not while
+                       ;; typing.
+                       (/= first highlighted)
+                       ;; Don't allow shrinking.
+                       (= (length cands)
+                          selectrum-num-candidates-displayed)))
+          (let ((dheight (cdr (window-text-pixel-size win)))
+                (wheight (window-pixel-height win)))
+            (when (/= dheight wheight)
+              (window-resize
+               win (- dheight wheight) nil nil 'pixelwise))))))))
 
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single-line CANDIDATES.
