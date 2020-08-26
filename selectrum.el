@@ -1271,6 +1271,7 @@ plus CANDIDATE."
               (item (propertize
                      result
                      'selectrum--input-history-cache
+                     (substring-no-properties result)
                      (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
       ;; History was already handled above don't additionally add
