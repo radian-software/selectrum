@@ -706,7 +706,7 @@ contain the input or the previously selected candidates."
             (setq-local selectrum--input-history-cache
                         (mapcar (lambda (item)
                                   (or (get-text-property
-                                       0 'selectrum--input-history-cache item)
+                                       0 'selectrum--input-history item)
                                       item))
                                 value)))
           selectrum--input-history-cache))))
@@ -1269,9 +1269,8 @@ plus CANDIDATE."
                       selectrum--start-of-input-marker
                       selectrum--end-of-input-marker))
               (item (propertize
-                     result
-                     'selectrum--input-history-cache
                      (substring-no-properties result)
+                     'selectrum--input-history
                      (if (string-empty-p input) result input))))
         (selectrum--add-to-history item))
       ;; History was already handled above don't additionally add
