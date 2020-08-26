@@ -265,11 +265,13 @@ into the prompt when using commands which use
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer always has the same height.
-Even if there are fewer candidates. If this option is nil the
-minibuffer height is determined by the initial number of
-candidates. For dynamic collections the minibuffer height will
-grow when more candidates need to be displayed until
-`selectrum-num-candidates-displayed' is reached."
+In this case the height will be set to
+`selectrum-num-candidates-displayed' lines and will stay at this
+height even if there are fewer candidates or the display height
+of the candidates take up more space. If this option is nil the
+minibuffer height will be determined by the actual display height
+of the initial number of candidates and adjusts dynamically to
+display up to `selectrum-num-candidates-displayed' candidates."
   :type 'boolean)
 
 (defcustom selectrum-right-margin-padding 1
