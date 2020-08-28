@@ -176,8 +176,10 @@ editing bindings. So, for example:
   Alternatively, like in default completion, you can type `~/` after a
   `/` to ignore the preceding input and move to the home directory.
 * Minibuffer history navigation works as usual with `M-p` and `M-n`.
-  `M-r` will invoke an improved version of history search with
-  completion.
+  You can decide using previous inputs or previous selected candidates
+  as history items using `selectrum-history-use-input`. The format can
+  also be toggled dynamically using `M-j`. `M-r` will invoke an
+  improved version of history search with completion.
 
 ### Sorting and filtering
 
