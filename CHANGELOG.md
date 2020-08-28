@@ -16,11 +16,12 @@ The format is based on [Keep a Changelog].
   configuring bindings ([#186]). This better meets users'
   expectations, and allows other packages (e.g., General) to better
   work with Selectrum's keybindings ([#71]).
-* The history now uses previous inputs by default. This can be changed
-  by configuring `selectrum-history-use-input`. You can toggle the
-  history format dynamically using `selectrum-toggle-history-format`.
 
 ### Features
+* The history now uses previous inputs by default. This can be changed
+  by configuring `selectrum-history-use-input`. You can also toggle
+  the history format dynamically using
+  `selectrum-toggle-history-format`.
 * The user option `selectrum-completing-read-multiple-show-help` can
   be used to control display of additional usage information in the
   prompt in a `completing-read-multiple` session ([#130], [#132]).
