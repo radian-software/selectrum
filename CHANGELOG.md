@@ -129,6 +129,8 @@ The format is based on [Keep a Changelog].
   `selectrum-select-from-history` and other commands which ignore
   history by setting `minibuffer-history-variable` to `t`. Previously
   an error would be thrown ([#152]).
+* When completing filenames and a match is required, non-normalized
+  paths (e.g., `~/Documents//etc/hosts`) are accepted ([#190]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#71]: https://github.com/raxod502/selectrum/issues/71
@@ -165,6 +167,7 @@ The format is based on [Keep a Changelog].
 [#163]: https://github.com/raxod502/selectrum/pull/163
 [#166]: https://github.com/raxod502/selectrum/pull/166
 [#186]: https://github.com/raxod502/selectrum/pull/186
+[#190]: https://github.com/raxod502/selectrum/pull/190
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
