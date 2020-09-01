@@ -1130,7 +1130,8 @@ into the user input area to start with."
           (max (if (and selectrum--match-required-p
                         (cond (minibuffer-completing-file-name
                                (not (file-exists-p
-                                     (minibuffer-contents))))
+                                     (substitute-in-file-name
+                                      (minibuffer-contents)))))
                               (t
                                (not (string-empty-p
                                      (minibuffer-contents))))))
@@ -1229,7 +1230,9 @@ Zero means to select the current user input."
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
-                   (file-exists-p (minibuffer-contents)))
+                   (file-exists-p
+                    (substitute-in-file-name
+                     (minibuffer-contents))))
               (string-empty-p
                (minibuffer-contents)))
       (selectrum--exit-with
