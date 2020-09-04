@@ -1257,15 +1257,15 @@ index (counting from one, clamped to fall within the candidate
 list). A null or non-positive ARG inserts the candidate corresponding to
 `selectrum--current-candidate-index'."
   (interactive "P")
-  (if-let* ((index (if (and arg
-                            selectrum--refined-candidates
-                            (> (prefix-numeric-value arg) 0))
-                       (min (1- (prefix-numeric-value arg))
-                            (1- (length selectrum--refined-candidates)))
-                     selectrum--current-candidate-index))
-            (candidate (nth index
-                            selectrum--refined-candidates))
-            (full (selectrum--get-full candidate)))
+  (if-let ((index (if (and arg
+                           selectrum--refined-candidates
+                           (> (prefix-numeric-value arg) 0))
+                      (min (1- (prefix-numeric-value arg))
+                           (1- (length selectrum--refined-candidates)))
+                    selectrum--current-candidate-index))
+           (candidate (nth index
+                           selectrum--refined-candidates))
+           (full (selectrum--get-full candidate)))
       (progn
         (if (or (not selectrum--crm-p)
                 (not (re-search-backward crm-separator
