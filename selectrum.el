@@ -1439,7 +1439,7 @@ semantics of `cl-defun'."
                    (or history 'minibuffer-history))))
         ;; Behave like completing-read-default which strips the text
         ;; properties but keeps them when submitting the empty prompt
-        ;; to get the default (see #180).
+        ;; to get the default (see #180, #107).
         (cond ((and (string-empty-p selectrum--previous-input-string)
                     (equal res selectrum--default-candidate))
                selectrum--default-candidate)
