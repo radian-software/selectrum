@@ -1249,6 +1249,15 @@ ignores the currently selected candidate, if one exists."
       selectrum--start-of-input-marker
       selectrum--end-of-input-marker))))
 
+(defvar selectrum--crm-separator-alist
+  '((":\\|,\\|\\s-" . ",")
+    ("[ 	]*:[ 	]*" . ":")
+    ("[ 	]*,[ 	]*" . ","))
+  "Values of `crm-separator' mapped to separator strings.
+If current `crm-separator' has a mapping the separator gets
+inserted automatically when using
+`selectrum-insert-current-candidate'.")
+
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
 
@@ -1470,15 +1479,6 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
-
-(defvar selectrum--crm-separator-alist
-  '((":\\|,\\|\\s-" . ",")
-    ("[ 	]*:[ 	]*" . ":")
-    ("[ 	]*,[ 	]*" . ","))
-  "Values of `crm-separator' mapped to separator strings.
-If current `crm-separator' has a mapping the separator gets
-inserted automatically when using
-`selectrum-insert-current-candidate'.")
 
 ;;;###autoload
 (defun selectrum-completing-read-multiple
