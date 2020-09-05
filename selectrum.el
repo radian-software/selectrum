@@ -1528,10 +1528,10 @@ the prompt."
                              (substitute-command-keys
                               "\\[selectrum-insert-current-candidate]")
                              (if (assoc crm-separator
-                                         selectrum--crm-separator-alist)
+                                        selectrum--crm-separator-alist)
                                  ""
                                "and crm-separator"))
-                           (text-properties-at (point)))))))))
+                     (text-properties-at (point)))))))))
        (selectrum-read
         prompt
         candidates
