@@ -84,6 +84,9 @@ The format is based on [Keep a Changelog].
   candidate list. The first matched line is shown in front of the
   merged lines ([#133]). This formatting is customizable via
   `selectrum-multiline-display-settings` ([#147]).
+* `selectrum-insert-current-candidate` now automatically inserts the
+  separator for commons values of `crm-separator` when using
+  `completing-read-multiple` ([#197]).
 
 ### Bugs fixed
 * The minibuffer height is now determined by the actual height of
@@ -173,6 +176,7 @@ The format is based on [Keep a Changelog].
 [#186]: https://github.com/raxod502/selectrum/pull/186
 [#190]: https://github.com/raxod502/selectrum/pull/190
 [#193]: https://github.com/raxod502/selectrum/pull/193
+[#197]: https://github.com/raxod502/selectrum/pull/197
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
