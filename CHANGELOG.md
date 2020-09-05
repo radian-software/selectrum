@@ -135,6 +135,8 @@ The format is based on [Keep a Changelog].
   minibuffer instead of signaling an error and erasing the minibuffer
   contents ([#193]).  If ‘completion-fail-discreetly’ is non-nil,
   nothing is done.
+* Fix type mismatch when configuring `selectrum-count-style` in
+  customizations.
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#71]: https://github.com/raxod502/selectrum/issues/71
