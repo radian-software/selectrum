@@ -147,8 +147,9 @@ how to fix it.
   modified when Transient Mark mode is disabled.
 * *To select multiple candidates:* separate them with `crm-separator`
   (`,` by default). To make this workflow more convenient, you can use
-  `TAB` to complete the currently selected candidate before typing `,`
-  to move on to entering the next one. This feature only works in
+  `TAB` to complete the currently selected candidate before typing
+  `crm-separator`. For common values of `crm-separator` this will also
+  insert the separator string for you. This feature only works in
   commands that use `completing-read-multiple`, such as
   `describe-face`. (If multiple selection is enabled, it is shown in
   the minibuffer prompt.)

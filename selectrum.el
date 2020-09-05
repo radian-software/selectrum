@@ -1267,14 +1267,22 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
       (progn
-        (if (or (not selectrum--crm-p)
-                (not (re-search-backward crm-separator
-                                         (minibuffer-prompt-end) t)))
-            (delete-region selectrum--start-of-input-marker
-                           selectrum--end-of-input-marker)
-          (goto-char (match-end 0))
-          (delete-region (point) selectrum--end-of-input-marker))
-        (insert full)
+        (if (not selectrum--crm-p)
+            (progn
+              (delete-region selectrum--start-of-input-marker
+                             selectrum--end-of-input-marker)
+              (insert full))
+          (goto-char
+           (if (re-search-backward crm-separator
+                                   (minibuffer-prompt-end) t)
+               (match-end 0)
+
+             (goto-char (minibuffer-prompt-end))))
+          (delete-region (point) selectrum--end-of-input-marker)
+          (insert full)
+          (when-let ((match
+                      (assoc crm-separator selectrum--crm-separator-alist)))
+            (insert (cdr match))))
         (unless (eq t minibuffer-history-variable)
           (add-to-history minibuffer-history-variable full))
         (apply
@@ -1463,6 +1471,15 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
 
+(defvar selectrum--crm-separator-alist
+  '((":\\|,\\|\\s-" . ",")
+    ("[ 	]*:[ 	]*" . ":")
+    ("[ 	]*,[ 	]*" . ","))
+  "Values of `crm-separator' mapped to separator strings.
+If current `crm-separator' has a mapping the separator gets
+inserted automatically when using
+`selectrum-insert-current-candidate'.")
+
 ;;;###autoload
 (defun selectrum-completing-read-multiple
     (prompt table &optional predicate require-match initial-input
@@ -1505,13 +1522,15 @@ the prompt."
                  (goto-char (minibuffer-prompt-end))
                  (when (search-backward ":" nil t)
                    (insert
-                    (apply #'propertize
-                           (format " [add more using %s and %s]"
-                                   (substitute-command-keys
-                                    "\\[selectrum-insert-current-candidate]")
-                                   (if (equal crm-separator "[ \t]*,[ \t]*")
-                                       "\",\""
-                                     "crm-separator"))
+                    (apply
+                     #'propertize
+                     (format " [add more using %s%s]"
+                             (substitute-command-keys
+                              "\\[selectrum-insert-current-candidate]")
+                             (if (assoc crm-separator
+                                         selectrum--crm-separator-alist)
+                                 ""
+                               "and crm-separator"))
                            (text-properties-at (point)))))))))
        (selectrum-read
         prompt
