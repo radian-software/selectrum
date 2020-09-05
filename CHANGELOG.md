@@ -131,6 +131,10 @@ The format is based on [Keep a Changelog].
   an error would be thrown ([#152]).
 * When completing filenames and a match is required, non-normalized
   paths (e.g., `~/Documents//etc/hosts`) are accepted ([#190]).
+* Pressing TAB when nothing matches shows a “No match” message in the
+  minibuffer instead of signaling an error and erasing the minibuffer
+  contents ([#193]).  If ‘completion-fail-discreetly’ is non-nil,
+  nothing is done.
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#71]: https://github.com/raxod502/selectrum/issues/71
@@ -168,6 +172,7 @@ The format is based on [Keep a Changelog].
 [#166]: https://github.com/raxod502/selectrum/pull/166
 [#186]: https://github.com/raxod502/selectrum/pull/186
 [#190]: https://github.com/raxod502/selectrum/pull/190
+[#193]: https://github.com/raxod502/selectrum/pull/193
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

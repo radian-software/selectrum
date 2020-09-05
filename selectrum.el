@@ -1257,29 +1257,33 @@ index (counting from one, clamped to fall within the candidate
 list). A null or non-positive ARG inserts the candidate corresponding to
 `selectrum--current-candidate-index'."
   (interactive "P")
-  (when-let ((index (if (and arg
-                             selectrum--refined-candidates
-                             (> (prefix-numeric-value arg) 0))
-                        (min (1- (prefix-numeric-value arg))
-                             (1- (length selectrum--refined-candidates)))
-                      selectrum--current-candidate-index)))
-    (if (or (not selectrum--crm-p)
-            (not (re-search-backward crm-separator
-                                     (minibuffer-prompt-end) t)))
-        (delete-region selectrum--start-of-input-marker
-                       selectrum--end-of-input-marker)
-      (goto-char (match-end 0))
-      (delete-region (point) selectrum--end-of-input-marker))
-    (let* ((candidate (nth index
+  (if-let ((index (if (and arg
+                           selectrum--refined-candidates
+                           (> (prefix-numeric-value arg) 0))
+                      (min (1- (prefix-numeric-value arg))
+                           (1- (length selectrum--refined-candidates)))
+                    selectrum--current-candidate-index))
+           (candidate (nth index
                            selectrum--refined-candidates))
            (full (selectrum--get-full candidate)))
-      (insert full)
-      (unless (eq t minibuffer-history-variable)
-        (add-to-history minibuffer-history-variable full))
-      (apply
-       #'run-hook-with-args
-       'selectrum-candidate-inserted-hook
-       candidate selectrum--read-args))))
+      (progn
+        (if (or (not selectrum--crm-p)
+                (not (re-search-backward crm-separator
+                                         (minibuffer-prompt-end) t)))
+            (delete-region selectrum--start-of-input-marker
+                           selectrum--end-of-input-marker)
+          (goto-char (match-end 0))
+          (delete-region (point) selectrum--end-of-input-marker))
+        (insert full)
+        (unless (eq t minibuffer-history-variable)
+          (add-to-history minibuffer-history-variable full))
+        (apply
+         #'run-hook-with-args
+         'selectrum-candidate-inserted-hook
+         candidate selectrum--read-args))
+    (unless completion-fail-discreetly
+      (ding)
+      (minibuffer-message "No match"))))
 
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
