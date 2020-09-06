@@ -1287,7 +1287,7 @@ list). A null or non-positive ARG inserts the candidate corresponding to
                                    (minibuffer-prompt-end) t)
                (match-end 0)
 
-             (goto-char (minibuffer-prompt-end))))
+             (minibuffer-prompt-end)))
           (delete-region (point) selectrum--end-of-input-marker)
           (insert full)
           (when-let ((match
