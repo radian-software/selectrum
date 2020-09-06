@@ -1251,8 +1251,8 @@ ignores the currently selected candidate, if one exists."
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
-    ("[ 	]*:[ 	]*" . ":")
-    ("[ 	]*,[ 	]*" . ",")
+    ("[ \t]*:[ \t]*" . ":")
+    ("[ \t]*,[ \t]*" . ",")
     (" " . " "))
   "Values of `crm-separator' mapped to separator strings.
 If current `crm-separator' has a mapping the separator gets
