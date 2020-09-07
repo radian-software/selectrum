@@ -239,9 +239,9 @@ with the string the user inserted."
 
 Possible values are:
 
-- \\='matches: Show the total number of matches.
-- \\='current/matches: Show the index of current match and the total number of
-  matches.
+- `matches': Show the total number of matches.
+- `current/matches': Show the index of current match and the
+  total number of matches.
 - nil: Show nothing."
   :type '(choice
           (const :tag "Disabled" nil)
