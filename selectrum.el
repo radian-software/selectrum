@@ -245,9 +245,9 @@ Possible values are:
 - nil: Show nothing."
   :type '(choice
           (const :tag "Disabled" nil)
-          (const :tag "Count matches" 'matches)
+          (const :tag "Count matches" matches)
           (const :tag "Count matches and show current match"
-                 'current/matches)))
+                 current/matches)))
 
 (defcustom selectrum-show-indices nil
   "Non-nil means to number the candidates (starting from 1).
