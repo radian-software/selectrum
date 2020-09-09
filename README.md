@@ -147,11 +147,12 @@ how to fix it.
   modified when Transient Mark mode is disabled.
 * *To select multiple candidates:* separate them with `crm-separator`
   (`,` by default). To make this workflow more convenient, you can use
-  `TAB` to complete the currently selected candidate before typing `,`
-  to move on to entering the next one. This feature only works in
-  commands that use `completing-read-multiple`, such as
-  `describe-face`. (If multiple selection is enabled, it is shown in
-  the minibuffer prompt.)
+  `TAB` to complete the currently selected candidate before typing
+  `crm-separator` (for common values of `crm-separator` it will be
+  automatically inserted for you). This feature only works in commands
+  that use `completing-read-multiple`, such as `describe-face`. (If
+  multiple selection is enabled, it is shown in the minibuffer
+  prompt.)
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
