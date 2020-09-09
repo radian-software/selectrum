@@ -1539,6 +1539,8 @@ the prompt."
                               "\\[selectrum-insert-current-candidate]")
                              (if (assoc crm-separator
                                         selectrum--crm-separator-alist)
+                                 ;; Separator will be automatically
+                                 ;; inserted.
                                  ""
                                "and crm-separator"))
                      (text-properties-at (point)))))))))
