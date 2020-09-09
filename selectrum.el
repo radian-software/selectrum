@@ -1437,10 +1437,10 @@ semantics of `cl-defun'."
              (res (read-from-minibuffer
                    prompt nil selectrum-minibuffer-map nil
                    (or history 'minibuffer-history))))
-        ;; Behave like completing-read-default which strips the text
-        ;; properties but keeps them when submitting the empty prompt
-        ;; to get the default (see #180, #107).
         (cond (minibuffer-completion-table
+               ;; Behave like completing-read-default which strips the text
+               ;; properties but keeps them when submitting the empty prompt
+               ;; to get the default (see #180, #107).
                (if (and (string-empty-p selectrum--previous-input-string)
                         (equal res selectrum--default-candidate))
                    selectrum--default-candidate
