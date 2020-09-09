@@ -1433,10 +1433,20 @@ semantics of `cl-defun'."
              (prompt (selectrum--remove-default-from-prompt prompt))
              ;; <https://github.com/raxod502/selectrum/issues/99>
              (icomplete-mode nil)
-             (selectrum-active-p t))
-        (read-from-minibuffer
-         prompt nil selectrum-minibuffer-map nil
-         (or history 'minibuffer-history))))))
+             (selectrum-active-p t)
+             (res (read-from-minibuffer
+                   prompt nil selectrum-minibuffer-map nil
+                   (or history 'minibuffer-history))))
+        (cond (minibuffer-completion-table
+               ;; Behave like completing-read-default which strips the text
+               ;; properties but keeps them when submitting the empty prompt
+               ;; to get the default (see #180, #107).
+               (if (and selectrum--previous-input-string
+                        (string-empty-p selectrum--previous-input-string)
+                        (equal res selectrum--default-candidate))
+                   selectrum--default-candidate
+                 (substring-no-properties res)))
+              (t res))))))
 
 ;;;###autoload
 (defun selectrum-completing-read
@@ -1447,18 +1457,17 @@ semantics of `cl-defun'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
-  (substring-no-properties
-   (selectrum-read
-    prompt nil
-    ;; Don't pass `initial-input'. We use it internally but it's
-    ;; deprecated in `completing-read' and doesn't work well with the
-    ;; Selectrum paradigm except in specific cases that we control.
-    :default-candidate (or (car-safe def) def)
-    :require-match (eq require-match t)
-    :history hist
-    :may-modify-candidates t
-    :minibuffer-completion-table collection
-    :minibuffer-completion-predicate predicate)))
+  (selectrum-read
+   prompt nil
+   ;; Don't pass `initial-input'. We use it internally but it's
+   ;; deprecated in `completing-read' and doesn't work well with the
+   ;; Selectrum paradigm except in specific cases that we control.
+   :default-candidate (or (car-safe def) def)
+   :require-match (eq require-match t)
+   :history hist
+   :may-modify-candidates t
+   :minibuffer-completion-table collection
+   :minibuffer-completion-predicate predicate))
 
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
@@ -1523,8 +1532,7 @@ the prompt."
         :may-modify-candidates t
         :minibuffer-completion-table table
         :minibuffer-completion-predicate predicate)))
-    (mapcar #'substring-no-properties
-            (split-string res crm-separator t))))
+    (split-string res crm-separator t)))
 
 ;;;###autoload
 (defun selectrum-completion-in-region
@@ -1641,16 +1649,15 @@ PREDICATE, see `read-buffer'."
                        candidates)))
               `((candidates . ,candidates)
                 (input . ,input))))))
-    (substring-no-properties
-     (selectrum-read
-      prompt candidates
-      :default-candidate def
-      :require-match (eq require-match t)
-      :history 'buffer-name-history
-      :no-move-default-candidate t
-      :may-modify-candidates t
-      :minibuffer-completion-table #'internal-complete-buffer
-      :minibuffer-completion-predicate predicate))))
+    (selectrum-read
+     prompt candidates
+     :default-candidate def
+     :require-match (eq require-match t)
+     :history 'buffer-name-history
+     :no-move-default-candidate t
+     :may-modify-candidates t
+     :minibuffer-completion-table #'internal-complete-buffer
+     :minibuffer-completion-predicate predicate)))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
@@ -1699,16 +1706,15 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (quit)))))
              `((input . ,ematch)
                (candidates . ,cands))))))
-    (substring-no-properties
-     (selectrum-read
-      prompt coll
-      :default-candidate (or (car-safe def) def)
-      :initial-input (or (car-safe initial-input) initial-input)
-      :history hist
-      :require-match (eq require-match t)
-      :may-modify-candidates t
-      :minibuffer-completion-table collection
-      :minibuffer-completion-predicate predicate))))
+    (selectrum-read
+     prompt coll
+     :default-candidate (or (car-safe def) def)
+     :initial-input (or (car-safe initial-input) initial-input)
+     :history hist
+     :require-match (eq require-match t)
+     :may-modify-candidates t
+     :minibuffer-completion-table collection
+     :minibuffer-completion-predicate predicate)))
 
 ;;;###autoload
 (defun selectrum-read-file-name

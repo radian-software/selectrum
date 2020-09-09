@@ -137,6 +137,8 @@ The format is based on [Keep a Changelog].
   nothing is done.
 * Fix type mismatch when configuring `selectrum-count-style` in
   customizations.
+* Submitting the default value with the empty prompt does no longer
+  strip the text properties of the default candidate ([#180], [#198]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#71]: https://github.com/raxod502/selectrum/issues/71
@@ -172,9 +174,11 @@ The format is based on [Keep a Changelog].
 [#161]: https://github.com/raxod502/selectrum/pull/161
 [#163]: https://github.com/raxod502/selectrum/pull/163
 [#166]: https://github.com/raxod502/selectrum/pull/166
+[#180]: https://github.com/raxod502/selectrum/issues/180
 [#186]: https://github.com/raxod502/selectrum/pull/186
 [#190]: https://github.com/raxod502/selectrum/pull/190
 [#193]: https://github.com/raxod502/selectrum/pull/193
+[#198]: https://github.com/raxod502/selectrum/pull/198
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
