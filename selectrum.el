@@ -1441,7 +1441,8 @@ semantics of `cl-defun'."
                ;; Behave like completing-read-default which strips the text
                ;; properties but keeps them when submitting the empty prompt
                ;; to get the default (see #180, #107).
-               (if (and (string-empty-p selectrum--previous-input-string)
+               (if (and selectrum--previous-input-string
+                        (string-empty-p selectrum--previous-input-string)
                         (equal res selectrum--default-candidate))
                    selectrum--default-candidate
                  (substring-no-properties res)))
