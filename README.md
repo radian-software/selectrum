@@ -241,7 +241,7 @@ matching and case-insensitive matching.
   example:
 
   ```elisp
-  (global-set-key "C-x C-z" #'selectrum-repeat)
+  (global-set-key (kbd "C-x C-z") #'selectrum-repeat)
   ```
 
 * There is experimental support for running Helm commands via the
