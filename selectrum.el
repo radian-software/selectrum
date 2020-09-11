@@ -250,11 +250,13 @@ Possible values are:
                  current/matches)))
 
 (defcustom selectrum-show-indices nil
-  "Non-nil means to number the displayed candidates.
-The candidates are numbered from 1 to `selectrum-num-candidates-displayed'.
-This allows you to select one directly by providing a prefix
-argument to `selectrum-select-current-candidate'."
-  :type 'boolean)
+  "Non-nil means to add indices to the displayed candidates.
+If this is a function, it should take in the row number of the
+displayed candidate (starting from 1) as a parameter and it
+should return the string to be displayed representing the index
+of the candidate. If this is some other non-nil value, it is
+treated as if it were (lambda (i) (format \"%2d \" i))."
+  :type '(choice function boolean))
 
 (defcustom selectrum-completing-read-multiple-show-help t
   "Non-nil means to show help for `selectrum-completing-read-multiple'.
@@ -1038,18 +1040,13 @@ candidate."
                'append displayed-candidate)))
           (insert "\n")
           (when selectrum-show-indices
-            (let* ((num (number-to-string (1+ index)))
-                   (num-digits
-                    (length
-                     (number-to-string
-                      selectrum-num-candidates-displayed))))
+            (let* ((display-fn (if (functionp selectrum-show-indices)
+                                   selectrum-show-indices
+                                 (lambda (i) (format "%2d " i))))
+                   (curr-index (substring-no-properties
+                                (funcall display-fn (1+ index)))))
               (insert
-               (propertize
-                (concat
-                 (make-string (- num-digits (length num)) ? )
-                 num " ")
-                'face
-                'minibuffer-prompt))))
+               (propertize curr-index 'face 'minibuffer-prompt))))
           (insert displayed-candidate)
           (when right-margin
             (insert

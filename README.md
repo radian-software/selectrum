@@ -281,7 +281,10 @@ matching and case-insensitive matching.
   minibuffer by enabling `selectrum-show-indices`. This may be helpful
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
-  candidate.
+  candidate. Furthermore, if you want do display a custom index (e.g.
+  letters instead of indices, roman numerals, etc.) you can set the
+  `selectrum-show-indices` to a function that takes in the relative
+  index of a candidate and returns the string you want to display.
 * The `selectrum-completion-in-region` function can display
   annotations if the `completion-in-region-function` backend offers
   them. Customize the face `selectrum-completion-annotation` to change
