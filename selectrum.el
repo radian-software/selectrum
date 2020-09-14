@@ -250,7 +250,8 @@ Possible values are:
                  current/matches)))
 
 (defcustom selectrum-show-indices nil
-  "Non-nil means to number the candidates (starting from 1).
+  "Non-nil means to number the displayed candidates.
+The candidates are numbered from 1 to `selectrum-num-candidates-displayed'.
 This allows you to select one directly by providing a prefix
 argument to `selectrum-select-current-candidate'."
   :type 'boolean)
@@ -1037,12 +1038,11 @@ candidate."
                'append displayed-candidate)))
           (insert "\n")
           (when selectrum-show-indices
-            (let* ((abs-index (+ index first-index-displayed))
-                   (num (number-to-string (1+ abs-index)))
+            (let* ((num (number-to-string (1+ index)))
                    (num-digits
                     (length
                      (number-to-string
-                      selectrum--total-num-candidates))))
+                      selectrum-num-candidates-displayed))))
               (insert
                (propertize
                 (concat
@@ -1224,8 +1224,10 @@ Give a prefix argument ARG to select the candidate at that index
 Zero means to select the current user input."
   (interactive "P")
   (let ((index (if arg
-                   (min (1- (prefix-numeric-value arg))
-                        (1- (length selectrum--refined-candidates)))
+                   (min
+                    (+ (prefix-numeric-value arg)
+                       selectrum--current-candidate-index)
+                    (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
@@ -1267,11 +1269,11 @@ index (counting from one, clamped to fall within the candidate
 list). A null or non-positive ARG inserts the candidate corresponding to
 `selectrum--current-candidate-index'."
   (interactive "P")
-  (if-let ((index (if (and arg
-                           selectrum--refined-candidates
-                           (> (prefix-numeric-value arg) 0))
-                      (min (1- (prefix-numeric-value arg))
-                           (1- (length selectrum--refined-candidates)))
+  (if-let ((index (if arg
+                      (min
+                       (+ (prefix-numeric-value arg)
+                          selectrum--current-candidate-index)
+                       (1- (length selectrum--refined-candidates)))
                     selectrum--current-candidate-index))
            (candidate (nth index
                            selectrum--refined-candidates))

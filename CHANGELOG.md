@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* Selectrum now by default shows indices relative to displayed
+  candidates ([#200]).
 * If `selectrum-candidate-display-right-margin` is used the margin is
   included in the highlighting of the selected candidate so it's
   easier to see to which candidate the margin belongs to ([#166]).
