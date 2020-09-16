@@ -1711,7 +1711,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       i)
                     ;; avoid TRAMP hanging and can't quit with 'C-g'
                     (let ((inhibit-quit nil))
-                      (unless (tramp-tramp-file-p input)
+                      (unless (and (fboundp 'tramp-tramp-file-p)
+                                   (funcall
+                                    (symbol-function 'tramp-tramp-file-p)
+                                    input))
                         (funcall collection dir
                                  (lambda (i)
                                    (when (and (or (not predicate)
