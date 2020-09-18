@@ -88,6 +88,9 @@ The format is based on [Keep a Changelog].
   candidate list. The first matched line is shown in front of the
   merged lines ([#133]). This formatting is customizable via
   `selectrum-multiline-display-settings` ([#147]).
+* `selectrum-insert-current-candidate` now automatically inserts the
+  separator for commons values of `crm-separator` when using
+  `completing-read-multiple` ([#197]).
 
 ### Bugs fixed
 * The minibuffer height is now determined by the actual height of
@@ -133,6 +136,16 @@ The format is based on [Keep a Changelog].
   `selectrum-select-from-history` and other commands which ignore
   history by setting `minibuffer-history-variable` to `t`. Previously
   an error would be thrown ([#152]).
+* When completing filenames and a match is required, non-normalized
+  paths (e.g., `~/Documents//etc/hosts`) are accepted ([#190]).
+* Pressing TAB when nothing matches shows a “No match” message in the
+  minibuffer instead of signaling an error and erasing the minibuffer
+  contents ([#193]).  If ‘completion-fail-discreetly’ is non-nil,
+  nothing is done.
+* Fix type mismatch when configuring `selectrum-count-style` in
+  customizations.
+* Submitting the default value with the empty prompt does no longer
+  strip the text properties of the default candidate ([#180], [#198]).
 
 [#67]: https://github.com/raxod502/selectrum/issues/67
 [#71]: https://github.com/raxod502/selectrum/issues/71
@@ -168,7 +181,12 @@ The format is based on [Keep a Changelog].
 [#161]: https://github.com/raxod502/selectrum/pull/161
 [#163]: https://github.com/raxod502/selectrum/pull/163
 [#166]: https://github.com/raxod502/selectrum/pull/166
+[#180]: https://github.com/raxod502/selectrum/issues/180
 [#186]: https://github.com/raxod502/selectrum/pull/186
+[#190]: https://github.com/raxod502/selectrum/pull/190
+[#193]: https://github.com/raxod502/selectrum/pull/193
+[#197]: https://github.com/raxod502/selectrum/pull/197
+[#198]: https://github.com/raxod502/selectrum/pull/198
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
