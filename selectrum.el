@@ -812,8 +812,7 @@ PRED defaults to `minibuffer-completion-predicate'."
         (let ((text (selectrum--candidates-display-string
                      displayed-candidates
                      input
-                     highlighted-index
-                     first-index-displayed))
+                     highlighted-index))
               (default nil))
           (if (or (and highlighted-index
                        (< highlighted-index 0))
@@ -961,8 +960,7 @@ The specific details of the formatting are determined by
 
 (defun selectrum--candidates-display-string (candidates
                                              input
-                                             highlighted-index
-                                             first-index-displayed)
+                                             highlighted-index)
   "Get string to display CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index
