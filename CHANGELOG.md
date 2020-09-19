@@ -136,7 +136,7 @@ The format is based on [Keep a Changelog].
   paths (e.g., `~/Documents//etc/hosts`) are accepted ([#190]).
 * Pressing TAB when nothing matches shows a “No match” message in the
   minibuffer instead of signaling an error and erasing the minibuffer
-  contents ([#193]).  If ‘completion-fail-discreetly’ is non-nil,
+  contents ([#193]). If `completion-fail-discreetly` is non-nil,
   nothing is done.
 * Fix type mismatch when configuring `selectrum-count-style` in
   customizations.
