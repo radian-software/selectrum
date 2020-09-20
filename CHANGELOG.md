@@ -85,7 +85,7 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]). This formatting is customizable via
   `selectrum-multiline-display-settings` ([#147]).
 * `selectrum-insert-current-candidate` now automatically inserts the
-  separator for commons values of `crm-separator` when using
+  separator for common values of `crm-separator` when using
   `completing-read-multiple` ([#197]).
 
 ### Bugs fixed
