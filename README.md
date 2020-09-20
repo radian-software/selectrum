@@ -577,7 +577,18 @@ large number of packages which integrate with it. However, the problem
 with Helm for me is exactly that it has too many features. Upon
 opening a Helm menu, I am immediately confronted by numerous colors,
 diagnostics, options, and pieces of help text. It is too complicated
-for the problem I want solved.
+for the problem I want solved. Of course, I am sure it is possible to
+customize Helm so that it is simpler in appearance. But that would
+take a long time and I would rather use a piece of software which was
+designed for the use case I have in mind. I also personally prefer
+using software that I have some hope of understanding, which ideally
+means that they don't provide a hugely complex array of features of
+which I only use one or two.
+
+There is also the problem that Helm is [no longer
+maintained](https://github.com/emacs-helm/helm/issues/2386).
+
+See [#203](https://github.com/raxod502/selectrum/issues/203).
 
 ### Why not Ivy?
 
