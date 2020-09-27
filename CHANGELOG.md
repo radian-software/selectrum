@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
   work with Selectrum's keybindings ([#71]).
 
 ### Features
+* The user option `selectrum-show-indices` can now be a function that
+  can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-completing-read-multiple-show-help` can
   be used to control display of additional usage information in the
   prompt in a `completing-read-multiple` session ([#130], [#132]).
@@ -40,6 +42,8 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* Selectrum now by default shows indices relative to displayed
+  candidates ([#200]).
 * If `selectrum-candidate-display-right-margin` is used the margin is
   included in the highlighting of the selected candidate so it's
   easier to see to which candidate the margin belongs to ([#166]).
