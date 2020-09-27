@@ -996,7 +996,9 @@ candidate."
                  candidate)))
               (right-margin (get-text-property
                              0 'selectrum-candidate-display-right-margin
-                             candidate)))
+                             candidate))
+              (formatting-current-candidate
+               (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
           (add-text-properties
            0 (length displayed-candidate)
@@ -1016,7 +1018,7 @@ candidate."
                    (selectrum-insert-current-candidate ,(1+ index))))
               keymap))
            displayed-candidate)
-          (when (equal index highlighted-index)
+          (when formatting-current-candidate
             (setq displayed-candidate
                   (copy-sequence displayed-candidate))
             ;; Avoid trampling highlighting done by
@@ -1067,7 +1069,7 @@ candidate."
                " "
                'face
                (when (and right-margin
-                          (equal index highlighted-index))
+                          formatting-current-candidate)
                  'selectrum-current-candidate)
                'display
                `(space :align-to (- right-fringe
@@ -1076,10 +1078,10 @@ candidate."
               (propertize right-margin
                           'face
                           (when (and right-margin
-                                     (equal index highlighted-index))
+                                     formatting-current-candidate)
                             'selectrum-current-candidate)))))
            ((and selectrum-highlight-entire-line
-                 (equal index highlighted-index))
+                 formatting-current-candidate)
             (insert
              (propertize
               " "
