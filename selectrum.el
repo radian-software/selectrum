@@ -337,6 +337,14 @@ setting."
                        (string :tag "Indicator string")
                        (face :tag "Indicator face"))))
 
+(defcustom selectrum-highlight-entire-line nil
+  "Whether to highlight the entire line of the current candidate.
+
+The default is to only highlight the candidate itself, though if
+the candidate has a right margin, then the entire line will be
+highlighted anyway."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -1051,7 +1059,8 @@ candidate."
                 'face
                 'minibuffer-prompt))))
           (insert displayed-candidate)
-          (when right-margin
+          (cond
+           (right-margin
             (insert
              (concat
               (propertize
@@ -1068,7 +1077,16 @@ candidate."
                           'face
                           (when (and right-margin
                                      (equal index highlighted-index))
-                            'selectrum-current-candidate))))))
+                            'selectrum-current-candidate)))))
+           ((and selectrum-highlight-entire-line
+                 (equal index highlighted-index))
+            (insert
+             (propertize
+              " "
+              'face 'selectrum-current-candidate
+              'display
+              `(space :align-to (- right-fringe
+                                   selectrum-right-margin-padding)))))))
         (cl-incf index))
       (buffer-string))))
 
