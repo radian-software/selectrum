@@ -340,9 +340,9 @@ setting."
 (defcustom selectrum-highlight-entire-line nil
   "Whether to highlight the entire line of the current candidate.
 
-The default is to only highlight the displayed candidate text,
-though if the candidate has text displayed at the right margin,
-then the entire line will be highlighted anyway."
+The default is to only highlight the displayed text, though if
+text is displayed at the right margin, then the entire line will
+be highlighted anyway."
   :type 'boolean)
 
 ;;;; Utility functions
