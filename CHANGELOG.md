@@ -38,6 +38,11 @@ The format is based on [Keep a Changelog].
   (`mouse-1`) selects the candidate, and right click (`mouse-3`)
   inserts the candidate, just like `RET` and `TAB`, respectively. See
   [#113] and [#118].
+* The user option `selectrum-highlight-entire-line` determines whether
+  to highlight the entire line of the current candidate (the default
+  is nil). This only matters for candidates in which there isn't text
+  displayed at the right margin, which is included in the highlighting
+  regardless of this variable ([#166]). See [#208].
 
 ### Enhancements
 * If `selectrum-candidate-display-right-margin` is used the margin is
@@ -183,6 +188,7 @@ The format is based on [Keep a Changelog].
 [#193]: https://github.com/raxod502/selectrum/pull/193
 [#197]: https://github.com/raxod502/selectrum/pull/197
 [#198]: https://github.com/raxod502/selectrum/pull/198
+[#208]: https://github.com/raxod502/selectrum/pull/208
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
