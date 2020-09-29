@@ -340,9 +340,7 @@ setting."
 (defcustom selectrum-highlight-entire-line nil
   "Whether to highlight the entire line of the current candidate.
 
-The default is to only highlight the displayed text, though if
-text is displayed at the right margin, then the entire line will
-be highlighted anyway."
+Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
 
 ;;;; Utility functions

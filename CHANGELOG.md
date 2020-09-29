@@ -40,9 +40,7 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 * The user option `selectrum-highlight-entire-line` determines whether
   to highlight the entire line of the current candidate (the default
-  is nil). This only matters for candidates in which there isn't text
-  displayed at the right margin, which is included in the highlighting
-  regardless of this variable ([#166]). See [#208].
+  is nil). See [#208].
 
 ### Enhancements
 * If `selectrum-candidate-display-right-margin` is used the margin is
