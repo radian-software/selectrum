@@ -337,8 +337,8 @@ setting."
                        (string :tag "Indicator string")
                        (face :tag "Indicator face"))))
 
-(defcustom selectrum-highlight-entire-line nil
-  "Whether to highlight the entire line of the current candidate.
+(defcustom selectrum-extend-current-candidate-highlight nil
+  "Whether to extend highlighting of the current candidate until the margin.
 
 Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
@@ -1078,7 +1078,7 @@ candidate."
                           (when (and right-margin
                                      formatting-current-candidate)
                             'selectrum-current-candidate)))))
-           ((and selectrum-highlight-entire-line
+           ((and selectrum-extend-current-candidate-highlight
                  formatting-current-candidate)
             (insert
              (propertize

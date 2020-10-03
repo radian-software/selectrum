@@ -38,9 +38,9 @@ The format is based on [Keep a Changelog].
   (`mouse-1`) selects the candidate, and right click (`mouse-3`)
   inserts the candidate, just like `RET` and `TAB`, respectively. See
   [#113] and [#118].
-* The user option `selectrum-highlight-entire-line` determines whether
-  to highlight the entire line of the current candidate (the default
-  is nil). See [#208].
+* The user option `selectrum-extend-current-candidate-highlight`
+  determines whether to extend the highlighting of the current
+  candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
 * If `selectrum-candidate-display-right-margin` is used the margin is

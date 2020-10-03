@@ -271,8 +271,8 @@ matching and case-insensitive matching.
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
   * By default, only the displayed text is highlighted. If you wish to
-    highlight the entire line instead, you can set
-    `selectrum-highlight-entire-line` to `t`.
+    extend the highlight until the margin, you can set
+    `selectrum-extend-current-candidate-highlight` to `t`.
 * By default, the part of each candidate that matches your input is
   highlighted with the face `selectrum-primary-highlight`. There is
   also `selectrum-secondary-highlight`, which is not used by default
