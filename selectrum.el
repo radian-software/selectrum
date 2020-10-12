@@ -1290,8 +1290,6 @@ list). A null or non-positive ARG inserts the candidate corresponding to
           (when-let ((match
                       (assoc crm-separator selectrum--crm-separator-alist)))
             (insert (cdr match))))
-        (unless (eq t minibuffer-history-variable)
-          (add-to-history minibuffer-history-variable full))
         (apply
          #'run-hook-with-args
          'selectrum-candidate-inserted-hook

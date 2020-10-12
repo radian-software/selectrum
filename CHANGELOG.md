@@ -42,6 +42,8 @@ The format is based on [Keep a Changelog].
   [#113] and [#118].
 
 ### Enhancements
+* `selectrum-insert-current-candidate` no longer adds inserted
+  candidates to the history ([#212], [#213]).
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
 * If `selectrum-candidate-display-right-margin` is used the margin is
@@ -187,6 +189,8 @@ The format is based on [Keep a Changelog].
 [#193]: https://github.com/raxod502/selectrum/pull/193
 [#197]: https://github.com/raxod502/selectrum/pull/197
 [#198]: https://github.com/raxod502/selectrum/pull/198
+[#212]: https://github.com/raxod502/selectrum/issues/212
+[#213]: https://github.com/raxod502/selectrum/pull/213
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
