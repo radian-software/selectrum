@@ -1066,8 +1066,7 @@ candidate."
               (propertize
                " "
                'face
-               (when (and right-margin
-                          formatting-current-candidate)
+               (when formatting-current-candidate
                  'selectrum-current-candidate)
                'display
                `(space :align-to (- right-fringe
@@ -1075,8 +1074,7 @@ candidate."
                                     selectrum-right-margin-padding)))
               (propertize right-margin
                           'face
-                          (when (and right-margin
-                                     formatting-current-candidate)
+                          (when formatting-current-candidate
                             'selectrum-current-candidate)))))
            ((and selectrum-extend-current-candidate-highlight
                  formatting-current-candidate)
