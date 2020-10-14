@@ -250,10 +250,13 @@ Possible values are:
                  current/matches)))
 
 (defcustom selectrum-show-indices nil
-  "Non-nil means to number the candidates (starting from 1).
-This allows you to select one directly by providing a prefix
-argument to `selectrum-select-current-candidate'."
-  :type 'boolean)
+  "Non-nil means to add indices to the displayed candidates.
+If this is a function, it should take in the row number of the
+displayed candidate (starting from 1) as a parameter and it
+should return the string to be displayed representing the index
+of the candidate. If this is some other non-nil value, it is
+treated as if it were (lambda (i) (format \"%2d \" i))."
+  :type '(choice function boolean))
 
 (defcustom selectrum-completing-read-multiple-show-help t
   "Non-nil means to show help for `selectrum-completing-read-multiple'.
@@ -815,8 +818,7 @@ PRED defaults to `minibuffer-completion-predicate'."
         (let ((text (selectrum--candidates-display-string
                      displayed-candidates
                      input
-                     highlighted-index
-                     first-index-displayed))
+                     highlighted-index))
               (default nil))
           (if (or (and highlighted-index
                        (< highlighted-index 0))
@@ -964,8 +966,7 @@ The specific details of the formatting are determined by
 
 (defun selectrum--candidates-display-string (candidates
                                              input
-                                             highlighted-index
-                                             first-index-displayed)
+                                             highlighted-index)
   "Get string to display CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index
@@ -1045,19 +1046,13 @@ candidate."
                'append displayed-candidate)))
           (insert "\n")
           (when selectrum-show-indices
-            (let* ((abs-index (+ index first-index-displayed))
-                   (num (number-to-string (1+ abs-index)))
-                   (num-digits
-                    (length
-                     (number-to-string
-                      selectrum--total-num-candidates))))
+            (let* ((display-fn (if (functionp selectrum-show-indices)
+                                   selectrum-show-indices
+                                 (lambda (i) (format "%2d " i))))
+                   (curr-index (substring-no-properties
+                                (funcall display-fn (1+ index)))))
               (insert
-               (propertize
-                (concat
-                 (make-string (- num-digits (length num)) ? )
-                 num " ")
-                'face
-                'minibuffer-prompt))))
+               (propertize curr-index 'face 'minibuffer-prompt))))
           (insert displayed-candidate)
           (cond
            (right-margin
@@ -1240,8 +1235,10 @@ Give a prefix argument ARG to select the candidate at that index
 Zero means to select the current user input."
   (interactive "P")
   (let ((index (if arg
-                   (min (1- (prefix-numeric-value arg))
-                        (1- (length selectrum--refined-candidates)))
+                   (min
+                    (+ (prefix-numeric-value arg)
+                       selectrum--current-candidate-index)
+                    (1- (length selectrum--refined-candidates)))
                  selectrum--current-candidate-index)))
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
@@ -1283,11 +1280,11 @@ index (counting from one, clamped to fall within the candidate
 list). A null or non-positive ARG inserts the candidate corresponding to
 `selectrum--current-candidate-index'."
   (interactive "P")
-  (if-let ((index (if (and arg
-                           selectrum--refined-candidates
-                           (> (prefix-numeric-value arg) 0))
-                      (min (1- (prefix-numeric-value arg))
-                           (1- (length selectrum--refined-candidates)))
+  (if-let ((index (if arg
+                      (min
+                       (+ (prefix-numeric-value arg)
+                          selectrum--current-candidate-index)
+                       (1- (length selectrum--refined-candidates)))
                     selectrum--current-candidate-index))
            (candidate (nth index
                            selectrum--refined-candidates))
@@ -1309,8 +1306,6 @@ list). A null or non-positive ARG inserts the candidate corresponding to
           (when-let ((match
                       (assoc crm-separator selectrum--crm-separator-alist)))
             (insert (cdr match))))
-        (unless (eq t minibuffer-history-variable)
-          (add-to-history minibuffer-history-variable full))
         (apply
          #'run-hook-with-args
          'selectrum-candidate-inserted-hook

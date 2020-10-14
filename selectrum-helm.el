@@ -110,6 +110,7 @@ For PLIST, see `helm'. This is an `:override' advice for `helm'."
 (define-minor-mode selectrum-helm-mode
   "Minor mode to use Selectrum to implement Helm commands."
   :global t
+  :group 'selectrum
   (if selectrum-helm-mode
       (progn
         (advice-add #'helm :override #'selectrum-helm--adapter)

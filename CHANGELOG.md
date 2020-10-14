@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
   work with Selectrum's keybindings ([#71]).
 
 ### Features
+* The user option `selectrum-show-indices` can now be a function that
+  can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-completing-read-multiple-show-help` can
   be used to control display of additional usage information in the
   prompt in a `completing-read-multiple` session ([#130], [#132]).
@@ -43,6 +45,10 @@ The format is based on [Keep a Changelog].
   candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
+* `selectrum-insert-current-candidate` no longer adds inserted
+  candidates to the history ([#212], [#213]).
+* Selectrum now by default shows indices relative to displayed
+  candidates ([#200]).
 * If `selectrum-candidate-display-right-margin` is used the margin is
   included in the highlighting of the selected candidate so it's
   easier to see to which candidate the margin belongs to ([#166]).
@@ -88,7 +94,7 @@ The format is based on [Keep a Changelog].
   merged lines ([#133]). This formatting is customizable via
   `selectrum-multiline-display-settings` ([#147]).
 * `selectrum-insert-current-candidate` now automatically inserts the
-  separator for commons values of `crm-separator` when using
+  separator for common values of `crm-separator` when using
   `completing-read-multiple` ([#197]).
 
 ### Bugs fixed
@@ -139,7 +145,7 @@ The format is based on [Keep a Changelog].
   paths (e.g., `~/Documents//etc/hosts`) are accepted ([#190]).
 * Pressing TAB when nothing matches shows a “No match” message in the
   minibuffer instead of signaling an error and erasing the minibuffer
-  contents ([#193]).  If ‘completion-fail-discreetly’ is non-nil,
+  contents ([#193]). If `completion-fail-discreetly` is non-nil,
   nothing is done.
 * Fix type mismatch when configuring `selectrum-count-style` in
   customizations.
@@ -187,6 +193,8 @@ The format is based on [Keep a Changelog].
 [#197]: https://github.com/raxod502/selectrum/pull/197
 [#198]: https://github.com/raxod502/selectrum/pull/198
 [#208]: https://github.com/raxod502/selectrum/pull/208
+[#212]: https://github.com/raxod502/selectrum/issues/212
+[#213]: https://github.com/raxod502/selectrum/pull/213
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

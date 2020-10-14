@@ -241,7 +241,7 @@ matching and case-insensitive matching.
   example:
 
   ```elisp
-  (global-set-key "C-x C-z" #'selectrum-repeat)
+  (global-set-key (kbd "C-x C-z") #'selectrum-repeat)
   ```
 
 * There is experimental support for running Helm commands via the
@@ -284,7 +284,10 @@ matching and case-insensitive matching.
   minibuffer by enabling `selectrum-show-indices`. This may be helpful
   in telling you what prefix argument you should pass to
   `selectrum-select-current-candidate` in order to select a given
-  candidate.
+  candidate. Furthermore, if you want do display a custom index (e.g.
+  letters instead of indices, roman numerals, etc.) you can set the
+  `selectrum-show-indices` to a function that takes in the relative
+  index of a candidate and returns the string you want to display.
 * The `selectrum-completion-in-region` function can display
   annotations if the `completion-in-region-function` backend offers
   them. Customize the face `selectrum-completion-annotation` to change
@@ -580,7 +583,18 @@ large number of packages which integrate with it. However, the problem
 with Helm for me is exactly that it has too many features. Upon
 opening a Helm menu, I am immediately confronted by numerous colors,
 diagnostics, options, and pieces of help text. It is too complicated
-for the problem I want solved.
+for the problem I want solved. Of course, I am sure it is possible to
+customize Helm so that it is simpler in appearance. But that would
+take a long time and I would rather use a piece of software which was
+designed for the use case I have in mind. I also personally prefer
+using software that I have some hope of understanding, which ideally
+means that they don't provide a hugely complex array of features of
+which I only use one or two.
+
+There is also the problem that Helm is [no longer
+maintained](https://github.com/emacs-helm/helm/issues/2386).
+
+See [#203](https://github.com/raxod502/selectrum/issues/203).
 
 ### Why not Ivy?
 
