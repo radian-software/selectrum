@@ -340,6 +340,12 @@ setting."
                        (string :tag "Indicator string")
                        (face :tag "Indicator face"))))
 
+(defcustom selectrum-extend-current-candidate-highlight nil
+  "Whether to extend highlighting of the current candidate until the margin.
+
+Nil (the default) means to only highlight the displayed text."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 ;;;###autoload
@@ -989,7 +995,9 @@ candidate."
                  candidate)))
               (right-margin (get-text-property
                              0 'selectrum-candidate-display-right-margin
-                             candidate)))
+                             candidate))
+              (formatting-current-candidate
+               (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
           (add-text-properties
            0 (length displayed-candidate)
@@ -1009,7 +1017,7 @@ candidate."
                    (selectrum-insert-current-candidate ,(1+ index))))
               keymap))
            displayed-candidate)
-          (when (equal index highlighted-index)
+          (when formatting-current-candidate
             (setq displayed-candidate
                   (copy-sequence displayed-candidate))
             ;; Avoid trampling highlighting done by
@@ -1046,14 +1054,14 @@ candidate."
               (insert
                (propertize curr-index 'face 'minibuffer-prompt))))
           (insert displayed-candidate)
-          (when right-margin
+          (cond
+           (right-margin
             (insert
              (concat
               (propertize
                " "
                'face
-               (when (and right-margin
-                          (equal index highlighted-index))
+               (when formatting-current-candidate
                  'selectrum-current-candidate)
                'display
                `(space :align-to (- right-fringe
@@ -1061,9 +1069,17 @@ candidate."
                                     selectrum-right-margin-padding)))
               (propertize right-margin
                           'face
-                          (when (and right-margin
-                                     (equal index highlighted-index))
-                            'selectrum-current-candidate))))))
+                          (when formatting-current-candidate
+                            'selectrum-current-candidate)))))
+           ((and selectrum-extend-current-candidate-highlight
+                 formatting-current-candidate)
+            (insert
+             (propertize
+              " "
+              'face 'selectrum-current-candidate
+              'display
+              `(space :align-to (- right-fringe
+                                   selectrum-right-margin-padding)))))))
         (cl-incf index))
       (buffer-string))))
 
