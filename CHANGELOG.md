@@ -45,6 +45,10 @@ The format is based on [Keep a Changelog].
   candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
+* The argument passed to `selectrum-select-current-candidate` and
+  `selectrum-insert-current-candidate` is now used to choose the nth
+  displayed candidate instead of calculating an index based on the
+  currently selected candidate.
 * `selectrum-insert-current-candidate` no longer adds inserted
   candidates to the history ([#212], [#213]).
 * Selectrum now by default shows indices relative to displayed
