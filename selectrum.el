@@ -1286,10 +1286,10 @@ inserted automatically when using
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
 
-With optional prefix argument ARG, insert the candidate at that
-index (counting from one, clamped to fall within the candidate
-list). A null or non-positive ARG inserts the candidate corresponding to
-`selectrum--current-candidate-index'."
+Give a prefix argument ARG to select the nth displayed candidate.
+Zero means to select the current user input. See
+`selectrum-show-indices' which can be used to show the relative
+index of candidates."
   (interactive "P")
   (if-let ((index (selectrum--index-for-arg arg))
            (candidate (selectrum--get-candidate index))
