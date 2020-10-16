@@ -136,11 +136,9 @@ how to fix it.
   file\:* type `TAB`. (What this actually does is insert the currently
   selected candidate into the minibuffer, which for `find-file` has
   the effect of navigating into a directory.) With a positive prefix
-  argument, insert the candidate at that point in the list, counting
-  from one. See `selectrum-show-indices`. A non-positive prefix
-  argument inserts the candidate corresponding to
-  `selectrum--current-candidate-index`. You can also right click on a
-  candidate to insert it into the minibuffer.
+  argument, insert the candidate at that display position (see
+  `selectrum-show-indices`). You can also right click on a candidate
+  to insert it into the minibuffer.
 * *To copy the current candidate:* type `M-w` or what is bound to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
@@ -283,7 +281,7 @@ matching and case-insensitive matching.
 * You can show the indices of displayed candidates by customizing
   `selectrum-show-indices`. This may be helpful in telling you what
   prefix argument you should pass to
-  `selectrum-select-current-candidate`
+  `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` in order to select a given
   candidate. Furthermore, if you want do display a custom index (e.g.
   letters instead of indices, roman numerals, etc.) you can set the
