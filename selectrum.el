@@ -1232,7 +1232,7 @@ plus CANDIDATE."
 (defun selectrum--index-for-arg (arg)
   "Get candidate index for interactive argument ARG.
 This is a helper function for commands which allow choosing a
-candidate via interactive argument."
+candidate via prefix argument."
   (if arg
       (min
        (+ (prefix-numeric-value arg)
@@ -1247,8 +1247,8 @@ a match is required, in which case do nothing.
 
 Give a prefix argument ARG to select the nth displayed candidate.
 Zero means to select the current user input. See
-`selectrum-show-indices' which can be used to show the relative
-index of candidates."
+`selectrum-show-indices' which can be used to show candidate
+indices."
   (interactive "P")
   (let ((index (selectrum--index-for-arg arg)))
     (when (or (not selectrum--match-required-p)
@@ -1288,8 +1288,8 @@ inserted automatically when using
 
 Give a prefix argument ARG to select the nth displayed candidate.
 Zero means to select the current user input. See
-`selectrum-show-indices' which can be used to show the relative
-index of candidates."
+`selectrum-show-indices' which can be used to show candidate
+indices."
   (interactive "P")
   (if-let ((index (selectrum--index-for-arg arg))
            (candidate (selectrum--get-candidate index))
