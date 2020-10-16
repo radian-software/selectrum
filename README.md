@@ -280,10 +280,11 @@ matching and case-insensitive matching.
   highlighting schemes (such as `prescient.el`).
 * By default, the total number of matches are shown before the prompt.
   This behavior can be customized using `selectrum-count-style`.
-* You can cause the candidates to be numbered sequentially in the
-  minibuffer by enabling `selectrum-show-indices`. This may be helpful
-  in telling you what prefix argument you should pass to
-  `selectrum-select-current-candidate` in order to select a given
+* You can show the indices of displayed candidates by customizing
+  `selectrum-show-indices`. This may be helpful in telling you what
+  prefix argument you should pass to
+  `selectrum-select-current-candidate`
+  `selectrum-insert-current-candidate` in order to select a given
   candidate. Furthermore, if you want do display a custom index (e.g.
   letters instead of indices, roman numerals, etc.) you can set the
   `selectrum-show-indices` to a function that takes in the relative
