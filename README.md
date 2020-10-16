@@ -282,9 +282,9 @@ matching and case-insensitive matching.
   `selectrum-show-indices`. This may be helpful in telling you what
   prefix argument you should pass to
   `selectrum-select-current-candidate` and
-  `selectrum-insert-current-candidate` in order to select a given
-  candidate. Furthermore, if you want do display a custom index (e.g.
-  letters instead of indices, roman numerals, etc.) you can set the
+  `selectrum-insert-current-candidate` in order to choose a candidate.
+  Furthermore, if you want do display a custom index (e.g. letters
+  instead of indices, roman numerals, etc.) you can set the
   `selectrum-show-indices` to a function that takes in the relative
   index of a candidate and returns the string you want to display.
 * The `selectrum-completion-in-region` function can display
