@@ -45,6 +45,10 @@ The format is based on [Keep a Changelog].
   candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
+* The argument passed to `selectrum-select-current-candidate` and
+  `selectrum-insert-current-candidate` is now used to choose the nth
+  displayed candidate instead of calculating an index based on the
+  currently selected candidate ([#194], [#215]).
 * `selectrum-insert-current-candidate` no longer adds inserted
   candidates to the history ([#212], [#213]).
 * Selectrum now by default shows indices relative to displayed
@@ -190,11 +194,13 @@ The format is based on [Keep a Changelog].
 [#186]: https://github.com/raxod502/selectrum/pull/186
 [#190]: https://github.com/raxod502/selectrum/pull/190
 [#193]: https://github.com/raxod502/selectrum/pull/193
+[#194]: https://github.com/raxod502/selectrum/issues/194
 [#197]: https://github.com/raxod502/selectrum/pull/197
 [#198]: https://github.com/raxod502/selectrum/pull/198
 [#208]: https://github.com/raxod502/selectrum/pull/208
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
+[#215]: https://github.com/raxod502/selectrum/pull/215
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes

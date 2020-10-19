@@ -514,6 +514,9 @@ input changes, and is subsequently passed to
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
+(defvar selectrum--first-index-displayed nil
+  "Index of the first displayed candidate.")
+
 (defvar selectrum--previous-input-string nil
   "Previous user input string in the minibuffer.
 Used to check if the user input has changed and candidates need
@@ -790,19 +793,20 @@ PRED defaults to `minibuffer-completion-predicate'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((first-index-displayed
-              (if selectrum--current-candidate-index
-                  (selectrum--clamp
-                   ;; Adding one here makes it look slightly better, as
-                   ;; there are guaranteed to be more candidates shown
-                   ;; below the selection than above.
-                   (1+ (- selectrum--current-candidate-index
-                          (max 1 (/ selectrum-num-candidates-displayed 2))))
-                   0
-                   (max (- (length selectrum--refined-candidates)
-                           selectrum-num-candidates-displayed)
-                        0))
-                0))
+      (setq selectrum--first-index-displayed
+            (if selectrum--current-candidate-index
+                (selectrum--clamp
+                 ;; Adding one here makes it look slightly better, as
+                 ;; there are guaranteed to be more candidates shown
+                 ;; below the selection than above.
+                 (1+ (- selectrum--current-candidate-index
+                        (max 1 (/ selectrum-num-candidates-displayed 2))))
+                 0
+                 (max (- (length selectrum--refined-candidates)
+                         selectrum-num-candidates-displayed)
+                      0))
+              0))
+      (let* ((first-index-displayed selectrum--first-index-displayed)
              (displayed-candidates
               (seq-take
                (nthcdr
@@ -1225,21 +1229,28 @@ plus CANDIDATE."
               result))
     (exit-minibuffer)))
 
+(defun selectrum--index-for-arg (arg)
+  "Get candidate index for interactive argument ARG.
+This is a helper function for commands which allow choosing a
+candidate via prefix argument."
+  (if arg
+      (min
+       (+ (prefix-numeric-value arg)
+          (1- selectrum--first-index-displayed))
+       (1- (length selectrum--refined-candidates)))
+    selectrum--current-candidate-index))
+
 (defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
 If there are no candidates, return the current user input, unless
 a match is required, in which case do nothing.
 
-Give a prefix argument ARG to select the candidate at that index
-\(counting from one, clamped to fall within the candidate list).
-Zero means to select the current user input."
+Give a prefix argument ARG to select the nth displayed candidate.
+Zero means to select the current user input. See
+`selectrum-show-indices' which can be used to show candidate
+indices."
   (interactive "P")
-  (let ((index (if arg
-                   (min
-                    (+ (prefix-numeric-value arg)
-                       selectrum--current-candidate-index)
-                    (1- (length selectrum--refined-candidates)))
-                 selectrum--current-candidate-index)))
+  (let ((index (selectrum--index-for-arg arg)))
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
               (and minibuffer-completing-file-name
@@ -1275,19 +1286,13 @@ inserted automatically when using
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
 
-With optional prefix argument ARG, insert the candidate at that
-index (counting from one, clamped to fall within the candidate
-list). A null or non-positive ARG inserts the candidate corresponding to
-`selectrum--current-candidate-index'."
+Give a prefix argument ARG to select the nth displayed candidate.
+Zero means to select the current user input. See
+`selectrum-show-indices' which can be used to show candidate
+indices."
   (interactive "P")
-  (if-let ((index (if arg
-                      (min
-                       (+ (prefix-numeric-value arg)
-                          selectrum--current-candidate-index)
-                       (1- (length selectrum--refined-candidates)))
-                    selectrum--current-candidate-index))
-           (candidate (nth index
-                           selectrum--refined-candidates))
+  (if-let ((index (selectrum--index-for-arg arg))
+           (candidate (selectrum--get-candidate index))
            (full (selectrum--get-full candidate)))
       (progn
         (if (not selectrum--crm-p)
@@ -1379,6 +1384,7 @@ Otherwise, just eval BODY."
            (lambda (var)
              `(,var ,var))
            '(selectrum--current-candidate-index
+             selectrum--first-index-displayed
              selectrum--previous-input-string
              selectrum--last-command
              selectrum--last-prefix-arg)))
