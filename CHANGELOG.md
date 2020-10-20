@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
-## Unreleased
+## 3.0 (released 2020-10-20)
 ### Breaking changes
 * The function `selectrum-read-directory-name` is no longer available.
 * When reading directories and the default is already in the prompt,
