@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Features
+* The user option `selectrum-show-indices` can now be a function that
+  can be used to control the display of the a candidate's index ([#200]).
+* The user option `selectrum-extend-current-candidate-highlight`
+  determines whether to extend the highlighting of the current
+  candidate until the margin (the default is nil). See [#208].
+
+### Enhancements
+* The argument passed to `selectrum-select-current-candidate` and
+  `selectrum-insert-current-candidate` is now used to choose the nth
+  displayed candidate instead of calculating an index based on the
+  currently selected candidate ([#194], [#215]).
+* `selectrum-insert-current-candidate` no longer adds inserted
+  candidates to the history ([#212], [#213]).
+* Selectrum now by default shows indices relative to displayed
+  candidates ([#200]).
+
+[#194]: https://github.com/raxod502/selectrum/issues/194
+[#200]: https://github.com/raxod502/selectrum/pull/200
+[#208]: https://github.com/raxod502/selectrum/pull/208
+[#212]: https://github.com/raxod502/selectrum/issues/212
+[#213]: https://github.com/raxod502/selectrum/pull/213
+[#215]: https://github.com/raxod502/selectrum/pull/215
+
+## 3.0 (released 2020-10-20)
 ### Breaking changes
 * The function `selectrum-read-directory-name` is no longer available.
 * When reading directories and the default is already in the prompt,
@@ -18,8 +43,6 @@ The format is based on [Keep a Changelog].
   work with Selectrum's keybindings ([#71]).
 
 ### Features
-* The user option `selectrum-show-indices` can now be a function that
-  can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-completing-read-multiple-show-help` can
   be used to control display of additional usage information in the
   prompt in a `completing-read-multiple` session ([#130], [#132]).
@@ -40,19 +63,8 @@ The format is based on [Keep a Changelog].
   (`mouse-1`) selects the candidate, and right click (`mouse-3`)
   inserts the candidate, just like `RET` and `TAB`, respectively. See
   [#113] and [#118].
-* The user option `selectrum-extend-current-candidate-highlight`
-  determines whether to extend the highlighting of the current
-  candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
-* The argument passed to `selectrum-select-current-candidate` and
-  `selectrum-insert-current-candidate` is now used to choose the nth
-  displayed candidate instead of calculating an index based on the
-  currently selected candidate ([#194], [#215]).
-* `selectrum-insert-current-candidate` no longer adds inserted
-  candidates to the history ([#212], [#213]).
-* Selectrum now by default shows indices relative to displayed
-  candidates ([#200]).
 * If `selectrum-candidate-display-right-margin` is used the margin is
   included in the highlighting of the selected candidate so it's
   easier to see to which candidate the margin belongs to ([#166]).
@@ -194,13 +206,8 @@ The format is based on [Keep a Changelog].
 [#186]: https://github.com/raxod502/selectrum/pull/186
 [#190]: https://github.com/raxod502/selectrum/pull/190
 [#193]: https://github.com/raxod502/selectrum/pull/193
-[#194]: https://github.com/raxod502/selectrum/issues/194
 [#197]: https://github.com/raxod502/selectrum/pull/197
 [#198]: https://github.com/raxod502/selectrum/pull/198
-[#208]: https://github.com/raxod502/selectrum/pull/208
-[#212]: https://github.com/raxod502/selectrum/issues/212
-[#213]: https://github.com/raxod502/selectrum/pull/213
-[#215]: https://github.com/raxod502/selectrum/pull/215
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
