@@ -348,15 +348,6 @@ Nil (the default) means to only highlight the displayed text."
 
 ;;;; Utility functions
 
-;;;###autoload
-(progn
-  (defmacro selectrum--when-compile (cond &rest body)
-    "Like `when', but COND is evaluated at compile time.
-If it's nil, BODY is not even compiled."
-    (declare (indent 1))
-    (when (eval cond)
-      `(progn ,@body))))
-
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
 If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
