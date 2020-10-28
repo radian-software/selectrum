@@ -27,6 +27,13 @@ The format is based on [Keep a Changelog].
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
+[#221]: https://github.com/raxod502/selectrum/pull/221
+
+### Bugs fixed
+* `selectrum-completion-in-region` no longer unsets
+  `selectrum-should-sort-p` for all recursive minibuffer sessions in
+  the case the initial completion table specified its own
+  `display-sort-function` ([#221]).
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
