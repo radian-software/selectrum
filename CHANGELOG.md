@@ -102,10 +102,6 @@ The format is based on [Keep a Changelog].
   `completing-read-multiple` ([#197]).
 
 ### Bugs fixed
-* `selectrum-completion-in-region` no longer unsets
-  `selectrum-should-sort-p` for all recursive minibuffer sessions in
-  the case the initial completion table specified its own
-  `display-sort-function` ([#221]).
 * The minibuffer height is now determined by the actual height of
   displayed candidates. Previously the height could be off for
   candidates containing unicode characters or other means which
@@ -205,7 +201,6 @@ The format is based on [Keep a Changelog].
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
-[#221]: https://github.com/raxod502/selectrum/pull/221
 
 ## 2.0 (released 2020-07-18)
 ### Breaking changes
