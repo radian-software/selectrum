@@ -1601,7 +1601,12 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                   (nconc
                    ;; `completion-styles' is used for the initial
                    ;; filtering here internally! Selectrum doesn't use
-                   ;; `completion-styles' in other places yet.
+                   ;; `completion-styles' in other places yet. For
+                   ;; completion in region this matches the expected
+                   ;; behavior because the candidates should be
+                   ;; determined according to the sourrounding text
+                   ;; that gets completed for which
+                   ;; `completion-styles' is typically configured.
                    (completion-all-completions input collection predicate
                                                (- end start) meta)
                    nil)))
