@@ -21,12 +21,20 @@ The format is based on [Keep a Changelog].
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
 
+### Bugs fixed
+* The candiate list returned from a dynamic candidate function passed
+  to `selectrum-read` is now also prevented to be modified in case its
+  a list of strings. Before the list only wasn't modfied when the
+  function returned the alist format as specfied by `selectrum-read`
+  ([#220]).
+
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
 [#208]: https://github.com/raxod502/selectrum/pull/208
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
+[#220]: https://github.com/raxod502/selectrum/pull/220
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
