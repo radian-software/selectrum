@@ -353,6 +353,15 @@ External packages that work well with Selectrum:
   [orderless](https://github.com/oantolin/orderless). It supports many
   different matching styles and integrates with `completion-styles`.
 
+* For minibuffer actions and occur/export features there is
+  [embark](https://github.com/oantolin/embark/). Embark provides
+  features like ivy-actions/ivy-occur in a framework agnostic way.
+
+* For searching and manipulating the `kill-ring` there is
+  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring). Multi-line
+  candidates aren't well suited for minibuffer completion, thus you
+  might prefer a dedicated buffer for this.
+
 ### But what is it doing to my Emacs??
 
 By inspecting the source code of `selectrum-mode`, you will see that
@@ -523,9 +532,9 @@ Technical points:
 
 ## Caveats
 
-* There is currently no support for alternate actions, although there
-  are plans for how this feature could be implemented without
-  descending into the madness of how Ivy and Helm do it.
+* There is no built-in support for alternate actions on minibuffer
+  candidates but you can add those using
+  [embark](https://github.com/oantolin/embark/).
 * In Emacs 25 and earlier, `M-x ffap` is basically completely broken.
   This is because in old versions of Emacs, `ffap` worked by calling
   `completing-read` directly with a special completion table function,
