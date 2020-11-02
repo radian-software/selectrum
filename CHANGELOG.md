@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog].
   candidate until the margin (the default is nil). See [#208].
 
 ### Enhancements
+* The completion of filenames using `selectrum-completion-in-region`
+  has been improved. The minibuffer gets no longer invoked if there is
+  only a single completion candidate instead the result is inserted in
+  place.
 * The argument passed to `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` is now used to choose the nth
   displayed candidate instead of calculating an index based on the
@@ -21,6 +25,12 @@ The format is based on [Keep a Changelog].
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
 
+### Bugs fixed
+* `selectrum-completion-in-region` no longer unsets
+  `selectrum-should-sort-p` for all recursive minibuffer sessions in
+  the case the initial completion table specified its own
+  `display-sort-function` ([#221]).
+
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
 [#208]: https://github.com/raxod502/selectrum/pull/208
@@ -28,12 +38,6 @@ The format is based on [Keep a Changelog].
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
 [#221]: https://github.com/raxod502/selectrum/pull/221
-
-### Bugs fixed
-* `selectrum-completion-in-region` no longer unsets
-  `selectrum-should-sort-p` for all recursive minibuffer sessions in
-  the case the initial completion table specified its own
-  `display-sort-function` ([#221]).
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
