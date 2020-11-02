@@ -1587,41 +1587,46 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                                     input collection predicate ""))))))
          (exit-func (plist-get completion-extra-properties
                                :exit-function))
-         (cands (if (eq category 'file)
-                    collection
-                  (nconc
-                   ;; `completion-styles' is used for the initial
-                   ;; filtering here internally! Selectrum doesn't use
-                   ;; `completion-styles' in other places yet. For
-                   ;; completion in region this matches the expected
-                   ;; behavior because the candidates should be
-                   ;; determined according to the sourrounding text
-                   ;; that gets completed for which
-                   ;; `completion-styles' is typically configured.
-                   (completion-all-completions input collection predicate
-                                               (- end start) meta)
-                   nil)))
+         (cands (nconc
+                 ;; `completion-styles' is used for the initial
+                 ;; filtering here internally! Selectrum doesn't use
+                 ;; `completion-styles' in other places yet. For
+                 ;; completion in region this matches the expected
+                 ;; behavior because the candidates should be
+                 ;; determined according to the sourrounding text
+                 ;; that gets completed for which
+                 ;; `completion-styles' is typically configured.
+                 (completion-all-completions input collection predicate
+                                             (- end start) meta)
+                 nil))
+         ;; See doc of `completion-extra-properties'.
          (exit-status nil)
          (result nil))
     (if (null cands)
         (progn (unless completion-fail-discreetly (ding))
                (message "No match"))
       (pcase category
-        ('file (setq result (selectrum--completing-read-file-name
-                             "Completion: " cands predicate
-                             nil input))
-               (setq exit-status 'finished))
+        ('file
+         (let ((exact (and (not (cdr cands))
+                           (try-completion input collection predicate))))
+           (if exact
+               (setq result exact
+                     exit-status 'exact)
+             (setq result
+                   (selectrum--completing-read-file-name
+                    "Completion: " collection predicate
+                    nil input)
+                   exit-status 'finished))))
         (_
-         (pcase (length cands)
-           ;; We already rule out the situation where `cands' is empty.
-           (`1 (setq result (car cands)))
-           ( _ (setq result
-                     (selectrum-completing-read
-                      "Completion: "
-                      (lambda (string pred action)
-                        (if (eq action 'metadata)
-                            meta
-                          (complete-with-action action cands string pred)))))))
+         (setq result
+               (if (not (cdr cands))
+                   (car cands)
+                 (selectrum-completing-read
+                  "Completion: "
+                  (lambda (string pred action)
+                    (if (eq action 'metadata)
+                        meta
+                      (complete-with-action action cands string pred))))))
          (setq exit-status
                (cond ((not (member result cands)) 'sole)
                      (t 'finished)))))
