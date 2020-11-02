@@ -346,6 +346,13 @@ setting."
 Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
 
+(defcustom selectrum-do-completion-in-region t
+  "Whether to use selectrum for completion in region.
+If this is non-nil `selectrum-mode' will set
+`completion-in-region-function'."
+  :type 'boolean)
+
+
 ;;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
@@ -1980,10 +1987,11 @@ ARGS are standard as in all `:around' advice."
                 (default-value 'read-file-name-function))
           (setq-default read-file-name-function
                         #'selectrum-read-file-name)
-          (setq selectrum--old-completion-in-region-function
-                (default-value 'completion-in-region-function))
-          (setq-default completion-in-region-function
-                        #'selectrum-completion-in-region)
+          (when selectrum-do-completion-in-region
+            (setq selectrum--old-completion-in-region-function
+                  (default-value 'completion-in-region-function))
+            (setq-default completion-in-region-function
+                          #'selectrum-completion-in-region))
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
