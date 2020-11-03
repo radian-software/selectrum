@@ -14,10 +14,6 @@ The format is based on [Keep a Changelog].
 ### Enhancements
 * The user option `selectrum-do-completion-in-region` can be used to
   configure if Selectrum should handle completion in region ([#221]).
-* The completion of filenames by `selectrum-completion-in-region` has
-  been improved. The minibuffer gets no longer invoked if there is
-  only a single completion candidate instead the result is inserted in
-  place ([#221]).
 * The argument passed to `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` is now used to choose the nth
   displayed candidate instead of calculating an index based on the

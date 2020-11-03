@@ -1614,16 +1614,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                (message "No match"))
       (pcase category
         ('file
-         (let ((exact (and (not (cdr cands))
-                           (try-completion input collection predicate))))
-           (if exact
-               (setq result exact
-                     exit-status 'exact)
-             (setq result
-                   (selectrum--completing-read-file-name
-                    "Completion: " collection predicate
-                    nil input)
-                   exit-status 'finished))))
+         (setq result
+               (selectrum--completing-read-file-name
+                "Completion: " collection predicate
+                nil input)
+               exit-status 'finished))
         (_
          (setq result
                (if (not (cdr cands))
@@ -1633,10 +1628,9 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                   (lambda (string pred action)
                     (if (eq action 'metadata)
                         meta
-                      (complete-with-action action cands string pred))))))
-         (setq exit-status
-               (cond ((not (member result cands)) 'sole)
-                     (t 'finished)))))
+                      (complete-with-action action cands string pred)))))
+               exit-status (cond ((not (member result cands)) 'sole)
+                                 (t 'finished)))))
       (delete-region bound end)
       (insert (substring-no-properties result))
       (when exit-func
