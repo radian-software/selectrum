@@ -28,6 +28,11 @@ The format is based on [Keep a Changelog].
   `selectrum-should-sort-p` for all recursive minibuffer sessions in
   the case the initial completion table specified its own
   `display-sort-function` ([#221]).
+* The candiate list returned from a dynamic candidate function passed
+  to `selectrum-read` is now also prevented to be modified in case its
+  a list of strings. Before the list only wasn't modfied when the
+  function returned the alist format as specfied by `selectrum-read`
+  ([#220]).
 
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
@@ -35,6 +40,7 @@ The format is based on [Keep a Changelog].
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
+[#220]: https://github.com/raxod502/selectrum/pull/220
 [#221]: https://github.com/raxod502/selectrum/pull/221
 
 ## 3.0 (released 2020-10-20)
