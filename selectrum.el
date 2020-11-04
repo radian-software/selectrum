@@ -716,21 +716,22 @@ PRED defaults to `minibuffer-completion-predicate'."
         ;; there's no special attention needed.
         (setq selectrum--visual-input nil)
         (let ((cands (if (functionp selectrum--preprocessed-candidates)
-                         (funcall selectrum-preprocess-candidates-function
-                                  (let ((result
-                                         (funcall
-                                          selectrum--preprocessed-candidates
-                                          input)))
-                                    (if (stringp (car result))
-                                        result
-                                      (setq input (or (alist-get 'input result)
-                                                      input))
-                                      (setq selectrum--visual-input input)
-                                      ;; Avoid modifying the returned
-                                      ;; candidates to let the function
-                                      ;; reuse them.
-                                      (copy-sequence
-                                       (alist-get 'candidates result)))) )
+                         (funcall
+                          selectrum-preprocess-candidates-function
+                          (let ((result
+                                 (funcall
+                                  selectrum--preprocessed-candidates
+                                  input)))
+                            ;; Avoid modifying the returned
+                            ;; candidates to let the function
+                            ;; reuse them.
+                            (copy-sequence
+                             (if (stringp (car result))
+                                 result
+                               (setq input (or (alist-get 'input result)
+                                               input))
+                               (setq selectrum--visual-input input)
+                               (alist-get 'candidates result)))))
                        selectrum--preprocessed-candidates)))
           (setq selectrum--total-num-candidates (length cands))
           (setq selectrum--refined-candidates
