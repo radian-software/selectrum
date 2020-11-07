@@ -27,9 +27,9 @@ The format is based on [Keep a Changelog].
   the case the initial completion table specified its own
   `display-sort-function` ([#221]).
 * The candiate list returned from a dynamic candidate function passed
-  to `selectrum-read` is now also prevented to be modified in case its
-  a list of strings. Before the list only wasn't modfied when the
-  function returned the alist format as specfied by `selectrum-read`
+  to `selectrum-read` is now also prevented to be modified in case
+  it's a list of strings. Before the list only wasn't modfied when the
+  function returned the alist format as specified by `selectrum-read`
   ([#220]).
 
 [#194]: https://github.com/raxod502/selectrum/issues/194
