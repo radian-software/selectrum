@@ -214,6 +214,7 @@ strings."
     (define-key map [remap previous-matching-history-element]
       #'selectrum-select-from-history)
     (define-key map (kbd "C-M-DEL") #'backward-kill-sexp)
+    (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
 
