@@ -88,6 +88,38 @@ respected by user functions for optimal results.")
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
+(defvar selectrum-display-action nil
+  "Display action to display the candidates buffer.
+
+If this is nil the candidates are shown in the minibuffer.
+Otherwise the candidates are shown in the window as determined
+from the display action.
+
+For the format see the ACTION argument of `display-buffer'. For
+example to display candidates in the current window use:
+
+    '(display-buffer-same-window)
+
+Or to display them in a bottom side window:
+
+   '(display-buffer-in-side-window
+       (side . bottom)
+       (slot . -1))
+
+To use the full frame for candidate display you can use the
+provided action function `selectrum-display-full-frame'.")
+
+(defun selectrum-display-full-frame (buf _alist)
+  "Display BUF in full frame.
+Can be used as `selectrum-display-action' to display candidates
+in a single window spanning the whole frame:
+
+    (setq selectrum-display-action
+        '(selectrum-display-full-frame)."
+  (delete-other-windows)
+  (set-window-buffer (selected-window) buf)
+  (selected-window))
+
 ;;;; User options
 
 (defgroup selectrum nil
@@ -97,9 +129,13 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
 (defcustom selectrum-num-candidates-displayed 10
-  "Maximum number of candidates which are displayed at the same time.
-The height of the minibuffer will be this number of rows plus one
-for the prompt line, assuming no multiline text."
+  "Maximum number of candidate lines which are displayed in the minibuffer.
+The height of the minibuffer will be this number (or the actual
+number of candidates if there are fewer candidates) plus one for
+the prompt line. If `selectrum-display-action' is non-nil this
+will also determine the window height but when the window spans
+the whole frame selectrum will automatically use all of the
+available height to display candidates."
   :type 'number)
 
 (defun selectrum-default-candidate-refine-function (input candidates)
@@ -571,6 +607,11 @@ This is non-nil during the first call of
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
+(defvar selectrum--candidates-buffer " *selectrum*"
+  "Buffer to display candidates using `selectrum-display-action'.")
+
+
+
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum-get-current-candidate (&optional notfull)
@@ -695,6 +736,28 @@ PRED defaults to `minibuffer-completion-predicate'."
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
 
+(defvar display-line-numbers)
+(defun selectrum--get-display-window ()
+  "Get candidate display window.
+
+Window will be initialized using `selectrum-display-action'."
+  (let ((buf (get-buffer-create selectrum--candidates-buffer)))
+    (or (get-buffer-window buf)
+        (with-selected-window (minibuffer-selected-window)
+          (let ((window  (display-buffer
+                          buf
+                          selectrum-display-action)))
+            (prog1 window
+              (with-selected-window window
+                (set-window-hscroll window 0)
+                (set-window-dedicated-p window t)
+                (set-window-parameter window 'no-other-window t)
+                (setq cursor-type nil)
+                (setq-local cursor-in-non-selected-windows nil)
+                (setq display-line-numbers nil)
+                (setq show-trailing-whitespace nil)
+                (goto-char (point-min)))))))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (unless selectrum--skip-updates-p
@@ -794,84 +857,125 @@ PRED defaults to `minibuffer-completion-predicate'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (setq selectrum--first-index-displayed
-            (if selectrum--current-candidate-index
-                (selectrum--clamp
-                 ;; Adding one here makes it look slightly better, as
-                 ;; there are guaranteed to be more candidates shown
-                 ;; below the selection than above.
-                 (1+ (- selectrum--current-candidate-index
-                        (max 1 (/ selectrum-num-candidates-displayed 2))))
-                 0
-                 (max (- (length selectrum--refined-candidates)
-                         selectrum-num-candidates-displayed)
-                      0))
-              0))
-      (let* ((first-index-displayed selectrum--first-index-displayed)
+      (let* ((window (when (and selectrum-display-action
+                                selectrum--refined-candidates)
+                       (selectrum--get-display-window)))
+             (ncands (if (and window
+                              (= (window-height (frame-root-window))
+                                 (window-height window)))
+                         (max (window-body-height window)
+                              selectrum-num-candidates-displayed)
+                       selectrum-num-candidates-displayed))
+             (first-index-displayed
+              ;; Save for selection of cands by numeric args.
+              (setq selectrum--first-index-displayed
+                    (if selectrum--current-candidate-index
+                        (selectrum--clamp
+                         ;; Adding one here makes it look slightly better, as
+                         ;; there are guaranteed to be more candidates shown
+                         ;; below the selection than above.
+                         (1+ (- selectrum--current-candidate-index
+                                (max 1 (/ ncands 2))))
+                         0
+                         (max (- (length selectrum--refined-candidates)
+                                 ncands)
+                              0))
+                      0)))
+             (highlighted-index (and selectrum--current-candidate-index
+                                     (- selectrum--current-candidate-index
+                                        first-index-displayed)))
              (displayed-candidates
               (seq-take
                (nthcdr
                 first-index-displayed
                 selectrum--refined-candidates)
-               selectrum-num-candidates-displayed))
-             (highlighted-index (and selectrum--current-candidate-index
-                                     (- selectrum--current-candidate-index
-                                        first-index-displayed))))
-        (setq displayed-candidates
-              (seq-take displayed-candidates
-                        selectrum-num-candidates-displayed))
-        (let ((text (selectrum--candidates-display-string
-                     displayed-candidates
-                     input
-                     highlighted-index))
-              (default nil))
-          (if (or (and highlighted-index
-                       (< highlighted-index 0))
-                  (and (not selectrum--match-required-p)
-                       (not displayed-candidates))
-                  (and selectrum--default-candidate
-                       (not minibuffer-completing-file-name)
-                       (not (member selectrum--default-candidate
-                                    selectrum--refined-candidates))))
-              (if (= (minibuffer-prompt-end) bound)
-                  (setq default
-                        (format " %s %s%s"
-                                (propertize
-                                 "[default value:"
-                                 'face 'minibuffer-prompt)
-                                (propertize
-                                 (or (and selectrum--default-candidate
-                                          (substring-no-properties
-                                           selectrum--default-candidate))
-                                     "\"\"")
-                                 'face
-                                 (if (and selectrum--current-candidate-index
-                                          (< selectrum--current-candidate-index
-                                             0))
-                                     'selectrum-current-candidate
-                                   'minibuffer-prompt))
-                                (propertize "]" 'face 'minibuffer-prompt)))
-                (when (and highlighted-index
-                           (< highlighted-index 0))
-                  (add-text-properties
-                   (minibuffer-prompt-end) bound
-                   '(face selectrum-current-candidate))))
-            (remove-text-properties
-             (minibuffer-prompt-end) bound
-             '(face selectrum-current-candidate)))
-          (move-overlay selectrum--candidates-overlay
-                        (point-max) (point-max) (current-buffer))
-          (setq text (concat (or default " ") text))
-          (put-text-property 0 1 'cursor t text)
-          (overlay-put selectrum--candidates-overlay 'after-string text))
-        (selectrum--update-minibuffer-height first-index-displayed
+               ncands))
+             (candidate-string (selectrum--candidates-display-string
+                                displayed-candidates
+                                input
+                                highlighted-index))
+             (default
+               (if (or (and highlighted-index
+                            (< highlighted-index 0))
+                       (and (not selectrum--match-required-p)
+                            (not displayed-candidates))
+                       (and selectrum--default-candidate
+                            (not minibuffer-completing-file-name)
+                            (not (member selectrum--default-candidate
+                                         selectrum--refined-candidates))))
+                   (if (= (minibuffer-prompt-end) bound)
+                       (format " %s %s%s"
+                               (propertize
+                                "[default value:"
+                                'face 'minibuffer-prompt)
+                               (propertize
+                                (or (and selectrum--default-candidate
+                                         (substring-no-properties
+                                          selectrum--default-candidate))
+                                    "\"\"")
+                                'face
+                                (if (and selectrum--current-candidate-index
+                                         (< selectrum--current-candidate-index
+                                            0))
+                                    'selectrum-current-candidate
+                                  'minibuffer-prompt))
+                               (propertize "]" 'face 'minibuffer-prompt))
+                     (when (and highlighted-index
+                                (< highlighted-index 0))
+                       (prog1 nil
+                         (add-text-properties
+                          (minibuffer-prompt-end) bound
+                          '(face selectrum-current-candidate)))))
+                 (prog1 nil
+                   (remove-text-properties
+                    (minibuffer-prompt-end) bound
+                    '(face selectrum-current-candidate)))))
+             (minibuf-after-string
+              (concat (or default " ")
+                      (unless (or window (string-empty-p candidate-string))
+                        (concat "\n" candidate-string)))))
+        (move-overlay selectrum--candidates-overlay
+                      (point-max) (point-max) (current-buffer))
+        (put-text-property 0 1 'cursor t minibuf-after-string)
+        (overlay-put selectrum--candidates-overlay
+                     'after-string minibuf-after-string)
+        (if (not selectrum-display-action)
+            (selectrum--update-minibuffer-height first-index-displayed
+                                                 highlighted-index
+                                                 displayed-candidates)
+          (with-current-buffer selectrum--candidates-buffer
+            (erase-buffer)
+            (insert candidate-string)
+            (goto-char (point-min)))
+          (when window
+            (selectrum--update-window-height window
+                                             first-index-displayed
                                              highlighted-index
-                                             displayed-candidates))
-      (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
-      (set-marker-insertion-type selectrum--end-of-input-marker t)
-      (when keep-mark-active
-        (setq deactivate-mark nil))
-      (setq-local selectrum--init-p nil))))
+                                             displayed-candidates)))
+        (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
+        (set-marker-insertion-type selectrum--end-of-input-marker t)
+        (when keep-mark-active
+          (setq deactivate-mark nil))
+        (setq-local selectrum--init-p nil)))))
+
+(defun selectrum--update-window-height (window first highlighted cands)
+  "Update window height of WINDOW.
+FIRST is the index of the first displayed candidate. HIGHLIGHTED
+is the index if the highlighted candidate. CANDS are the
+currently displayed candidates."
+  ;; FIXME: DRY selectrum--update-minibuffer-height.
+  (when (or selectrum--init-p
+            (and selectrum--current-candidate-index
+                 ;; Allow size change when navigating, not while
+                 ;; typing.
+                 (/= first highlighted)
+                 ;; Don't allow shrinking.
+                 (= (length cands)
+                    selectrum-num-candidates-displayed)))
+    (let ((window-resize-pixelwise t)
+          (window-size-fixed nil)
+          (fit-window-to-buffer-horizontally nil))
+      (fit-window-to-buffer window nil 1))))
 
 (defun selectrum--update-minibuffer-height (first highlighted cands)
   "Set minibuffer height for candidates display.
@@ -972,7 +1076,7 @@ The specific details of the formatting are determined by
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index)
-  "Get string to display CANDIDATES.
+  "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index
 and FIRST-INDEX-DISPLAYED is the index of the top most
@@ -1086,7 +1190,10 @@ candidate."
               `(space :align-to (- right-fringe
                                    selectrum-right-margin-padding)))))))
         (cl-incf index))
-      (buffer-string))))
+      (goto-char (point-min))
+      ;; Skip initial newline.
+      (unless (eobp) (forward-line 1))
+      (buffer-substring (point) (point-max)))))
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
@@ -1251,17 +1358,18 @@ Zero means to select the current user input. See
 `selectrum-show-indices' which can be used to show candidate
 indices."
   (interactive "P")
-  (let ((index (selectrum--index-for-arg arg)))
-    (when (or (not selectrum--match-required-p)
-              (and index (>= index 0))
-              (and minibuffer-completing-file-name
-                   (file-exists-p
-                    (substitute-in-file-name
-                     (minibuffer-contents))))
-              (string-empty-p
-               (minibuffer-contents)))
-      (selectrum--exit-with
-       (selectrum--get-candidate index)))))
+  (with-selected-window (active-minibuffer-window)
+    (let ((index (selectrum--index-for-arg arg)))
+      (when (or (not selectrum--match-required-p)
+                (and index (>= index 0))
+                (and minibuffer-completing-file-name
+                     (file-exists-p
+                      (substitute-in-file-name
+                       (minibuffer-contents))))
+                (string-empty-p
+                 (minibuffer-contents)))
+        (selectrum--exit-with
+         (selectrum--get-candidate index))))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
@@ -1292,33 +1400,34 @@ Zero means to select the current user input. See
 `selectrum-show-indices' which can be used to show candidate
 indices."
   (interactive "P")
-  (if-let ((index (selectrum--index-for-arg arg))
-           (candidate (selectrum--get-candidate index))
-           (full (selectrum--get-full candidate)))
-      (progn
-        (if (not selectrum--crm-p)
-            (progn
-              (delete-region selectrum--start-of-input-marker
-                             selectrum--end-of-input-marker)
-              (insert full))
-          (goto-char
-           (if (re-search-backward crm-separator
-                                   (minibuffer-prompt-end) t)
-               (match-end 0)
+  (with-selected-window (active-minibuffer-window)
+    (if-let ((index (selectrum--index-for-arg arg))
+             (candidate (selectrum--get-candidate index))
+             (full (selectrum--get-full candidate)))
+        (progn
+          (if (not selectrum--crm-p)
+              (progn
+                (delete-region selectrum--start-of-input-marker
+                               selectrum--end-of-input-marker)
+                (insert full))
+            (goto-char
+             (if (re-search-backward crm-separator
+                                     (minibuffer-prompt-end) t)
+                 (match-end 0)
 
-             (minibuffer-prompt-end)))
-          (delete-region (point) selectrum--end-of-input-marker)
-          (insert full)
-          (when-let ((match
-                      (assoc crm-separator selectrum--crm-separator-alist)))
-            (insert (cdr match))))
-        (apply
-         #'run-hook-with-args
-         'selectrum-candidate-inserted-hook
-         candidate selectrum--read-args))
-    (unless completion-fail-discreetly
-      (ding)
-      (minibuffer-message "No match"))))
+               (minibuffer-prompt-end)))
+            (delete-region (point) selectrum--end-of-input-marker)
+            (insert full)
+            (when-let ((match
+                        (assoc crm-separator selectrum--crm-separator-alist)))
+              (insert (cdr match))))
+          (apply
+           #'run-hook-with-args
+           'selectrum-candidate-inserted-hook
+           candidate selectrum--read-args))
+      (unless completion-fail-discreetly
+        (ding)
+        (minibuffer-message "No match")))))
 
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
