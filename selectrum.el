@@ -872,7 +872,8 @@ Window or frame will be created by `selectrum-display-action'."
                        (active-minibuffer-window)))
              (ncands (if (and selectrum-display-action
                               (windowp window)
-                              (= (window-height (frame-root-window))
+                              (= (window-height (frame-root-window
+                                                 (window-frame window)))
                                  (window-height window)))
                          (max (window-body-height window)
                               selectrum-num-candidates-displayed)
