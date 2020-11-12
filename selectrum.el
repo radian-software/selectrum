@@ -754,10 +754,10 @@ Window or frame will be created by `selectrum-display-action'."
                    (current-buffer)))))
     (or (get-buffer-window buf 'visible)
         (with-selected-window (minibuffer-selected-window)
-          (let ((frame (selected-frame))
-                (window (display-buffer
-                         buf
-                         selectrum-display-action)))
+          (let* ((frame (selected-frame))
+                 (window (display-buffer
+                          buf
+                          selectrum-display-action)))
             (select-frame-set-input-focus frame)
             (prog1 window
               (when (windowp window)
