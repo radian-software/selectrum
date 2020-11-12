@@ -739,26 +739,30 @@ PRED defaults to `minibuffer-completion-predicate'."
       (_                ""))))
 
 (defvar display-line-numbers)
-(defun selectrum--get-display-window ()
-  "Get candidate display window.
+(defun selectrum--get-window-or-frame ()
+  "Get candidate display window or frame.
 
 Window will be initialized using `selectrum-display-action'."
-  (let ((buf (get-buffer-create selectrum--candidates-buffer)))
+  (let ((buf (with-current-buffer
+                 (get-buffer-create selectrum--candidates-buffer)
+               (setq cursor-type nil)
+               (setq-local cursor-in-non-selected-windows nil)
+               (setq display-line-numbers nil)
+               (setq show-trailing-whitespace nil)
+               (goto-char (point-min))
+               (current-buffer))))
     (or (get-buffer-window buf)
         (with-selected-window (minibuffer-selected-window)
-          (let ((window  (display-buffer
-                          buf
-                          selectrum-display-action)))
-            (prog1 window
-              (with-selected-window window
-                (set-window-hscroll window 0)
-                (set-window-dedicated-p window t)
-                (set-window-parameter window 'no-other-window t)
-                (setq cursor-type nil)
-                (setq-local cursor-in-non-selected-windows nil)
-                (setq display-line-numbers nil)
-                (setq show-trailing-whitespace nil)
-                (goto-char (point-min)))))))))
+          (let ((window-or-frame (display-buffer
+                                  buf
+                                  selectrum-display-action)))
+            (prog1 window-or-frame
+              (when (windowp window-or-frame)
+                (with-selected-window window-or-frame
+                  (set-window-hscroll window-or-frame 0)
+                  (set-window-dedicated-p window-or-frame t)
+                  (set-window-parameter window-or-frame
+                                        'no-other-window t)))))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -859,13 +863,13 @@ Window will be initialized using `selectrum-display-action'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((window (when (and selectrum-display-action
-                                selectrum--refined-candidates)
-                       (selectrum--get-display-window)))
-             (ncands (if (and window
+      (let* ((window-or-frame (when (and selectrum-display-action
+                                         selectrum--refined-candidates)
+                                (selectrum--get-window-or-frame)))
+             (ncands (if (and (windowp window-or-frame)
                               (= (window-height (frame-root-window))
-                                 (window-height window)))
-                         (max (window-body-height window)
+                                 (window-height window-or-frame)))
+                         (max (window-body-height window-or-frame)
                               selectrum-num-candidates-displayed)
                        selectrum-num-candidates-displayed))
              (first-index-displayed
@@ -934,7 +938,8 @@ Window will be initialized using `selectrum-display-action'."
                     '(face selectrum-current-candidate)))))
              (minibuf-after-string
               (concat (or default " ")
-                      (unless (or window (string-empty-p candidate-string))
+                      (unless (or window-or-frame
+                                  (string-empty-p candidate-string))
                         (concat "\n" candidate-string)))))
         (move-overlay selectrum--candidates-overlay
                       (point-max) (point-max) (current-buffer))
@@ -945,12 +950,13 @@ Window will be initialized using `selectrum-display-action'."
             (selectrum--update-minibuffer-height first-index-displayed
                                                  highlighted-index
                                                  displayed-candidates)
+          ;; Update buffer content.
           (with-current-buffer selectrum--candidates-buffer
             (erase-buffer)
             (insert candidate-string)
             (goto-char (point-min)))
-          (when window
-            (selectrum--update-window-height window
+          (when (windowp window-or-frame)
+            (selectrum--update-window-height window-or-frame
                                              first-index-displayed
                                              highlighted-index
                                              displayed-candidates)))
