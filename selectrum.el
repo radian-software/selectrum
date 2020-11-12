@@ -1003,7 +1003,7 @@ currently displayed candidates."
           (t
            (let ((window-resize-pixelwise t)
                  (window-size-fixed nil)
-                 (fit-frame-to-buffer nil)
+                 (fit-frame-to-buffer 'vertically)
                  (fit-window-to-buffer-horizontally nil))
              (fit-window-to-buffer window nil 1))))))
 
