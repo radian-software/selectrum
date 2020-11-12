@@ -742,15 +742,16 @@ PRED defaults to `minibuffer-completion-predicate'."
 (defun selectrum--get-window-or-frame ()
   "Get candidate display window or frame.
 
-Window will be initialized using `selectrum-display-action'."
-  (let ((buf (with-current-buffer
-                 (get-buffer-create selectrum--candidates-buffer)
-               (setq cursor-type nil)
-               (setq-local cursor-in-non-selected-windows nil)
-               (setq display-line-numbers nil)
-               (setq show-trailing-whitespace nil)
-               (goto-char (point-min))
-               (current-buffer))))
+Window or frame will be created by `selectrum-display-action'."
+  (let ((buf (or (get-buffer selectrum--candidates-buffer)
+                 (with-current-buffer
+                     (get-buffer-create selectrum--candidates-buffer)
+                   (setq cursor-type nil)
+                   (setq-local cursor-in-non-selected-windows nil)
+                   (setq display-line-numbers nil)
+                   (setq show-trailing-whitespace nil)
+                   (goto-char (point-min))
+                   (current-buffer)))))
     (or (get-buffer-window buf)
         (with-selected-window (minibuffer-selected-window)
           (let ((window-or-frame (display-buffer
