@@ -88,27 +88,6 @@ respected by user functions for optimal results.")
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
-(defvar selectrum-display-action nil
-  "Display action to display the candidates buffer.
-
-If this is nil the candidates are shown in the minibuffer.
-Otherwise the candidates are shown in the window as determined
-from the display action.
-
-For the format see the ACTION argument of `display-buffer'. For
-example to display candidates in the current window use:
-
-    '(display-buffer-same-window)
-
-Or to display them in a bottom side window:
-
-   '(display-buffer-in-side-window
-       (side . bottom)
-       (slot . -1))
-
-To use the full frame for candidate display you can use the
-provided action function `selectrum-display-full-frame'.")
-
 (defun selectrum-display-full-frame (buf _alist)
   "Display BUF in full frame.
 Can be used as `selectrum-display-action' to display candidates
@@ -137,6 +116,29 @@ will also determine the window height but when the window spans
 the whole frame selectrum will automatically use all of the
 available height to display candidates."
   :type 'number)
+
+(defcustom selectrum-display-action nil
+  "Display action to show the candidates buffer.
+
+If this is nil the candidates are shown in the minibuffer.
+Otherwise the candidates are shown in the window as determined
+from the display action.
+
+For the format see the ACTION argument of `display-buffer'. For
+example to display candidates in the current window use:
+
+    '(display-buffer-same-window)
+
+Or to display them in a bottom side window:
+
+   '(display-buffer-in-side-window
+       (side . bottom)
+       (slot . -1))
+
+To use the full frame for candidate display you can use the
+provided action function `selectrum-display-full-frame'."
+  :type '(cons (choice function (repeat :tag "Functions" function))
+               alist))
 
 (defun selectrum-default-candidate-refine-function (input candidates)
   "Default value of `selectrum-refine-candidates-function'.
