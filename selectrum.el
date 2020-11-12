@@ -866,9 +866,9 @@ Window or frame will be created by `selectrum-display-action'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((window (if (and selectrum-display-action
-                                selectrum--refined-candidates)
-                         (selectrum--get-display-window)
+      (let* ((window (if selectrum-display-action
+                         (and selectrum--refined-candidates
+                              (selectrum--get-display-window))
                        (active-minibuffer-window)))
              (ncands (if (and selectrum-display-action
                               (windowp window)
