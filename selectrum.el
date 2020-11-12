@@ -739,7 +739,7 @@ PRED defaults to `minibuffer-completion-predicate'."
       (_                ""))))
 
 (defvar display-line-numbers)
-(defun selectrum--get-window-or-frame ()
+(defun selectrum--get-display-window ()
   "Get candidate display window or frame.
 
 Window or frame will be created by `selectrum-display-action'."
@@ -752,17 +752,17 @@ Window or frame will be created by `selectrum-display-action'."
                    (setq show-trailing-whitespace nil)
                    (goto-char (point-min))
                    (current-buffer)))))
-    (or (get-buffer-window buf)
+    (or (get-buffer-window buf 'visible)
         (with-selected-window (minibuffer-selected-window)
-          (let ((window-or-frame (display-buffer
-                                  buf
-                                  selectrum-display-action)))
-            (prog1 window-or-frame
-              (when (windowp window-or-frame)
-                (with-selected-window window-or-frame
-                  (set-window-hscroll window-or-frame 0)
-                  (set-window-dedicated-p window-or-frame t)
-                  (set-window-parameter window-or-frame
+          (let ((window (display-buffer
+                         buf
+                         selectrum-display-action)))
+            (prog1 window
+              (when (windowp window)
+                (with-selected-window window
+                  (set-window-hscroll window 0)
+                  (set-window-dedicated-p window t)
+                  (set-window-parameter window
                                         'no-other-window t)))))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
@@ -864,13 +864,13 @@ Window or frame will be created by `selectrum-display-action'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((window-or-frame (when (and selectrum-display-action
-                                         selectrum--refined-candidates)
-                                (selectrum--get-window-or-frame)))
-             (ncands (if (and (windowp window-or-frame)
+      (let* ((window (when (and selectrum-display-action
+                                selectrum--refined-candidates)
+                       (selectrum--get-display-window)))
+             (ncands (if (and (windowp window)
                               (= (window-height (frame-root-window))
-                                 (window-height window-or-frame)))
-                         (max (window-body-height window-or-frame)
+                                 (window-height window)))
+                         (max (window-body-height window)
                               selectrum-num-candidates-displayed)
                        selectrum-num-candidates-displayed))
              (first-index-displayed
@@ -939,7 +939,7 @@ Window or frame will be created by `selectrum-display-action'."
                     '(face selectrum-current-candidate)))))
              (minibuf-after-string
               (concat (or default " ")
-                      (unless (or window-or-frame
+                      (unless (or window
                                   (string-empty-p candidate-string))
                         (concat "\n" candidate-string)))))
         (move-overlay selectrum--candidates-overlay
@@ -956,8 +956,8 @@ Window or frame will be created by `selectrum-display-action'."
             (erase-buffer)
             (insert candidate-string)
             (goto-char (point-min)))
-          (when (windowp window-or-frame)
-            (selectrum--update-window-height window-or-frame
+          (when window
+            (selectrum--update-window-height window
                                              first-index-displayed
                                              highlighted-index
                                              displayed-candidates)))
@@ -983,6 +983,7 @@ currently displayed candidates."
                     selectrum-num-candidates-displayed)))
     (let ((window-resize-pixelwise t)
           (window-size-fixed nil)
+          (fit-frame-to-buffer 'vertically)
           (fit-window-to-buffer-horizontally nil))
       (fit-window-to-buffer window nil 1))))
 
