@@ -985,7 +985,7 @@ currently displayed candidates."
                     selectrum-num-candidates-displayed)))
     (let ((window-resize-pixelwise t)
           (window-size-fixed nil)
-          (fit-frame-to-buffer 'vertically)
+          (fit-frame-to-buffer nil)
           (fit-window-to-buffer-horizontally nil))
       (fit-window-to-buffer window nil 1))))
 
