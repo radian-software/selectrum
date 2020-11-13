@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Features
+* The user option `selectrum-display-action` can be used to show
+  candidates in another window or frame.
 * The user option `selectrum-show-indices` can now be a function that
   can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-extend-current-candidate-highlight`
