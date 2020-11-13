@@ -763,13 +763,7 @@ Window will be created by `selectrum-display-action'."
                           buf
                           selectrum-display-action)))
             (select-frame-set-input-focus frame)
-            (prog1 window
-              (when (windowp window)
-                (with-selected-window window
-                  (set-window-hscroll window 0)
-                  (set-window-dedicated-p window t)
-                  (set-window-parameter window
-                                        'no-other-window t)))))))))
+            window)))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
