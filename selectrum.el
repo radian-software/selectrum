@@ -88,17 +88,6 @@ respected by user functions for optimal results.")
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
-(defun selectrum-display-full-frame (buf _alist)
-  "Display BUF in full frame.
-Can be used as `selectrum-display-action' to display candidates
-in a single window spanning the whole frame:
-
-    (setq selectrum-display-action
-        '(selectrum-display-full-frame)."
-  (delete-other-windows)
-  (set-window-buffer (selected-window) buf)
-  (selected-window))
-
 ;;;; User options
 
 (defgroup selectrum nil
@@ -118,6 +107,17 @@ this option also determines the maximal window height but when
 the displaying window height spans the whole frame all of the
 available height will be used for candidate display."
   :type 'number)
+
+(defun selectrum-display-full-frame (buf _alist)
+  "Display BUF in full frame.
+Can be used as `selectrum-display-action' to display candidates
+in a single window spanning the current frame:
+
+    (setq selectrum-display-action
+        '(selectrum-display-full-frame)."
+  (delete-other-windows)
+  (set-window-buffer (selected-window) buf)
+  (selected-window))
 
 (defcustom selectrum-display-action nil
   "Display action to show the candidates buffer.
