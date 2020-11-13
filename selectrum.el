@@ -742,9 +742,9 @@ PRED defaults to `minibuffer-completion-predicate'."
 
 (defvar display-line-numbers)
 (defun selectrum--get-display-window ()
-  "Get candidate display window or frame.
+  "Get candidate display window.
 
-Window or frame will be created by `selectrum-display-action'."
+Window will be created by `selectrum-display-action'."
   (let ((buf (or (get-buffer selectrum--candidates-buffer)
                  (with-current-buffer
                      (get-buffer-create selectrum--candidates-buffer)
