@@ -103,8 +103,8 @@ fewer if there are less candidates in total.
 
 For the minibuffer the window height equals this number plus one
 for the prompt line. If `selectrum-display-action' is non-nil
-this option also determines the maximal window height but when
-the displaying window height spans the whole frame all of the
+this option determines the maximal window height but when the
+displaying window height is greater than that all of the
 available height will be used for candidate display."
   :type 'number)
 
@@ -875,10 +875,7 @@ Window will be created by `selectrum-display-action'."
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
              (ncands (if (and selectrum-display-action
-                              (windowp window)
-                              (= (window-height (frame-root-window
-                                                 (window-frame window)))
-                                 (window-height window)))
+                              (windowp window))
                          (max (window-body-height window)
                               selectrum-num-candidates-displayed)
                        selectrum-num-candidates-displayed))
