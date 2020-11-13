@@ -127,9 +127,9 @@ Otherwise the candidates are shown in the window as determined
 from the display action.
 
 For the format see the ACTION argument of `display-buffer'. For
-example to display candidates in the current window use:
+example to display candidates in some available window use:
 
-    '(display-buffer-same-window)
+    '(display-buffer-use-some-window)
 
 Or to display them in a bottom side window:
 
