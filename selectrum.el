@@ -108,13 +108,15 @@ in a single window spanning the whole frame:
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
 (defcustom selectrum-num-candidates-displayed 10
-  "Maximum number of candidate lines which are displayed in the minibuffer.
-The height of the minibuffer will be this number (or the actual
-number of candidates if there are fewer candidates) plus one for
-the prompt line. If `selectrum-display-action' is non-nil this
-will also determine the window height but when the window spans
-the whole frame selectrum will automatically use all of the
-available height to display candidates."
+  "Maximum number of candidate lines which are displayed.
+Selectrum will display candidates lines up to this number or
+fewer if there are less candidates in total.
+
+For the minibuffer the window height equals this number plus one
+for the prompt line. If `selectrum-display-action' is non-nil
+this option also determines the maximal window height but when
+the displaying window height spans the whole frame all of the
+available height will be used for candidate display."
   :type 'number)
 
 (defcustom selectrum-display-action nil
@@ -135,8 +137,10 @@ Or to display them in a bottom side window:
        (side . bottom)
        (slot . -1))
 
-To use the full frame for candidate display you can use the
-provided action function `selectrum-display-full-frame'."
+Display buffer actions can also spawn a separate frame where
+candidates can be displayed. To display candidates in the current
+frame you can use the provided action function
+`selectrum-display-full-frame'."
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
