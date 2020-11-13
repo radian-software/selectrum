@@ -751,6 +751,8 @@ Window will be created by `selectrum-display-action'."
                    (setq cursor-type nil)
                    (setq-local cursor-in-non-selected-windows nil)
                    (setq display-line-numbers nil)
+                   (setq buffer-undo-list t)
+                   (setq buffer-read-only t)
                    (setq show-trailing-whitespace nil)
                    (goto-char (point-min))
                    (current-buffer)))))
