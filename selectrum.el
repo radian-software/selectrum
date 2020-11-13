@@ -975,15 +975,15 @@ Window will be created by `selectrum-display-action'."
 FIRST is the index of the first displayed candidate. HIGHLIGHTED
 is the index if the highlighted candidate. CANDS are the
 currently displayed candidates."
-  (when (or selectrum--init-p
-            (and selectrum--current-candidate-index
-                 ;; Allow size change when navigating, not while
-                 ;; typing.
-                 (/= first highlighted)
-                 ;; Don't allow shrinking.
-                 (= (length cands)
-                    selectrum-num-candidates-displayed)))
-    (cond ((window-minibuffer-p window)
+  (cond ((window-minibuffer-p window)
+         (when (or selectrum--init-p
+                   (and selectrum--current-candidate-index
+                        ;; Allow size change when navigating, not while
+                        ;; typing.
+                        (/= first highlighted)
+                        ;; Don't allow shrinking.
+                        (= (length cands)
+                           selectrum-num-candidates-displayed)))
            (when-let ((n (if selectrum-fix-minibuffer-height
                              (1+ selectrum-num-candidates-displayed)
                            (max (window-height) ; grow only
@@ -1000,8 +1000,9 @@ currently displayed candidates."
                        (wheight (window-pixel-height win)))
                    (when (/= dheight wheight)
                      (window-resize
-                      win (- dheight wheight) nil nil 'pixelwise)))))))
-          (t
+                      win (- dheight wheight) nil nil 'pixelwise))))))))
+        (t
+         (when selectrum--init-p
            (let ((window-resize-pixelwise t)
                  (window-size-fixed nil)
                  (fit-frame-to-buffer 'vertically)
