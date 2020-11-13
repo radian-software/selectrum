@@ -870,7 +870,8 @@ Window will be created by `selectrum-display-action'."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((window (if selectrum-display-action
+      (let* ((windows (window-list))
+             (window (if selectrum-display-action
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
@@ -959,7 +960,9 @@ Window will be created by `selectrum-display-action'."
             (erase-buffer)
             (insert candidate-string)
             (goto-char (point-min))))
-        (when window
+        (when (and window
+                   (or (window-minibuffer-p window)
+                       (not (memq window windows))))
           (selectrum--update-window-height window
                                            first-index-displayed
                                            highlighted-index
