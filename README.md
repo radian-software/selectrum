@@ -265,6 +265,14 @@ matching and case-insensitive matching.
       the minibuffer to *always* have that height, even if there are
       fewer candidates. This behavior may be achieved by setting
       `selectrum-fix-minibuffer-height` to a non-nil value.
+* You can use `selectrum-display-action` to display candidates in a
+  window or frame outside the minibuffer. If you want to display the
+  whole minibuffer (including the input line) in a separate frame you
+  can use the
+  [mini-frame](https://github.com/muffinmad/emacs-mini-frame) package,
+  see the
+  [wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
+  for setup instructions.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
