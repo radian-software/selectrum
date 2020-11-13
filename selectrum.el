@@ -616,8 +616,6 @@ This is non-nil during the first call of
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
-
-
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum-get-current-candidate (&optional notfull)
