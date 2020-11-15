@@ -1251,6 +1251,8 @@ Zero means to select the current user input. See
 `selectrum-show-indices' which can be used to show candidate
 indices."
   (interactive "P")
+  (unless selectrum-active-p
+    (user-error "Cannot select a candidate when Selectrum is not active"))
   (let ((index (selectrum--index-for-arg arg)))
     (when (or (not selectrum--match-required-p)
               (and index (>= index 0))
@@ -1268,6 +1270,8 @@ indices."
 This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
+  (unless selectrum-active-p
+    (user-error "Cannot select a candidate when Selectrum is not active"))
   (unless selectrum--match-required-p
     (selectrum--exit-with
      (buffer-substring-no-properties
