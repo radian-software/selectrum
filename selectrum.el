@@ -114,7 +114,7 @@ Can be used as `selectrum-display-action' to display candidates
 in a single window spanning the current frame:
 
     (setq selectrum-display-action
-        '(selectrum-display-full-frame)."
+        \\='(selectrum-display-full-frame)."
   (delete-other-windows)
   (set-window-buffer (selected-window) buf)
   (selected-window))
@@ -129,11 +129,11 @@ from the display action.
 For the format see the ACTION argument of `display-buffer'. For
 example to display candidates in some available window use:
 
-    '(display-buffer-use-some-window)
+    \\='(display-buffer-use-some-window)
 
 Or to display them in a bottom side window:
 
-   '(display-buffer-in-side-window
+   \\='(display-buffer-in-side-window
        (side . bottom)
        (slot . -1))
 
