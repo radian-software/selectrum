@@ -740,7 +740,7 @@ PRED defaults to `minibuffer-completion-predicate'."
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
 
-(defvar display-line-numbers)
+(defvar display-line-numbers) ; Undefined in Emacs 25.
 (defun selectrum--get-display-window ()
   "Get candidate display window.
 
