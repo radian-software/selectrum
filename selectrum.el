@@ -954,13 +954,21 @@ Window will be created by `selectrum-display-action'."
                  (erase-buffer)
                  (insert candidate-string)
                  (goto-char (point-min)))
+               ;; Update window height if we are initializing and it
+               ;; is a new window.
                (when (and window (not (memq window windows))
                           selectrum--init-p)
                  (selectrum--update-window-height window)))
               (t
-               (selectrum--update-minibuffer-height first-index-displayed
-                                                    highlighted-index
-                                                    displayed-candidates)))
+               (when (or selectrum--init-p
+                         (and selectrum--current-candidate-index
+                              ;; Allow size change when navigating, not while
+                              ;; typing.
+                              (/= first-index-displayed highlighted-index)
+                              ;; Don't allow shrinking.
+                              (= (length displayed-candidates)
+                                 selectrum-num-candidates-displayed)))
+                 (selectrum--update-minibuffer-height displayed-candidates))))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)
         (when keep-mark-active
@@ -978,36 +986,28 @@ currently displayed candidates."
         (fit-window-to-buffer-horizontally nil))
     (fit-window-to-buffer window nil 1)))
 
-(defun selectrum--update-minibuffer-height (first highlighted cands)
+(defun selectrum--update-minibuffer-height (cands)
   "Update window height of minibuffer window.
 FIRST is the index of the first displayed candidate. HIGHLIGHTED
 is the index if the highlighted candidate. CANDS are the
 currently displayed candidates."
-  (when (or selectrum--init-p
-            (and selectrum--current-candidate-index
-                 ;; Allow size change when navigating, not while
-                 ;; typing.
-                 (/= first highlighted)
-                 ;; Don't allow shrinking.
-                 (= (length cands)
-                    selectrum-num-candidates-displayed)))
-    (when-let ((n (if selectrum-fix-minibuffer-height
-                      (1+ selectrum-num-candidates-displayed)
-                    (max (window-height) ; grow only
-                         (1+ (length cands)))))
-               (win (active-minibuffer-window)))
-      ;; Don't attempt to resize a minibuffer frame.
-      (unless (frame-root-window-p win)
-        ;; Set min initial height.
-        (with-selected-window win
-          (setf (window-height) n))
-        ;; Adjust if needed.
-        (unless selectrum-fix-minibuffer-height
-          (let ((dheight (cdr (window-text-pixel-size win)))
-                (wheight (window-pixel-height win)))
-            (when (/= dheight wheight)
-              (window-resize
-               win (- dheight wheight) nil nil 'pixelwise))))))))
+  (when-let ((n (if selectrum-fix-minibuffer-height
+                    (1+ selectrum-num-candidates-displayed)
+                  (max (window-height)  ; grow only
+                       (1+ (length cands)))))
+             (win (active-minibuffer-window)))
+    ;; Don't attempt to resize a minibuffer frame.
+    (unless (frame-root-window-p win)
+      ;; Set min initial height.
+      (with-selected-window win
+        (setf (window-height) n))
+      ;; Adjust if needed.
+      (unless selectrum-fix-minibuffer-height
+        (let ((dheight (cdr (window-text-pixel-size win)))
+              (wheight (window-pixel-height win)))
+          (when (/= dheight wheight)
+            (window-resize
+             win (- dheight wheight) nil nil 'pixelwise)))))))
 
 
 (defun selectrum--ensure-single-lines (candidates)
