@@ -989,7 +989,6 @@ Window will be created by `selectrum-display-action'."
         (window-resize
          window (- dheight wheight) nil nil 'pixelwise)))))
 
-
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single-line CANDIDATES.
 Multi-line candidates are merged into a single line. The resulting
