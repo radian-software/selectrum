@@ -976,10 +976,7 @@ Window will be created by `selectrum-display-action'."
         (setq-local selectrum--init-p nil)))))
 
 (defun selectrum--update-window-height (window)
-  "Update window height of WINDOW.
-FIRST is the index of the first displayed candidate. HIGHLIGHTED
-is the index if the highlighted candidate. CANDS are the
-currently displayed candidates."
+  "Update window height of WINDOW."
   (let ((window-resize-pixelwise t)
         (window-size-fixed nil)
         (fit-frame-to-buffer 'vertically)
@@ -987,10 +984,8 @@ currently displayed candidates."
     (fit-window-to-buffer window nil 1)))
 
 (defun selectrum--update-minibuffer-height (cands)
-  "Update window height of minibuffer window.
-FIRST is the index of the first displayed candidate. HIGHLIGHTED
-is the index if the highlighted candidate. CANDS are the
-currently displayed candidates."
+  "Update window height of minibuffer window to display CANDS.
+CANDS are the currently displayed candidates."
   (when-let ((n (if selectrum-fix-minibuffer-height
                     (1+ selectrum-num-candidates-displayed)
                   (max (window-height)  ; grow only
