@@ -950,7 +950,8 @@ Window will be created by `selectrum-display-action'."
                      'after-string minibuf-after-string)
         (cond (selectrum-display-action
                ;; Update buffer content.
-               (with-current-buffer selectrum--candidates-buffer
+               (with-current-buffer (get-buffer-create
+                                     selectrum--candidates-buffer)
                  (erase-buffer)
                  (insert candidate-string)
                  (goto-char (point-min)))
