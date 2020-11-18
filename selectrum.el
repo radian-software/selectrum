@@ -124,7 +124,12 @@ in a single window spanning the current frame:
 
 If this is nil the candidates are shown in the minibuffer.
 Otherwise the candidates are shown in the window as determined
-from the display action.
+from the display action. Note that if you spefify a window height
+lower than `selectrum-num-candidates-displayed' the window will
+be resized if needed to display that number of candidates. If the
+window height is higher than `selectrum-num-candidates-displayed'
+selectrum will ignore this setting and use all of the available
+height to display candidates.
 
 For the format see the ACTION argument of `display-buffer'. For
 example to display candidates in some available window use:
