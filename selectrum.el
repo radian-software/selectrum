@@ -765,6 +765,16 @@ Window will be created by `selectrum-display-action'."
             (select-frame-set-input-focus frame)
             window)))))
 
+(defun selectrum--expand-window-for-content-p (window)
+  "Return non-nil if WINDOW should be expanded.
+This is the case when the height of WINDOW fits in the range of
+`selectrum-num-candidates-displayed' and the content height is
+greather than the window height."
+  (and (<= (window-body-height window)
+           selectrum-num-candidates-displayed)
+       (>= (cdr (window-text-pixel-size window))
+           (window-pixel-height window))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (unless selectrum--skip-updates-p
@@ -955,15 +965,28 @@ Window will be created by `selectrum-display-action'."
                  (erase-buffer)
                  (insert candidate-string)
                  (goto-char (point-min)))
-               ;; Update window height if we are initializing and it
-               ;; is a new window.
-               (when (and window (not (memq window windows))
-                          selectrum--init-p)
+               (when (and window
+                          (or
+                           (and
+                            ;; A new window, existing windows should
+                            ;; keep their size.
+                            selectrum--init-p
+                            (not (memq window windows)))
+                           ;; Reused candidates window.
+                           (and (eq (get-buffer-window
+                                     selectrum--candidates-buffer)
+                                    window)
+                                (selectrum--expand-window-for-content-p
+                                 window))))
                  (selectrum--update-window-height window)))
-              ((and window
-                    ;; Don't attempt to resize a minibuffer frame.
-                    (not (frame-root-window-p window)))
-               (selectrum--update-minibuffer-height window)))
+              (t
+               (when (and window
+                          ;; Exclude minibuffer only frame.
+                          (not (frame-root-window-p window))
+                          (or selectrum--init-p
+                              (selectrum--expand-window-for-content-p
+                               window)))
+                 (selectrum--update-minibuffer-height window))))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)
         (when keep-mark-active
@@ -971,7 +994,9 @@ Window will be created by `selectrum-display-action'."
         (setq-local selectrum--init-p nil)))))
 
 (defun selectrum--update-window-height (window)
-  "Update window height of WINDOW."
+  "Update window height of WINDOW.
+WINDOW will be updated to fit its content vertically. Also works
+for frames if WINDOW is the root window of its frame."
   (let ((window-resize-pixelwise t)
         (window-size-fixed nil)
         (fit-frame-to-buffer 'vertically)
@@ -979,16 +1004,18 @@ Window will be created by `selectrum-display-action'."
     (fit-window-to-buffer window nil 1)))
 
 (defun selectrum--update-minibuffer-height (window)
-  "Update window height of minibuffer WINDOW."
+  "Update window height of minibuffer WINDOW.
+WINDOW height will be set to `selectrum-num-candidates-displayed'
+if `selectrum-fix-minibuffer-height' is non-nil. Otherwise WINDOW
+will be updated to fit its content vertically."
   (if selectrum-fix-minibuffer-height
       (let ((n (1+ selectrum-num-candidates-displayed)))
         (with-selected-window window
           (setf (window-height) n)))
     (let ((dheight (cdr (window-text-pixel-size window)))
           (wheight (window-pixel-height window)))
-      (when (> dheight wheight)
-        (window-resize
-         window (- dheight wheight) nil nil 'pixelwise)))))
+      (window-resize
+       window (- dheight wheight) nil nil 'pixelwise))))
 
 (defun selectrum--ensure-single-lines (candidates)
   "Return list of single-line CANDIDATES.
