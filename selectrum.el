@@ -778,7 +778,7 @@ greather than the window height."
   (and (<= (window-body-height window)
            selectrum-num-candidates-displayed)
        (>= (cdr (window-text-pixel-size window))
-           (window-pixel-height window))))
+           (window-body-height window 'pixelwise))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -879,8 +879,7 @@ greather than the window height."
       (overlay-put selectrum--count-overlay
                    'priority 1)
       (setq input (or selectrum--visual-input input))
-      (let* ((windows (window-list))
-             (window (if selectrum-display-action
+      (let* ((window (if selectrum-display-action
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
@@ -953,45 +952,24 @@ greather than the window height."
                    (remove-text-properties
                     (minibuffer-prompt-end) bound
                     '(face selectrum-current-candidate)))))
-             (minibuf-after-string
-              (concat (or default " ")
-                      (unless (or selectrum-display-action
-                                  (string-empty-p candidate-string))
-                        (concat "\n" candidate-string)))))
+             (minibuf-after-string (or default " ")))
+        (if selectrum-display-action
+            (with-current-buffer (get-buffer-create
+                                  selectrum--candidates-buffer)
+              (erase-buffer)
+              (insert candidate-string)
+              (goto-char (point-min)))
+          (unless (string-empty-p candidate-string)
+            (setq minibuf-after-string
+                  (concat minibuf-after-string
+                          "\n" candidate-string))))
         (move-overlay selectrum--candidates-overlay
                       (point-max) (point-max) (current-buffer))
         (put-text-property 0 1 'cursor t minibuf-after-string)
         (overlay-put selectrum--candidates-overlay
                      'after-string minibuf-after-string)
-        (cond (selectrum-display-action
-               ;; Update buffer content.
-               (with-current-buffer (get-buffer-create
-                                     selectrum--candidates-buffer)
-                 (erase-buffer)
-                 (insert candidate-string)
-                 (goto-char (point-min)))
-               (when (and window
-                          (or
-                           (and
-                            ;; A new window, existing windows should
-                            ;; keep their size.
-                            selectrum--init-p
-                            (not (memq window windows)))
-                           ;; Reused candidates window.
-                           (and (eq (get-buffer-window
-                                     selectrum--candidates-buffer)
-                                    window)
-                                (selectrum--expand-window-for-content-p
-                                 window))))
-                 (selectrum--update-window-height window)))
-              (t
-               (when (and window
-                          ;; Exclude minibuffer only frame.
-                          (not (frame-root-window-p window))
-                          (or selectrum--init-p
-                              (selectrum--expand-window-for-content-p
-                               window)))
-                 (selectrum--update-minibuffer-height window))))
+        (when window
+          (selectrum--update-window-height window))
         (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
         (set-marker-insertion-type selectrum--end-of-input-marker t)
         (when keep-mark-active
@@ -1000,8 +978,21 @@ greather than the window height."
 
 (defun selectrum--update-window-height (window)
   "Update window height of WINDOW.
-WINDOW will be updated to fit its content vertically. Also works
-for frames if WINDOW is the root window of its frame."
+WINDOW is the display window of current candidates and will be
+updated to fit its content vertically."
+  (cond (selectrum-display-action
+         (when (selectrum--expand-window-for-content-p window)
+           (selectrum--update-display-window-height window)))
+        (t
+         (when (and
+                ;; Exclude minibuffer only frame.
+                (not (frame-root-window-p window))
+                (selectrum--expand-window-for-content-p window))
+           (selectrum--update-minibuffer-height window)))))
+
+(defun selectrum--update-display-window-height (window)
+  "Update window height of WINDOW.
+Also works for frames if WINDOW is the root window of its frame."
   (let ((window-resize-pixelwise t)
         (window-size-fixed nil)
         (fit-frame-to-buffer 'vertically)
@@ -1011,8 +1002,7 @@ for frames if WINDOW is the root window of its frame."
 (defun selectrum--update-minibuffer-height (window)
   "Update window height of minibuffer WINDOW.
 WINDOW height will be set to `selectrum-num-candidates-displayed'
-if `selectrum-fix-minibuffer-height' is non-nil. Otherwise WINDOW
-will be updated to fit its content vertically."
+if `selectrum-fix-minibuffer-height' is non-nil."
   (if selectrum-fix-minibuffer-height
       (let ((n (1+ selectrum-num-candidates-displayed)))
         (with-selected-window window
