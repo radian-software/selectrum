@@ -333,13 +333,22 @@ Ivy, and copied them to be used for Selectrum as well:
 Selectrum has a
 [wiki](https://github.com/raxod502/selectrum/wiki/Useful-Commands), on
 which people have contributed handy commands for doing things like
-finding buffers and recent files at the same time. It is rather like
-[Counsel](https://github.com/abo-abo/swiper#counsel). Feel free to add
-your own commands! The wiki also contains configuration tips for
-external packages
-[here](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
+finding buffers and recent files at the same time. Many of the
+commands from the wiki are now maintained in the
+[Consult](https://github.com/minad/consult) package. If you write your
+own commands which are useful for a greater audience, we encourage you
+to either open a PR on the Consult package or add the command to the
+wiki. The wiki also contains
+[configuration tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
+for external packages.
 
 External packages that work well with Selectrum:
+
+* Useful commands based on `completing-read` are provided by
+  [consult](https://github.com/minad/consult). Consult is designed as
+  the [counsel](https://github.com/abo-abo/swiper#counsel) equivalent
+  for Selectrum and Icomplete or more generally any completion system
+  based on `completing-read`.
 
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
@@ -364,6 +373,9 @@ External packages that work well with Selectrum:
 * For minibuffer actions and occur/export features there is
   [embark](https://github.com/oantolin/embark/). Embark provides
   features like ivy-actions/ivy-occur in a framework agnostic way.
+
+* Helpful minibuffer annotations for `M-x` and `describe-*` functions
+  are povided by [marginalia](https://github.com/minad/marginalia).
 
 * For searching and manipulating the `kill-ring` there is
   [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring). Multi-line
@@ -782,3 +794,6 @@ variant of the Isearch interface that takes inspiration from the
 standard text search interface found in almost every other modern
 piece of software, such as web browsers. The result is
 [CTRLF](https://github.com/raxod502/ctrlf).
+
+Note that there is the [Consult](https://github.com/minad/consult)
+package, which includes a Swiper-like command.
