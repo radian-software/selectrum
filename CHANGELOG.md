@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Features
+* The user option `selectrum-display-action` can be used to show
+  candidates in another window or frame ([#230]).
 * The user option `selectrum-show-indices` can now be a function that
   can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-extend-current-candidate-highlight`
@@ -40,6 +42,7 @@ The format is based on [Keep a Changelog].
 [#215]: https://github.com/raxod502/selectrum/pull/215
 [#220]: https://github.com/raxod502/selectrum/pull/220
 [#221]: https://github.com/raxod502/selectrum/pull/221
+[#230]: https://github.com/raxod502/selectrum/pull/230
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
