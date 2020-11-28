@@ -124,11 +124,11 @@ in a single window spanning the current frame:
 
 If this is nil the candidates are shown in the minibuffer.
 Otherwise the candidates are shown in the window as determined
-from the display action. Note that if you spefify a window height
+from the display action. Note that if you specify a window height
 lower than `selectrum-num-candidates-displayed' the window will
 be resized if needed to display that number of candidates. If the
 window height is higher than `selectrum-num-candidates-displayed'
-selectrum will ignore this setting and use all of the available
+Selectrum will ignore this setting and use all of the available
 height to display candidates.
 
 For the format see the ACTION argument of `display-buffer'. For
@@ -979,7 +979,7 @@ greather than the window height."
 (defun selectrum--update-window-height (window)
   "Update window height of WINDOW.
 WINDOW is the display window of current candidates and will be
-updated to fit its content vertically."
+updated to fit its content vertically if needed."
   (cond (selectrum-display-action
          (when (selectrum--expand-window-for-content-p window)
            (selectrum--update-display-window-height window)))
@@ -1001,8 +1001,9 @@ Also works for frames if WINDOW is the root window of its frame."
 
 (defun selectrum--update-minibuffer-height (window)
   "Update window height of minibuffer WINDOW.
-WINDOW height will be set to `selectrum-num-candidates-displayed'
-if `selectrum-fix-minibuffer-height' is non-nil."
+WINDOW will be updated to fit its content vertically if needed or
+will be set to `selectrum-num-candidates-displayed' if
+`selectrum-fix-minibuffer-height' is non-nil."
   (if selectrum-fix-minibuffer-height
       (let ((n (1+ selectrum-num-candidates-displayed)))
         (with-selected-window window
