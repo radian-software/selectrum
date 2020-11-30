@@ -24,9 +24,10 @@ The format is based on [Keep a Changelog].
   candidates ([#200]).
 
 ### Bugs fixed
-* `selectrum-should-sort-p` can now be locally set using
-   `minibuffer-with-setup-hook` to disable sorting for a single
-   `selectrum-read` session ([#242]).
+* Selectrums internal minibuffer setup hook now runs after any other
+  functions added to `minibuffer-setup-hook`. Before, you couldn't set
+  `selectrum-should-sort-p` locally via `minibuffer-with-setup-hook`
+  to adjust sorting for a single `selectrum-read` session ([#242]).
 * `selectrum-completion-in-region` no longer unsets
   `selectrum-should-sort-p` for all recursive minibuffer sessions in
   the case the initial completion table specified its own
