@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog].
   candidates ([#200]).
 
 ### Bugs fixed
-* Selectrums internal minibuffer setup hook now runs after any other
+* Selectrum's internal minibuffer setup hook now runs after any other
   functions added to `minibuffer-setup-hook`. Before, you couldn't set
   `selectrum-should-sort-p` locally via `minibuffer-with-setup-hook`
   to adjust sorting for a single `selectrum-read` session ([#242]).
