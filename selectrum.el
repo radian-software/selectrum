@@ -1575,11 +1575,11 @@ semantics of `cl-defun'."
     (setq selectrum--match-required-p require-match)
     (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
     (minibuffer-with-setup-hook
-        (lambda ()
-          (selectrum--minibuffer-setup-hook
-           candidates
-           :default-candidate default-candidate
-           :initial-input initial-input))
+        (:append (lambda ()
+                   (selectrum--minibuffer-setup-hook
+                    candidates
+                    :default-candidate default-candidate
+                    :initial-input initial-input)))
       (let* ((minibuffer-allow-text-properties t)
              (resize-mini-windows 'grow-only)
              (max-mini-window-height
@@ -1864,22 +1864,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (minibuffer-with-setup-hook
-      (:append (lambda ()
-                 (when (and default-filename
-                            ;; ./ should be omitted.
-                            (not (equal
-                                  (expand-file-name default-filename)
-                                  (expand-file-name default-directory))))
-                   (setq selectrum--default-candidate
-                         ;; Sort for directories needs any final
-                         ;; slash removed.
-                         (directory-file-name
-                          ;; The candidate should be sorted by it's
-                          ;; relative name.
-                          (file-relative-name default-filename
-                                              default-directory))))
-                 (set-syntax-table
-                  selectrum--minibuffer-local-filename-syntax)))
+      (lambda ()
+        (set-syntax-table
+         selectrum--minibuffer-local-filename-syntax))
     (let* ((crf completing-read-function)
            ;; See <https://github.com/raxod502/selectrum/issues/61>.
            ;; When you invoke another `completing-read' command
@@ -1892,6 +1879,19 @@ PREDICATE, see `read-file-name'."
            (completing-read-function
             (lambda (&rest args)
               (setq completing-read-function crf)
+              (when (and default-filename
+                         ;; ./ should be omitted.
+                         (not (equal
+                               (expand-file-name default-filename)
+                               (expand-file-name default-directory))))
+                (setf (nth 6 args) ; DEFAULT
+                      ;; Sort for directories needs any final
+                      ;; slash removed.
+                      (directory-file-name
+                       ;; The candidate should be sorted by it's
+                       ;; relative name.
+                       (file-relative-name default-filename
+                                           default-directory))))
               (apply #'selectrum--completing-read-file-name args))))
       (read-file-name-default
        prompt dir
@@ -1900,14 +1900,14 @@ PREDICATE, see `read-file-name'."
        ;; name. This is the stock Emacs behavior where there is no
        ;; concept of an active selection. Instead we pass the initial
        ;; prompt as default so it gets returned when submitted. In
-       ;; addition to that we set `selectrum--default-candidate' in
-       ;; the setup hook above so the actual default gets sorted to
-       ;; the top. This should give the same convenience as in default
-       ;; completion (where you can press RET at the initial prompt to
-       ;; get the default). The downside is that this convenience is
-       ;; gone when sorting is disabled or the default-filename is
-       ;; outside the prompting directory but this should be rare
-       ;; case.
+       ;; addition to that we adjust the DEF argument passed to
+       ;; `selectrum--completing-read-file-name' above so the actual
+       ;; default gets sorted to the top. This should give the same
+       ;; convenience as in default completion (where you can press
+       ;; RET at the initial prompt to get the default). The downside
+       ;; is that this convenience is gone when sorting is disabled or
+       ;; the default-filename is outside the prompting directory but
+       ;; this should be rare case.
        (concat
         (expand-file-name
          (or dir
