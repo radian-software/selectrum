@@ -445,7 +445,9 @@ user option:
   preprocessing it wants). Usually preprocessing only happens once.
   However, if a function is passed to `selectrum-read` to generate the
   candidate list dynamically based on the user input, then
-  preprocessing happens instead after each input change.
+  preprocessing happens instead after each input change. For examples
+  how to configure sorting for `completing-read` collections see the
+  [wiki](https://github.com/raxod502/selectrum/wiki/Tips-for-Creating-Commands).
 * `selectrum-refine-candidates-function` takes the preprocessed list
   and filters it using the user's input. This refinement happens every
   time the user input is updated.

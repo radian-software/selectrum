@@ -24,6 +24,9 @@ The format is based on [Keep a Changelog].
   candidates ([#200]).
 
 ### Bugs fixed
+* `selectrum-should-sort-p` can now be locally set using
+   `minibuffer-with-setup-hook` to disable sorting for a single
+   `selectrum-read` session ([#242]).
 * `selectrum-completion-in-region` no longer unsets
   `selectrum-should-sort-p` for all recursive minibuffer sessions in
   the case the initial completion table specified its own
@@ -42,6 +45,7 @@ The format is based on [Keep a Changelog].
 [#215]: https://github.com/raxod502/selectrum/pull/215
 [#220]: https://github.com/raxod502/selectrum/pull/220
 [#221]: https://github.com/raxod502/selectrum/pull/221
+[#242]: https://github.com/raxod502/selectrum/pull/242
 [#230]: https://github.com/raxod502/selectrum/pull/230
 
 ## 3.0 (released 2020-10-20)
