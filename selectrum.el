@@ -1509,7 +1509,7 @@ Otherwise, just eval BODY."
              selectrum--last-prefix-arg)))
        ,@body)))
 
-(cl-defun selectrum-read
+(cl-defun selectrum--read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
             history no-move-default-candidate
@@ -1601,6 +1601,16 @@ semantics of `cl-defun'."
                    selectrum--default-candidate
                  (substring-no-properties res)))
               (t res))))))
+
+(defvar selectrum-options nil
+  "Additional options to be used by the next `selectrum-read' invocation.")
+
+(defun selectrum-read (prompt candidates &rest options)
+  "Prompt user with PROMPT to select one of CANDIDATES.
+OPTIONS and `selectrum-options' are passed to `selectrum--read'."
+  (setq options (append selectrum-options options)
+        selectrum-options nil)
+  (apply #'selectrum--read prompt candidates options))
 
 ;;;###autoload
 (defun selectrum-completing-read
