@@ -512,14 +512,6 @@ making other methods redundant."
 
 ;;;; Minibuffer state
 
-(defvar selectrum--start-of-input-marker nil
-  "Marker at the start of the minibuffer user input.
-This is used to prevent point from moving into the prompt.")
-
-(defvar selectrum--end-of-input-marker nil
-  "Marker at the end of the minibuffer user input.
-This is used to prevent point from moving into the candidates.")
-
 (defvar selectrum--candidates-overlay nil
   "Overlay used to display current candidates.")
 
@@ -680,8 +672,8 @@ behavior."
   (if (and index (>= index 0))
       (nth index selectrum--refined-candidates)
     (buffer-substring-no-properties
-     selectrum--start-of-input-marker
-     selectrum--end-of-input-marker)))
+     (minibuffer-prompt-end)
+     (point-max))))
 
 (defun selectrum--get-meta (setting &optional table pred input)
   "Get metadata SETTING from TABLE.
@@ -784,8 +776,7 @@ greather than the window height."
   "Update minibuffer in response to user input."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
-    (goto-char (max (point) selectrum--start-of-input-marker))
-    (goto-char (min (point) selectrum--end-of-input-marker))
+    (goto-char (max (point) (minibuffer-prompt-end)))
     ;; For some reason this resets and thus can't be set in setup hook.
     (setq-local truncate-lines t)
     (let ((inhibit-read-only t)
@@ -793,9 +784,9 @@ greather than the window height."
           ;; minibuffer, as per
           ;; <https://github.com/raxod502/selectrum/issues/31>.
           (buffer-undo-list t)
-          (input (buffer-substring selectrum--start-of-input-marker
-                                   selectrum--end-of-input-marker))
-          (bound (marker-position selectrum--end-of-input-marker))
+          (input (buffer-substring (minibuffer-prompt-end)
+                                   (point-max)))
+          (bound (point-max))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (when (and (not selectrum--preprocessed-candidates)
@@ -970,8 +961,6 @@ greather than the window height."
                      'after-string minibuf-after-string)
         (when window
           (selectrum--update-window-height window))
-        (setq selectrum--end-of-input-marker (set-marker (make-marker) bound))
-        (set-marker-insertion-type selectrum--end-of-input-marker t)
         (when keep-mark-active
           (setq deactivate-mark nil))
         (setq-local selectrum--init-p nil)))))
@@ -1222,13 +1211,10 @@ into the user input area to start with."
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
-  (setq selectrum--start-of-input-marker (point-marker))
   (if selectrum--repeat
       (insert selectrum--previous-input-string)
     (when initial-input
       (insert initial-input)))
-  (setq selectrum--end-of-input-marker (point-marker))
-  (set-marker-insertion-type selectrum--end-of-input-marker t)
   ;; If metadata specifies a custom sort function use it as
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
@@ -1388,8 +1374,8 @@ ignores the currently selected candidate, if one exists."
   (unless selectrum--match-required-p
     (selectrum--exit-with
      (buffer-substring-no-properties
-      selectrum--start-of-input-marker
-      selectrum--end-of-input-marker))))
+      (minibuffer-prompt-end)
+      (point-max)))))
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -1416,8 +1402,8 @@ indices."
         (progn
           (if (not selectrum--crm-p)
               (progn
-                (delete-region selectrum--start-of-input-marker
-                               selectrum--end-of-input-marker)
+                (delete-region (minibuffer-prompt-end)
+                               (point-max))
                 (insert full))
             (goto-char
              (if (re-search-backward crm-separator
@@ -1425,7 +1411,7 @@ indices."
                  (match-end 0)
 
                (minibuffer-prompt-end)))
-            (delete-region (point) selectrum--end-of-input-marker)
+            (delete-region (point) (point-max))
             (insert full)
             (when-let ((match
                         (assoc crm-separator selectrum--crm-separator-alist)))
@@ -1484,9 +1470,7 @@ Otherwise, just eval BODY."
   `(let (,@(mapcar
             (lambda (var)
               `(,var ,var))
-            '(selectrum--start-of-input-marker
-              selectrum--end-of-input-marker
-              selectrum--preprocessed-candidates
+            '(selectrum--preprocessed-candidates
               selectrum--refined-candidates
               selectrum--match-required-p
               selectrum--move-default-candidate-p
