@@ -687,35 +687,6 @@ INPUT defaults to current selectrum input string."
       (completion-metadata-get
        (completion-metadata input table pred) setting))))
 
-(defun selectrum--get-candidates-from-table (&optional table pred)
-  "Get candidates from TABLE.
-TABLE defaults to `minibuffer-completion-table'.
-PRED defaults to `minibuffer-completion-predicate'."
-  (let ((annotf (or (selectrum--get-meta 'annotation-function table pred)
-                    (plist-get completion-extra-properties
-                               :annotation-function)))
-        (docsigf (plist-get completion-extra-properties
-                            :company-docsig))
-        (strings (selectrum--normalize-collection
-                  (or table minibuffer-completion-table)
-                  (or pred minibuffer-completion-predicate))))
-    (cond ((or annotf docsigf)
-           (let ((cands ()))
-             (dolist (string strings (nreverse cands))
-               (push (apply #'propertize
-                            string
-                            (append
-                             (when annotf
-                               (list 'selectrum-candidate-display-suffix
-                                     (selectrum--get-annotation-suffix
-                                      string annotf)))
-                             (when docsigf
-                               (list 'selectrum-candidate-display-right-margin
-                                     (selectrum--get-margin-docsig
-                                      string docsigf)))))
-                     cands))))
-          (t strings))))
-
 (defun selectrum-exhibit ()
   "Trigger an update of Selectrum's completion UI."
   (when-let ((mini (active-minibuffer-window)))
@@ -795,7 +766,9 @@ greather than the window height."
           ;; `minibuffer-completion-table'.
           (setq selectrum--preprocessed-candidates
                 (funcall selectrum-preprocess-candidates-function
-                         (selectrum--get-candidates-from-table))))
+                         (selectrum--normalize-collection
+                          minibuffer-completion-table
+                          minibuffer-completion-predicate))))
         (setq selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
@@ -1069,13 +1042,21 @@ The specific details of the formatting are determined by
 
 (defun selectrum--candidates-display-string (candidates
                                              input
-                                             highlighted-index)
+                                             highlighted-index
+                                             &optional table pred props)
   "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index
-and FIRST-INDEX-DISPLAYED is the index of the top most
-candidate."
+and FIRST-INDEX-DISPLAYED is the index of the top most candidate.
+TABLE defaults to `minibuffer-completion-table'. PRED defaults to
+`minibuffer-completion-predicate'. PROPS defaults to
+`completion-extra-properties'."
   (let ((index 0)
+        (annotf (or (selectrum--get-meta 'annotation-function table pred)
+                    (plist-get completion-extra-properties
+                               :annotation-function)))
+        (docsigf (plist-get (or props completion-extra-properties)
+                            :company-docsig))
         (lines
          (selectrum--ensure-single-lines
           ;; First pass the candidates to the highlight function
@@ -1087,20 +1068,25 @@ candidate."
                    input candidates))))
     (with-temp-buffer
       (dolist (candidate lines)
-        (let ((displayed-candidate
-               (concat
-                (get-text-property
-                 0 'selectrum-candidate-display-prefix
-                 candidate)
-                candidate
-                (get-text-property
-                 0 'selectrum-candidate-display-suffix
-                 candidate)))
-              (right-margin (get-text-property
-                             0 'selectrum-candidate-display-right-margin
-                             candidate))
-              (formatting-current-candidate
-               (equal index highlighted-index)))
+        (let* ((prefix (get-text-property
+                        0 'selectrum-candidate-display-prefix
+                        candidate))
+               (suffix (if annotf
+                           (selectrum--get-annotation-suffix
+                            candidate annotf)
+                         (get-text-property
+                          0 'selectrum-candidate-display-suffix
+                          candidate)))
+               (displayed-candidate
+                (concat prefix candidate suffix))
+               (right-margin (if docsigf
+                                 (selectrum--get-margin-docsig
+                                  candidate docsigf)
+                               (get-text-property
+                                0 'selectrum-candidate-display-right-margin
+                                candidate)))
+               (formatting-current-candidate
+                (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
           (add-text-properties
            0 (length displayed-candidate)
