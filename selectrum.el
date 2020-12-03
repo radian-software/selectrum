@@ -1051,21 +1051,20 @@ and FIRST-INDEX-DISPLAYED is the index of the top most candidate.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 `minibuffer-completion-predicate'. PROPS defaults to
 `completion-extra-properties'."
-  (let ((index 0)
-        (annotf (or (selectrum--get-meta 'annotation-function table pred)
-                    (plist-get completion-extra-properties
-                               :annotation-function)))
-        (docsigf (plist-get (or props completion-extra-properties)
-                            :company-docsig))
-        (lines
-         (selectrum--ensure-single-lines
-          ;; First pass the candidates to the highlight function
-          ;; before stripping multi-lines because it might expect
-          ;; getting passed the same candidates as were passed
-          ;; to the filter function (for example `orderless'
-          ;; requires this).
-          (funcall selectrum-highlight-candidates-function
-                   input candidates))))
+  (let* ((index 0)
+         (props (or props completion-extra-properties))
+         (annotf (or (selectrum--get-meta 'annotation-function table pred)
+                     (plist-get props :annotation-function)))
+         (docsigf (plist-get props :company-docsig))
+         (lines
+          (selectrum--ensure-single-lines
+           ;; First pass the candidates to the highlight function
+           ;; before stripping multi-lines because it might expect
+           ;; getting passed the same candidates as were passed
+           ;; to the filter function (for example `orderless'
+           ;; requires this).
+           (funcall selectrum-highlight-candidates-function
+                    input candidates))))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
