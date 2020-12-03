@@ -1039,6 +1039,35 @@ face property defined."
       str
     (propertize str 'face face)))
 
+(defun selectrum--add-face (str face)
+  "To string STR add FACE."
+  ;; Avoid trampling highlighting done by
+  ;; `selectrum-highlight-candidates-function'. In
+  ;; Emacs<27 `add-face-text-property' has a bug but
+  ;; in Emacs>=27 `font-lock-prepend-text-property'
+  ;; doesn't work. Even though these functions are
+  ;; both supposed to do the same thing.
+  ;;
+  ;; Anyway, no need to clean up the text properties
+  ;; afterwards, as an update will cause all these
+  ;; strings to be thrown away and re-generated from
+  ;; scratch.
+  ;;
+  ;; See:
+  ;; <https://github.com/raxod502/selectrum/issues/21>
+  ;; <https://github.com/raxod502/selectrum/issues/58>
+  ;; <https://github.com/raxod502/selectrum/pull/76>
+  (setq str (copy-sequence str))
+  (if (version< emacs-version "27")
+      (font-lock-prepend-text-property
+       0 (length str)
+       'face face str)
+    (add-face-text-property
+     0 (length str)
+     face
+     'append str))
+  str)
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -1105,31 +1134,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            displayed-candidate)
           (when formatting-current-candidate
             (setq displayed-candidate
-                  (copy-sequence displayed-candidate))
-            ;; Avoid trampling highlighting done by
-            ;; `selectrum-highlight-candidates-function'. In
-            ;; Emacs<27 `add-face-text-property' has a bug but
-            ;; in Emacs>=27 `font-lock-prepend-text-property'
-            ;; doesn't work. Even though these functions are
-            ;; both supposed to do the same thing.
-            ;;
-            ;; Anyway, no need to clean up the text properties
-            ;; afterwards, as an update will cause all these
-            ;; strings to be thrown away and re-generated from
-            ;; scratch.
-            ;;
-            ;; See:
-            ;; <https://github.com/raxod502/selectrum/issues/21>
-            ;; <https://github.com/raxod502/selectrum/issues/58>
-            ;; <https://github.com/raxod502/selectrum/pull/76>
-            (if (version< emacs-version "27")
-                (font-lock-prepend-text-property
-                 0 (length displayed-candidate)
-                 'face 'selectrum-current-candidate displayed-candidate)
-              (add-face-text-property
-               0 (length displayed-candidate)
-               'selectrum-current-candidate
-               'append displayed-candidate)))
+                  (selectrum--add-face
+                   displayed-candidate 'selectrum-current-candidate)))
           (insert "\n")
           (when selectrum-show-indices
             (let* ((display-fn (if (functionp selectrum-show-indices)
@@ -1153,10 +1159,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                `(space :align-to (- right-fringe
                                     ,(string-width right-margin)
                                     selectrum-right-margin-padding)))
-              (propertize right-margin
-                          'face
-                          (when formatting-current-candidate
-                            'selectrum-current-candidate)))))
+              (if formatting-current-candidate
+                  (selectrum--add-face right-margin'selectrum-current-candidate)
+                right-margin))))
            ((and selectrum-extend-current-candidate-highlight
                  formatting-current-candidate)
             (insert
