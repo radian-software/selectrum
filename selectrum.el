@@ -1027,10 +1027,10 @@ Get annotation by calling FUN with CAND, fallback to get it from
 property PROP. Apply FACE to annotation if CAND does not have any
 face property defined."
   (when-let ((str (if fun
-                        (funcall fun cand)
-                      (get-text-property
-                       0 prop
-                       cand))))
+                      (funcall fun cand)
+                    (get-text-property
+                     0 prop
+                     cand))))
     (selectrum--maybe-propertize str face)))
 
 (defun selectrum--maybe-propertize (str face)
@@ -1160,7 +1160,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                                     ,(string-width right-margin)
                                     selectrum-right-margin-padding)))
               (if formatting-current-candidate
-                  (selectrum--add-face right-margin'selectrum-current-candidate)
+                  (selectrum--add-face
+                   right-margin'selectrum-current-candidate)
                 right-margin))))
            ((and selectrum-extend-current-candidate-highlight
                  formatting-current-candidate)
