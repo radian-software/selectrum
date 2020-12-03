@@ -1040,7 +1040,7 @@ face property defined."
     (propertize str 'face face)))
 
 (defun selectrum--add-face (str face)
-  "To string STR add FACE."
+  "Return copy of STR with FACE added."
   ;; Avoid trampling highlighting done by
   ;; `selectrum-highlight-candidates-function'. In
   ;; Emacs<27 `add-face-text-property' has a bug but
