@@ -1026,13 +1026,9 @@ The specific details of the formatting are determined by
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
   (when-let ((str (funcall fun cand)))
-    (selectrum--maybe-propertize str face)))
-
-(defun selectrum--maybe-propertize (str face)
-  "Propertize STR with FACE if it doesn't have any face defined."
-  (if (text-property-not-all 0 (length str) 'face nil str)
-      str
-    (propertize str 'face face)))
+    (if (text-property-not-all 0 (length str) 'face nil str)
+        str
+      (propertize str 'face face))))
 
 (defun selectrum--add-face (str face)
   "Return copy of STR with FACE added."
