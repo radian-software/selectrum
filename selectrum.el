@@ -66,12 +66,12 @@ parts of the input."
 
 (defface selectrum-completion-annotation
   '((t :inherit completions-annotations))
-  "Face used to display annotations in `selectrum-completion-in-region'."
+  "Face used to display annotations or suffixes."
   :group 'selectrum-faces)
 
 (defface selectrum-completion-docsig
   '((t :inherit selectrum-completion-annotation :slant italic))
-  "Face used to display docsigs in `selectrum-completion-in-region'."
+  "Face used to display docsigs or margins."
   :group 'selectrum-faces)
 
 ;;;; Variables
