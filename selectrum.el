@@ -1078,10 +1078,10 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                 (concat prefix candidate suffix))
                (right-margin
                 (selectrum--annotation
-                        candidate
-                        docsigf
-                        'selectrum-candidate-display-right-margin
-                        'selectrum-completion-docsig))
+                 candidate
+                 docsigf
+                 'selectrum-candidate-display-right-margin
+                 'selectrum-completion-docsig))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
