@@ -1031,10 +1031,13 @@ face property defined."
                       (get-text-property
                        0 prop
                        cand))))
-    (if (or (get-text-property 0 'face str)
-            (next-single-property-change 0 'face str))
-        str
-      (propertize str 'face face))))
+    (selectrum--maybe-propertize str face)))
+
+(defun selectrum--maybe-propertize (str face)
+  "Propertize STR with FACE if it doesn't have any face defined."
+  (if (text-property-not-all 0 (length str) 'face nil str)
+      str
+    (propertize str 'face face)))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
