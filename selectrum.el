@@ -1022,7 +1022,7 @@ The specific details of the formatting are determined by
        single/lines))))
 
 (defun selectrum--annotation (fun cand face)
-  "Return annotation for candidate CAND.
+  "Return annotation for candidate.
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
   (when-let ((str (funcall fun cand)))
