@@ -483,9 +483,11 @@ metadata."
   ;; Rule out situations where the annotation
   ;; is nil.
   (when-let ((annotation (funcall annotation-func string)))
-    (propertize
-     annotation
-     'face 'selectrum-completion-annotation)))
+    (if (text-property-not-all 0 (length annotation) 'face nil annotation)
+        annotation
+      (propertize
+       annotation
+       'face 'selectrum-completion-annotation))))
 
 (defun selectrum--get-margin-docsig (string docsig-func)
   "Get `selectrum-candidate-display-right-margin' value for docsig.
