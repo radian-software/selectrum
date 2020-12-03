@@ -1021,17 +1021,20 @@ The specific details of the formatting are determined by
          cand)
        single/lines))))
 
-(defun selectrum--annotation (cand fun prop face)
+(defun selectrum--annotation (cand prop face &optional fun)
   "Return annotation for candidate CAND.
-Get annotation by calling FUN with CAND, fallback to get it from
-property PROP. Apply FACE to annotation if CAND does not have any
-face property defined."
+Get annitation from from property PROP. Apply FACE to annotation
+if CAND does not have any face property defined. If FUN is given
+use it instead of PROP to get the annotation by calling it with
+CAND."
   (when-let ((str (if fun
                       (funcall fun cand)
                     (get-text-property
                      0 prop
                      cand))))
-    (selectrum--maybe-propertize str face)))
+    (if fun
+        (selectrum--maybe-propertize str face)
+      str)))
 
 (defun selectrum--maybe-propertize (str face)
   "Propertize STR with FACE if it doesn't have any face defined."
@@ -1100,17 +1103,17 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                         candidate))
                (suffix (selectrum--annotation
                         candidate
-                        annotf
                         'selectrum-candidate-display-suffix
-                        'selectrum-completion-annotation))
+                        'selectrum-completion-annotation
+                        annotf))
                (displayed-candidate
                 (concat prefix candidate suffix))
                (right-margin
                 (selectrum--annotation
                  candidate
-                 docsigf
                  'selectrum-candidate-display-right-margin
-                 'selectrum-completion-docsig))
+                 'selectrum-completion-docsig
+                 docsigf))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
