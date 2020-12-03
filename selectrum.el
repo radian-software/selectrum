@@ -1021,20 +1021,12 @@ The specific details of the formatting are determined by
          cand)
        single/lines))))
 
-(defun selectrum--annotation (cand prop face &optional fun)
+(defun selectrum--annotation (fun cand face)
   "Return annotation for candidate CAND.
-Get annitation from from property PROP. Apply FACE to annotation
-if CAND does not have any face property defined. If FUN is given
-use it instead of PROP to get the annotation by calling it with
-CAND."
-  (when-let ((str (if fun
-                      (funcall fun cand)
-                    (get-text-property
-                     0 prop
-                     cand))))
-    (if fun
-        (selectrum--maybe-propertize str face)
-      str)))
+Get annotation by calling FUN with CAND and apply FACE to it if
+CAND does not have any face property defined."
+  (when-let ((str (funcall fun cand)))
+    (selectrum--maybe-propertize str face)))
 
 (defun selectrum--maybe-propertize (str face)
   "Propertize STR with FACE if it doesn't have any face defined."
@@ -1101,19 +1093,25 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (suffix (selectrum--annotation
-                        candidate
-                        'selectrum-candidate-display-suffix
-                        'selectrum-completion-annotation
-                        annotf))
+               (suffix (or (get-text-property
+                            0 'selectrum-candidate-display-suffix
+                            candidate)
+                           (and annotf
+                                (selectrum--annotation
+                                 annotf
+                                 candidate
+                                 'selectrum-completion-annotation))))
                (displayed-candidate
                 (concat prefix candidate suffix))
                (right-margin
-                (selectrum--annotation
-                 candidate
-                 'selectrum-candidate-display-right-margin
-                 'selectrum-completion-docsig
-                 docsigf))
+                (or (get-text-property
+                     0 'selectrum-candidate-display-right-margin
+                     candidate)
+                    (and docsigf
+                         (selectrum--annotation
+                          docsigf
+                          candidate
+                          'selectrum-completion-docsig))))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
