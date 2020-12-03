@@ -476,25 +476,6 @@ If PREDICATE is non-nil, then it filters the collection as in
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
 
-(defun selectrum--get-annotation-suffix (string annotation-func)
-  "Get `selectrum-candidate-display-suffix' value for annotation.
-Used to display STRING according to ANNOTATION-FUNC from
-metadata."
-  ;; Rule out situations where the annotation
-  ;; is nil.
-  (when-let ((annotation (funcall annotation-func string)))
-    (propertize
-     annotation
-     'face 'selectrum-completion-annotation)))
-
-(defun selectrum--get-margin-docsig (string docsig-func)
-  "Get `selectrum-candidate-display-right-margin' value for docsig.
-Used to display STRING according to DOCSIG-FUNC from metadata."
-  (when-let ((docsig (funcall docsig-func string)))
-    (propertize
-     (format "%s" docsig)
-     'face 'selectrum-completion-docsig)))
-
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
 Selectrum has its own methods for indicating the default value,
@@ -1040,6 +1021,21 @@ The specific details of the formatting are determined by
          cand)
        single/lines))))
 
+(defun selectrum--annotation (cand fun prop face)
+  "Return annotation for candidate CAND.
+Get annotation by calling FUN with CAND, fallback to get it from
+property PROP. Apply FACE to annotation if CAND does not have any
+face property defined."
+  (when-let ((str (if fun
+                        (funcall fun cand)
+                      (get-text-property
+                       0 prop
+                       cand))))
+    (if (or (get-text-property 0 'face str)
+            (next-single-property-change 0 'face str))
+        str
+      (propertize str 'face face))))
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -1070,20 +1066,19 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (suffix (if annotf
-                           (selectrum--get-annotation-suffix
-                            candidate annotf)
-                         (get-text-property
-                          0 'selectrum-candidate-display-suffix
-                          candidate)))
+               (suffix (selectrum--annotation
+                        candidate
+                        annotf
+                        'selectrum-candidate-display-suffix
+                        'selectrum-completion-annotation))
                (displayed-candidate
                 (concat prefix candidate suffix))
-               (right-margin (if docsigf
-                                 (selectrum--get-margin-docsig
-                                  candidate docsigf)
-                               (get-text-property
-                                0 'selectrum-candidate-display-right-margin
-                                candidate)))
+               (right-margin
+                (selectrum--annotation
+                        candidate
+                        docsigf
+                        'selectrum-candidate-display-right-margin
+                        'selectrum-completion-docsig))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
