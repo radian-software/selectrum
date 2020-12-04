@@ -24,6 +24,9 @@ The format is based on [Keep a Changelog].
   candidates ([#200]).
 
 ### Bugs fixed
+* When strings of Selectrum display properties or completion table
+  annotations have a face defined it gets used. Before those faces
+  would be ignored ([#236], [#250]).
 * Selectrum's internal minibuffer setup hook now runs after any other
   functions added to `minibuffer-setup-hook`. Before, you couldn't set
   `selectrum-should-sort-p` locally via `minibuffer-with-setup-hook`
@@ -48,6 +51,8 @@ The format is based on [Keep a Changelog].
 [#221]: https://github.com/raxod502/selectrum/pull/221
 [#242]: https://github.com/raxod502/selectrum/pull/242
 [#230]: https://github.com/raxod502/selectrum/pull/230
+[#236]: https://github.com/raxod502/selectrum/issues/236
+[#250]: https://github.com/raxod502/selectrum/pull/250
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
