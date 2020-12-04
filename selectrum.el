@@ -66,12 +66,12 @@ parts of the input."
 
 (defface selectrum-completion-annotation
   '((t :inherit completions-annotations))
-  "Face used to display annotations in `selectrum-completion-in-region'."
+  "Face used to display annotations of completion tables."
   :group 'selectrum-faces)
 
 (defface selectrum-completion-docsig
   '((t :inherit selectrum-completion-annotation :slant italic))
-  "Face used to display docsigs in `selectrum-completion-in-region'."
+  "Face used to display docsigs of completion tables."
   :group 'selectrum-faces)
 
 ;;;; Variables
@@ -475,25 +475,6 @@ If PREDICATE is non-nil, then it filters the collection as in
       lst))
    (t
     (error "Unsupported collection type %S" (type-of collection)))))
-
-(defun selectrum--get-annotation-suffix (string annotation-func)
-  "Get `selectrum-candidate-display-suffix' value for annotation.
-Used to display STRING according to ANNOTATION-FUNC from
-metadata."
-  ;; Rule out situations where the annotation
-  ;; is nil.
-  (when-let ((annotation (funcall annotation-func string)))
-    (propertize
-     annotation
-     'face 'selectrum-completion-annotation)))
-
-(defun selectrum--get-margin-docsig (string docsig-func)
-  "Get `selectrum-candidate-display-right-margin' value for docsig.
-Used to display STRING according to DOCSIG-FUNC from metadata."
-  (when-let ((docsig (funcall docsig-func string)))
-    (propertize
-     (format "%s" docsig)
-     'face 'selectrum-completion-docsig)))
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
@@ -1040,6 +1021,44 @@ The specific details of the formatting are determined by
          cand)
        single/lines))))
 
+(defun selectrum--annotation (fun cand face)
+  "Return annotation for candidate.
+Get annotation by calling FUN with CAND and apply FACE to it if
+CAND does not have any face property defined."
+  (when-let ((str (funcall fun cand)))
+    (if (text-property-not-all 0 (length str) 'face nil str)
+        str
+      (propertize str 'face face))))
+
+(defun selectrum--add-face (str face)
+  "Return copy of STR with FACE added."
+  ;; Avoid trampling highlighting done by
+  ;; `selectrum-highlight-candidates-function'. In
+  ;; Emacs<27 `add-face-text-property' has a bug but
+  ;; in Emacs>=27 `font-lock-prepend-text-property'
+  ;; doesn't work. Even though these functions are
+  ;; both supposed to do the same thing.
+  ;;
+  ;; Anyway, no need to clean up the text properties
+  ;; afterwards, as an update will cause all these
+  ;; strings to be thrown away and re-generated from
+  ;; scratch.
+  ;;
+  ;; See:
+  ;; <https://github.com/raxod502/selectrum/issues/21>
+  ;; <https://github.com/raxod502/selectrum/issues/58>
+  ;; <https://github.com/raxod502/selectrum/pull/76>
+  (setq str (copy-sequence str))
+  (if (version< emacs-version "27")
+      (font-lock-prepend-text-property
+       0 (length str)
+       'face face str)
+    (add-face-text-property
+     0 (length str)
+     face
+     'append str))
+  str)
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -1070,20 +1089,25 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (suffix (if annotf
-                           (selectrum--get-annotation-suffix
-                            candidate annotf)
-                         (get-text-property
-                          0 'selectrum-candidate-display-suffix
-                          candidate)))
+               (suffix (or (get-text-property
+                            0 'selectrum-candidate-display-suffix
+                            candidate)
+                           (and annotf
+                                (selectrum--annotation
+                                 annotf
+                                 candidate
+                                 'selectrum-completion-annotation))))
                (displayed-candidate
                 (concat prefix candidate suffix))
-               (right-margin (if docsigf
-                                 (selectrum--get-margin-docsig
-                                  candidate docsigf)
-                               (get-text-property
-                                0 'selectrum-candidate-display-right-margin
-                                candidate)))
+               (right-margin
+                (or (get-text-property
+                     0 'selectrum-candidate-display-right-margin
+                     candidate)
+                    (and docsigf
+                         (selectrum--annotation
+                          docsigf
+                          candidate
+                          'selectrum-completion-docsig))))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
@@ -1107,31 +1131,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            displayed-candidate)
           (when formatting-current-candidate
             (setq displayed-candidate
-                  (copy-sequence displayed-candidate))
-            ;; Avoid trampling highlighting done by
-            ;; `selectrum-highlight-candidates-function'. In
-            ;; Emacs<27 `add-face-text-property' has a bug but
-            ;; in Emacs>=27 `font-lock-prepend-text-property'
-            ;; doesn't work. Even though these functions are
-            ;; both supposed to do the same thing.
-            ;;
-            ;; Anyway, no need to clean up the text properties
-            ;; afterwards, as an update will cause all these
-            ;; strings to be thrown away and re-generated from
-            ;; scratch.
-            ;;
-            ;; See:
-            ;; <https://github.com/raxod502/selectrum/issues/21>
-            ;; <https://github.com/raxod502/selectrum/issues/58>
-            ;; <https://github.com/raxod502/selectrum/pull/76>
-            (if (version< emacs-version "27")
-                (font-lock-prepend-text-property
-                 0 (length displayed-candidate)
-                 'face 'selectrum-current-candidate displayed-candidate)
-              (add-face-text-property
-               0 (length displayed-candidate)
-               'selectrum-current-candidate
-               'append displayed-candidate)))
+                  (selectrum--add-face
+                   displayed-candidate 'selectrum-current-candidate)))
           (insert "\n")
           (when selectrum-show-indices
             (let* ((display-fn (if (functionp selectrum-show-indices)
@@ -1155,10 +1156,10 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                `(space :align-to (- right-fringe
                                     ,(string-width right-margin)
                                     selectrum-right-margin-padding)))
-              (propertize right-margin
-                          'face
-                          (when formatting-current-candidate
-                            'selectrum-current-candidate)))))
+              (if formatting-current-candidate
+                  (selectrum--add-face
+                   right-margin'selectrum-current-candidate)
+                right-margin))))
            ((and selectrum-extend-current-candidate-highlight
                  formatting-current-candidate)
             (insert
