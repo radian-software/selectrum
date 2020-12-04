@@ -1693,31 +1693,33 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          (exit-status nil)
          (result nil))
     (if (null cands)
-        (progn (unless completion-fail-discreetly (ding))
-               (message "No match"))
-      (pcase category
-        ('file
-         (setq result
-               (selectrum--completing-read-file-name
-                "Completion: " collection predicate
-                nil input)
-               exit-status 'finished))
-        (_
-         (setq result
-               (if (not (cdr cands))
-                   (car cands)
-                 (selectrum-completing-read
-                  "Completion: "
-                  (lambda (string pred action)
-                    (if (eq action 'metadata)
-                        meta
-                      (complete-with-action action cands string pred)))))
-               exit-status (cond ((not (member result cands)) 'sole)
-                                 (t 'finished)))))
-      (delete-region bound end)
-      (insert (substring-no-properties result))
-      (when exit-func
-        (funcall exit-func result exit-status)))))
+        (prog1 nil
+          (unless completion-fail-discreetly (ding))
+          (message "No match"))
+      (prog1 t
+        (pcase category
+          ('file
+           (setq result
+                 (selectrum--completing-read-file-name
+                  "Completion: " collection predicate
+                  nil input)
+                 exit-status 'finished))
+          (_
+           (setq result
+                 (if (not (cdr cands))
+                     (car cands)
+                   (selectrum-completing-read
+                    "Completion: "
+                    (lambda (string pred action)
+                      (if (eq action 'metadata)
+                          meta
+                        (complete-with-action action cands string pred)))))
+                 exit-status (cond ((not (member result cands)) 'sole)
+                                   (t 'finished)))))
+        (delete-region bound end)
+        (insert (substring-no-properties result))
+        (when exit-func
+          (funcall exit-func result exit-status))))))
 
 (defvar selectrum--old-completion-in-region-function nil
   "Previous value of `completion-in-region-function'.")
