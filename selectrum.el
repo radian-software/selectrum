@@ -1185,22 +1185,20 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
   (setq selectrum--count-overlay nil))
 
 (cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate initial-input)
+    (candidates &key default-candidate)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first. INITIAL-INPUT, if provided, is inserted
-into the user input area to start with."
+list and sorted first."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
+  (when selectrum--repeat
+    (delete-minibuffer-contents)
+    (insert selectrum--previous-input-string))
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
-  (if selectrum--repeat
-      (insert selectrum--previous-input-string)
-    (when initial-input
-      (insert initial-input)))
   ;; If metadata specifies a custom sort function use it as
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
@@ -1548,8 +1546,7 @@ semantics of `cl-defun'."
         (:append (lambda ()
                    (selectrum--minibuffer-setup-hook
                     candidates
-                    :default-candidate default-candidate
-                    :initial-input initial-input)))
+                    :default-candidate default-candidate)))
       (let* ((minibuffer-allow-text-properties t)
              (resize-mini-windows 'grow-only)
              (max-mini-window-height
@@ -1559,7 +1556,7 @@ semantics of `cl-defun'."
              (icomplete-mode nil)
              (selectrum-active-p t)
              (res (read-from-minibuffer
-                   prompt nil selectrum-minibuffer-map nil
+                   prompt initial-input selectrum-minibuffer-map nil
                    (or history 'minibuffer-history))))
         (cond (minibuffer-completion-table
                ;; Behave like completing-read-default which strips the text
@@ -1583,9 +1580,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
   (selectrum-read
    prompt nil
-   ;; Don't pass `initial-input'. We use it internally but it's
-   ;; deprecated in `completing-read' and doesn't work well with the
-   ;; Selectrum paradigm except in specific cases that we control.
+   :initial-input initial-input
    :default-candidate (or (car-safe def) def)
    :require-match (eq require-match t)
    :history hist
