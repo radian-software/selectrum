@@ -23,11 +23,12 @@ The format is based on [Keep a Changelog].
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
 * Selectrum now uses the `initial-input` argument passed to
-  `completing-read` which was ignored before. The prompt gets
-  initially selected when it equals the default value. This aligns
-  with Selectrum's behavior of sorting the default first and will
-  also make such prompts behave like in default Emacs completion where
-  you can immediately submit the initial input ([#253]).
+  `completing-read` which was ignored before ([#253]).
+* The prompt gets initially selected now when it equals the default
+  value. This aligns with Selectrum's behavior of sorting the default
+  first and will also make such prompts behave like in default Emacs
+  completion where you can immediately submit the initial input
+  ([#253]).
 
 ### Bugs fixed
 * The return value of `selectrum-completion-in-region` has been fixed
