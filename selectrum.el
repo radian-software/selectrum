@@ -1087,7 +1087,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                (isuffix (get-text-property
                          ;; Internal property to display an additional
                          ;; suffix before the actual suffix added via
-                         ;; public API.
+                         ;; public API. Currently only used for
+                         ;; displaying slashes of directories in file
+                         ;; completions.
                          0 'selectrum--internal-candidate-display-suffix
                          candidate))
                (suffix (or (get-text-property
