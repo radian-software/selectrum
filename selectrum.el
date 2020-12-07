@@ -1020,7 +1020,11 @@ The specific details of the formatting are determined by
   "Return annotation for candidate.
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
-  (when-let ((str (funcall fun cand)))
+  (when-let ((str
+              ;; The annotation functions might assume they are
+              ;; running within the minibuffer, see #255.
+              (with-selected-window (active-minibuffer-window)
+                (funcall fun cand))))
     (if (text-property-not-all 0 (length str) 'face nil str)
         str
       (propertize str 'face face))))
