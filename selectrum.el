@@ -1085,7 +1085,10 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                         0 'selectrum-candidate-display-prefix
                         candidate))
                (isuffix (get-text-property
-                         0 'selectrum--candidate-display-suffix
+                         ;; Internal property to display an additional
+                         ;; suffix before the actual suffix added via
+                         ;; public API.
+                         0 'selectrum--internal-candidate-display-suffix
                          candidate))
                (suffix (or (get-text-property
                             0 'selectrum-candidate-display-suffix
@@ -1791,7 +1794,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                         (setq i (substring i 0 (1- (length i))))
                         (put-text-property
                          0 (length i)
-                         'selectrum--candidate-display-suffix
+                         'selectrum--internal-candidate-display-suffix
                          "/"
                          i))
                       i)
