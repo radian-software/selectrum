@@ -803,13 +803,8 @@ greather than the window height."
                                     selectrum--refined-candidates)))
                   -1)
                  ((and selectrum--init-p
-                       minibuffer-completing-file-name
-                       (eq minibuffer-completion-predicate
-                           'file-directory-p)
-                       (equal (minibuffer-contents)
-                              selectrum--default-candidate))
-                  ;; When reading directories and the default is the
-                  ;; prompt, select it initially.
+                       (equal selectrum--default-candidate
+                              (minibuffer-contents)))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
