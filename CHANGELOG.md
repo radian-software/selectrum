@@ -47,6 +47,9 @@ The format is based on [Keep a Changelog].
   it's a list of strings. Before the list only wasn't modfied when the
   function returned the alist format as specified by `selectrum-read`
   ([#220]).
+* Annotations or usage or `selectrum-candidate-display-suffix`
+  property in file completions were overwritten for directories and
+  not displayed, which has been fixed ([#256], [#255]).
 
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
@@ -62,6 +65,8 @@ The format is based on [Keep a Changelog].
 [#250]: https://github.com/raxod502/selectrum/pull/250
 [#251]: https://github.com/raxod502/selectrum/pull/251
 [#253]: https://github.com/raxod502/selectrum/pull/253
+[#255]: https://github.com/raxod502/selectrum/issues/255
+[#256]: https://github.com/raxod502/selectrum/pull/256
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
