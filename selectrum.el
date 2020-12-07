@@ -1084,6 +1084,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
+               (isuffix (get-text-property
+                         0 'selectrum--candidate-display-suffix
+                         candidate))
                (suffix (or (get-text-property
                             0 'selectrum-candidate-display-suffix
                             candidate)
@@ -1093,7 +1096,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                                  candidate
                                  'selectrum-completion-annotation))))
                (displayed-candidate
-                (concat prefix candidate suffix))
+                (concat prefix candidate isuffix suffix))
                (right-margin
                 (or (get-text-property
                      0 'selectrum-candidate-display-right-margin
@@ -1788,7 +1791,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                         (setq i (substring i 0 (1- (length i))))
                         (put-text-property
                          0 (length i)
-                         'selectrum-candidate-display-suffix
+                         'selectrum--candidate-display-suffix
                          "/"
                          i))
                       i)
