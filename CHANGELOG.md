@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog].
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
 * Selectrum now uses the `initial-input` argument passed to
-  `completing-read` which was ignored before ([#253]).
+  `completing-read` which was ignored before ([#254]).
 
 ### Bugs fixed
 * The return value of `selectrum-completion-in-region` has been fixed
@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog].
 [#236]: https://github.com/raxod502/selectrum/issues/236
 [#250]: https://github.com/raxod502/selectrum/pull/250
 [#251]: https://github.com/raxod502/selectrum/pull/251
+[#254]: https://github.com/raxod502/selectrum/pull/254
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
