@@ -1583,9 +1583,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore initial-input inherit-input-method)
   (selectrum-read
    prompt nil
-   ;; Don't pass `initial-input'. We use it internally but it's
-   ;; deprecated in `completing-read' and doesn't work well with the
-   ;; Selectrum paradigm except in specific cases that we control.
+   :initial-input initial-input
    :default-candidate (or (car-safe def) def)
    :require-match (eq require-match t)
    :history hist
