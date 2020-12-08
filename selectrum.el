@@ -1445,7 +1445,11 @@ indices."
           (apply
            #'run-hook-with-args
            'selectrum-candidate-inserted-hook
-           candidate selectrum--read-args))
+           candidate selectrum--read-args)
+          ;; Ensure refresh of UI as the input string might be the
+          ;; same but current candidates might have come from sub path
+          ;; completion.
+          (setq selectrum--previous-input-string nil))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
