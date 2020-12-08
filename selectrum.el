@@ -1826,6 +1826,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                   (pathprefix (buffer-substring
                                (minibuffer-prompt-end) (car bounds)))
                   (matchstr
+                   ;; Bounds are off for ~/ pathe shadows for some
+                   ;; reason.
                    (if (and (equal pathprefix "~/") (eobp))
                        (file-name-nondirectory input)
                      (buffer-substring (car bounds) (cdr bounds))))
