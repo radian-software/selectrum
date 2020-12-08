@@ -676,6 +676,11 @@ The current matchstring may be surrounded by prefix and suffix."
                (prefix (buffer-substring
                         (minibuffer-prompt-end) (car bounds)))
                (suffix (buffer-substring (cdr bounds) (point-max))))
+          (when (and minibuffer-completing-file-name
+                     (not (string-empty-p suffix))
+                     (string-match "/\\'" candidate)
+                     (string-match "\\`/" suffix))
+            (setq suffix (substring suffix 1)))
           (concat prefix candidate suffix)))
       candidate))
 
