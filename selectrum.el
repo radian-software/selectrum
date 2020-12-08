@@ -643,9 +643,9 @@ behavior."
         ;; Skip updates.
         (setq-local selectrum--skip-updates-p t)))))
 
-(defun selectrum--get-full (candidate)
-  "Get full form of CANDIDATE.
- by inspecting text properties."
+(defun selectrum--minibuffer-matchstring-bounds ()
+  "Return bounds for current matchstring.
+The current matchstring may be surrounded by prefix and suffix."
   (let* ((input (minibuffer-contents))
          (pt (- (point) (minibuffer-prompt-end)))
          (bounds (completion-boundaries
@@ -657,17 +657,29 @@ behavior."
                            (looking-at "/"))
                       ""
                     (substring input pt))))
-         (prefix (substring input 0 (car bounds)))
-         (suffix (substring input (+ pt (cdr bounds))))
-         (isuffix (get-text-property
-                   0 'selectrum--internal-candidate-display-suffix
-                   candidate)))
-    (or (get-text-property 0 'selectrum-candidate-full candidate)
-        (and minibuffer-completion-table
-             (concat prefix candidate
-                     (if (string-empty-p suffix)
-                         isuffix suffix)))
-        candidate)))
+         (start (+ (minibuffer-prompt-end)
+                   (car bounds)))
+         (end (+ (minibuffer-prompt-end)
+                 (+ pt (cdr bounds)))))
+    (cons start end)))
+
+(defun selectrum--get-full (candidate)
+  "Get full form of CANDIDATE."
+  (or (get-text-property 0 'selectrum-candidate-full candidate)
+      (when minibuffer-completion-table
+        (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
+               (prefix (buffer-substring
+                        (minibuffer-prompt-end) (car bounds)))
+               (suffix (buffer-substring (cdr bounds) (point-max))))
+          (concat prefix
+                  candidate
+                  (if (and (string-empty-p suffix)
+                           minibuffer-completing-file-name)
+                      (get-text-property
+                       0 'selectrum--internal-candidate-display-suffix
+                       candidate)
+                    suffix))))
+      candidate))
 
 (defun selectrum--get-candidate (index)
   "Get candidate at given INDEX. Negative means get the current user input."
@@ -1808,29 +1820,19 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
-         (lambda (input)
-           (let* ((pt (- (point)
-                         (minibuffer-prompt-end)))
-                  (bounds (completion-boundaries
-                           (substring input 0 pt)
-                           minibuffer-completion-table
-                           minibuffer-completion-predicate
-                           (if (and (looking-back "/" (1- (point)))
-                                    (looking-at "/"))
-                               ""
-                             (substring input pt))))
-                  (pathprefix (substring input 0
-                                         (car bounds)))
-                  (matchstr (substring input
-                                       (car bounds)
-                                       (+ pt (cdr bounds))))
+         (lambda (_input)
+           (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
+                  (pathprefix (buffer-substring
+                               (minibuffer-prompt-end) (car bounds)))
+                  (matchstr (buffer-substring (car bounds) (cdr bounds)))
                   (cands
                    (selectrum--map-destructive
                     (lambda (i)
-                      ;; When we aren't completin env variables remove
-                      ;; final slash for directories and only include
-                      ;; it for display. This is done so inputting a
-                      ;; directory name will sort the directory first.
+                      ;; When we aren't completing env variables
+                      ;; remove final slash for directories and only
+                      ;; include it for display. This is done so
+                      ;; inputting a directory name will sort the
+                      ;; directory first.
                       (when (and (not (string-match "\\$\\'"  pathprefix))
                                  (string-suffix-p "/" i))
                         (setq i (substring i 0 (1- (length i))))
