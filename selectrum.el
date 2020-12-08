@@ -646,7 +646,7 @@ behavior."
         (setq-local selectrum--skip-updates-p t)))))
 
 (defun selectrum--minibuffer-matchstring-bounds ()
-  "Return bounds for current matchstring.
+  "Return bounds for current matchstring as per `completion-boundaries'.
 The current matchstring may be surrounded by prefix and suffix."
   (let* ((input (minibuffer-contents))
          (mpe (minibuffer-prompt-end))
