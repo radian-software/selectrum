@@ -812,6 +812,7 @@ greather than the window height."
                  selectrum--refined-candidates)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
+               ;; Make sure matching dirnames are sorted first.
                (if (and minibuffer-completing-file-name
                         (member (file-name-as-directory input)
                                 selectrum--refined-candidates))
