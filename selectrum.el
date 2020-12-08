@@ -1827,15 +1827,15 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                              (car bounds) (cdr bounds)))
                   (cands
                    (condition-case _
-                        (funcall collection pathprefix
-                                 (lambda (i)
-                                   (and (not (member i '("./" "../")))
-                                        (or (not predicate)
-                                            (funcall predicate i))))
-                                 t)
-                      ;; May happen in case user quits out
-                      ;; of a TRAMP prompt.
-                      (quit))))
+                       (funcall collection pathprefix
+                                (lambda (i)
+                                  (and (not (member i '("./" "../")))
+                                       (or (not predicate)
+                                           (funcall predicate i))))
+                                t)
+                     ;; May happen in case user quits out
+                     ;; of a TRAMP prompt.
+                     (quit))))
              `((input . ,matchstr)
                (candidates . ,cands))))))
     (selectrum-read
