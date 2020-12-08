@@ -668,14 +668,14 @@ The current matchstring may be surrounded by prefix and suffix."
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum-candidate-full candidate)
-      (when minibuffer-completion-table
+      (when (and minibuffer-completion-table
+                 minibuffer-completing-file-name)
         (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
                (prefix (buffer-substring
                         (minibuffer-prompt-end) (car bounds)))
                (promptp (and (eobp) (equal prefix candidate)))
                (suffix (buffer-substring (cdr bounds) (point-max)))
-               (candidate (if (and minibuffer-completing-file-name
-                                   (not (string-empty-p suffix)))
+               (candidate (if (not (string-empty-p suffix))
                               (directory-file-name candidate)
                             candidate)))
           (concat (unless promptp prefix) candidate suffix)))
