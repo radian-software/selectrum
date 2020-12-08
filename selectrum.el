@@ -655,16 +655,14 @@ The current matchstring may be surrounded by prefix and suffix."
                   (substring input 0 pt)
                   minibuffer-completion-table
                   minibuffer-completion-predicate
+                  ;; Workaround error for /|/.
                   (if (and minibuffer-completing-file-name
                            (looking-back "/" (1- (point)))
                            (looking-at "/"))
                       ""
                     (substring input pt))))
-         (start (+ mpe
-                   (if (and minibuffer-completing-file-name
-                            (looking-back "~/" mpe))
-                       (length input)
-                     (car bounds))))
+         ;; FIXME: Bound is wrong for shadowed ~/ path.
+         (start (+ mpe (car bounds)))
          (end (+ mpe (+ pt (cdr bounds)))))
     (cons start end)))
 
