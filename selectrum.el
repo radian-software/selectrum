@@ -1833,7 +1833,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (minibuffer-prompt-end) (car bounds))))
                   (matchstr
                    (if (and (eobp)
-                            ;; Bounds are off for ~/ pathe shadows for
+                            ;; Bounds are off for ~/ path shadows for
                             ;; some reason.
                             (or (equal pathprefix "~/")
                                 (string-suffix-p "$" input)))
