@@ -1823,12 +1823,19 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let ((coll
          (lambda (input)
            (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
-                  (pathprefix (buffer-substring
-                               (minibuffer-prompt-end) (car bounds)))
+                  (pathprefix
+                   ;; Allow matching $ as regexp at end of input.
+                   (if (and (eobp)
+                            (string-suffix-p "$" input)
+                            (not (string-suffix-p "/$" input)))
+                       (or (file-name-directory input) "")
+                     (buffer-substring
+                      (minibuffer-prompt-end) (car bounds))))
                   (matchstr
                    ;; Bounds are off for ~/ pathe shadows for some
                    ;; reason.
-                   (if (and (equal pathprefix "~/") (eobp))
+                   (if (or (and (equal pathprefix "~/") (eobp))
+                           (and (string-suffix-p "$" input) (eobp)))
                        (file-name-nondirectory input)
                      (buffer-substring (car bounds) (cdr bounds))))
                   (cands
