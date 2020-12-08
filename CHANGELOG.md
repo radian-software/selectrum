@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog].
   and for individual path levels now. By typing "$" after path
   separator you get queried for the variable name. To change a
   sublevel with completion you can navigate into the file path prompt
-  and start editing the path level.
+  and start editing the path level ([#258]).
 
 ### Bugs fixed
 * The return value of `selectrum-completion-in-region` has been fixed
@@ -72,6 +72,7 @@ The format is based on [Keep a Changelog].
 [#253]: https://github.com/raxod502/selectrum/pull/253
 [#255]: https://github.com/raxod502/selectrum/issues/255
 [#256]: https://github.com/raxod502/selectrum/pull/256
+[#258]: https://github.com/raxod502/selectrum/pull/258
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
