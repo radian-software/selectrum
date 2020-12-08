@@ -1822,11 +1822,11 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
-         (lambda (_input)
+         (lambda (input)
            (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
                   (pathprefix (buffer-substring
                                (minibuffer-prompt-end) (car bounds)))
-                  (matchstr (buffer-substring (car bounds) (cdr bounds)))
+                  (matchstr (file-name-nondirectory input))
                   (cands
                    (selectrum--map-destructive
                     (lambda (i)
