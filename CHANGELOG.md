@@ -27,6 +27,11 @@ The format is based on [Keep a Changelog].
   first and will also make such prompts behave like in default Emacs
   completion where you can immediately submit the initial input
   ([#253]).
+* In file completions you get completion for environmental variables
+  and for individual path levels now. By typing "$" after path
+  separator you get queried for the variable name. To change a
+  sublevel with completion you can navigate into the file path prompt
+  and start editing the path level.
 
 ### Bugs fixed
 * The return value of `selectrum-completion-in-region` has been fixed
