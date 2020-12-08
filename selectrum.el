@@ -1822,10 +1822,15 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
          (lambda (input)
-           (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
-                  (pathprefix (buffer-substring
-                               (minibuffer-prompt-end) (car bounds)))
-                  (matchstr (file-name-nondirectory input))
+           (let* ((matchstr (file-name-nondirectory input))
+                  (pathprefix
+                   (if (or (not (string-suffix-p "$" matchstr))
+                           (string= "$" matchstr))
+                       (let ((bounds
+                              (selectrum--minibuffer-matchstring-bounds)))
+                         (buffer-substring
+                          (minibuffer-prompt-end) (car bounds)))
+                     (or (file-name-directory input) "")))
                   (cands
                    (condition-case _
                        (funcall collection pathprefix
