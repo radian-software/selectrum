@@ -672,11 +672,13 @@ The current matchstring may be surrounded by prefix and suffix."
         (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
                (prefix (buffer-substring
                         (minibuffer-prompt-end) (car bounds)))
-               (suffix (buffer-substring (cdr bounds) (point-max))))
-          (when (and minibuffer-completing-file-name
-                     (not (string-empty-p suffix)))
-            (setq candidate (directory-file-name candidate)))
-          (concat prefix candidate suffix)))
+               (promptp (and (eobp) (equal prefix candidate)))
+               (suffix (buffer-substring (cdr bounds) (point-max)))
+               (candidate (if (and minibuffer-completing-file-name
+                                   (not (string-empty-p suffix)))
+                              (directory-file-name candidate)
+                            candidate)))
+          (concat (unless promptp prefix) candidate suffix)))
       candidate))
 
 (defun selectrum--get-candidate (index)
