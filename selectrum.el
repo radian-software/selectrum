@@ -661,7 +661,6 @@ The current matchstring may be surrounded by prefix and suffix."
                            (looking-at "/"))
                       ""
                     (substring input pt))))
-         ;; FIXME: Bound is wrong for shadowed ~/ path.
          (start (+ mpe (car bounds)))
          (end (+ mpe (+ pt (cdr bounds)))))
     (cons start end)))
@@ -770,7 +769,6 @@ greather than the window height."
           (buffer-undo-list t)
           (input (buffer-substring (minibuffer-prompt-end)
                                    (point-max)))
-          (bound (point-max))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (when (and (not selectrum--preprocessed-candidates)
@@ -902,7 +900,7 @@ greather than the window height."
                             (not minibuffer-completing-file-name)
                             (not (member selectrum--default-candidate
                                          selectrum--refined-candidates))))
-                   (if (= (minibuffer-prompt-end) bound)
+                   (if (= (minibuffer-prompt-end) (point-max))
                        (format " %s %s%s"
                                (propertize
                                 "[default value:"
@@ -923,11 +921,11 @@ greather than the window height."
                                 (< highlighted-index 0))
                        (prog1 nil
                          (add-text-properties
-                          (minibuffer-prompt-end) bound
+                          (minibuffer-prompt-end) (point-max)
                           '(face selectrum-current-candidate)))))
                  (prog1 nil
                    (remove-text-properties
-                    (minibuffer-prompt-end) bound
+                    (minibuffer-prompt-end) (point-max)
                     '(face selectrum-current-candidate)))))
              (minibuf-after-string (or default " ")))
         (if selectrum-display-action
@@ -1820,12 +1818,11 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
-         (lambda (_input)
+         (lambda (input)
            (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
                   (pathprefix (buffer-substring
                                (minibuffer-prompt-end) (car bounds)))
-                  (matchstr (buffer-substring
-                             (car bounds) (cdr bounds)))
+                  (matchstr (file-name-nondirectory input))
                   (cands
                    (condition-case _
                        (funcall collection pathprefix
