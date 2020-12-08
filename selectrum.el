@@ -676,14 +676,7 @@ The current matchstring may be surrounded by prefix and suffix."
                (prefix (buffer-substring
                         (minibuffer-prompt-end) (car bounds)))
                (suffix (buffer-substring (cdr bounds) (point-max))))
-          (concat prefix
-                  candidate
-                  (if (and (string-empty-p suffix)
-                           minibuffer-completing-file-name)
-                      (get-text-property
-                       0 'selectrum--internal-candidate-display-suffix
-                       candidate)
-                    suffix))))
+          (concat prefix candidate suffix)))
       candidate))
 
 (defun selectrum--get-candidate (index)
@@ -820,7 +813,12 @@ greather than the window height."
                  selectrum--refined-candidates)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
-               input selectrum--refined-candidates))
+               (if (and minibuffer-completing-file-name
+                        (member (file-name-as-directory input)
+                                selectrum--refined-candidates))
+                   (file-name-as-directory input)
+                 input)
+               selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
         (if selectrum--repeat
@@ -1126,14 +1124,6 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (isuffix (get-text-property
-                         ;; Internal property to display an additional
-                         ;; suffix before the actual suffix added via
-                         ;; public API. Currently only used for
-                         ;; displaying slashes of directories in file
-                         ;; completions.
-                         0 'selectrum--internal-candidate-display-suffix
-                         candidate))
                (suffix (or (get-text-property
                             0 'selectrum-candidate-display-suffix
                             candidate)
@@ -1143,7 +1133,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                                  candidate
                                  'selectrum-completion-annotation))))
                (displayed-candidate
-                (concat prefix candidate isuffix suffix))
+                (concat prefix candidate suffix))
                (right-margin
                 (or (get-text-property
                      0 'selectrum-candidate-display-right-margin
@@ -1836,23 +1826,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                   (matchstr (buffer-substring
                              (car bounds) (cdr bounds)))
                   (cands
-                   (selectrum--map-destructive
-                    (lambda (i)
-                      ;; When we aren't completing env variables
-                      ;; remove final slash for directories and only
-                      ;; include it for display. This is done so
-                      ;; inputting a directory name will sort the
-                      ;; directory first.
-                      (when (and (not (string-match "\\$\\'"  pathprefix))
-                                 (string-suffix-p "/" i))
-                        (setq i (substring i 0 (1- (length i))))
-                        (put-text-property
-                         0 (length i)
-                         'selectrum--internal-candidate-display-suffix
-                         "/"
-                         i))
-                      i)
-                    (condition-case _
+                   (condition-case _
                         (funcall collection pathprefix
                                  (lambda (i)
                                    (and (not (member i '("./" "../")))
@@ -1861,7 +1835,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                  t)
                       ;; May happen in case user quits out
                       ;; of a TRAMP prompt.
-                      (quit)))))
+                      (quit))))
              `((input . ,matchstr)
                (candidates . ,cands))))))
     (selectrum-read
