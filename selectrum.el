@@ -649,7 +649,8 @@ behavior."
   "Return bounds for current matchstring.
 The current matchstring may be surrounded by prefix and suffix."
   (let* ((input (minibuffer-contents))
-         (pt (- (point) (minibuffer-prompt-end)))
+         (mpe (minibuffer-prompt-end))
+         (pt (- (point) mpe))
          (bounds (completion-boundaries
                   (substring input 0 pt)
                   minibuffer-completion-table
@@ -659,10 +660,12 @@ The current matchstring may be surrounded by prefix and suffix."
                            (looking-at "/"))
                       ""
                     (substring input pt))))
-         (start (+ (minibuffer-prompt-end)
-                   (car bounds)))
-         (end (+ (minibuffer-prompt-end)
-                 (+ pt (cdr bounds)))))
+         (start (+ mpe
+                   (if (and minibuffer-completing-file-name
+                            (looking-back "~/" mpe))
+                       (length input)
+                     (car bounds))))
+         (end (+ mpe (+ pt (cdr bounds)))))
     (cons start end)))
 
 (defun selectrum--get-full (candidate)
@@ -1826,11 +1829,12 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
-         (lambda (input)
+         (lambda (_input)
            (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
                   (pathprefix (buffer-substring
                                (minibuffer-prompt-end) (car bounds)))
-                  (matchstr (file-name-nondirectory input))
+                  (matchstr (buffer-substring
+                             (car bounds) (cdr bounds)))
                   (cands
                    (selectrum--map-destructive
                     (lambda (i)
