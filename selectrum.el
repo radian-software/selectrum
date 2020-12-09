@@ -605,7 +605,7 @@ This is non-nil during the first call of
 (defun selectrum-get-current-candidate (&optional notfull)
   "Return currently selected Selectrum candidate.
 If NOTFULL is non-nil don't use canonical representation of
-candidate but the candidate as displayed."
+candidate and return the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--current-candidate-index)
     (if notfull
@@ -618,7 +618,7 @@ candidate but the candidate as displayed."
 (defun selectrum-get-current-candidates (&optional notfull)
   "Get list of current Selectrum candidates.
 If NOTFULL is non-nil don't use canonical representation of
-candidate but the candidate as displayed."
+candidate and return the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--refined-candidates)
     (if notfull
