@@ -1807,12 +1807,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let ((coll
          (lambda (input)
            (let* (;; Full path of input dir (might include shadowed parts).
-                  (pathprefix (or (file-name-directory input) ""))
+                  (dir (or (file-name-directory input) ""))
                   ;; The input used for matching current dir entries.
                   (matchstr (file-name-nondirectory input))
                   (cands
                    (condition-case _
-                       (funcall collection pathprefix
+                       (funcall collection dir
                                 (lambda (i)
                                   (and (not (member i '("./" "../")))
                                        (or (not predicate)
