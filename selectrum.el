@@ -651,40 +651,15 @@ behavior."
         ;; Skip updates.
         (setq-local selectrum--skip-updates-p t)))))
 
-(defun selectrum--minibuffer-matchstring-bounds ()
-  "Return bounds for current matchstring as per `completion-boundaries'.
-The current matchstring may be surrounded by prefix and suffix."
-  (let* ((input (minibuffer-contents))
-         (mpe (minibuffer-prompt-end))
-         (pt (- (point) mpe))
-         (bounds (completion-boundaries
-                  (substring input 0 pt)
-                  minibuffer-completion-table
-                  minibuffer-completion-predicate
-                  ;; Workaround error for /|/.
-                  (if (and minibuffer-completing-file-name
-                           (looking-back "/" (1- (point)))
-                           (looking-at "/"))
-                      ""
-                    (substring input pt))))
-         (start (+ mpe (car bounds)))
-         (end (+ mpe (+ pt (cdr bounds)))))
-    (cons start end)))
-
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum-candidate-full candidate)
-      (when (and minibuffer-completion-table
-                 minibuffer-completing-file-name)
-        (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
-               (prefix (buffer-substring
-                        (minibuffer-prompt-end) (car bounds)))
-               (promptp (and (eobp) (equal prefix candidate)))
-               (suffix (buffer-substring (cdr bounds) (point-max)))
-               (candidate (if (not (string-empty-p suffix))
-                              (directory-file-name candidate)
-                            candidate)))
-          (concat (unless promptp prefix) candidate suffix)))
+      (when minibuffer-completing-file-name
+        (let* ((input (minibuffer-contents))
+               (pathprefix (or (file-name-directory input) "")))
+          (if (equal pathprefix candidate)
+              candidate
+            (concat pathprefix candidate))))
       candidate))
 
 (defun selectrum--get-candidate (index)
@@ -1834,23 +1809,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
          (lambda (input)
-           (let* ((bounds (selectrum--minibuffer-matchstring-bounds))
-                  (pathprefix
-                   ;; Allow matching $ as regexp at end of input.
-                   (if (and (eobp)
-                            (string-suffix-p "$" input)
-                            (not (string-suffix-p "/$" input)))
-                       (or (file-name-directory input) "")
-                     (buffer-substring
-                      (minibuffer-prompt-end) (car bounds))))
-                  (matchstr
-                   (if (and (eobp)
-                            ;; Bounds are off for ~/ path shadows for
-                            ;; some reason.
-                            (or (equal pathprefix "~/")
-                                (string-suffix-p "$" input)))
-                       (file-name-nondirectory input)
-                     (buffer-substring (car bounds) (cdr bounds))))
+           (let* ((pathprefix (or (file-name-directory input) ""))
+                  (matchstr (file-name-nondirectory input))
                   (cands
                    (condition-case _
                        (funcall collection pathprefix
