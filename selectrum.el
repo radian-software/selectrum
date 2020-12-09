@@ -1806,7 +1806,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let ((coll
          (lambda (input)
-           (let* ((pathprefix (or (file-name-directory input) ""))
+           (let* (;; Full path of input dir (might include shadowed parts).
+                  (pathprefix (or (file-name-directory input) ""))
+                  ;; The input used for matching current dir entries.
                   (matchstr (file-name-nondirectory input))
                   (cands
                    (condition-case _
