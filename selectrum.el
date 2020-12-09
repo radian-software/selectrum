@@ -394,6 +394,12 @@ setting."
 Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
 
+;;;###autoload
+(defcustom selectrum-complete-in-buffer t
+  "If non-nil, use Selectrum for `completion-in-region'.
+This option needs to be set before activating `selectrum-mode'."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
@@ -1737,11 +1743,16 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (prog1 t
         (pcase category
           ('file
-           (setq result
-                 (selectrum--completing-read-file-name
-                  "Completion: " collection predicate
-                  nil input)
-                 exit-status 'finished))
+           (let ((try nil))
+             (setq result
+                   (if (and (not (cdr cands))
+                            (stringp (setq try (try-completion
+                                                input collection predicate))))
+                       try
+                     (selectrum--completing-read-file-name
+                      "Completion: " collection predicate
+                      nil input))
+                   exit-status 'sole)))
           (_
            (setq result
                  (if (not (cdr cands))
@@ -1755,6 +1766,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                  exit-status (cond ((not (member result cands)) 'sole)
                                    (t 'finished)))))
         (delete-region bound end)
+        (push-mark (point) 'no-message)
         (insert (substring-no-properties result))
         (when exit-func
           (funcall exit-func result exit-status))))))
@@ -1852,15 +1864,19 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      (quit))))
              `((input . ,matchstr)
                (candidates . ,cands))))))
-    (selectrum-read
-     prompt coll
-     :default-candidate (or (car-safe def) def)
-     :initial-input (or (car-safe initial-input) initial-input)
-     :history hist
-     :require-match (eq require-match t)
-     :may-modify-candidates t
-     :minibuffer-completion-table collection
-     :minibuffer-completion-predicate predicate)))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          (set-syntax-table
+           selectrum--minibuffer-local-filename-syntax))
+      (selectrum-read
+       prompt coll
+       :default-candidate (or (car-safe def) def)
+       :initial-input (or (car-safe initial-input) initial-input)
+       :history hist
+       :require-match (eq require-match t)
+       :may-modify-candidates t
+       :minibuffer-completion-table collection
+       :minibuffer-completion-predicate predicate))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1868,57 +1884,53 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (minibuffer-with-setup-hook
-      (lambda ()
-        (set-syntax-table
-         selectrum--minibuffer-local-filename-syntax))
-    (let* ((crf completing-read-function)
-           ;; See <https://github.com/raxod502/selectrum/issues/61>.
-           ;; When you invoke another `completing-read' command
-           ;; recursively then it inherits the
-           ;; `completing-read-function' binding, and unless it's
-           ;; another file reading command using
-           ;; `selectrum--completing-read-file-name' this will cause
-           ;; an error. To circumvent this we use the function to
-           ;; reset the variable when called.
-           (completing-read-function
-            (lambda (&rest args)
-              (setq completing-read-function crf)
-              (when (and default-filename
-                         ;; ./ should be omitted.
-                         (not (equal
-                               (expand-file-name default-filename)
-                               (expand-file-name default-directory))))
-                (setf (nth 6 args) ; DEFAULT
-                      ;; Sort for directories needs any final
-                      ;; slash removed.
-                      (directory-file-name
-                       ;; The candidate should be sorted by it's
-                       ;; relative name.
-                       (file-relative-name default-filename
-                                           default-directory))))
-              (apply #'selectrum--completing-read-file-name args))))
-      (read-file-name-default
-       prompt dir
-       ;; We don't pass default-candidate here to avoid that
-       ;; submitting the selected prompt results in the default file
-       ;; name. This is the stock Emacs behavior where there is no
-       ;; concept of an active selection. Instead we pass the initial
-       ;; prompt as default so it gets returned when submitted. In
-       ;; addition to that we adjust the DEF argument passed to
-       ;; `selectrum--completing-read-file-name' above so the actual
-       ;; default gets sorted to the top. This should give the same
-       ;; convenience as in default completion (where you can press
-       ;; RET at the initial prompt to get the default). The downside
-       ;; is that this convenience is gone when sorting is disabled or
-       ;; the default-filename is outside the prompting directory but
-       ;; this should be rare case.
-       (concat
-        (expand-file-name
-         (or dir
-             default-directory))
-        initial)
-       mustmatch initial predicate))))
+  (let* ((crf completing-read-function)
+         ;; See <https://github.com/raxod502/selectrum/issues/61>.
+         ;; When you invoke another `completing-read' command
+         ;; recursively then it inherits the
+         ;; `completing-read-function' binding, and unless it's
+         ;; another file reading command using
+         ;; `selectrum--completing-read-file-name' this will cause
+         ;; an error. To circumvent this we use the function to
+         ;; reset the variable when called.
+         (completing-read-function
+          (lambda (&rest args)
+            (setq completing-read-function crf)
+            (when (and default-filename
+                       ;; ./ should be omitted.
+                       (not (equal
+                             (expand-file-name default-filename)
+                             (expand-file-name default-directory))))
+              (setf (nth 6 args)        ; DEFAULT
+                    ;; Sort for directories needs any final
+                    ;; slash removed.
+                    (directory-file-name
+                     ;; The candidate should be sorted by it's
+                     ;; relative name.
+                     (file-relative-name default-filename
+                                         default-directory))))
+            (apply #'selectrum--completing-read-file-name args))))
+    (read-file-name-default
+     prompt dir
+     ;; We don't pass default-candidate here to avoid that
+     ;; submitting the selected prompt results in the default file
+     ;; name. This is the stock Emacs behavior where there is no
+     ;; concept of an active selection. Instead we pass the initial
+     ;; prompt as default so it gets returned when submitted. In
+     ;; addition to that we adjust the DEF argument passed to
+     ;; `selectrum--completing-read-file-name' above so the actual
+     ;; default gets sorted to the top. This should give the same
+     ;; convenience as in default completion (where you can press
+     ;; RET at the initial prompt to get the default). The downside
+     ;; is that this convenience is gone when sorting is disabled or
+     ;; the default-filename is outside the prompting directory but
+     ;; this should be rare case.
+     (concat
+      (expand-file-name
+       (or dir
+           default-directory))
+      initial)
+     mustmatch initial predicate)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
@@ -2101,8 +2113,9 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-read-file-name)
           (setq selectrum--old-completion-in-region-function
                 (default-value 'completion-in-region-function))
-          (setq-default completion-in-region-function
-                        #'selectrum-completion-in-region)
+          (when selectrum-complete-in-buffer
+            (setq-default completion-in-region-function
+                          #'selectrum-completion-in-region))
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
