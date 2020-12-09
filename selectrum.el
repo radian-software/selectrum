@@ -653,10 +653,10 @@ behavior."
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum-candidate-full candidate)
       (when minibuffer-completing-file-name
-        (let* ((input (minibuffer-contents))
-               (pathprefix (or (file-name-directory input) "")))
-          (if (equal pathprefix candidate)
-              candidate
+        (if (< selectrum--current-candidate-index 0)
+            candidate
+          (let* ((input (minibuffer-contents))
+                 (pathprefix (or (file-name-directory input) "")))
             (concat pathprefix candidate))))
       candidate))
 
