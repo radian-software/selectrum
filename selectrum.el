@@ -396,7 +396,8 @@ Nil (the default) means to only highlight the displayed text."
 
 ;;;###autoload
 (defcustom selectrum-complete-in-buffer t
-  "If non-nil, also use Selectrum when completing in non-mini buffers."
+  "If non-nil, also use Selectrum when completing in non-mini buffers.
+This option needs to be set before activating `selectrum-mode'."
   :type 'boolean)
 
 ;;;; Utility functions
