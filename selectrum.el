@@ -2082,8 +2082,9 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-read-file-name)
           (setq selectrum--old-completion-in-region-function
                 (default-value 'completion-in-region-function))
-          (setq-default completion-in-region-function
-                        #'selectrum-completion-in-region)
+          (when selectrum-complete-in-buffer
+            (setq-default completion-in-region-function
+                          #'selectrum-completion-in-region))
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
