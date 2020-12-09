@@ -1709,10 +1709,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (prog1 t
         (pcase category
           ('file
-           (let ((try (try-completion input collection predicate)))
+           (let ((try nil))
              (setq result
                    (if (and (not (cdr cands))
-                            (stringp try))
+                            (stringp (setq try (try-completion
+                                                input collection predicate))))
                        try
                      (selectrum--completing-read-file-name
                       "Completion: " collection predicate
