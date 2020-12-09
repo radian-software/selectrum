@@ -295,6 +295,10 @@ matching and case-insensitive matching.
   instead of indices, roman numerals, etc.) you can set the
   `selectrum-show-indices` to a function that takes in the relative
   index of a candidate and returns the string you want to display.
+* By default, Selectrum does also handle in buffer completion via
+  `completion-in-region`. If you would like to disable that you can
+  unset `selectrum-complete-in-buffer` before activating
+  `selectrum-mode`.
 * The `selectrum-completion-in-region` function can display
   annotations if the `completion-in-region-function` backend offers
   them. Customize the face `selectrum-completion-annotation` to change
