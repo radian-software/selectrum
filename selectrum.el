@@ -1732,7 +1732,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                  exit-status (cond ((not (member result cands)) 'sole)
                                    (t 'finished)))))
         (delete-region bound end)
-        (push-mark (point) t)
+        (push-mark (point) 'no-message)
         (insert (substring-no-properties result))
         (when exit-func
           (funcall exit-func result exit-status))))))
