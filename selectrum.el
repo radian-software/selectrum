@@ -394,6 +394,11 @@ setting."
 Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
 
+;;;###autoload
+(defcustom selectrum-complete-in-buffer nil
+  "If non-nil, also use Selectrum when completing in non-mini buffers."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
@@ -1703,13 +1708,15 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (prog1 t
         (pcase category
           ('file
-           (setq result
-                 (if (not (cdr cands))
-                     (try-completion input collection predicate)
-                   (selectrum--completing-read-file-name
-                    "Completion: " collection predicate
-                    nil input))
-                 exit-status 'sole))
+           (let ((try (try-completion input collection predicate)))
+             (setq result
+                   (if (and (not (cdr cands))
+                            (stringp try))
+                       try
+                     (selectrum--completing-read-file-name
+                      "Completion: " collection predicate
+                      nil input))
+                   exit-status 'sole)))
           (_
            (setq result
                  (if (not (cdr cands))
