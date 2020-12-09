@@ -605,8 +605,7 @@ This is non-nil during the first call of
 (defun selectrum-get-current-candidate (&optional notfull)
   "Return currently selected Selectrum candidate.
 If NOTFULL is non-nil don't use canonical representation of
-candidate as per `selectrum-candidate-full' text property or
-determined by current `completion-boundaries'."
+candidate but the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--current-candidate-index)
     (if notfull
@@ -619,8 +618,7 @@ determined by current `completion-boundaries'."
 (defun selectrum-get-current-candidates (&optional notfull)
   "Get list of current Selectrum candidates.
 If NOTFULL is non-nil don't use canonical representation of
-candidates as per `selectrum-candidate-full' text property or
-determined by current `completion-boundaries'."
+candidate but the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--refined-candidates)
     (if notfull
@@ -1423,8 +1421,7 @@ indices."
            'selectrum-candidate-inserted-hook
            candidate selectrum--read-args)
           ;; Ensure refresh of UI as the input string might be the
-          ;; same but current candidates might have come from sub path
-          ;; completion.
+          ;; same when the prompt was reinserted.
           (setq selectrum--previous-input-string nil))
       (unless completion-fail-discreetly
         (ding)
