@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-extend-current-candidate-highlight`
   determines whether to extend the highlighting of the current
   candidate until the margin (the default is nil). See [#208].
+* The user option `selectrum-complete-in-buffer` can be used to
+  control whether Selectrum should handle in buffer completion (the
+  default is t) ([#261]).
 
 ### Enhancements
 * The argument passed to `selectrum-select-current-candidate` and
@@ -27,8 +30,17 @@ The format is based on [Keep a Changelog].
   first and will also make such prompts behave like in default Emacs
   completion where you can immediately submit the initial input
   ([#253]).
+* In buffer file completions act like normal completion now and insert
+  the candidate without prompting if there is only one. You can drop
+  into the minibuffer by triggering the completion again ([#261]).
+* The mark is pushed at the beginning of the candidate inserted by in
+  buffer completion so you can easily jump there ([#261]).
 
 ### Bugs fixed
+* For in buffer file completions s-expression commands for path level
+  navigation did not work which has been fixed ([#261]).
+* Do not insert spaces after path completion in comint buffers
+  ([#261])].
 * The return value of `selectrum-completion-in-region` has been fixed
   according to the documented API of `completion-in-region` ([#251]).
 * When strings of Selectrum display properties or completion table
