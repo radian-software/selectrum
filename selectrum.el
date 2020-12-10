@@ -1419,10 +1419,7 @@ indices."
           (apply
            #'run-hook-with-args
            'selectrum-candidate-inserted-hook
-           candidate selectrum--read-args)
-          ;; Ensure refresh of UI as the input string might be the
-          ;; same when the prompt was reinserted.
-          (setq selectrum--previous-input-string nil))
+           candidate selectrum--read-args))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
