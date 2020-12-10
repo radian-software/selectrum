@@ -35,6 +35,10 @@ The format is based on [Keep a Changelog].
   into the minibuffer by triggering the completion again ([#261]).
 * The mark is pushed at the beginning of the candidate inserted by in
   buffer completion so you can easily jump there ([#261]).
+* When the prompt is selected``selectrum-insert-current-candidate`
+  will now switch the selection to the first candidate. Before the
+  prompt was reinserted in place so it did not have any useful effect
+  ([#263]).
 
 ### Bugs fixed
 * For in buffer file completions s-expression commands for path level
@@ -79,6 +83,7 @@ The format is based on [Keep a Changelog].
 [#253]: https://github.com/raxod502/selectrum/pull/253
 [#255]: https://github.com/raxod502/selectrum/issues/255
 [#256]: https://github.com/raxod502/selectrum/pull/256
+[#263]: https://github.com/raxod502/selectrum/pull/263
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
