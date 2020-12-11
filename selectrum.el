@@ -1004,34 +1004,42 @@ The specific details of the formatting are determined by
          (whitespace/face (cadr whitespace/transformation)))
 
     (dolist (cand candidates (nreverse single/lines))
-      (push
-       (if (string-match-p "\n" cand)
-           (replace-regexp-in-string
-            "\n" (propertize newline/display 'face newline/face)
-            (replace-regexp-in-string
-             "[ \t][ \t]+"
-             (propertize whitespace/display 'face whitespace/face)
-             (concat (unless (string-empty-p (minibuffer-contents))
-                       ;; Show first matched line.
-                       (when-let ((match
-                                   (car (funcall
-                                         selectrum-refine-candidates-function
-                                         (minibuffer-contents)
-                                         (split-string cand "\n")))))
-                         (concat match
-                                 (propertize match/display 'face match/face))))
-                     (if (< (length cand) 1000)
-                         cand
-                       (concat
-                        (substring cand 0 1000)
-                        (propertize truncation/display
-                                    'face truncation/face))))
-             ;; Replacements should be fixed-case and literal, to make things
-             ;; simpler.
-             'fixed-case 'literal)
-            'fixed-case 'literal)
-         cand)
-       single/lines))))
+      (if (string-match-p "\n" cand)
+          (let* ((match
+                  (replace-regexp-in-string
+                   "[ \t][ \t]+"
+                   (propertize whitespace/display 'face whitespace/face)
+                   (if (string-empty-p (minibuffer-contents))
+                       ""
+                     ;; Show first matched line.
+                     (or (car (funcall
+                               selectrum-refine-candidates-function
+                               (minibuffer-contents)
+                               (split-string cand "\n")))
+                         "")) 'fixed-case 'literal))
+                 (annot (replace-regexp-in-string
+                         "\n" (propertize newline/display 'face newline/face)
+                         (replace-regexp-in-string
+                          "[ \t][ \t]+"
+                          (propertize whitespace/display 'face whitespace/face)
+                          (concat (unless (string-empty-p match)
+                                    (propertize match/display
+                                                'face match/face))
+                                  (if (< (length cand) 1000)
+                                      cand
+                                    (concat
+                                     (substring cand 0 1000)
+                                     (propertize truncation/display
+                                                 'face truncation/face))))
+                          ;; Replacements should be fixed-case and
+                          ;; literal, to make things simpler.
+                          'fixed-case 'literal)
+                         'fixed-case 'literal))
+                 (line (propertize (if (string-empty-p match) " " match)
+                                   'selectrum-candidate-display-suffix
+                                   annot)))
+            (push line single/lines))
+        (push cand single/lines)))))
 
 (defun selectrum--annotation (fun cand face)
   "Return annotation for candidate.
@@ -1081,8 +1089,7 @@ CAND does not have any face property defined."
                                              &optional table pred props)
   "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
-for display. HIGHLIGHTED-INDEX is the currently selected index
-and FIRST-INDEX-DISPLAYED is the index of the top most candidate.
+for display. HIGHLIGHTED-INDEX is the currently selected index.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 `minibuffer-completion-predicate'. PROPS defaults to
 `completion-extra-properties'."
