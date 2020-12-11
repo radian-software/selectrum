@@ -1006,11 +1006,11 @@ The specific details of the formatting are determined by
     (dolist (cand candidates (nreverse single/lines))
       (if (string-match-p "\n" cand)
           (let* ((lines (split-string cand "\n"))
+                 (len (length lines))
                  (fmatch (car (funcall
                                selectrum-refine-candidates-function
                                (minibuffer-contents)
                                lines)))
-                 (len (length lines))
                  (match
                   (concat
                    (propertize
