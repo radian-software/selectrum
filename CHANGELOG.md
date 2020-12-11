@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog].
   will now switch the selection to the first candidate. Before the
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
+* Multiline candidates are now prefixed with the number of newlines
+  they contain ([#266]).
 
 ### Bugs fixed
 * For in buffer file completions s-expression commands for path level
@@ -84,6 +86,7 @@ The format is based on [Keep a Changelog].
 [#255]: https://github.com/raxod502/selectrum/issues/255
 [#256]: https://github.com/raxod502/selectrum/pull/256
 [#263]: https://github.com/raxod502/selectrum/pull/263
+[#266]: https://github.com/raxod502/selectrum/pull/266
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
