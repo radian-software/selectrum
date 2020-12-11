@@ -1089,8 +1089,7 @@ CAND does not have any face property defined."
                                              &optional table pred props)
   "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
-for display. HIGHLIGHTED-INDEX is the currently selected index
-and FIRST-INDEX-DISPLAYED is the index of the top most candidate.
+for display. HIGHLIGHTED-INDEX is the currently selected index.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 `minibuffer-completion-predicate'. PROPS defaults to
 `completion-extra-properties'."
