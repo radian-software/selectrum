@@ -1005,18 +1005,25 @@ The specific details of the formatting are determined by
 
     (dolist (cand candidates (nreverse single/lines))
       (if (string-match-p "\n" cand)
-          (let* ((match
-                  (replace-regexp-in-string
-                   "[ \t][ \t]+"
-                   (propertize whitespace/display 'face whitespace/face)
-                   (if (string-empty-p (minibuffer-contents))
-                       ""
-                     ;; Show first matched line.
-                     (or (car (funcall
+          (let* ((lines (split-string cand "\n"))
+                 (fmatch (car (funcall
                                selectrum-refine-candidates-function
                                (minibuffer-contents)
-                               (split-string cand "\n")))
-                         "")) 'fixed-case 'literal))
+                               lines)))
+                 (len (length lines))
+                 (match
+                  (concat
+                   (propertize
+                    (propertize newline/display 'face newline/face)
+                    'selectrum-candidate-display-prefix
+                    (number-to-string (1- len)))
+                   (replace-regexp-in-string
+                    "[ \t][ \t]+"
+                    (propertize whitespace/display 'face whitespace/face)
+                    (if (string-empty-p (minibuffer-contents))
+                        ""
+                      ;; Show first matched line.
+                      (or fmatch "")) 'fixed-case 'literal)))
                  (annot (replace-regexp-in-string
                          "\n" (propertize newline/display 'face newline/face)
                          (replace-regexp-in-string
