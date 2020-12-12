@@ -1383,13 +1383,8 @@ indices."
 This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
-  (unless selectrum-active-p
-    (user-error "Cannot select a candidate when Selectrum is not active"))
-  (unless selectrum--match-required-p
-    (selectrum--exit-with
-     (buffer-substring-no-properties
-      (minibuffer-prompt-end)
-      (point-max)))))
+  (let ((selectrum--current-candidate-index -1))
+    (selectrum-select-current-candidate)))
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
