@@ -1090,6 +1090,19 @@ CAND does not have any face property defined."
      'append str))
   str)
 
+(defun selectrum--affixate (fun candidates)
+  "Use affixation FUN to transform CANDIDATES."
+  (let ((items (funcall fun candidates))
+        (res ()))
+    (dolist (item items (nreverse res))
+      (push
+       (propertize (nth 0 item)
+                   'selectrum-candidate-display-prefix
+                   (nth 1 item)
+                   'selectrum-candidate-display-suffix
+                   (nth 2 item))
+       res))))
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
@@ -1104,7 +1117,13 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (props (or props completion-extra-properties))
          (annotf (or (selectrum--get-meta 'annotation-function table pred)
                      (plist-get props :annotation-function)))
+         (aff (or (selectrum--get-meta 'affixation-function table pred)
+                  (plist-get completion-extra-properties
+                             :affixation-function)))
          (docsigf (plist-get props :company-docsig))
+         (candidates (if aff
+                         (selectrum--affixate aff candidates)
+                       candidates))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
