@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog].
   each input change which could slow down file completions
   significantly for cases where `read-file-name-internal` would be
   slow already ([#210], [#276], [#277]).
+* You can now give a prefix argument to selection moving commands
+  ([#275]).
 * If completion table metadata or `completion-extra-properties` define
   an `affixation-function` (introduced in Emacs 28) Selectrum will use
   this information to annotate the candidates accordingly ([#240],
@@ -123,6 +125,7 @@ The format is based on [Keep a Changelog].
 [#263]: https://github.com/raxod502/selectrum/pull/263
 [#266]: https://github.com/raxod502/selectrum/pull/266
 [#271]: https://github.com/raxod502/selectrum/pull/271
+[#275]: https://github.com/raxod502/selectrum/pull/275
 [#276]: https://github.com/raxod502/selectrum/issues/276
 [#277]: https://github.com/raxod502/selectrum/pull/277
 [#285]: https://github.com/raxod502/selectrum/issues/285
