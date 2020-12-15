@@ -12,8 +12,15 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-extend-current-candidate-highlight`
   determines whether to extend the highlighting of the current
   candidate until the margin (the default is nil). See [#208].
+* The user option `selectrum-complete-in-buffer` can be used to
+  control whether Selectrum should handle in buffer completion (the
+  default is t) ([#261]).
 
 ### Enhancements
+* If completion table metadata or `completion-extra-properties` define
+  an `affixation-function` (introduced in Emacs 28) Selectrum will use
+  this information to annotate the candidates accordingly ([#271],
+  [#240]).
 * The argument passed to `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` is now used to choose the nth
   displayed candidate instead of calculating an index based on the
@@ -29,8 +36,23 @@ The format is based on [Keep a Changelog].
   first and will also make such prompts behave like in default Emacs
   completion where you can immediately submit the initial input
   ([#253]).
+* In buffer file completions act like normal completion now and insert
+  the candidate without prompting if there is only one. You can drop
+  into the minibuffer by triggering the completion again ([#261]).
+* The mark is pushed at the beginning of the candidate inserted by in
+  buffer completion so you can easily jump there ([#261]).
+* When the prompt is selected``selectrum-insert-current-candidate`
+  will now switch the selection to the first candidate. Before the
+  prompt was reinserted in place so it did not have any useful effect
+  ([#263]).
+* Multiline candidates are now prefixed with the number of newlines
+  they contain ([#266]).
 
 ### Bugs fixed
+* For in buffer file completions s-expression commands for path level
+  navigation did not work which has been fixed ([#261]).
+* Do not insert spaces after path completion in comint buffers
+  ([#261])].
 * The return value of `selectrum-completion-in-region` has been fixed
   according to the documented API of `completion-in-region` ([#251]).
 * When strings of Selectrum display properties or completion table
@@ -49,6 +71,9 @@ The format is based on [Keep a Changelog].
   it's a list of strings. Before the list only wasn't modfied when the
   function returned the alist format as specified by `selectrum-read`
   ([#220]).
+* Annotations or usage or `selectrum-candidate-display-suffix`
+  property in file completions were overwritten for directories and
+  not displayed, which has been fixed ([#256], [#255]).
 
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
@@ -61,10 +86,16 @@ The format is based on [Keep a Changelog].
 [#242]: https://github.com/raxod502/selectrum/pull/242
 [#230]: https://github.com/raxod502/selectrum/pull/230
 [#236]: https://github.com/raxod502/selectrum/issues/236
+[#240]: https://github.com/raxod502/selectrum/issues/240
 [#250]: https://github.com/raxod502/selectrum/pull/250
 [#251]: https://github.com/raxod502/selectrum/pull/251
 [#253]: https://github.com/raxod502/selectrum/pull/253
 [#254]: https://github.com/raxod502/selectrum/pull/254
+[#255]: https://github.com/raxod502/selectrum/issues/255
+[#256]: https://github.com/raxod502/selectrum/pull/256
+[#263]: https://github.com/raxod502/selectrum/pull/263
+[#266]: https://github.com/raxod502/selectrum/pull/266
+[#271]: https://github.com/raxod502/selectrum/pull/271
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

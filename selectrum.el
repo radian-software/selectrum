@@ -394,6 +394,12 @@ setting."
 Nil (the default) means to only highlight the displayed text."
   :type 'boolean)
 
+;;;###autoload
+(defcustom selectrum-complete-in-buffer t
+  "If non-nil, use Selectrum for `completion-in-region'.
+This option needs to be set before activating `selectrum-mode'."
+  :type 'boolean)
+
 ;;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
@@ -599,7 +605,7 @@ This is non-nil during the first call of
 (defun selectrum-get-current-candidate (&optional notfull)
   "Return currently selected Selectrum candidate.
 If NOTFULL is non-nil don't use canonical representation of
-candidate as per `selectrum-candidate-full' text property."
+candidate and return the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--current-candidate-index)
     (if notfull
@@ -612,7 +618,7 @@ candidate as per `selectrum-candidate-full' text property."
 (defun selectrum-get-current-candidates (&optional notfull)
   "Get list of current Selectrum candidates.
 If NOTFULL is non-nil don't use canonical representation of
-candidates as per `selectrum-candidate-full' text property."
+candidate and return the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--refined-candidates)
     (if notfull
@@ -644,8 +650,14 @@ behavior."
         (setq-local selectrum--skip-updates-p t)))))
 
 (defun selectrum--get-full (candidate)
-  "Get full form of CANDIDATE by inspecting text properties."
+  "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum-candidate-full candidate)
+      (when minibuffer-completing-file-name
+        (if (< selectrum--current-candidate-index 0)
+            candidate
+          (let* ((input (minibuffer-contents))
+                 (pathprefix (or (file-name-directory input) "")))
+            (concat pathprefix candidate))))
       candidate))
 
 (defun selectrum--get-candidate (index)
@@ -738,7 +750,6 @@ greather than the window height."
           (buffer-undo-list t)
           (input (buffer-substring (minibuffer-prompt-end)
                                    (point-max)))
-          (bound (point-max))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
         (when (and (not selectrum--preprocessed-candidates)
@@ -782,7 +793,13 @@ greather than the window height."
                  selectrum--refined-candidates)))
         (setq selectrum--refined-candidates
               (selectrum--move-to-front-destructive
-               input selectrum--refined-candidates))
+               ;; Make sure matching dirnames are sorted first.
+               (if (and minibuffer-completing-file-name
+                        (member (file-name-as-directory input)
+                                selectrum--refined-candidates))
+                   (file-name-as-directory input)
+                 input)
+               selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
         (if selectrum--repeat
@@ -865,7 +882,7 @@ greather than the window height."
                             (not minibuffer-completing-file-name)
                             (not (member selectrum--default-candidate
                                          selectrum--refined-candidates))))
-                   (if (= (minibuffer-prompt-end) bound)
+                   (if (= (minibuffer-prompt-end) (point-max))
                        (format " %s %s%s"
                                (propertize
                                 "[default value:"
@@ -886,11 +903,11 @@ greather than the window height."
                                 (< highlighted-index 0))
                        (prog1 nil
                          (add-text-properties
-                          (minibuffer-prompt-end) bound
+                          (minibuffer-prompt-end) (point-max)
                           '(face selectrum-current-candidate)))))
                  (prog1 nil
                    (remove-text-properties
-                    (minibuffer-prompt-end) bound
+                    (minibuffer-prompt-end) (point-max)
                     '(face selectrum-current-candidate)))))
              (minibuf-after-string (or default " ")))
         (if selectrum-display-action
@@ -987,40 +1004,59 @@ The specific details of the formatting are determined by
          (whitespace/face (cadr whitespace/transformation)))
 
     (dolist (cand candidates (nreverse single/lines))
-      (push
-       (if (string-match-p "\n" cand)
-           (replace-regexp-in-string
-            "\n" (propertize newline/display 'face newline/face)
-            (replace-regexp-in-string
-             "[ \t][ \t]+"
-             (propertize whitespace/display 'face whitespace/face)
-             (concat (unless (string-empty-p (minibuffer-contents))
-                       ;; Show first matched line.
-                       (when-let ((match
-                                   (car (funcall
-                                         selectrum-refine-candidates-function
-                                         (minibuffer-contents)
-                                         (split-string cand "\n")))))
-                         (concat match
-                                 (propertize match/display 'face match/face))))
-                     (if (< (length cand) 1000)
-                         cand
-                       (concat
-                        (substring cand 0 1000)
-                        (propertize truncation/display
-                                    'face truncation/face))))
-             ;; Replacements should be fixed-case and literal, to make things
-             ;; simpler.
-             'fixed-case 'literal)
-            'fixed-case 'literal)
-         cand)
-       single/lines))))
+      (if (string-match-p "\n" cand)
+          (let* ((lines (split-string cand "\n"))
+                 (len (length lines))
+                 (fmatch (car (funcall
+                               selectrum-refine-candidates-function
+                               (minibuffer-contents)
+                               lines)))
+                 (match
+                  (concat
+                   (propertize
+                    (propertize newline/display 'face newline/face)
+                    'selectrum-candidate-display-prefix
+                    (number-to-string (1- len)))
+                   (replace-regexp-in-string
+                    "[ \t][ \t]+"
+                    (propertize whitespace/display 'face whitespace/face)
+                    (if (string-empty-p (minibuffer-contents))
+                        ""
+                      ;; Show first matched line.
+                      (or fmatch "")) 'fixed-case 'literal)))
+                 (annot (replace-regexp-in-string
+                         "\n" (propertize newline/display 'face newline/face)
+                         (replace-regexp-in-string
+                          "[ \t][ \t]+"
+                          (propertize whitespace/display 'face whitespace/face)
+                          (concat (unless (string-empty-p match)
+                                    (propertize match/display
+                                                'face match/face))
+                                  (if (< (length cand) 1000)
+                                      cand
+                                    (concat
+                                     (substring cand 0 1000)
+                                     (propertize truncation/display
+                                                 'face truncation/face))))
+                          ;; Replacements should be fixed-case and
+                          ;; literal, to make things simpler.
+                          'fixed-case 'literal)
+                         'fixed-case 'literal))
+                 (line (propertize (if (string-empty-p match) " " match)
+                                   'selectrum-candidate-display-suffix
+                                   annot)))
+            (push line single/lines))
+        (push cand single/lines)))))
 
 (defun selectrum--annotation (fun cand face)
   "Return annotation for candidate.
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
-  (when-let ((str (funcall fun cand)))
+  (when-let ((str
+              ;; The annotation functions might assume they are
+              ;; running within the minibuffer, see #255.
+              (with-selected-window (active-minibuffer-window)
+                (funcall fun cand))))
     (if (text-property-not-all 0 (length str) 'face nil str)
         str
       (propertize str 'face face))))
@@ -1054,14 +1090,26 @@ CAND does not have any face property defined."
      'append str))
   str)
 
+(defun selectrum--affixate (fun candidates)
+  "Use affixation FUN to transform CANDIDATES."
+  (let ((items (funcall fun candidates))
+        (res ()))
+    (dolist (item items (nreverse res))
+      (push
+       (propertize (nth 0 item)
+                   'selectrum-candidate-display-prefix
+                   (nth 1 item)
+                   'selectrum-candidate-display-suffix
+                   (nth 2 item))
+       res))))
+
 (defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
                                              &optional table pred props)
   "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
-for display. HIGHLIGHTED-INDEX is the currently selected index
-and FIRST-INDEX-DISPLAYED is the index of the top most candidate.
+for display. HIGHLIGHTED-INDEX is the currently selected index.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 `minibuffer-completion-predicate'. PROPS defaults to
 `completion-extra-properties'."
@@ -1069,7 +1117,13 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (props (or props completion-extra-properties))
          (annotf (or (selectrum--get-meta 'annotation-function table pred)
                      (plist-get props :annotation-function)))
+         (aff (or (selectrum--get-meta 'affixation-function table pred)
+                  (plist-get completion-extra-properties
+                             :affixation-function)))
          (docsigf (plist-get props :company-docsig))
+         (candidates (if aff
+                         (selectrum--affixate aff candidates)
+                       candidates))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1348,13 +1402,8 @@ indices."
 This differs from `selectrum-select-current-candidate' in that it
 ignores the currently selected candidate, if one exists."
   (interactive)
-  (unless selectrum-active-p
-    (user-error "Cannot select a candidate when Selectrum is not active"))
-  (unless selectrum--match-required-p
-    (selectrum--exit-with
-     (buffer-substring-no-properties
-      (minibuffer-prompt-end)
-      (point-max)))))
+  (let ((selectrum--current-candidate-index -1))
+    (selectrum-select-current-candidate)))
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -1398,7 +1447,12 @@ indices."
           (apply
            #'run-hook-with-args
            'selectrum-candidate-inserted-hook
-           candidate selectrum--read-args))
+           candidate selectrum--read-args)
+          ;;  Ensure refresh of UI. The input input string might be
+          ;; the same when the prompt was reinserted. When the prompt
+          ;; was selected this will switch selection to first
+          ;; candidate.
+          (setq selectrum--previous-input-string nil))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1689,11 +1743,16 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
       (prog1 t
         (pcase category
           ('file
-           (setq result
-                 (selectrum--completing-read-file-name
-                  "Completion: " collection predicate
-                  nil input)
-                 exit-status 'finished))
+           (let ((try nil))
+             (setq result
+                   (if (and (not (cdr cands))
+                            (stringp (setq try (try-completion
+                                                input collection predicate))))
+                       try
+                     (selectrum--completing-read-file-name
+                      "Completion: " collection predicate
+                      nil input))
+                   exit-status 'sole)))
           (_
            (setq result
                  (if (not (cdr cands))
@@ -1707,6 +1766,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                  exit-status (cond ((not (member result cands)) 'sole)
                                    (t 'finished)))))
         (delete-region bound end)
+        (push-mark (point) 'no-message)
         (insert (substring-no-properties result))
         (when exit-func
           (funcall exit-func result exit-status))))))
@@ -1777,47 +1837,36 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
            (let* (;; Full path of input dir (might include shadowed parts).
                   (dir (or (file-name-directory input) ""))
                   ;; The input used for matching current dir entries.
-                  (ematch (file-name-nondirectory input))
-                  ;; Adjust original collection for Selectrum.
+                  (matchstr (file-name-nondirectory input))
                   (cands
-                   (selectrum--map-destructive
-                    (lambda (i)
-                      (when (string-suffix-p "/" i)
-                        (setq i (substring i 0 (1- (length i))))
-                        (put-text-property
-                         0 (length i)
-                         'selectrum-candidate-display-suffix
-                         "/"
-                         i))
-                      i)
-                    (condition-case _
-                        (funcall collection dir
-                                 (lambda (i)
-                                   (when (and (or (not predicate)
-                                                  (funcall predicate i))
-                                              (not (member
-                                                    i '("./" "../"))))
-                                     (prog1 t
-                                       (add-text-properties
-                                        0 (length i)
-                                        `(selectrum-candidate-full
-                                          ,(concat dir i))
-                                        i))))
-                                 t)
-                      ;; May happen in case user quits out
-                      ;; of a TRAMP prompt.
-                      (quit)))))
-             `((input . ,ematch)
+                   (condition-case _
+                       (funcall collection dir
+                                (lambda (i)
+                                  (and (not (member i '("./" "../")))
+                                       (or (not predicate)
+                                           (funcall predicate i))))
+                                t)
+                     ;; May happen in case user quits out
+                     ;; of a TRAMP prompt.
+                     (quit))))
+             `((input . ,matchstr)
                (candidates . ,cands))))))
-    (selectrum-read
-     prompt coll
-     :default-candidate (or (car-safe def) def)
-     :initial-input (or (car-safe initial-input) initial-input)
-     :history hist
-     :require-match (eq require-match t)
-     :may-modify-candidates t
-     :minibuffer-completion-table collection
-     :minibuffer-completion-predicate predicate)))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          ;; Ensure the variable is also set when
+          ;; selectrum--completing-read-file-name is called directly.
+          (setq-local minibuffer-completing-file-name t)
+          (set-syntax-table
+           selectrum--minibuffer-local-filename-syntax))
+      (selectrum-read
+       prompt coll
+       :default-candidate (or (car-safe def) def)
+       :initial-input (or (car-safe initial-input) initial-input)
+       :history hist
+       :require-match (eq require-match t)
+       :may-modify-candidates t
+       :minibuffer-completion-table collection
+       :minibuffer-completion-predicate predicate))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
@@ -1825,57 +1874,53 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
-  (minibuffer-with-setup-hook
-      (lambda ()
-        (set-syntax-table
-         selectrum--minibuffer-local-filename-syntax))
-    (let* ((crf completing-read-function)
-           ;; See <https://github.com/raxod502/selectrum/issues/61>.
-           ;; When you invoke another `completing-read' command
-           ;; recursively then it inherits the
-           ;; `completing-read-function' binding, and unless it's
-           ;; another file reading command using
-           ;; `selectrum--completing-read-file-name' this will cause
-           ;; an error. To circumvent this we use the function to
-           ;; reset the variable when called.
-           (completing-read-function
-            (lambda (&rest args)
-              (setq completing-read-function crf)
-              (when (and default-filename
-                         ;; ./ should be omitted.
-                         (not (equal
-                               (expand-file-name default-filename)
-                               (expand-file-name default-directory))))
-                (setf (nth 6 args) ; DEFAULT
-                      ;; Sort for directories needs any final
-                      ;; slash removed.
-                      (directory-file-name
-                       ;; The candidate should be sorted by it's
-                       ;; relative name.
-                       (file-relative-name default-filename
-                                           default-directory))))
-              (apply #'selectrum--completing-read-file-name args))))
-      (read-file-name-default
-       prompt dir
-       ;; We don't pass default-candidate here to avoid that
-       ;; submitting the selected prompt results in the default file
-       ;; name. This is the stock Emacs behavior where there is no
-       ;; concept of an active selection. Instead we pass the initial
-       ;; prompt as default so it gets returned when submitted. In
-       ;; addition to that we adjust the DEF argument passed to
-       ;; `selectrum--completing-read-file-name' above so the actual
-       ;; default gets sorted to the top. This should give the same
-       ;; convenience as in default completion (where you can press
-       ;; RET at the initial prompt to get the default). The downside
-       ;; is that this convenience is gone when sorting is disabled or
-       ;; the default-filename is outside the prompting directory but
-       ;; this should be rare case.
-       (concat
-        (expand-file-name
-         (or dir
-             default-directory))
-        initial)
-       mustmatch initial predicate))))
+  (let* ((crf completing-read-function)
+         ;; See <https://github.com/raxod502/selectrum/issues/61>.
+         ;; When you invoke another `completing-read' command
+         ;; recursively then it inherits the
+         ;; `completing-read-function' binding, and unless it's
+         ;; another file reading command using
+         ;; `selectrum--completing-read-file-name' this will cause
+         ;; an error. To circumvent this we use the function to
+         ;; reset the variable when called.
+         (completing-read-function
+          (lambda (&rest args)
+            (setq completing-read-function crf)
+            (when (and default-filename
+                       ;; ./ should be omitted.
+                       (not (equal
+                             (expand-file-name default-filename)
+                             (expand-file-name default-directory))))
+              (setf (nth 6 args)        ; DEFAULT
+                    ;; Sort for directories needs any final
+                    ;; slash removed.
+                    (directory-file-name
+                     ;; The candidate should be sorted by it's
+                     ;; relative name.
+                     (file-relative-name default-filename
+                                         default-directory))))
+            (apply #'selectrum--completing-read-file-name args))))
+    (read-file-name-default
+     prompt dir
+     ;; We don't pass default-candidate here to avoid that
+     ;; submitting the selected prompt results in the default file
+     ;; name. This is the stock Emacs behavior where there is no
+     ;; concept of an active selection. Instead we pass the initial
+     ;; prompt as default so it gets returned when submitted. In
+     ;; addition to that we adjust the DEF argument passed to
+     ;; `selectrum--completing-read-file-name' above so the actual
+     ;; default gets sorted to the top. This should give the same
+     ;; convenience as in default completion (where you can press
+     ;; RET at the initial prompt to get the default). The downside
+     ;; is that this convenience is gone when sorting is disabled or
+     ;; the default-filename is outside the prompting directory but
+     ;; this should be rare case.
+     (concat
+      (expand-file-name
+       (or dir
+           default-directory))
+      initial)
+     mustmatch initial predicate)))
 
 (defvar selectrum--old-read-file-name-function nil
   "Previous value of `read-file-name-function'.")
@@ -2058,8 +2103,9 @@ ARGS are standard as in all `:around' advice."
                         #'selectrum-read-file-name)
           (setq selectrum--old-completion-in-region-function
                 (default-value 'completion-in-region-function))
-          (setq-default completion-in-region-function
-                        #'selectrum-completion-in-region)
+          (when selectrum-complete-in-buffer
+            (setq-default completion-in-region-function
+                          #'selectrum-completion-in-region))
           (advice-add #'completing-read-multiple :override
                       #'selectrum-completing-read-multiple)
           ;; No sharp quote because Dired may not be loaded yet.
