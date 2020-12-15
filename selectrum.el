@@ -680,7 +680,9 @@ INPUT defaults to current selectrum input string."
   "Trigger an update of Selectrum's completion UI."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
-      (setq selectrum--preprocessed-candidates nil)
+      (when (and minibuffer-completion-table
+                 (not selectrum--dynamic-candidates))
+        (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
       (selectrum--minibuffer-post-command-hook))))
 
