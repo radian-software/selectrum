@@ -29,6 +29,8 @@ The format is based on [Keep a Changelog].
   candidates to the history ([#212], [#213]).
 * Selectrum now by default shows indices relative to displayed
   candidates ([#200]).
+* Selectrum now uses the `initial-input` argument passed to
+  `completing-read` which was ignored before ([#254]).
 * The prompt gets initially selected now when it equals the default
   value. This aligns with Selectrum's behavior of sorting the default
   first and will also make such prompts behave like in default Emacs
@@ -88,6 +90,7 @@ The format is based on [Keep a Changelog].
 [#250]: https://github.com/raxod502/selectrum/pull/250
 [#251]: https://github.com/raxod502/selectrum/pull/251
 [#253]: https://github.com/raxod502/selectrum/pull/253
+[#254]: https://github.com/raxod502/selectrum/pull/254
 [#255]: https://github.com/raxod502/selectrum/issues/255
 [#256]: https://github.com/raxod502/selectrum/pull/256
 [#263]: https://github.com/raxod502/selectrum/pull/263
