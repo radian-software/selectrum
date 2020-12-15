@@ -1626,7 +1626,7 @@ semantics of `cl-defun'."
   "Read choice using Selectrum. Can be used as `completing-read-function'.
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
-  (ignore initial-input inherit-input-method)
+  (ignore inherit-input-method)
   (selectrum-read
    prompt nil
    :initial-input initial-input
