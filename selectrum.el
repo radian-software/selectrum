@@ -750,39 +750,39 @@ greather than the window height."
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
         (setq selectrum--visual-input nil)
-        ;; Compute `selectrum--preprocessed-candidates' if necessary.
-        (when (or (functionp selectrum--dynamic-candidates)
-                  (and (not selectrum--preprocessed-candidates)
-                       minibuffer-completion-table))
-          (setq selectrum--preprocessed-candidates
-                (cond ((functionp selectrum--dynamic-candidates)
-                       (let* ((result
-                               (funcall
-                                selectrum--dynamic-candidates
-                                input))
-                              (cands
-                               ;; Avoid modifying the returned
-                               ;; candidates to let the function
-                               ;; reuse them.
-                               (copy-sequence
-                                (if (stringp (car result))
-                                    result
-                                  (setq input (or (alist-get 'input result)
-                                                  input))
-                                  (setq selectrum--visual-input input)
-                                  (alist-get 'candidates result)))))
+        (let ((dynamic (functionp selectrum--dynamic-candidates))
+              (init-table (and (not selectrum--preprocessed-candidates)
+                               minibuffer-completion-table)))
+          ;; Compute `selectrum--preprocessed-candidates' if necessary.
+          (when (or dynamic init-table)
+            (setq selectrum--preprocessed-candidates
+                  (cond (dynamic
+                         (let* ((result
+                                 (funcall
+                                  selectrum--dynamic-candidates
+                                  input))
+                                (cands
+                                 ;; Avoid modifying the returned
+                                 ;; candidates to let the function
+                                 ;; reuse them.
+                                 (copy-sequence
+                                  (if (stringp (car result))
+                                      result
+                                    (setq input (or (alist-get 'input result)
+                                                    input))
+                                    (setq selectrum--visual-input input)
+                                    (alist-get 'candidates result)))))
+                           (funcall selectrum-preprocess-candidates-function
+                                    cands)))
+                        (init-table
+                         ;; No candidates were passed, initialize them
+                         ;; from `minibuffer-completion-table'.
                          (funcall selectrum-preprocess-candidates-function
-                                  cands)))
-                      ((and (not selectrum--preprocessed-candidates)
-                            minibuffer-completion-table)
-                       ;; No candidates were passed, initialize them
-                       ;; from `minibuffer-completion-table'.
-                       (funcall selectrum-preprocess-candidates-function
-                                (selectrum--normalize-collection
-                                 minibuffer-completion-table
-                                 minibuffer-completion-predicate)))))
-          (setq selectrum--total-num-candidates
-                (length selectrum--preprocessed-candidates)))
+                                  (selectrum--normalize-collection
+                                   minibuffer-completion-table
+                                   minibuffer-completion-predicate)))))
+            (setq selectrum--total-num-candidates
+                  (length selectrum--preprocessed-candidates))))
         (setq selectrum--refined-candidates
               (funcall selectrum-refine-candidates-function
                        input selectrum--preprocessed-candidates))
@@ -1252,13 +1252,15 @@ list and sorted first."
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
     (setq-local selectrum-preprocess-candidates-function sortf))
-  (when candidates
-    (if (functionp candidates)
-        (setq selectrum--dynamic-candidates candidates)
-      (setq selectrum--preprocessed-candidates
-            (funcall selectrum-preprocess-candidates-function candidates))
-      (setq selectrum--total-num-candidates
-            (length selectrum--preprocessed-candidates))))
+  (cond ((functionp candidates)
+         (setq selectrum--preprocessed-candidates nil)
+         (setq selectrum--dynamic-candidates candidates))
+        (t
+         (when candidates
+           (setq selectrum--preprocessed-candidates
+                 (funcall selectrum-preprocess-candidates-function
+                          candidates)))
+         (setq selectrum--total-num-candidates (length candidates))))
   (setq selectrum--default-candidate default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
