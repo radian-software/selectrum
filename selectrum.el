@@ -1256,12 +1256,12 @@ list and sorted first."
     (setq-local selectrum-preprocess-candidates-function sortf))
   (cond ((functionp candidates)
          (setq selectrum--preprocessed-candidates nil)
+         (setq selectrum--total-num-candidates 0)
          (setq selectrum--dynamic-candidates candidates))
         (t
-         (when candidates
-           (setq selectrum--preprocessed-candidates
-                 (funcall selectrum-preprocess-candidates-function
-                          candidates)))
+         (setq selectrum--preprocessed-candidates
+               (funcall selectrum-preprocess-candidates-function
+                        candidates))
          (setq selectrum--total-num-candidates (length candidates))))
   (setq selectrum--default-candidate default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
