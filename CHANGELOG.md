@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* File completions are faster because recomputation only happens on
+  directory change now. Before, the candidates where recomputed on
+  each input change which could slow down file completions
+  significantly for cases where `read-file-name-internal` would be
+  slow already ([#210], [#276], [#277]).
 * If completion table metadata or `completion-extra-properties` define
   an `affixation-function` (introduced in Emacs 28) Selectrum will use
   this information to annotate the candidates accordingly ([#271],
@@ -78,6 +83,7 @@ The format is based on [Keep a Changelog].
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
 [#208]: https://github.com/raxod502/selectrum/pull/208
+[#210]: https://github.com/raxod502/selectrum/issues/210
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
@@ -96,6 +102,8 @@ The format is based on [Keep a Changelog].
 [#263]: https://github.com/raxod502/selectrum/pull/263
 [#266]: https://github.com/raxod502/selectrum/pull/266
 [#271]: https://github.com/raxod502/selectrum/pull/271
+[#276]: https://github.com/raxod502/selectrum/issues/276
+[#277]: https://github.com/raxod502/selectrum/pull/277
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
