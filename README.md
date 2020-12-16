@@ -378,8 +378,11 @@ External packages that work well with Selectrum:
   [embark](https://github.com/oantolin/embark/). Embark provides
   features like ivy-actions/ivy-occur in a framework agnostic way.
 
-* Helpful minibuffer annotations for `M-x` and `describe-*` functions
-  are povided by [marginalia](https://github.com/minad/marginalia).
+* Helpful minibuffer annotations for `M-x`, `describe-*` functions and
+  completions in general are provided by
+  [marginalia](https://github.com/minad/marginalia) which is similar
+  to ivy-rich but works with any framework implementing the default
+  API for completion annotations.
 
 * For searching and manipulating the `kill-ring` there is
   [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring). Multi-line
