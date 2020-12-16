@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* File completions are faster, as recomputation only happens on
+* File completions are faster because recomputation only happens on
   directory change now. Before, the candidates where recomputed on
   each input change which could slow down file completions
   significantly for cases where `read-file-name-internal` would be
