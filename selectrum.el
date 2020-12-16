@@ -649,7 +649,8 @@ behavior."
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum-candidate-full candidate)
       (when minibuffer-completing-file-name
-        (if (< selectrum--current-candidate-index 0)
+        (if (and selectrum--current-candidate-index
+                 (< selectrum--current-candidate-index 0))
             candidate
           (let* ((input (minibuffer-contents))
                  (pathprefix (or (file-name-directory input) "")))
