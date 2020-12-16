@@ -1852,6 +1852,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
              `((input . ,matchstr)
                (candidates . ,cands))))))
     (minibuffer-with-setup-hook
+        ;; The hook needs to run late as `read-file-name-default' sets
+        ;; its own syntax table in `minibuffer-with-setup-hook'.
         (:append (lambda ()
                    ;; Ensure the variable is also set when
                    ;; selectrum--completing-read-file-name is called directly.
