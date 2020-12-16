@@ -502,15 +502,21 @@ making other methods redundant."
 (defvar selectrum--candidates-overlay nil
   "Overlay used to display current candidates.")
 
+(defvar selectrum--dynamic-candidates nil
+  "The dynamic candidate function passed to `selectrum-read'.
+When set the dynamic candidate function is called on each input
+change. The results are subsequently preprocessed by
+`selectrum-preprocess-candidates-function' and saved as
+`selectrum--preprocessed-candidates'. See `selectrum-read' for
+more details on function collections.")
+
 (defvar selectrum--preprocessed-candidates nil
   "Preprocessed list of candidates.
 This list contains the candidates of the current session after
 preprocessing them with
-`selectrum-preprocess-candidates-function'. When
-`selectrum--dynamic-candidates' is set the preprocessing happens
-on each input change. The list is subsequently passed to
-`selectrum-refine-candidates-function'. For the refined
-candidates see `selectrum--refined-candidates'.")
+`selectrum-preprocess-candidates-function'. The list is
+subsequently passed to `selectrum-refine-candidates-function'.
+For the refined candidates see `selectrum--refined-candidates'.")
 
 (defvar selectrum--refined-candidates nil
   "Refined list of candidates to be displayed.
@@ -518,12 +524,6 @@ This is derived from `selectrum--preprocessed-candidates' by
 `selectrum-refine-candidates-function' every time the user input
 changes, and is subsequently passed to
 `selectrum-highlight-candidates-function'.")
-
-(defvar selectrum--dynamic-candidates nil
-  "The dynamic candidate function passed to `selectrum-read'.
-With a dynamic candidate function candidates are recomputed and
-preprocessed on each input change. See `selectrum-read' for more
-details on function collections.")
 
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
