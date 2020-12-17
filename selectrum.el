@@ -1099,11 +1099,13 @@ CAND does not have any face property defined."
         (res ()))
     (dolist (item items (nreverse res))
       (push
-       (propertize (nth 0 item)
-                   'selectrum-candidate-display-prefix
-                   (nth 1 item)
-                   'selectrum-candidate-display-suffix
-                   (nth 2 item))
+       (if (listp item)
+           (propertize (nth 0 item)
+                       'selectrum-candidate-display-prefix
+                       (nth 1 item)
+                       'selectrum-candidate-display-suffix
+                       (nth 2 item))
+         item)
        res))))
 
 (defun selectrum--candidates-display-string (candidates
