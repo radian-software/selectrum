@@ -1094,7 +1094,14 @@ CAND does not have any face property defined."
   str)
 
 (defun selectrum--affixate (fun candidates)
-  "Use affixation FUN to transform CANDIDATES."
+  "Use affixation FUN to transform CANDIDATES.
+FUN takes CANDIDATES as argument and returns a list of strings or
+a list of list items. In case of a string no annotations are
+added and the string is the one to use for completion. In case of
+a list the first item is the completion string. If the list has
+two items the second one is used as a suffix and if there are
+three items the second one is used as a prefix and the third as
+suffix."
   (let ((items (funcall fun candidates))
         (res ()))
     (dolist (item items (nreverse res))
