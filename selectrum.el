@@ -1060,18 +1060,18 @@ CAND does not have any face property defined."
         str
       (propertize str 'face face))))
 
-(cl-defun selectrum--annotate (cands &key annotation-function company-docsig)
-  "Transform CANDS using ANNOTATION-FUNCTION and COMPANY-DOCSIG."
+(cl-defun selectrum--annotate (cands &key annotf docsigf)
+  "Transform CANDS using ANNOTF and DOCSIGF."
   (let ((res ()))
     (dolist (cand cands (nreverse res))
-      (let* ((annot (when annotation-function
+      (let* ((annot (when annotf
                       (selectrum--annotation
-                       annotation-function
+                       annotf
                        cand
                        'selectrum-completion-annotation)))
-             (docsig (when company-docsig
+             (docsig (when docsigf
                        (selectrum--annotation
-                        company-docsig
+                        docsigf
                         cand
                         'selectrum-completion-docsig)))
              (new (if (or annot docsig)
@@ -1166,8 +1166,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                             (selectrum--affixate aff candidates))
                            ((or annotf docsigf)
                             (selectrum--annotate candidates
-                                                 :annotation-function annotf
-                                                 :company-docsig docsigf))
+                                                 :annotf annotf
+                                                 :docsigf docsigf))
                            (t candidates)))
          (lines
           (selectrum--ensure-single-lines
