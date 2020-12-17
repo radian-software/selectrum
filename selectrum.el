@@ -1055,14 +1055,38 @@ The specific details of the formatting are determined by
   "Return annotation for candidate.
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
-  (when-let ((str
-              ;; The annotation functions might assume they are
-              ;; running within the minibuffer, see #255.
-              (with-selected-window (active-minibuffer-window)
-                (funcall fun cand))))
+  (when-let ((str (funcall fun cand)))
     (if (text-property-not-all 0 (length str) 'face nil str)
         str
       (propertize str 'face face))))
+
+(cl-defun selectrum--annotate (cands &key annotation-function company-docsig)
+  "Transform CANDS using ANNOTATION-FUNCTION and COMPANY-DOCSIG."
+  (let ((res ()))
+    (dolist (cand cands (nreverse res))
+      (let* ((annot (when annotation-function
+                      (selectrum--annotation
+                       annotation-function
+                       cand
+                       'selectrum-completion-annotation)))
+             (docsig (when company-docsig
+                       (selectrum--annotation
+                        company-docsig
+                        cand
+                        'selectrum-completion-docsig)))
+             (new (if (or annot docsig)
+                      (apply #'propertize
+                             cand
+                             `(,@(when annot
+                                   (list
+                                    'selectrum-candidate-display-suffix
+                                    annot))
+                               ,@(when docsig
+                                   (list
+                                    'selectrum-candidate-display-right-margin
+                                    docsig))))
+                    cand)))
+        (push new res)))))
 
 (defun selectrum--add-face (str face)
   "Return copy of STR with FACE added."
@@ -1138,9 +1162,13 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                   (plist-get completion-extra-properties
                              :affixation-function)))
          (docsigf (plist-get props :company-docsig))
-         (candidates (if aff
-                         (selectrum--affixate aff candidates)
-                       candidates))
+         (candidates (cond (aff
+                            (selectrum--affixate aff candidates))
+                           ((or annotf docsigf)
+                            (selectrum--annotate candidates
+                                                 :annotation-function annotf
+                                                 :company-docsig docsigf))
+                           (t candidates)))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1155,25 +1183,14 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (suffix (or (get-text-property
-                            0 'selectrum-candidate-display-suffix
-                            candidate)
-                           (and annotf
-                                (selectrum--annotation
-                                 annotf
-                                 candidate
-                                 'selectrum-completion-annotation))))
+               (suffix (get-text-property
+                        0 'selectrum-candidate-display-suffix
+                        candidate))
                (displayed-candidate
                 (concat prefix candidate suffix))
-               (right-margin
-                (or (get-text-property
-                     0 'selectrum-candidate-display-right-margin
-                     candidate)
-                    (and docsigf
-                         (selectrum--annotation
-                          docsigf
-                          candidate
-                          'selectrum-completion-docsig))))
+               (right-margin (get-text-property
+                              0 'selectrum-candidate-display-right-margin
+                              candidate))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
