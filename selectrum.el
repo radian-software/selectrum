@@ -1098,15 +1098,17 @@ CAND does not have any face property defined."
   (let ((items (funcall fun candidates))
         (res ()))
     (dolist (item items (nreverse res))
-      (push
-       (if (listp item)
-           (propertize (nth 0 item)
-                       'selectrum-candidate-display-prefix
-                       (nth 1 item)
-                       'selectrum-candidate-display-suffix
-                       (nth 2 item))
-         item)
-       res))))
+      (push (if (stringp item)
+                item
+              ;; See `completion--insert-strings'.
+              (let ((prefix (when (nth 2 item) (nth 1 item)))
+                    (suffix (or (nth 2 item) (nth 1 item))))
+                (propertize (nth 0 item)
+                            'selectrum-candidate-display-prefix
+                            prefix
+                            'selectrum-candidate-display-suffix
+                            suffix)))
+            res))))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
