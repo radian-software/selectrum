@@ -1103,11 +1103,14 @@ CAND does not have any face property defined."
               ;; See `completion--insert-strings'.
               (let ((prefix (when (nth 2 item) (nth 1 item)))
                     (suffix (or (nth 2 item) (nth 1 item))))
-                (propertize (nth 0 item)
-                            'selectrum-candidate-display-prefix
-                            prefix
-                            'selectrum-candidate-display-suffix
-                            suffix)))
+                (apply #'propertize
+                       (nth 0 item)
+                       `(,@(when prefix
+                             (list 'selectrum-candidate-display-prefix
+                                   prefix))
+                         ,@(when suffix
+                             (list 'selectrum-candidate-display-suffix
+                                   suffix))))))
             res))))
 
 (defun selectrum--candidates-display-string (candidates
