@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog].
 * If completion table metadata or `completion-extra-properties` define
   an `affixation-function` (introduced in Emacs 28) Selectrum will use
   this information to annotate the candidates accordingly ([#240],
-  [#271], [#286], [#288]).
+  [#271], [#286], [#288], [#289]).
 * The argument passed to `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` is now used to choose the nth
   displayed candidate instead of calculating an index based on the
@@ -106,6 +106,7 @@ The format is based on [Keep a Changelog].
 [#277]: https://github.com/raxod502/selectrum/pull/277
 [#286]: https://github.com/raxod502/selectrum/issues/286
 [#288]: https://github.com/raxod502/selectrum/pull/288
+[#289]: https://github.com/raxod502/selectrum/pull/289
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
