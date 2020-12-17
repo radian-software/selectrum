@@ -1061,7 +1061,15 @@ CAND does not have any face property defined."
       (propertize str 'face face))))
 
 (cl-defun selectrum--annotate (cands &key annotf docsigf)
-  "Transform CANDS using ANNOTF and DOCSIGF."
+  "Transform CANDS using ANNOTF and DOCSIGF.
+ANNOTF results will annotate a candidate with a suffix using
+`selectrum-candidate-display-suffix' and
+`selectrum-completion-annotation' face unless the annotation
+already has a face property. DOCSIGF results will annotate a
+candidate with a margin annotation using
+`selectrum-candidate-display-suffix' and
+`selectrum-completion-docsig' face unless the annotation already
+has a face property."
   (let ((res ()))
     (dolist (cand cands (nreverse res))
       (let* ((annot (when annotf
