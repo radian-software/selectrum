@@ -354,22 +354,6 @@ External packages that work well with Selectrum:
   for Selectrum and Icomplete or more generally any completion system
   based on `completing-read`.
 
-* You can display completions in a child frame using
-  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
-
-* Imenu completion can be improved by using
-  [flimenu](https://github.com/IvanMalison/flimenu) which turns the
-  tree based item navigation into a flat completion menu.
-
-* As an alternative sorting method to `prescient.el` (although it only
-  works for `M-x`), there is
-  [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
-  features specific to `M-x`, like displaying keybindings, ignoring
-  uninteresting commands, and performing alternate actions (such as
-  `C-h f` instead of `RET` to look up docs for a command instead of
-  calling it). It is also reported that Amx may be faster than
-  `prescient.el` because it uses a different sorting algorithm.
-
 * As an alternative filtering method to `prescient.el`, there is
   [orderless](https://github.com/oantolin/orderless). It supports many
   different matching styles and integrates with `completion-styles`.
@@ -384,10 +368,31 @@ External packages that work well with Selectrum:
   to ivy-rich but works with any framework implementing the default
   API for completion annotations.
 
+* You can display completions in a child frame using
+  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
+
+* Imenu completion can be improved by using
+  [flimenu](https://github.com/IvanMalison/flimenu) which turns the
+  tree based item navigation into a flat completion menu.
+  Instead of flimenu, you can use the command `consult-imenu`, which
+  additional offers item preview and narrowing.
+
 * For searching and manipulating the `kill-ring` there is
-  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring). Multi-line
-  candidates aren't well suited for minibuffer completion, thus you
-  might prefer a dedicated buffer for this.
+  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring).
+  Multi-line candidates aren't well suited for minibuffer completion,
+  thus you might prefer a dedicated buffer for this. Alternatively,
+  Consult provides the `consult-yank` command which uses minibuffer completion,
+  but at the same time shows the text in the buffer for preview,
+  mitigating the problem with multi-line candidates this way.
+
+* As an alternative sorting method to `prescient.el` (although it only
+  works for `M-x`), there is
+  [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
+  features specific to `M-x`, like displaying keybindings, ignoring
+  uninteresting commands, and performing alternate actions (such as
+  `C-h f` instead of `RET` to look up docs for a command instead of
+  calling it). It is also reported that Amx may be faster than
+  `prescient.el` because it uses a different sorting algorithm.
 
 ### But what is it doing to my Emacs??
 
@@ -577,7 +582,7 @@ Technical points:
   backports the improvement from Emacs 27. That way all
   minibuffer-based packages can benefit from the improvement.
 
-## Why use Selectrum?
+## Why use Selectrum - Comparison with other completion-systems
 
 This section documents why I decided to write Selectrum instead of
 using any of the numerous existing solutions in Emacs.
@@ -589,7 +594,7 @@ unfair, **please** feel free to contribute a correction.
 See [#23](https://github.com/raxod502/selectrum/issues/23) for
 discussion.
 
-### Why not Ido?
+### Ido
 
 [Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)
 is a package for interactive selection that is included in Emacs by
@@ -609,7 +614,7 @@ which makes Ido display candidates vertically instead of horizontally,
 but I suspect that the problems with `completing-read` non-compliance
 remain.
 
-### Why not Helm?
+### Helm
 
 [Helm](https://github.com/emacs-helm/helm) is an installable package
 which provides an alternate vertical interface for candidate
@@ -631,36 +636,32 @@ maintained](https://github.com/emacs-helm/helm/issues/2386).
 
 See [#203](https://github.com/raxod502/selectrum/issues/203).
 
-### Why not Ivy?
+### Ivy
 
 [Ivy](https://github.com/abo-abo/swiper#ivy) is the most promising
 alternative to Selectrum, and it's what I used before developing
 Selectrum. It is marketed as a minimal alternative to Helm which
 provides a simpler interface. The problem with Ivy is that its
-architecture and API are very messy, and as a result the
-implementation is complex and buggy. Ivy was originally designed to be
-used as a backend to
+architecture and API have grown organically, and as a result the
+implementation is complex and error prone. Ivy was originally designed
+to be used as a backend to
 [Swiper](https://github.com/abo-abo/swiper#swiper), a buffer search
-package that originally used Helm. Unfortunately, when Ivy became a
-more general-purpose interactive selection package, its abstractions
-were not reworked to make sense in this new context. Over time, more
-and more special cases were added to try to make various commands work
-properly, and as a result the consistency and correctness of the core
-functionality have suffered. As a result, the `ivy-read` API has
-around 20 arguments and a heap of special cases for particular values
-(which are completely undocumented). Numerous functions in Ivy,
+package that originally used Helm. When Ivy became a more
+general-purpose interactive selection package, more and more special
+cases were added to try to make various commands work properly, and as
+a result the consistency and correctness of the core functionality
+have suffered. As a result, the `ivy-read` API has around 20 arguments
+and a heap of undocumented special cases for particular values.
+Numerous functions in Ivy,
 [Counsel](https://github.com/abo-abo/swiper#counsel), and Swiper have
 special cases hardcoded into them to detect when they're being called
-from specific other functions *in the other two packages*. As a result
-of all this, Ivy is incredibly flaky and full of edge-case bugs like
-[this one](https://github.com/abo-abo/swiper/issues/1632). It is these
-bugs and quirks in UX that led me to develop Selectrum.
+from specific other functions in the other two packages. As a result
+of all this, Ivy is prone to edge-case bugs.
 
 Fundamentally, selecting an item from a list *is not a complicated
-problem*, and it *does not require a complicated solution*. That's why
-Selectrum is around 1,000 lines of code even though Ivy+Counsel (which
-do basically the same thing) are around 11,000 lines together.
-Selectrum achieves its conciseness by:
+problem*, and it *does not require a complicated solution*. For
+comparison, Selectrum is around 2,000 lines of code while Ivy is
+around 5,000 lines of code. Selectrum achieves more conciseness by:
 
 * working with the existing Emacs APIs for completion, rather than
   replacing all of them and then reimplementing every Emacs command
@@ -693,10 +694,10 @@ utility out of these extra features without actually implementing
 explicit support for them (with all of the attendant complexity and
 bugs).
 
-### Why not Icomplete?
+### Icomplete
 
 [Icomplete](https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html)
-is another built-in Emacs package for interactive selection. It is
+is the built-in Emacs package for interactive selection. It is
 basically the same as the standard `completing-read` framework, except
 that the available candidates are displayed in the minibuffer as you
 type. Unlike Selectrum, the candidates are displayed horizontally (by
@@ -736,12 +737,12 @@ existed) but which do work in Icomplete: for example, many of the
 see any design reason these features cannot all be incorporated into
 Selectrum eventually.
 
-### Why not Icicles?
+### Icicles
 
-[Because it's maintained on EmacsWiki, enough
+[Icicles is maintained on EmacsWiki, enough
 said.](https://github.com/melpa/melpa/pull/5008)
 
-### Why not Snails?
+### Snails
 
 [Snails](https://github.com/manateelazycat/snails) describes itself as
 a "modern, easy-to-expand fuzzy-search framework". From the README, it
@@ -755,7 +756,7 @@ wrapping every possible command with a "backend" rather than using
 existing Emacs interfaces to handle all possible commands. It's also
 worth noting that Snails is unusable by design in a tty environment.
 
-### Why not Sallet?
+### Sallet
 
 [Sallet](https://github.com/Fuco1/sallet) describes itself as "a type
 of light spherical helmet", according to the repo description.
@@ -774,7 +775,7 @@ that I can note:
 * There is no user-facing documentation, which suggests to me that the
   package is unfinished.
 
-### Why not Raven?
+### Raven
 
 [Raven](https://github.com/chameco/raven) is a little-known package
 for vertical completion. It looks quite similar to Selectrum, and
@@ -783,24 +784,26 @@ simply has a more fully-rounded set of features (such as candidate
 highlighting and a full `find-file` replacement). I suspect that these
 features have simply not yet been implemented.
 
-### What about Swiper?
+### Swiper
 
 As discussed in the section on Ivy,
 [Swiper](https://github.com/abo-abo/swiper#swiper) is a buffer-search
-package that uses Ivy's interface. The implementation is not
-well-abstracted at all, and therefore these two packages are a huge
-mess both internally and in usage.
+package that uses Ivy's interface and is coupled closely to the Ivy
+implementation.
 
 Does Selectrum attempt to provide a replacement for Swiper in addition
-to Ivy and Counsel? The answer is no. Rather than blindly porting
-functionality from the predecessors of Selectrum, I decided to design
-a better buffer-search interface from scratch. During the design
-process, I realized that a Selectrum-like interface is not the best
-way to present buffer search. Instead, I decided on an improved
-variant of the Isearch interface that takes inspiration from the
-standard text search interface found in almost every other modern
-piece of software, such as web browsers. The result is
-[CTRLF](https://github.com/raxod502/ctrlf).
+to Ivy and Counsel?
 
-Note that there is the [Consult](https://github.com/minad/consult)
-package, which includes a Swiper-like command.
+The answer is no - such functionality will not be part of Selectrum
+itself, but there are two alternatives available.
+
+* [CTRLF](https://github.com/raxod502/ctrlf) is a from scratch
+redesigned buffer-search interface. During the design process, I
+realized that a Selectrum-like interface is not the best way to
+present buffer search. Instead, I decided on an improved variant of
+the Isearch interface that takes inspiration from the standard text
+search interface found in almost every other modern piece of software,
+such as web browsers.
+
+* [Consult](https://github.com/minad/consult): The Consult package
+provides the command `consult-line` which behaves similarly to Swiper.
