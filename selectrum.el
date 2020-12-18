@@ -438,49 +438,13 @@ destructively and return the modified list."
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
 obarray, a hash table, or a function, as per the docstring of
-`try-completion'. The returned list may be mutated without
+`all-completions'. The returned list may be mutated without
 damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
-`try-completion'."
-  (cond
-   ;; Check for `functionp' first, because anonymous functions can be
-   ;; mistaken for lists.
-   ((functionp collection)
-    (funcall collection "" predicate t))
-   ((listp collection)
-    (setq collection (copy-sequence collection))
-    (when predicate
-      (setq collection (cl-delete-if-not predicate collection)))
-    (selectrum--map-destructive
-     (lambda (elt)
-       (setq elt (or (car-safe elt) elt))
-       (when (symbolp elt)
-         (setq elt (symbol-name elt)))
-       elt)
-     collection))
-   ((hash-table-p collection)
-    (let ((lst nil))
-      (maphash
-       (lambda (key val)
-         (when (and (or (symbolp key)
-                        (stringp key))
-                    (or (null predicate)
-                        (funcall predicate key val)))
-           (push key lst)))
-       collection)))
-   ;; Use `vectorp' instead of `obarrayp' because the latter isn't
-   ;; defined in Emacs 25.
-   ((vectorp collection)
-    (let ((lst nil))
-      (mapatoms
-       (lambda (elt)
-         (when (or (null predicate)
-                   (funcall predicate elt))
-           (push (symbol-name elt) lst))))
-      lst))
-   (t
-    (error "Unsupported collection type %S" (type-of collection)))))
+`all-completions'."
+  (let ((completion-regexp-list nil))
+    (all-completions "" collection predicate)))
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
