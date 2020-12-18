@@ -17,9 +17,6 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* `selectrum-active-p` would wrongly report an active status for
-  recursive minibuffer session with Selectrum turned off, which has
-  been fixed ([#293]).
 * File completions are faster because recomputation only happens on
   directory change now. Before, the candidates where recomputed on
   each input change which could slow down file completions
@@ -57,6 +54,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266]).
 
 ### Bugs fixed
+* `selectrum-active-p` would wrongly report an active status for
+  recursive minibuffer session with Selectrum turned off, which has
+  been fixed ([#293]).
 * For in buffer file completions s-expression commands for path level
   navigation did not work which has been fixed ([#261]).
 * Do not insert spaces after path completion in comint buffers
@@ -110,6 +110,7 @@ The format is based on [Keep a Changelog].
 [#286]: https://github.com/raxod502/selectrum/issues/286
 [#288]: https://github.com/raxod502/selectrum/pull/288
 [#289]: https://github.com/raxod502/selectrum/pull/289
+[#293]: https://github.com/raxod502/selectrum/pull/293
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
