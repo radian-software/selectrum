@@ -1,3 +1,6 @@
+[![MELPA](https://melpa.org/packages/selectrum-badge.svg)](https://melpa.org/#/selectrum)
+[![MELPA Stable](https://stable.melpa.org/packages/selectrum-badge.svg)](https://stable.melpa.org/#/selectrum)
+
 # Selectrum
 
 *Selectrum is a better solution for incremental narrowing in Emacs,
