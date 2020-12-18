@@ -1245,6 +1245,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first."
+  (setq-local selectrum-active-p t)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
@@ -1523,8 +1524,7 @@ Otherwise, just eval BODY."
               selectrum--visual-input
               selectrum--read-args
               selectrum--count-overlay
-              selectrum--repeat
-              selectrum-active-p)))
+              selectrum--repeat)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum-active-p
@@ -1615,7 +1615,6 @@ semantics of `cl-defun'."
              (prompt (selectrum--remove-default-from-prompt prompt))
              ;; <https://github.com/raxod502/selectrum/issues/99>
              (icomplete-mode nil)
-             (selectrum-active-p t)
              (res (read-from-minibuffer
                    prompt initial-input selectrum-minibuffer-map nil
                    (or history 'minibuffer-history))))
