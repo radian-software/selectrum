@@ -1358,7 +1358,8 @@ plus CANDIDATE."
                                            selectrum--previous-input-string))
                         (let ((crm
                                (if (and selectrum--current-candidate-index
-                                        (< selectrum--current-candidate-index 0))
+                                        (< selectrum--current-candidate-index
+                                           0))
                                    candidate
                                  (with-temp-buffer
                                    (insert selectrum--previous-input-string)
