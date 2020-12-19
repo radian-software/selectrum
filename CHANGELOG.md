@@ -54,6 +54,10 @@ The format is based on [Keep a Changelog].
   they contain ([#266]).
 
 ### Bugs fixed
+* Passing a symbol or a list of symbols to `completing-read` as
+  default value DEF would trigger an error, which has been fixed.
+  Selectrum now behaves like `completind-read-default` and returns the
+  symbol (or the first in case of a list) ([#291], [#295]).
 * `selectrum-active-p` would wrongly report an active status for
   recursive minibuffer session with Selectrum turned off, which has
   been fixed ([#293]).
