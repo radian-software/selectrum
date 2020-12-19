@@ -1268,7 +1268,10 @@ list and sorted first."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  (setq selectrum--default-candidate default-candidate)
+  (setq selectrum--default-candidate
+        (if (and default-candidate (symbolp default-candidate))
+            (symbol-name default-candidate)
+          default-candidate))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
@@ -1619,13 +1622,14 @@ semantics of `cl-defun'."
                    prompt initial-input selectrum-minibuffer-map nil
                    (or history 'minibuffer-history))))
         (cond (minibuffer-completion-table
-               ;; Behave like completing-read-default which strips the text
-               ;; properties but keeps them when submitting the empty prompt
-               ;; to get the default (see #180, #107).
+               ;; Behave like completing-read-default which strips the
+               ;; text properties but leaves the default unchanged
+               ;; when submitting the empty prompt to get it (see
+               ;; #180, #107).
                (if (and selectrum--previous-input-string
                         (string-empty-p selectrum--previous-input-string)
                         (equal res selectrum--default-candidate))
-                   selectrum--default-candidate
+                   default-candidate
                  (substring-no-properties res)))
               (t res))))))
 
