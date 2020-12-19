@@ -1262,7 +1262,7 @@ list and sorted first."
   (cond ((functionp candidates)
          (setq selectrum--preprocessed-candidates nil)
          (setq selectrum--total-num-candidates 0)
-         (setq selectrum--dynamic-candidates candidates))
+         (setq-local selectrum--dynamic-candidates candidates))
         (t
          (setq selectrum--preprocessed-candidates
                (funcall selectrum-preprocess-candidates-function
@@ -1519,7 +1519,6 @@ Otherwise, just eval BODY."
             (lambda (var)
               `(,var ,var))
             '(selectrum--preprocessed-candidates
-              selectrum--dynamic-candidates
               selectrum--refined-candidates
               selectrum--match-required-p
               selectrum--move-default-candidate-p
