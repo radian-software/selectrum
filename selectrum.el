@@ -438,49 +438,13 @@ destructively and return the modified list."
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
 obarray, a hash table, or a function, as per the docstring of
-`try-completion'. The returned list may be mutated without
+`all-completions'. The returned list may be mutated without
 damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
-`try-completion'."
-  (cond
-   ;; Check for `functionp' first, because anonymous functions can be
-   ;; mistaken for lists.
-   ((functionp collection)
-    (funcall collection "" predicate t))
-   ((listp collection)
-    (setq collection (copy-sequence collection))
-    (when predicate
-      (setq collection (cl-delete-if-not predicate collection)))
-    (selectrum--map-destructive
-     (lambda (elt)
-       (setq elt (or (car-safe elt) elt))
-       (when (symbolp elt)
-         (setq elt (symbol-name elt)))
-       elt)
-     collection))
-   ((hash-table-p collection)
-    (let ((lst nil))
-      (maphash
-       (lambda (key val)
-         (when (and (or (symbolp key)
-                        (stringp key))
-                    (or (null predicate)
-                        (funcall predicate key val)))
-           (push key lst)))
-       collection)))
-   ;; Use `vectorp' instead of `obarrayp' because the latter isn't
-   ;; defined in Emacs 25.
-   ((vectorp collection)
-    (let ((lst nil))
-      (mapatoms
-       (lambda (elt)
-         (when (or (null predicate)
-                   (funcall predicate elt))
-           (push (symbol-name elt) lst))))
-      lst))
-   (t
-    (error "Unsupported collection type %S" (type-of collection)))))
+`all-completions'."
+  (let ((completion-regexp-list nil))
+    (all-completions "" collection predicate)))
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
@@ -1055,14 +1019,46 @@ The specific details of the formatting are determined by
   "Return annotation for candidate.
 Get annotation by calling FUN with CAND and apply FACE to it if
 CAND does not have any face property defined."
-  (when-let ((str
-              ;; The annotation functions might assume they are
-              ;; running within the minibuffer, see #255.
-              (with-selected-window (active-minibuffer-window)
-                (funcall fun cand))))
+  (when-let ((str (funcall fun cand)))
     (if (text-property-not-all 0 (length str) 'face nil str)
         str
       (propertize str 'face face))))
+
+(cl-defun selectrum--annotate (cands &key annotf docsigf)
+  "Transform CANDS using ANNOTF and DOCSIGF.
+ANNOTF results will annotate a candidate with a suffix using
+`selectrum-candidate-display-suffix' and
+`selectrum-completion-annotation' face unless the annotation
+already has a face property. DOCSIGF results will annotate a
+candidate with a margin annotation using
+`selectrum-candidate-display-suffix' and
+`selectrum-completion-docsig' face unless the annotation already
+has a face property."
+  (let ((res ()))
+    (dolist (cand cands (nreverse res))
+      (let* ((annot (when annotf
+                      (selectrum--annotation
+                       annotf
+                       cand
+                       'selectrum-completion-annotation)))
+             (docsig (when docsigf
+                       (selectrum--annotation
+                        docsigf
+                        cand
+                        'selectrum-completion-docsig)))
+             (new (if (or annot docsig)
+                      (apply #'propertize
+                             cand
+                             `(,@(when annot
+                                   (list
+                                    'selectrum-candidate-display-suffix
+                                    annot))
+                               ,@(when docsig
+                                   (list
+                                    'selectrum-candidate-display-right-margin
+                                    docsig))))
+                    cand)))
+        (push new res)))))
 
 (defun selectrum--add-face (str face)
   "Return copy of STR with FACE added."
@@ -1094,17 +1090,31 @@ CAND does not have any face property defined."
   str)
 
 (defun selectrum--affixate (fun candidates)
-  "Use affixation FUN to transform CANDIDATES."
+  "Use affixation FUN to transform CANDIDATES.
+FUN takes CANDIDATES as argument and returns a list of strings or
+a list of list items. In case of a string no annotations are
+added and the string is the one to use for completion. In case of
+a list the first item is the completion string. If the list has
+two items the second one is used as a suffix and if there are
+three items the second one is used as a prefix and the third as
+suffix."
   (let ((items (funcall fun candidates))
         (res ()))
     (dolist (item items (nreverse res))
-      (push
-       (propertize (nth 0 item)
-                   'selectrum-candidate-display-prefix
-                   (nth 1 item)
-                   'selectrum-candidate-display-suffix
-                   (nth 2 item))
-       res))))
+      (push (if (stringp item)
+                item
+              ;; See `completion--insert-strings'.
+              (let ((prefix (when (nth 2 item) (nth 1 item)))
+                    (suffix (or (nth 2 item) (nth 1 item))))
+                (apply #'propertize
+                       (nth 0 item)
+                       `(,@(when prefix
+                             (list 'selectrum-candidate-display-prefix
+                                   prefix))
+                         ,@(when suffix
+                             (list 'selectrum-candidate-display-suffix
+                                   suffix))))))
+            res))))
 
 (defun selectrum--candidates-display-string (candidates
                                              input
@@ -1124,9 +1134,13 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                   (plist-get completion-extra-properties
                              :affixation-function)))
          (docsigf (plist-get props :company-docsig))
-         (candidates (if aff
-                         (selectrum--affixate aff candidates)
-                       candidates))
+         (candidates (cond (aff
+                            (selectrum--affixate aff candidates))
+                           ((or annotf docsigf)
+                            (selectrum--annotate candidates
+                                                 :annotf annotf
+                                                 :docsigf docsigf))
+                           (t candidates)))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1141,25 +1155,14 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
-               (suffix (or (get-text-property
-                            0 'selectrum-candidate-display-suffix
-                            candidate)
-                           (and annotf
-                                (selectrum--annotation
-                                 annotf
-                                 candidate
-                                 'selectrum-completion-annotation))))
+               (suffix (get-text-property
+                        0 'selectrum-candidate-display-suffix
+                        candidate))
                (displayed-candidate
                 (concat prefix candidate suffix))
-               (right-margin
-                (or (get-text-property
-                     0 'selectrum-candidate-display-right-margin
-                     candidate)
-                    (and docsigf
-                         (selectrum--annotation
-                          docsigf
-                          candidate
-                          'selectrum-completion-docsig))))
+               (right-margin (get-text-property
+                              0 'selectrum-candidate-display-right-margin
+                              candidate))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
@@ -1242,6 +1245,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first."
+  (setq-local selectrum-active-p t)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
@@ -1264,7 +1268,10 @@ list and sorted first."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  (setq selectrum--default-candidate default-candidate)
+  (setq selectrum--default-candidate
+        (if (and default-candidate (symbolp default-candidate))
+            (symbol-name default-candidate)
+          default-candidate))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
@@ -1531,8 +1538,7 @@ Otherwise, just eval BODY."
               selectrum--visual-input
               selectrum--read-args
               selectrum--count-overlay
-              selectrum--repeat
-              selectrum-active-p)))
+              selectrum--repeat)))
      ;; https://github.com/raxod502/selectrum/issues/39#issuecomment-618350477
      (selectrum--let-maybe
        selectrum-active-p
@@ -1623,18 +1629,18 @@ semantics of `cl-defun'."
              (prompt (selectrum--remove-default-from-prompt prompt))
              ;; <https://github.com/raxod502/selectrum/issues/99>
              (icomplete-mode nil)
-             (selectrum-active-p t)
              (res (read-from-minibuffer
                    prompt initial-input selectrum-minibuffer-map nil
                    (or history 'minibuffer-history))))
         (cond (minibuffer-completion-table
-               ;; Behave like completing-read-default which strips the text
-               ;; properties but keeps them when submitting the empty prompt
-               ;; to get the default (see #180, #107).
+               ;; Behave like completing-read-default which strips the
+               ;; text properties but leaves the default unchanged
+               ;; when submitting the empty prompt to get it (see
+               ;; #180, #107).
                (if (and selectrum--previous-input-string
                         (string-empty-p selectrum--previous-input-string)
                         (equal res selectrum--default-candidate))
-                   selectrum--default-candidate
+                   default-candidate
                  (substring-no-properties res)))
               (t res))))))
 

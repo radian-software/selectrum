@@ -24,8 +24,8 @@ The format is based on [Keep a Changelog].
   slow already ([#210], [#276], [#277]).
 * If completion table metadata or `completion-extra-properties` define
   an `affixation-function` (introduced in Emacs 28) Selectrum will use
-  this information to annotate the candidates accordingly ([#271],
-  [#240]).
+  this information to annotate the candidates accordingly ([#240],
+  [#271], [#286], [#288], [#289]).
 * The argument passed to `selectrum-select-current-candidate` and
   `selectrum-insert-current-candidate` is now used to choose the nth
   displayed candidate instead of calculating an index based on the
@@ -54,6 +54,13 @@ The format is based on [Keep a Changelog].
   they contain ([#266]).
 
 ### Bugs fixed
+* Passing a symbol or a list of symbols to `completing-read` as
+  default value DEF would trigger an error, which has been fixed.
+  Selectrum now behaves like `completind-read-default` and returns the
+  symbol (or the first in case of a list) ([#291], [#295]).
+* `selectrum-active-p` would wrongly report an active status for
+  recursive minibuffer session with Selectrum turned off, which has
+  been fixed ([#293]).
 * For in buffer file completions s-expression commands for path level
   navigation did not work which has been fixed ([#261]).
 * Do not insert spaces after path completion in comint buffers
@@ -104,6 +111,12 @@ The format is based on [Keep a Changelog].
 [#271]: https://github.com/raxod502/selectrum/pull/271
 [#276]: https://github.com/raxod502/selectrum/issues/276
 [#277]: https://github.com/raxod502/selectrum/pull/277
+[#286]: https://github.com/raxod502/selectrum/issues/286
+[#288]: https://github.com/raxod502/selectrum/pull/288
+[#289]: https://github.com/raxod502/selectrum/pull/289
+[#293]: https://github.com/raxod502/selectrum/pull/293
+[#291]: https://github.com/raxod502/selectrum/issues/291
+[#295]: https://github.com/raxod502/selectrum/pull/295
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
