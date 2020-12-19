@@ -1477,8 +1477,8 @@ indices."
              #'run-hook-with-args
              'selectrum-candidate-inserted-hook
              full selectrum--read-args))
-          ;;  Ensure refresh of UI. The input input string might be
-          ;; the same when the prompt was selected, this will switch
+          ;; Ensure refresh of UI. The input input string might be the
+          ;; same when the prompt was selected, this will switch
           ;; selection to first candidate in that case.
           (setq selectrum--previous-input-string nil))
       (unless completion-fail-discreetly
