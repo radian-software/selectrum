@@ -1362,7 +1362,8 @@ plus CANDIDATE."
                                  (with-temp-buffer
                                    (insert selectrum--previous-input-string)
                                    (goto-char (point-min))
-                                   (while (re-search-forward crm-separator nil t))
+                                   (while (re-search-forward
+                                           crm-separator nil t))
                                    (delete-region (point) (point-max))
                                    (insert (selectrum--get-full candidate))
                                    (buffer-string)))))
@@ -1469,7 +1470,8 @@ indices."
                    (delete-region (point) (point-max))
                    (insert full)
                    (when-let ((match
-                               (assoc crm-separator selectrum--crm-separator-alist)))
+                               (assoc crm-separator
+                                      selectrum--crm-separator-alist)))
                      (insert (cdr match)))))
             (apply
              #'run-hook-with-args
