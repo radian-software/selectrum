@@ -1357,7 +1357,8 @@ plus CANDIDATE."
                              (string-match crm-separator
                                            selectrum--previous-input-string))
                         (let ((crm
-                               (if (< selectrum--current-candidate-index 0)
+                               (if (and selectrum--current-candidate-index
+                                        (< selectrum--current-candidate-index 0))
                                    candidate
                                  (with-temp-buffer
                                    (insert selectrum--previous-input-string)
