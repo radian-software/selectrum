@@ -786,6 +786,9 @@ greather than the window height."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
+                 ((and minibuffer-completing-file-name
+                       (string-empty-p input))
+                  -1)
                  ((and selectrum--init-p
                        (equal selectrum--default-candidate
                               (minibuffer-contents)))
@@ -1439,7 +1442,11 @@ Zero means to select the current user input. See
 indices."
   (interactive "P")
   (with-selected-window (active-minibuffer-window)
-    (if-let ((index (selectrum--index-for-arg arg))
+    (if-let ((selectrum--current-candidate-index
+              (if (and selectrum--current-candidate-index
+                       (< selectrum--current-candidate-index 0))
+                  0 selectrum--current-candidate-index))
+             (index (selectrum--index-for-arg arg))
              (candidate (selectrum--get-candidate index))
              (full (selectrum--get-full candidate)))
         (progn
