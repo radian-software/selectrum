@@ -27,16 +27,16 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Hooks](#hooks)
 - [Contributor guide](#contributor-guide)
 - [Caveats](#caveats)
-- [Why use Selectrum?](#why-use-selectrum)
-  * [Why not Ido?](#why-not-ido)
-  * [Why not Helm?](#why-not-helm)
-  * [Why not Ivy?](#why-not-ivy)
-  * [Why not Icomplete?](#why-not-icomplete)
-  * [Why not Icicles?](#why-not-icicles)
-  * [Why not Snails?](#why-not-snails)
-  * [Why not Sallet?](#why-not-sallet)
-  * [Why not Raven?](#why-not-raven)
-  * [What about Swiper?](#what-about-swiper)
+- [Selectrum in comparison to other completion-systems](#selectrum-in-comparison-to-other-completion-systems)
+  * [Ido](#ido)
+  * [Helm](#helm)
+  * [Ivy](#ivy)
+  * [Icomplete](#icomplete)
+  * [Icicles](#icicles)
+  * [Snails](#snails)
+  * [Sallet](#sallet)
+  * [Raven](#raven)
+  * [Swiper](#swiper)
 
 <!-- tocstop -->
 
@@ -374,28 +374,34 @@ External packages that work well with Selectrum:
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
 
-* Imenu completion can be improved by using
-  [flimenu](https://github.com/IvanMalison/flimenu) which turns the
-  tree based item navigation into a flat completion menu.
-  Instead of flimenu, you can use the command `consult-imenu`, which
-  additional offers item preview and narrowing.
+* If you are not using Consult and `consult-imenu`, Imenu completion
+  can be improved by using
+  [flimenu](https://github.com/IvanMalison/flimenu).
+  Both flimenu and `consult-imenu` turn the tree based item navigation
+  into a flat completion menu. Note that `consult-imenu` is more
+  powerful, since it additionally offers preview and narrowing.
 
 * For searching and manipulating the `kill-ring` there is
   [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring).
   Multi-line candidates aren't well suited for minibuffer completion,
   thus you might prefer a dedicated buffer for this. Alternatively,
-  Consult provides the `consult-yank` command which uses minibuffer completion,
-  but at the same time shows the text in the buffer for preview,
+  Consult provides the `consult-yank` command which uses minibuffer
+  completion and previews the text in the buffer at the same time,
   mitigating the problem with multi-line candidates this way.
+  Note that there is also Embark with its live occur which fits
+  well together with `consult-yank`. For these reasons it is more
+  recommended to use Consult and Embark instead of browse-kill-ring.
 
-* As an alternative sorting method to `prescient.el` (although it only
-  works for `M-x`), there is
-  [Amx](https://github.com/DarwinAwardWinner/amx). It has some extra
-  features specific to `M-x`, like displaying keybindings, ignoring
-  uninteresting commands, and performing alternate actions (such as
-  `C-h f` instead of `RET` to look up docs for a command instead of
-  calling it). It is also reported that Amx may be faster than
-  `prescient.el` because it uses a different sorting algorithm.
+* In case you are not using `prescient.el`, an improved `M-x` is
+  provided by [Amx](https://github.com/DarwinAwardWinner/amx). Like
+  `prescient.el` and `orderless.el` it provides as an alternative
+  sorting method. Furthermore it has some extra features specific to
+  `M-x`, like displaying keybindings, ignoring uninteresting commands,
+  and performing alternate actions (such as `C-h f` instead of `RET`
+  to look up docs for a command instead of calling it). Note that
+  Marginalia also provides the keybinding annotation feature and more
+  annotations, and Embark provides more general actions. Therefore it
+  is recommended to use Prescient, Embark and Marginalia instead of Amx.
 
 ### But what is it doing to my Emacs??
 
@@ -585,7 +591,7 @@ Technical points:
   backports the improvement from Emacs 27. That way all
   minibuffer-based packages can benefit from the improvement.
 
-## Why use Selectrum - Comparison with other completion-systems
+## Selectrum in comparison to other completion-systems
 
 This section documents why I decided to write Selectrum instead of
 using any of the numerous existing solutions in Emacs.
@@ -664,7 +670,11 @@ of all this, Ivy is prone to edge-case bugs.
 Fundamentally, selecting an item from a list *is not a complicated
 problem*, and it *does not require a complicated solution*. For
 comparison, Selectrum is around 2,000 lines of code while Ivy is
-around 5,000 lines of code. Selectrum achieves more conciseness by:
+around 5,000 lines of code. The full Ivy ecosystem composed of
+tightly-coupled components Ivy, Swiper and Counsel is around 13,000
+lines of code.
+
+Selectrum achieves more conciseness by:
 
 * working with the existing Emacs APIs for completion, rather than
   replacing all of them and then reimplementing every Emacs command
