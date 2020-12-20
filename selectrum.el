@@ -786,8 +786,9 @@ greather than the window height."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
-                 ((and minibuffer-completing-file-name
-                       (string-empty-p input))
+                 ((or (and minibuffer-completing-file-name
+                           (string-empty-p input))
+                      (eq this-command 'selectrum-insert-current-candidate))
                   -1)
                  ((and selectrum--init-p
                        (equal selectrum--default-candidate
