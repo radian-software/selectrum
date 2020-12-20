@@ -1419,6 +1419,10 @@ indices."
   (with-selected-window (active-minibuffer-window)
     (let ((index (selectrum--index-for-arg arg)))
       (when (or (not selectrum--match-required-p)
+                ;; FIXME: temporary hack to allow submitting after
+                ;; prompt selection.
+                (eq last-command
+                    'selectrum-insert-current-candidate)
                 (and index (>= index 0))
                 (and minibuffer-completing-file-name
                      (file-exists-p
