@@ -1373,8 +1373,8 @@ plus CANDIDATE."
                             (apply
                              #'run-hook-with-args
                              'selectrum-candidate-selected-hook
-                             candidate selectrum--read-args)
-                            (selectrum--get-full cand))
+                             (selectrum--get-full cand)
+                             selectrum--read-args))
                           crm))
                        (t
                         (apply
