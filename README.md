@@ -8,6 +8,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 [Ivy](https://github.com/abo-abo/swiper#ivy), and
 [Ido](https://www.gnu.org/software/emacs/manual/html_node/ido/index.html)*.
 
+<!-- longlines-start -->
+
 <!-- toc -->
 
 - [What is it?](#what-is-it)
@@ -39,6 +41,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Swiper](#swiper)
 
 <!-- tocstop -->
+
+<!-- longlines-stop -->
 
 ## What is it?
 
