@@ -1356,13 +1356,26 @@ plus CANDIDATE."
   (let* ((result (cond ((and selectrum--crm-p
                              (string-match crm-separator
                                            selectrum--previous-input-string))
-                        (with-temp-buffer
-                          (insert selectrum--previous-input-string)
-                          (goto-char (point-min))
-                          (while (re-search-forward crm-separator nil t))
-                          (delete-region (point) (point-max))
-                          (insert (selectrum--get-full candidate))
-                          (buffer-string)))
+                        (let ((crm
+                               (if (and selectrum--current-candidate-index
+                                        (< selectrum--current-candidate-index
+                                           0))
+                                   candidate
+                                 (with-temp-buffer
+                                   (insert selectrum--previous-input-string)
+                                   (goto-char (point-min))
+                                   (while (re-search-forward
+                                           crm-separator nil t))
+                                   (delete-region (point) (point-max))
+                                   (insert (selectrum--get-full candidate))
+                                   (buffer-string)))))
+                          (dolist (cand (split-string crm crm-separator t))
+                            (apply
+                             #'run-hook-with-args
+                             'selectrum-candidate-selected-hook
+                             (selectrum--get-full cand)
+                             selectrum--read-args))
+                          crm))
                        (t
                         (apply
                          #'run-hook-with-args
@@ -1443,26 +1456,29 @@ indices."
              (candidate (selectrum--get-candidate index))
              (full (selectrum--get-full candidate)))
         (progn
-          (if (not selectrum--crm-p)
-              (progn
-                (delete-region (minibuffer-prompt-end)
-                               (point-max))
-                (insert full))
-            (goto-char
-             (if (re-search-backward crm-separator
-                                     (minibuffer-prompt-end) t)
-                 (match-end 0)
-
-               (minibuffer-prompt-end)))
-            (delete-region (point) (point-max))
-            (insert full)
-            (when-let ((match
-                        (assoc crm-separator selectrum--crm-separator-alist)))
-              (insert (cdr match))))
-          (apply
-           #'run-hook-with-args
-           'selectrum-candidate-inserted-hook
-           candidate selectrum--read-args)
+          ;; Ignore for prompt selection.
+          (unless (and selectrum--current-candidate-index
+                       (< selectrum--current-candidate-index 0))
+            (cond ((not selectrum--crm-p)
+                   (delete-region (minibuffer-prompt-end)
+                                  (point-max))
+                   (insert full))
+                  (t
+                   (goto-char
+                    (if (re-search-backward crm-separator
+                                            (minibuffer-prompt-end) t)
+                        (match-end 0)
+                      (minibuffer-prompt-end)))
+                   (delete-region (point) (point-max))
+                   (insert full)
+                   (when-let ((match
+                               (assoc crm-separator
+                                      selectrum--crm-separator-alist)))
+                     (insert (cdr match)))))
+            (apply
+             #'run-hook-with-args
+             'selectrum-candidate-inserted-hook
+             full selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
