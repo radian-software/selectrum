@@ -1262,7 +1262,7 @@ list and sorted first."
   (cond ((functionp candidates)
          (setq selectrum--preprocessed-candidates nil)
          (setq selectrum--total-num-candidates 0)
-         (setq selectrum--dynamic-candidates candidates))
+         (setq-local selectrum--dynamic-candidates candidates))
         (t
          (setq selectrum--preprocessed-candidates
                (funcall selectrum-preprocess-candidates-function
@@ -1480,8 +1480,8 @@ indices."
              'selectrum-candidate-inserted-hook
              full selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
-          ;; same when the prompt was selected, this will switch
-          ;; selection to first candidate in that case.
+          ;; same when the prompt was reinserted. When the prompt was
+          ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil))
       (unless completion-fail-discreetly
         (ding)
@@ -1534,7 +1534,6 @@ Otherwise, just eval BODY."
             (lambda (var)
               `(,var ,var))
             '(selectrum--preprocessed-candidates
-              selectrum--dynamic-candidates
               selectrum--refined-candidates
               selectrum--match-required-p
               selectrum--move-default-candidate-p

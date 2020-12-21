@@ -13,15 +13,14 @@ find=(
 
 readarray -t files < <("${find[@]}" | sed 's#./##' | sort)
 
-code="$(cat <<"EOF"
-
-(length($0) >= 80 && $0 !~ /https?:\/\//) \
-{ printf "%s:%d: %s\n", FILENAME, NR, $0 }
-
-EOF
-)"
+set +o pipefail
 
 for file in "${files[@]}"; do
     echo "[longlines] $file" >&2
-    awk "$code" "$file"
+    cat "${file}"                                      \
+        | nl -ba                                       \
+        | sed '/[l]onglines-start/,/longlines-stop/d'  \
+        | grep -E -v 'https?://'                       \
+        | grep -E $'\t.{80}'                           \
+        | sed -E "s# *([0-9]+)\t#${file}:\1:#"
 done | (! grep .)
