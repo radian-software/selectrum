@@ -979,18 +979,18 @@ The specific details of the formatting are determined by
                                (minibuffer-contents)
                                lines)))
                  (match
-                  (concat
-                   (propertize
-                    (propertize newline/display 'face newline/face)
-                    'selectrum-candidate-display-prefix
-                    (number-to-string (1- len)))
+                  (propertize
                    (replace-regexp-in-string
                     "[ \t][ \t]+"
                     (propertize whitespace/display 'face whitespace/face)
                     (if (string-empty-p (minibuffer-contents))
                         ""
                       ;; Show first matched line.
-                      (or fmatch "")) 'fixed-case 'literal)))
+                      (or fmatch "")) 'fixed-case 'literal)
+                   'selectrum-candidate-display-prefix
+                   (propertize (concat (number-to-string (1- len))
+                                       newline/display ":")
+                               'face newline/face)))
                  (annot (replace-regexp-in-string
                          "\n" (propertize newline/display 'face newline/face)
                          (replace-regexp-in-string
