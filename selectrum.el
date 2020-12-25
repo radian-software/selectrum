@@ -554,6 +554,9 @@ updates is skipped.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
+(defvar selectrum--keep-index nil
+  "Whether to update the current index after refinement.")
+
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
@@ -641,15 +644,18 @@ INPUT defaults to current selectrum input string."
       (completion-metadata-get
        (completion-metadata input table pred) setting))))
 
-(defun selectrum-exhibit ()
-  "Trigger an update of Selectrum's completion UI."
+(defun selectrum-exhibit (&optional keep-index)
+  "Trigger an update of Selectrum's completion UI.
+If KEEP-INDEX is non-nil don't update the current candidate
+index."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (selectrum--minibuffer-post-command-hook))))
+      (let ((selectrum--keep-index keep-index))
+        (selectrum--minibuffer-post-command-hook)))))
 
 ;;;; Hook functions
 
@@ -776,28 +782,29 @@ greather than the window height."
                          (min (or selectrum--current-candidate-index 0)
                               (1- (length selectrum--refined-candidates)))))
               (setq selectrum--repeat nil))
-          (setq selectrum--current-candidate-index
-                (cond
-                 ((null selectrum--refined-candidates)
-                  (when (not selectrum--match-required-p)
-                    -1))
-                 ((and selectrum--default-candidate
-                       (string-empty-p (minibuffer-contents))
-                       (not (member selectrum--default-candidate
-                                    selectrum--refined-candidates)))
-                  -1)
-                 ((and selectrum--init-p
-                       (equal selectrum--default-candidate
-                              (minibuffer-contents)))
-                  -1)
-                 (selectrum--move-default-candidate-p
-                  0)
-                 (t
-                  (or (cl-position selectrum--default-candidate
-                                   selectrum--refined-candidates
-                                   :key #'selectrum--get-full
-                                   :test #'equal)
-                      0))))))
+          (unless selectrum--keep-index
+            (setq selectrum--current-candidate-index
+                  (cond
+                   ((null selectrum--refined-candidates)
+                    (when (not selectrum--match-required-p)
+                      -1))
+                   ((and selectrum--default-candidate
+                         (string-empty-p (minibuffer-contents))
+                         (not (member selectrum--default-candidate
+                                      selectrum--refined-candidates)))
+                    -1)
+                   ((and selectrum--init-p
+                         (equal selectrum--default-candidate
+                                (minibuffer-contents)))
+                    -1)
+                   (selectrum--move-default-candidate-p
+                    0)
+                   (t
+                    (or (cl-position selectrum--default-candidate
+                                     selectrum--refined-candidates
+                                     :key #'selectrum--get-full
+                                     :test #'equal)
+                        0)))))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
       (overlay-put selectrum--count-overlay
