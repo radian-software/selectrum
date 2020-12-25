@@ -782,9 +782,11 @@ greather than the window height."
                          (min (or selectrum--current-candidate-index 0)
                               (1- (length selectrum--refined-candidates)))))
               (setq selectrum--repeat nil))
-          (unless selectrum--keep-index
-            (setq selectrum--current-candidate-index
+          (setq selectrum--current-candidate-index
                   (cond
+                   (selectrum--keep-index
+                    (min (1- selectrum--total-num-candidates)
+                         selectrum--current-candidate-index))
                    ((null selectrum--refined-candidates)
                     (when (not selectrum--match-required-p)
                       -1))
@@ -804,7 +806,7 @@ greather than the window height."
                                      selectrum--refined-candidates
                                      :key #'selectrum--get-full
                                      :test #'equal)
-                        0)))))))
+                        0))))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
       (overlay-put selectrum--count-overlay
