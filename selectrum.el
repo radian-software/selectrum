@@ -783,30 +783,30 @@ greather than the window height."
                               (1- (length selectrum--refined-candidates)))))
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
-                  (cond
-                   (selectrum--keep-index
-                    (min (1- selectrum--total-num-candidates)
-                         selectrum--current-candidate-index))
-                   ((null selectrum--refined-candidates)
-                    (when (not selectrum--match-required-p)
-                      -1))
-                   ((and selectrum--default-candidate
-                         (string-empty-p (minibuffer-contents))
-                         (not (member selectrum--default-candidate
-                                      selectrum--refined-candidates)))
-                    -1)
-                   ((and selectrum--init-p
-                         (equal selectrum--default-candidate
-                                (minibuffer-contents)))
-                    -1)
-                   (selectrum--move-default-candidate-p
-                    0)
-                   (t
-                    (or (cl-position selectrum--default-candidate
-                                     selectrum--refined-candidates
-                                     :key #'selectrum--get-full
-                                     :test #'equal)
-                        0))))))
+                (cond
+                 (selectrum--keep-index
+                  (min (1- selectrum--total-num-candidates)
+                       selectrum--current-candidate-index))
+                 ((null selectrum--refined-candidates)
+                  (when (not selectrum--match-required-p)
+                    -1))
+                 ((and selectrum--default-candidate
+                       (string-empty-p (minibuffer-contents))
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates)))
+                  -1)
+                 ((and selectrum--init-p
+                       (equal selectrum--default-candidate
+                              (minibuffer-contents)))
+                  -1)
+                 (selectrum--move-default-candidate-p
+                  0)
+                 (t
+                  (or (cl-position selectrum--default-candidate
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))))))
       (overlay-put selectrum--count-overlay
                    'before-string (selectrum--count-info))
       (overlay-put selectrum--count-overlay
