@@ -51,7 +51,7 @@ The format is based on [Keep a Changelog].
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
 * Multiline candidates are now prefixed with the number of newlines
-  they contain ([#266]).
+  they contain ([#266], [#302]).
 
 ### Bugs fixed
 * Passing a symbol or a list of symbols to `completing-read` as
@@ -117,6 +117,7 @@ The format is based on [Keep a Changelog].
 [#293]: https://github.com/raxod502/selectrum/pull/293
 [#291]: https://github.com/raxod502/selectrum/issues/291
 [#295]: https://github.com/raxod502/selectrum/pull/295
+[#302]: https://github.com/raxod502/selectrum/pull/302
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
