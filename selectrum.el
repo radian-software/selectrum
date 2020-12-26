@@ -988,8 +988,7 @@ The specific details of the formatting are determined by
                       ;; Show first matched line.
                       (or fmatch "")) 'fixed-case 'literal)
                    'selectrum-candidate-display-prefix
-                   (propertize (format "(%d lines)"
-                                       (1- len))
+                   (propertize (format "(%d lines)" len)
                                'face newline/face)))
                  (annot (replace-regexp-in-string
                          "\n" (propertize newline/display 'face newline/face)
