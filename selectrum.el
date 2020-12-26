@@ -149,15 +149,16 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defcustom selectrum-insert-candidates-function #'selectrum-insert-candidates
+(defcustom selectrum-insert-candidates-function
+  #'selectrum-insert-candidates-vertically
   "Function to insert candidates for display.
 The insertion function should insert candidates into the current
 buffer. The function receives the same arguments as
-`selectrum-insert-candidates' and should return the number of
-candidates it inserted for display. `selectrum-insert-candidates'
-inserts candidates verticaly, to display candidates horizontally
-like `icomplete' you can use
-`selectrum-insert-candidates-icomplete'."
+`selectrum-insert-candidates-vertically' and should return the
+number of candidates it inserted for display. As the name implies
+`selectrum-insert-candidates-vertically' inserts candidates
+vertically, to display candidates horizontally like `icomplete'
+you can use `selectrum-insert-candidates-horizontally'."
   :type 'function)
 
 (defun selectrum-default-candidate-refine-function (input candidates)
@@ -711,7 +712,7 @@ greather than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
-(defun selectrum-insert-candidates
+(defun selectrum-insert-candidates-vertically
     (cb nrows ncols
         index max-index first-index-displayed last-index-displayed minip)
   "Insert candidates vertically.
@@ -748,13 +749,13 @@ for minibuffer display."
         (insert cand "\n"))
       n)))
 
-(defun selectrum-insert-candidates-icomplete
+(defun selectrum-insert-candidates-horizontally
     (cb nrows ncols
         index max-index first-index-displayed last-index-displayed minip)
   "Insert candidates horizontally into current buffer.
 For CB, NROWS, NCOLS, INDEX, MAX-INDEX, FIRST-INDEX-DISPLAYED,
 LAST-INDEX-DISPLAYED and MINIP see
-`selectrum-insert-candidates'."
+`selectrum-insert-candidates-vertically'."
   (ignore nrows minip)
   (let* ((first-index-displayed
           (cond ((or (not index)
