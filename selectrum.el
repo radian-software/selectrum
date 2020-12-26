@@ -1283,47 +1283,45 @@ list and sorted first."
 
 ;;;; Minibuffer commands
 
-(defun selectrum-previous-candidate ()
-  "Move selection to previous candidate, unless at beginning already."
-  (interactive)
-  (when selectrum--current-candidate-index
-    (setq selectrum--current-candidate-index
-          (max (if (and selectrum--match-required-p
-                        (cond (minibuffer-completing-file-name
-                               (not (file-exists-p
-                                     (substitute-in-file-name
-                                      (minibuffer-contents)))))
-                              (t
-                               (not (string-empty-p
-                                     (minibuffer-contents))))))
-                   0
-                 -1)
-               (1- selectrum--current-candidate-index)))))
+(defun selectrum-previous-candidate (&optional arg)
+  "Move selection ARG candidates up, stopping at the beginning."
+  (interactive "p")
+  (selectrum-next-candidate (- (or arg 1))))
 
-(defun selectrum-next-candidate ()
-  "Move selection to next candidate, unless at end already."
-  (interactive)
+(defun selectrum-next-candidate (&optional arg)
+  "Move selection ARG candidates down, stopping at the end."
+  (interactive "p")
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (min (1- (length selectrum--refined-candidates))
-               (1+ selectrum--current-candidate-index)))))
+          (selectrum--clamp
+           (+ selectrum--current-candidate-index (or arg 1))
+           (if (and selectrum--match-required-p
+                    (cond (minibuffer-completing-file-name
+                           (not (file-exists-p
+                                 (substitute-in-file-name
+                                  (minibuffer-contents)))))
+                          (t
+                           (not (string-empty-p
+                                 (minibuffer-contents))))))
+               0
+             -1)
+           (1- (length selectrum--refined-candidates))))))
 
-(defun selectrum-previous-page ()
-  "Move selection upwards by one page, unless at beginning already."
-  (interactive)
-  (when selectrum--current-candidate-index
-    (setq selectrum--current-candidate-index
-          (max 0 (- selectrum--current-candidate-index
-                    selectrum-num-candidates-displayed)))))
+(defun selectrum-previous-page (&optional arg)
+  "Move selection upwards by ARG pages, stopping at the beginning."
+  (interactive "p")
+  (selectrum-next-page (- (or arg 1))))
 
-(defun selectrum-next-page ()
-  "Move selection downwards by one page, unless at end already."
-  (interactive)
+(defun selectrum-next-page (&optional arg)
+  "Move selection downwards by ARG pages, stopping at the end."
+  (interactive "p")
   (when selectrum--current-candidate-index
     (setq selectrum--current-candidate-index
-          (min (1- (length selectrum--refined-candidates))
-               (+ selectrum--current-candidate-index
-                  selectrum-num-candidates-displayed)))))
+          (selectrum--clamp
+           (+ selectrum--current-candidate-index
+              (* (or arg 1) selectrum-num-candidates-displayed))
+           0
+           (1- (length selectrum--refined-candidates))))))
 
 (defun selectrum-goto-beginning ()
   "Move selection to first candidate."
@@ -1355,13 +1353,26 @@ plus CANDIDATE."
   (let* ((result (cond ((and selectrum--crm-p
                              (string-match crm-separator
                                            selectrum--previous-input-string))
-                        (with-temp-buffer
-                          (insert selectrum--previous-input-string)
-                          (goto-char (point-min))
-                          (while (re-search-forward crm-separator nil t))
-                          (delete-region (point) (point-max))
-                          (insert (selectrum--get-full candidate))
-                          (buffer-string)))
+                        (let ((crm
+                               (if (and selectrum--current-candidate-index
+                                        (< selectrum--current-candidate-index
+                                           0))
+                                   candidate
+                                 (with-temp-buffer
+                                   (insert selectrum--previous-input-string)
+                                   (goto-char (point-min))
+                                   (while (re-search-forward
+                                           crm-separator nil t))
+                                   (delete-region (point) (point-max))
+                                   (insert (selectrum--get-full candidate))
+                                   (buffer-string)))))
+                          (dolist (cand (split-string crm crm-separator t))
+                            (apply
+                             #'run-hook-with-args
+                             'selectrum-candidate-selected-hook
+                             (selectrum--get-full cand)
+                             selectrum--read-args))
+                          crm))
                        (t
                         (apply
                          #'run-hook-with-args
@@ -1442,26 +1453,29 @@ indices."
              (candidate (selectrum--get-candidate index))
              (full (selectrum--get-full candidate)))
         (progn
-          (if (not selectrum--crm-p)
-              (progn
-                (delete-region (minibuffer-prompt-end)
-                               (point-max))
-                (insert full))
-            (goto-char
-             (if (re-search-backward crm-separator
-                                     (minibuffer-prompt-end) t)
-                 (match-end 0)
-
-               (minibuffer-prompt-end)))
-            (delete-region (point) (point-max))
-            (insert full)
-            (when-let ((match
-                        (assoc crm-separator selectrum--crm-separator-alist)))
-              (insert (cdr match))))
-          (apply
-           #'run-hook-with-args
-           'selectrum-candidate-inserted-hook
-           candidate selectrum--read-args)
+          ;; Ignore for prompt selection.
+          (unless (and selectrum--current-candidate-index
+                       (< selectrum--current-candidate-index 0))
+            (cond ((not selectrum--crm-p)
+                   (delete-region (minibuffer-prompt-end)
+                                  (point-max))
+                   (insert full))
+                  (t
+                   (goto-char
+                    (if (re-search-backward crm-separator
+                                            (minibuffer-prompt-end) t)
+                        (match-end 0)
+                      (minibuffer-prompt-end)))
+                   (delete-region (point) (point-max))
+                   (insert full)
+                   (when-let ((match
+                               (assoc crm-separator
+                                      selectrum--crm-separator-alist)))
+                     (insert (cdr match)))))
+            (apply
+             #'run-hook-with-args
+             'selectrum-candidate-inserted-hook
+             full selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.

@@ -17,11 +17,18 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Candidates of `completing-read-multiple` which are submitted by
+  `selectrum-select-current-candidate` are now passed to
+  `selectrum-candidate-selected-hook` one by one in the order they
+  were added. Before the hook would not run for the multi candidates
+  case ([#296]).
 * File completions are faster because recomputation only happens on
   directory change now. Before, the candidates where recomputed on
   each input change which could slow down file completions
   significantly for cases where `read-file-name-internal` would be
   slow already ([#210], [#276], [#277]).
+* You can now give a prefix argument to selection moving commands
+  ([#275]).
 * If completion table metadata or `completion-extra-properties` define
   an `affixation-function` (introduced in Emacs 28) Selectrum will use
   this information to annotate the candidates accordingly ([#240],
@@ -54,6 +61,15 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302]).
 
 ### Bugs fixed
+* `selectrum-insert-current-candidate` would duplicate the prompt for
+  `completing-read-multiple` when the prompt was selected, which has
+  been fixed. The behavior is now like in `completing-read` ([#296]).
+* `selectrum-select-current-candidate` did not work correctly for
+  `completing-read-multiple` when the prompt was submitted, which has
+  been fixed ([#285], [#296]).
+* `selectrum-candidate-inserted-hook` would run after using
+  `selectrum-insert-current-candidate` with a selected prompt, which
+  has been fixed ([#296]).
 * Passing a symbol or a list of symbols to `completing-read` as
   default value DEF would trigger an error, which has been fixed.
   Selectrum now behaves like `completind-read-default` and returns the
@@ -109,14 +125,17 @@ The format is based on [Keep a Changelog].
 [#263]: https://github.com/raxod502/selectrum/pull/263
 [#266]: https://github.com/raxod502/selectrum/pull/266
 [#271]: https://github.com/raxod502/selectrum/pull/271
+[#275]: https://github.com/raxod502/selectrum/pull/275
 [#276]: https://github.com/raxod502/selectrum/issues/276
 [#277]: https://github.com/raxod502/selectrum/pull/277
+[#285]: https://github.com/raxod502/selectrum/issues/285
 [#286]: https://github.com/raxod502/selectrum/issues/286
 [#288]: https://github.com/raxod502/selectrum/pull/288
 [#289]: https://github.com/raxod502/selectrum/pull/289
 [#293]: https://github.com/raxod502/selectrum/pull/293
 [#291]: https://github.com/raxod502/selectrum/issues/291
 [#295]: https://github.com/raxod502/selectrum/pull/295
+[#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
 
 ## 3.0 (released 2020-10-20)
