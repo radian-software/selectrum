@@ -554,8 +554,10 @@ updates is skipped.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
-(defvar selectrum--keep-index nil
-  "Whether to update the current index after refinement.")
+(defvar selectrum--keep-candidate nil
+  "Whether to keep the current candidate selected.
+When the candidate is still a member of the refined results this
+will keep it selected after updates.")
 
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
@@ -644,17 +646,20 @@ INPUT defaults to current selectrum input string."
       (completion-metadata-get
        (completion-metadata input table pred) setting))))
 
-(defun selectrum-exhibit (&optional keep-index)
+(defun selectrum-exhibit (&optional keep-selection)
   "Trigger an update of Selectrum's completion UI.
-If KEEP-INDEX is non-nil don't update the current candidate
-index."
+If KEEP-SELECTION is non-nil keep the current candidate selected
+when possible."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (let ((selectrum--keep-index keep-index))
+      (let ((selectrum--keep-candidate
+             (if keep-selection
+                 (selectrum-get-current-candidate)
+               selectrum--keep-candidate)))
         (selectrum--minibuffer-post-command-hook)))))
 
 ;;;; Hook functions
@@ -784,9 +789,11 @@ greather than the window height."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
-                 (selectrum--keep-index
-                  (min (1- selectrum--total-num-candidates)
-                       selectrum--current-candidate-index))
+                 ((and selectrum--keep-candidate
+                       (cl-position selectrum--keep-candidate
+                                    selectrum--refined-candidates
+                                    :key #'selectrum--get-full
+                                    :test #'equal)))
                  ((null selectrum--refined-candidates)
                   (when (not selectrum--match-required-p)
                     -1))
