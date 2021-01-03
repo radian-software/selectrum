@@ -554,11 +554,6 @@ updates is skipped.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
-(defvar selectrum--keep-candidate nil
-  "Whether to keep the current candidate selected.
-When the candidate is still a member of the refined results this
-will keep it selected after updates.")
-
 (defvar selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
 
@@ -656,11 +651,9 @@ when possible."
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (let ((selectrum--keep-candidate
-             (if keep-selection
-                 (selectrum-get-current-candidate)
-               selectrum--keep-candidate)))
-        (selectrum--minibuffer-post-command-hook)))))
+      (selectrum--minibuffer-update
+       (and keep-selection
+            (selectrum-get-current-candidate))))))
 
 ;;;; Hook functions
 
@@ -710,6 +703,12 @@ greather than the window height."
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
+  (selectrum--minibuffer-update))
+
+(defun selectrum--minibuffer-update (&optional keep-selected)
+  "Update minibuffer state.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
@@ -789,8 +788,8 @@ greather than the window height."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
-                 ((and selectrum--keep-candidate
-                       (cl-position selectrum--keep-candidate
+                 ((and keep-selected
+                       (cl-position keep-selected
                                     selectrum--refined-candidates
                                     :key #'selectrum--get-full
                                     :test #'equal)))
