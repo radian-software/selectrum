@@ -434,7 +434,7 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
-(defun selectrum--normalize-collection (collection &optional predicate)
+(defun selectrum--normalize-collection (collection &optional predicate buffer)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
 obarray, a hash table, or a function, as per the docstring of
@@ -442,11 +442,16 @@ obarray, a hash table, or a function, as per the docstring of
 damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
-`all-completions'."
+`all-completions'.
+
+BUFFER is the buffer to compute the candidates in. It defaults to
+buffer of the selected window except for minibuffers where it
+defaults to the buffer of `minibuffer-selected-window'."
   ;; Making the last buffer current avoids the cost of potential
   ;; buffer switching for each candidate within the predicate (see
   ;; `describe-variable').
-  (with-current-buffer (window-buffer (minibuffer-selected-window))
+  (with-current-buffer (or buffer
+                           (window-buffer (minibuffer-selected-window)))
     (let ((completion-regexp-list nil))
       (all-completions "" collection predicate))))
 
