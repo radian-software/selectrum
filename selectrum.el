@@ -1026,7 +1026,7 @@ the update."
                (when (and selectrum--current-candidate-index
                           (not (< selectrum--current-candidate-index 0)))
                  selectrum--current-candidate-index)
-               (1- selectrum--total-num-candidates)
+               (1- (length selectrum--refined-candidates))
                selectrum--first-index-displayed
                selectrum--num-candidates-displayed
                (not selectrum-display-action)))
