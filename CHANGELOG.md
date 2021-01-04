@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog].
 ## Unreleased
 ### Features
 * The user option `selectrum-display-action` can be used to show
-  candidates in another window or frame ([#230]).
+  candidates in another window or frame ([#230], [#309]).
 * The user option `selectrum-show-indices` can now be a function that
   can be used to control the display of the a candidate's index ([#200]).
 * The user option `selectrum-extend-current-candidate-highlight`
@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Computation of candidates is faster for cases where the table
+  predicate makes the last buffer current, most notably this speeds up
+  the `describe-variable` command ([#312], [#316]).
 * Candidates of `completing-read-multiple` which are submitted by
   `selectrum-select-current-candidate` are now passed to
   `selectrum-candidate-selected-hook` one by one in the order they
@@ -58,7 +61,7 @@ The format is based on [Keep a Changelog].
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
 * Multiline candidates are now prefixed with the number of newlines
-  they contain ([#266]).
+  they contain ([#266], [#302]).
 
 ### Bugs fixed
 * `selectrum-insert-current-candidate` would duplicate the prompt for
@@ -136,6 +139,10 @@ The format is based on [Keep a Changelog].
 [#291]: https://github.com/raxod502/selectrum/issues/291
 [#295]: https://github.com/raxod502/selectrum/pull/295
 [#296]: https://github.com/raxod502/selectrum/pull/296
+[#302]: https://github.com/raxod502/selectrum/pull/302
+[#309]: https://github.com/raxod502/selectrum/pull/309
+[#312]: https://github.com/raxod502/selectrum/issues/312
+[#316]: https://github.com/raxod502/selectrum/pull/316
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
