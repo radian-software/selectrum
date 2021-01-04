@@ -443,8 +443,12 @@ damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
 `all-completions'."
-  (let ((completion-regexp-list nil))
-    (all-completions "" collection predicate)))
+  ;; Making the last buffer current avoids the cost of potential
+  ;; buffer switching for each candidate within the predicate (see
+  ;; `describe-variable').
+  (with-current-buffer (window-buffer (minibuffer-selected-window))
+    (let ((completion-regexp-list nil))
+      (all-completions "" collection predicate))))
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
