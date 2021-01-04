@@ -653,7 +653,7 @@ INPUT defaults to current selectrum input string."
 (defun selectrum-exhibit (&optional keep-selection)
   "Trigger an update of Selectrum's completion UI.
 If KEEP-SELECTION is non-nil keep the current candidate selected
-when possible."
+when possible (it is still a member of the candidate set)."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
