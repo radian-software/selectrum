@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Features
+* `selectrum-exhibit` got an optional argument which allows to keep
+  the current candidate selected after the update which is helpful for
+  async completions ([#306], [#307]).
 * The user option `selectrum-display-action` can be used to show
   candidates in another window or frame ([#230], [#309]).
 * The user option `selectrum-show-indices` can now be a function that
@@ -140,6 +143,8 @@ The format is based on [Keep a Changelog].
 [#295]: https://github.com/raxod502/selectrum/pull/295
 [#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
+[#306]: https://github.com/raxod502/selectrum/issues/306
+[#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
 [#312]: https://github.com/raxod502/selectrum/issues/312
 [#316]: https://github.com/raxod502/selectrum/pull/316
