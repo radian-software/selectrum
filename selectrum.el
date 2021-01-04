@@ -726,7 +726,7 @@ greather than the window height."
 
 (defun selectrum-insert-candidates-vertically
     (cb nrows ncols
-        index max-index first-index-displayed last-index-displayed minip)
+        index max-index first-index-displayed last-index-displayed win)
   "Insert candidates vertically.
 See `selectrum-insert-candidates-function'. Callback CB returns
 the candidates to be inserted. The callback receives two
@@ -742,7 +742,8 @@ applicable INDEX is the index of the currently selected candidate
 and MAX-INDEX is the index of the last candidate available.
 FIRST-INDEX-DISPLAYED is the index of the candidate that is
 currently the first one displayed and LAST-INDEX-DISPLAYED the
-index of the last one. MINIP is non-nil for minibuffer display."
+index of the last one. WIN is the window where buffer will get
+displayed in."
   (ignore ncols first-index-displayed last-index-displayed)
   (let* ((first-index-displayed
           (if (not index)
@@ -757,7 +758,7 @@ index of the last one. MINIP is non-nil for minibuffer display."
                   0))))
          (displayed-candidates
           (funcall cb first-index-displayed nrows)))
-    (when minip
+    (when (window-minibuffer-p win)
       (insert "\n"))
     (let ((n 0))
       (dolist (cand displayed-candidates)
@@ -767,12 +768,12 @@ index of the last one. MINIP is non-nil for minibuffer display."
 
 (defun selectrum-insert-candidates-horizontally
     (cb nrows ncols
-        index max-index first-index-displayed last-index-displayed minip)
+        index max-index first-index-displayed last-index-displayed win)
   "Insert candidates horizontally into current buffer.
 For CB, NROWS, NCOLS, INDEX, MAX-INDEX, FIRST-INDEX-DISPLAYED,
 LAST-INDEX-DISPLAYED and MINIP see
 `selectrum-insert-candidates-vertically'."
-  (ignore nrows minip)
+  (ignore nrows win)
   (let* ((first-index-displayed
           (cond ((or (not index)
                      (not first-index-displayed)
@@ -1033,7 +1034,7 @@ the update."
                (1- (length selectrum--refined-candidates))
                selectrum--first-index-displayed
                selectrum--num-candidates-displayed
-               (not selectrum-display-action)))
+               window))
         (unless (or selectrum-display-action
                     (not selectrum--refined-candidates))
           (setq minibuf-after-string
