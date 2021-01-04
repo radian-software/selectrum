@@ -660,7 +660,7 @@ when possible."
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (selectrum--minibuffer-update
+      (selectrum--update
        (and keep-selection
             (selectrum-get-current-candidate))))))
 
@@ -711,10 +711,10 @@ greather than the window height."
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
-  (selectrum--minibuffer-update))
+  (selectrum--update))
 
-(defun selectrum--minibuffer-update (&optional keep-selected)
-  "Update minibuffer state.
+(defun selectrum--update (&optional keep-selected)
+  "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
   (unless selectrum--skip-updates-p
@@ -796,11 +796,12 @@ the update."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
-                 ((and keep-selected
-                       (cl-position keep-selected
-                                    selectrum--refined-candidates
-                                    :key #'selectrum--get-full
-                                    :test #'equal)))
+                 (keep-selected
+                  (or (cl-position keep-selected
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))
                  ((null selectrum--refined-candidates)
                   (when (not selectrum--match-required-p)
                     -1))
