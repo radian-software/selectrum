@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Computation of candidates is faster for cases where the table
+  predicate makes the last buffer current, most notably this speeds up
+  the `describe-variable` command ([#312], [#316]).
 * Candidates of `completing-read-multiple` which are submitted by
   `selectrum-select-current-candidate` are now passed to
   `selectrum-candidate-selected-hook` one by one in the order they
@@ -138,6 +141,8 @@ The format is based on [Keep a Changelog].
 [#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
 [#309]: https://github.com/raxod502/selectrum/pull/309
+[#312]: https://github.com/raxod502/selectrum/issues/312
+[#316]: https://github.com/raxod502/selectrum/pull/316
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
