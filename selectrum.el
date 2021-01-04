@@ -446,7 +446,7 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
-(defun selectrum--normalize-collection (collection &optional predicate)
+(defun selectrum--normalize-collection (collection &optional predicate buffer)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
 obarray, a hash table, or a function, as per the docstring of
@@ -454,9 +454,18 @@ obarray, a hash table, or a function, as per the docstring of
 damaging the original COLLECTION.
 
 If PREDICATE is non-nil, then it filters the collection as in
-`all-completions'."
-  (let ((completion-regexp-list nil))
-    (all-completions "" collection predicate)))
+`all-completions'.
+
+BUFFER is the buffer to compute the candidates in. It defaults to
+buffer of the selected window except for minibuffers where it
+defaults to the buffer of `minibuffer-selected-window'."
+  ;; Making the last buffer current avoids the cost of potential
+  ;; buffer switching for each candidate within the predicate (see
+  ;; `describe-variable').
+  (with-current-buffer (or buffer
+                           (window-buffer (minibuffer-selected-window)))
+    (let ((completion-regexp-list nil))
+      (all-completions "" collection predicate))))
 
 (defun selectrum--remove-default-from-prompt (prompt)
   "Remove the indication of the default value from PROMPT.
@@ -656,15 +665,19 @@ INPUT defaults to current selectrum input string."
       (completion-metadata-get
        (completion-metadata input table pred) setting))))
 
-(defun selectrum-exhibit ()
-  "Trigger an update of Selectrum's completion UI."
+(defun selectrum-exhibit (&optional keep-selection)
+  "Trigger an update of Selectrum's completion UI.
+If KEEP-SELECTION is non-nil keep the current candidate selected
+when possible (it is still a member of the candidate set)."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (selectrum--minibuffer-post-command-hook))))
+      (selectrum--update
+       (and keep-selection
+            (selectrum-get-current-candidate))))))
 
 ;;;; Hook functions
 
@@ -692,13 +705,12 @@ Window will be created by `selectrum-display-action'."
                    (setq buffer-read-only t)
                    (setq show-trailing-whitespace nil)
                    (goto-char (point-min))
-                   (current-buffer)))))
+                   (current-buffer))))
+        (action selectrum-display-action))
     (or (get-buffer-window buf 'visible)
         (with-selected-window (minibuffer-selected-window)
           (let* ((frame (selected-frame))
-                 (window (display-buffer
-                          buf
-                          selectrum-display-action)))
+                 (window (display-buffer buf action)))
             (select-frame-set-input-focus frame)
             window)))))
 
@@ -834,6 +846,12 @@ candidates are inserted is determined by
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
+  (selectrum--update))
+
+(defun selectrum--update (&optional keep-selected)
+  "Update state.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
@@ -915,6 +933,12 @@ candidates are inserted is determined by
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
+                 (keep-selected
+                  (or (cl-position keep-selected
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))
                  ((null selectrum--refined-candidates)
                   (when (not selectrum--match-required-p)
                     -1))
@@ -1104,18 +1128,17 @@ The specific details of the formatting are determined by
                                (minibuffer-contents)
                                lines)))
                  (match
-                  (concat
-                   (propertize
-                    (propertize newline/display 'face newline/face)
-                    'selectrum-candidate-display-prefix
-                    (number-to-string (1- len)))
+                  (propertize
                    (replace-regexp-in-string
                     "[ \t][ \t]+"
                     (propertize whitespace/display 'face whitespace/face)
                     (if (string-empty-p (minibuffer-contents))
                         ""
                       ;; Show first matched line.
-                      (or fmatch "")) 'fixed-case 'literal)))
+                      (or fmatch "")) 'fixed-case 'literal)
+                   'selectrum-candidate-display-prefix
+                   (propertize (format "(%d lines)" len)
+                               'face newline/face)))
                  (annot (replace-regexp-in-string
                          "\n" (propertize newline/display 'face newline/face)
                          (replace-regexp-in-string
