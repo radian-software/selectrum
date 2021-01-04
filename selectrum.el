@@ -731,14 +731,18 @@ greather than the window height."
 See `selectrum-insert-candidates-function'. Callback CB returns
 the candidates to be inserted. The callback receives two
 arguments, the index position and the number of candidates and
-optionally a third argument which disables annotations if
-non-nil. NROWS is the number of lines available and NCOLS the
-number of available columns. If applicable INDEX is the index of
-the currently selected candidate and MAX-INDEX is the index of
-the last candidate available. FIRST-INDEX-DISPLAYED is the index
-of the candidate that is currently the first one displayed and
-LAST-INDEX-DISPLAYED the index of the last one. MINIP is non-nil
-for minibuffer display."
+optionally a third argument which allows passing and annotation
+function. If given the function receives three optional
+arguments: a prefix, suffix and a right margin annotation of the
+currently selected candidate and should take care to display
+them, the annotations display of others candidates than the
+current is disabled in this case. NROWS is the number of lines
+available and NCOLS the number of available columns. If
+applicable INDEX is the index of the currently selected candidate
+and MAX-INDEX is the index of the last candidate available.
+FIRST-INDEX-DISPLAYED is the index of the candidate that is
+currently the first one displayed and LAST-INDEX-DISPLAYED the
+index of the last one. MINIP is non-nil for minibuffer display."
   (ignore ncols first-index-displayed last-index-displayed)
   (let* ((first-index-displayed
           (if (not index)
@@ -788,7 +792,7 @@ LAST-INDEX-DISPLAYED and MINIP see
                    ;; 3 for separation, 1 for minimal length of a
                    ;; candidate.
                    (floor ncols 4)
-                   'no-annots))
+                   #'ignore))
          (n 0))
     (while (and cands
                 (> ncols 0))
@@ -818,7 +822,7 @@ candidates are inserted is determined by
     (funcall
      insert-fun
      (lambda (first-index-displayed
-              ncands &optional no-annots)
+              ncands &optional annot-fun)
        (with-current-buffer (window-buffer (active-minibuffer-window))
          (setq selectrum--first-index-displayed
                first-index-displayed)
@@ -833,7 +837,7 @@ candidates are inserted is determined by
             ncands))
           (when (and first-index-displayed index)
             (- index first-index-displayed))
-          no-annots)))
+          annot-fun)))
      nlines
      ncols
      index
@@ -1266,12 +1270,13 @@ suffix."
 
 (defun selectrum--candidates-display-strings (candidates
                                               highlighted-index
-                                              no-annots
+                                              annot-fun
                                               &optional table pred props)
   "Get display strings for CANDIDATES.
-HIGHLIGHTED-INDEX is the currently selected index. If NO-ANNOTS
-is non-nil don't add any annotations. TABLE defaults to
-`minibuffer-completion-table'. PRED defaults to
+HIGHLIGHTED-INDEX is the currently selected index. If ANNOT-FUN
+is non-nil don't add any annotations but call the function with
+the annotations of the currently highlighted candidate. TABLE
+defaults to `minibuffer-completion-table'. PRED defaults to
 `minibuffer-completion-predicate'. PROPS defaults to
 `completion-extra-properties'."
   (let* ((index 0)
@@ -1282,9 +1287,7 @@ is non-nil don't add any annotations. TABLE defaults to
                   (plist-get completion-extra-properties
                              :affixation-function)))
          (docsigf (plist-get props :company-docsig))
-         (candidates (cond (no-annots
-                            candidates)
-                           (aff
+         (candidates (cond (aff
                             (selectrum--affixate aff candidates))
                            ((or annotf docsigf)
                             (selectrum--annotate candidates
@@ -1294,20 +1297,19 @@ is non-nil don't add any annotations. TABLE defaults to
          (lines (selectrum--ensure-single-lines candidates)))
     (with-temp-buffer
       (dolist (candidate lines)
-        (let* ((prefix (unless no-annots
-                         (get-text-property
-                          0 'selectrum-candidate-display-prefix
-                          candidate)))
-               (suffix (unless no-annots
-                         (get-text-property
-                          0 'selectrum-candidate-display-suffix
-                          candidate)))
+        (let* ((prefix (get-text-property
+                        0 'selectrum-candidate-display-prefix
+                        candidate))
+               (suffix (get-text-property
+                        0 'selectrum-candidate-display-suffix
+                        candidate))
+               (right-margin (get-text-property
+                              0 'selectrum-candidate-display-right-margin
+                              candidate))
                (displayed-candidate
-                (concat prefix candidate suffix))
-               (right-margin (unless no-annots
-                               (get-text-property
-                                0 'selectrum-candidate-display-right-margin
-                                candidate)))
+                (if annot-fun
+                    candidate
+                  (concat prefix candidate suffix)))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
@@ -1332,7 +1334,9 @@ is non-nil don't add any annotations. TABLE defaults to
           (when formatting-current-candidate
             (setq displayed-candidate
                   (selectrum--add-face
-                   displayed-candidate 'selectrum-current-candidate)))
+                   displayed-candidate 'selectrum-current-candidate))
+            (when annot-fun
+              (funcall annot-fun prefix suffix right-margin)))
           (insert "\n")
           (when selectrum-show-indices
             (let* ((display-fn (if (functionp selectrum-show-indices)
@@ -1344,7 +1348,7 @@ is non-nil don't add any annotations. TABLE defaults to
                (propertize curr-index 'face 'minibuffer-prompt))))
           (insert displayed-candidate)
           (cond
-           (right-margin
+           ((and right-margin (not annot-fun))
             (insert
              (concat
               (propertize
