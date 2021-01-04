@@ -650,15 +650,19 @@ INPUT defaults to current selectrum input string."
       (completion-metadata-get
        (completion-metadata input table pred) setting))))
 
-(defun selectrum-exhibit ()
-  "Trigger an update of Selectrum's completion UI."
+(defun selectrum-exhibit (&optional keep-selection)
+  "Trigger an update of Selectrum's completion UI.
+If KEEP-SELECTION is non-nil keep the current candidate selected
+when possible (it is still a member of the candidate set)."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
                  (not selectrum--dynamic-candidates))
         (setq selectrum--preprocessed-candidates nil))
       (setq selectrum--previous-input-string nil)
-      (selectrum--minibuffer-post-command-hook))))
+      (selectrum--update
+       (and keep-selection
+            (selectrum-get-current-candidate))))))
 
 ;;;; Hook functions
 
@@ -707,6 +711,12 @@ greather than the window height."
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
+  (selectrum--update))
+
+(defun selectrum--update (&optional keep-selected)
+  "Update state.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
@@ -786,6 +796,12 @@ greather than the window height."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
+                 (keep-selected
+                  (or (cl-position keep-selected
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))
                  ((null selectrum--refined-candidates)
                   (when (not selectrum--match-required-p)
                     -1))
