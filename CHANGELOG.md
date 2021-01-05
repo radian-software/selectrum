@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The prompt gets selected when using `next-history-element` and the
+  prompt equals the default ([#323], [#324]).
 * Computation of candidates is faster for `describe-variable` ([#312],
   [#316], [#320], [#321]).
 * Candidates of `completing-read-multiple` which are submitted by
@@ -66,6 +68,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* `minibuffer-default` is now treated as the default when set, before
+  it would have no effect. When a list the car is used as default as
+  of now ([#324]).
 * `selectrum-extend-current-candidate-highlight`,
   `selectrum-show-indices`, `selectrum-right-margin-padding` and
   `selectrum-multiline-display-settings` wouldn't use the local
@@ -155,6 +160,8 @@ The format is based on [Keep a Changelog].
 [#318]: https://github.com/raxod502/selectrum/pull/318
 [#320]: https://github.com/raxod502/selectrum/issues/320
 [#321]: https://github.com/raxod502/selectrum/pull/321
+[#323]: https://github.com/raxod502/selectrum/issues/323
+[#324]: https://github.com/raxod502/selectrum/pull/324
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
