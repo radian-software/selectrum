@@ -434,6 +434,7 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
+(declare-function help--symbol-completion-table "help-fns")
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
