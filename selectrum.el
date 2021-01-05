@@ -1307,9 +1307,12 @@ defaults to `minibuffer-completion-table'. PRED defaults to
                            (t candidates)))
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
-         (margin-padding selectrum-right-margin-padding))
+         (margin-padding selectrum-right-margin-padding)
+         (lines (selectrum--ensure-single-lines
+                 candidates
+                 selectrum-multiline-display-settings)))
     (with-temp-buffer
-      (dolist (candidate candidates)
+      (dolist (candidate lines)
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
