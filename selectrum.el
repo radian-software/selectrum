@@ -434,7 +434,6 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
-(declare-function help--symbol-completion-table "help-fns")
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
@@ -447,7 +446,7 @@ If PREDICATE is non-nil, then it filters the collection as in
   ;; Making the last buffer current avoids the cost of potential
   ;; buffer switching for each candidate within the predicate (see
   ;; `describe-variable').
-  (with-current-buffer (if (eq collection #'help--symbol-completion-table)
+  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
                            (window-buffer (minibuffer-selected-window))
                          (current-buffer))
     (let ((completion-regexp-list nil))
