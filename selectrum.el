@@ -1512,7 +1512,7 @@ indices."
             (apply
              #'run-hook-with-args
              'selectrum-candidate-inserted-hook
-             full selectrum--read-args))
+             candidate selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
