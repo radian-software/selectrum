@@ -959,38 +959,38 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates)
+(defun selectrum--ensure-single-lines (candidates settings)
   "Return list of single-line CANDIDATES.
 Multi-line candidates are merged into a single line. The resulting
 single-line candidates are then shortened by replacing repeated
 whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
-`selectrum-multiline-display-settings'."
+SETTINGS, see `selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
          ;; The formatting settings are the same for all multi-line
          ;; candidates, and so only need to be gotten once from
-         ;; `selectrum-multiline-display-settings'.
+         ;; `settings'.
          ;;
          ;; - Matching lines
          (match/transformation
-          (alist-get 'match selectrum-multiline-display-settings))
+          (alist-get 'match settings))
          (match/display (car match/transformation))
          (match/face (cadr match/transformation))
          ;; - Truncated candidate
          (truncation/transformation
-          (alist-get 'truncation selectrum-multiline-display-settings))
+          (alist-get 'truncation settings))
          (truncation/display (car truncation/transformation))
          (truncation/face (cadr truncation/transformation))
          ;; - Newlines
          (newline/transformation
-          (alist-get 'newline selectrum-multiline-display-settings))
+          (alist-get 'newline settings))
          (newline/display (car newline/transformation))
          (newline/face (cadr newline/transformation))
          ;; - Repeated whitespace
          (whitespace/transformation
-          (alist-get 'whitespace selectrum-multiline-display-settings))
+          (alist-get 'whitespace settings))
          (whitespace/display (car whitespace/transformation))
          (whitespace/face (cadr whitespace/transformation)))
 
@@ -1168,6 +1168,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                                                  :annotf annotf
                                                  :docsigf docsigf))
                            (t candidates)))
+         (extend selectrum-extend-current-candidate-highlight)
+         (show-indices selectrum-show-indices)
+         (margin-padding selectrum-right-margin-padding)
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1176,7 +1179,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            ;; to the filter function (for example `orderless'
            ;; requires this).
            (funcall selectrum-highlight-candidates-function
-                    input candidates))))
+                    input candidates)
+           selectrum-multiline-display-settings)))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
@@ -1216,9 +1220,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                   (selectrum--add-face
                    displayed-candidate 'selectrum-current-candidate)))
           (insert "\n")
-          (when selectrum-show-indices
-            (let* ((display-fn (if (functionp selectrum-show-indices)
-                                   selectrum-show-indices
+          (when show-indices
+            (let* ((display-fn (if (functionp show-indices)
+                                   show-indices
                                  (lambda (i) (format "%2d " i))))
                    (curr-index (substring-no-properties
                                 (funcall display-fn (1+ index)))))
@@ -1237,12 +1241,12 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                'display
                `(space :align-to (- right-fringe
                                     ,(string-width right-margin)
-                                    selectrum-right-margin-padding)))
+                                    ,margin-padding)))
               (if formatting-current-candidate
                   (selectrum--add-face
                    right-margin'selectrum-current-candidate)
                 right-margin))))
-           ((and selectrum-extend-current-candidate-highlight
+           ((and extend
                  formatting-current-candidate)
             (insert
              (propertize
@@ -1250,7 +1254,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
               'face 'selectrum-current-candidate
               'display
               `(space :align-to (- right-fringe
-                                   selectrum-right-margin-padding)))))))
+                                   ,margin-padding)))))))
         (cl-incf index))
       (goto-char (point-min))
       ;; Skip initial newline.
