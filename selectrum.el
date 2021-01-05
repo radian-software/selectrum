@@ -998,7 +998,8 @@ SETTINGS, see `selectrum-multiline-display-settings'."
       (if (string-match-p "\n" cand)
           (let* ((lines (split-string cand "\n"))
                  (len (length lines))
-                 (fmatch (if (string-empty-p (minibuffer-contents))
+                 (input (minibuffer-contents))
+                 (fmatch (if (string-empty-p input)
                              (with-temp-buffer
                                (insert cand)
                                (goto-char (point-min))
@@ -1007,7 +1008,7 @@ SETTINGS, see `selectrum-multiline-display-settings'."
                                                  (line-end-position)))
                            (car (funcall
                                  selectrum-refine-candidates-function
-                                 (minibuffer-contents)
+                                 input
                                  lines))))
                  (match
                   (propertize
