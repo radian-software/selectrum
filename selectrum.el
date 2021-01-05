@@ -770,7 +770,7 @@ LAST-INDEX-DISPLAYED the index of the last one."
 (defun selectrum-insert-candidates-horizontally
     (buf win cb nrows ncols
          index max-index first-index-displayed last-index-displayed)
-  "Insert candidates horizontally into current buffer.
+  "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'."
