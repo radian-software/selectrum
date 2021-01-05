@@ -152,8 +152,8 @@ frame you can use the provided action function
 (defcustom selectrum-insert-candidates-function
   #'selectrum-insert-candidates-vertically
   "Function to insert candidates for display.
-The insertion function should insert candidates into the current
-buffer. The function receives the same arguments as
+The insertion function should insert candidates into the buffer
+passed as first argument. The remaining arguments are the same as
 `selectrum-insert-candidates-vertically' and should return the
 number of candidates it inserted for display. As the name implies
 `selectrum-insert-candidates-vertically' inserts candidates
@@ -725,55 +725,57 @@ greather than the window height."
            (window-body-height window 'pixelwise))))
 
 (defun selectrum-insert-candidates-vertically
-    (cb nrows ncols
-        index max-index first-index-displayed last-index-displayed win)
+    (buf win cb nrows ncols
+         index max-index first-index-displayed last-index-displayed)
   "Insert candidates vertically.
-See `selectrum-insert-candidates-function'. Callback CB returns
-the candidates to be inserted. The callback receives two
-arguments, the index position and the number of candidates and
-optionally a third argument which allows passing and annotation
-function. If given the function receives three optional
-arguments: a prefix, suffix and a right margin annotation of the
-currently selected candidate and should take care to display
-them, the annotations display of others candidates than the
-current is disabled in this case. NROWS is the number of lines
-available and NCOLS the number of available columns. If
-applicable INDEX is the index of the currently selected candidate
-and MAX-INDEX is the index of the last candidate available.
-FIRST-INDEX-DISPLAYED is the index of the candidate that is
-currently the first one displayed and LAST-INDEX-DISPLAYED the
-index of the last one. WIN is the window where buffer will get
-displayed in."
+See `selectrum-insert-candidates-function'. BUF is the buffer to
+use for insertion. WIN is the window where buffer will get
+displayed in.Callback CB returns the candidates to be inserted.
+The callback receives two arguments, the index position and the
+number of candidates and optionally a third argument which allows
+passing and annotation function. If given the function receives
+three optional arguments: a prefix, suffix and a right margin
+annotation of the currently selected candidate and should take
+care to display them, the annotations display of others
+candidates than the current is disabled in this case. NROWS is
+the number of lines available and NCOLS the number of available
+columns. If applicable INDEX is the index of the currently
+selected candidate and MAX-INDEX is the index of the last
+candidate available. FIRST-INDEX-DISPLAYED is the index of the
+candidate that is currently the first one displayed and
+LAST-INDEX-DISPLAYED the index of the last one."
   (ignore ncols first-index-displayed last-index-displayed)
-  (let* ((first-index-displayed
-          (if (not index)
-              0
-            (selectrum--clamp
-             ;; Adding one here makes it look slightly better, as
-             ;; there are guaranteed to be more candidates shown
-             ;; below the selection than above.
-             (1+ (- index (max 1 (/ nrows 2))))
-             0
-             (max (- (1+ max-index) nrows)
-                  0))))
-         (displayed-candidates
-          (funcall cb first-index-displayed nrows)))
-    (when (window-minibuffer-p win)
-      (insert "\n"))
-    (let ((n 0))
-      (dolist (cand displayed-candidates)
-        (cl-incf n)
-        (insert cand "\n"))
-      n)))
+  (with-current-buffer buf
+    (let* ((first-index-displayed
+            (if (not index)
+                0
+              (selectrum--clamp
+               ;; Adding one here makes it look slightly better, as
+               ;; there are guaranteed to be more candidates shown
+               ;; below the selection than above.
+               (1+ (- index (max 1 (/ nrows 2))))
+               0
+               (max (- (1+ max-index) nrows)
+                    0))))
+           (displayed-candidates
+            (funcall cb first-index-displayed nrows)))
+      (when (window-minibuffer-p win)
+        (insert "\n"))
+      (let ((n 0))
+        (dolist (cand displayed-candidates)
+          (cl-incf n)
+          (insert cand "\n"))
+        n))))
 
 (defun selectrum-insert-candidates-horizontally
-    (cb nrows ncols
-        index max-index first-index-displayed last-index-displayed win)
+    (buf win cb nrows ncols
+         index max-index first-index-displayed last-index-displayed)
   "Insert candidates horizontally into current buffer.
-For CB, NROWS, NCOLS, INDEX, MAX-INDEX, FIRST-INDEX-DISPLAYED,
-LAST-INDEX-DISPLAYED and MINIP see
+For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
+FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'."
   (ignore nrows win)
+  (setq-local selectrum-extend-current-candidate-highlight nil)
   (let* ((first-index-displayed
           (cond ((or (not index)
                      (not first-index-displayed)
@@ -795,33 +797,36 @@ LAST-INDEX-DISPLAYED and MINIP see
                    (floor ncols 4)
                    #'ignore))
          (n 0))
-    (while (and cands
-                (> ncols 0))
-      (let ((cand (pop cands)))
-        (setq ncols (- ncols (length cand) 3))
-        (when (or (>= ncols 0)
-                  (= n 0))
-          (insert cand)
-          (cl-incf n)
-          (when cands
-            (insert  " | ")))))
-    n))
+    (with-current-buffer buf
+      (while (and cands
+                  (> ncols 0))
+        (let ((cand (pop cands)))
+          (setq ncols (- ncols (length cand) 3))
+          (when (or (>= ncols 0)
+                    (= n 0))
+            (insert cand)
+            (cl-incf n)
+            (when cands
+              (insert  " | ")))))
+      n)))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates
-                buf nlines ncols input index mindex findex num minip)
-  "Use INSERT-FUN to inser CANDIDATES into BUF for display.
-NLINES and NCOLS are the number of lines and columns available.
-INPUT is the current user input. INDEX is the index of the
-currently selected candidate if any. MINDEX is the maximum and
-FINDEX the first index. NUM is the number of currently displayed
-candidates and MINIP is non-nil for minibuffer display. How the
-candidates are inserted is determined by
+                buf win nlines ncols input index mindex findex num)
+  "Use INSERT-FUN to insert CANDIDATES into BUF for display.
+BUF will be displayed in window WIN. NLINES and NCOLS are the
+number of lines and columns available. INPUT is the current user
+input. INDEX is the index of the currently selected candidate if
+any. MINDEX is the maximum and FINDEX the first index. NUM is the
+number of currently displayed candidates. How the candidates are
+inserted is determined by
 `selectrum-insert-candidates-function'."
   (with-current-buffer buf
     (erase-buffer)
     (funcall
      insert-fun
+     buf
+     win
      (lambda (first-index-displayed
               ncands &optional annot-fun)
        (with-current-buffer (window-buffer (active-minibuffer-window))
@@ -846,8 +851,7 @@ candidates are inserted is determined by
      findex
      (when (and findex num)
        (+ findex
-          (max 0 (1- num))))
-     minip)))
+          (max 0 (1- num)))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -1026,6 +1030,7 @@ the update."
                selectrum-insert-candidates-function
                selectrum--refined-candidates
                buffer
+               window
                nlines ncols input
                ;; Exclude selected prompt.
                (when (and selectrum--current-candidate-index
@@ -1033,8 +1038,7 @@ the update."
                  selectrum--current-candidate-index)
                (1- (length selectrum--refined-candidates))
                selectrum--first-index-displayed
-               selectrum--num-candidates-displayed
-               window))
+               selectrum--num-candidates-displayed))
         (unless (or selectrum-display-action
                     (not selectrum--refined-candidates))
           (setq minibuf-after-string
