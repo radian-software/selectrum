@@ -64,7 +64,7 @@ The format is based on [Keep a Changelog].
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
 * Multiline candidates are now prefixed with the number of newlines
-  they contain ([#266], [#302]).
+  they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
 * `selectrum-extend-current-candidate-highlight`,
@@ -153,6 +153,7 @@ The format is based on [Keep a Changelog].
 [#312]: https://github.com/raxod502/selectrum/issues/312
 [#316]: https://github.com/raxod502/selectrum/pull/316
 [#317]: https://github.com/raxod502/selectrum/pull/317
+[#318]: https://github.com/raxod502/selectrum/pull/318
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

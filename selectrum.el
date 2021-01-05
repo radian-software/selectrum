@@ -998,19 +998,24 @@ SETTINGS, see `selectrum-multiline-display-settings'."
       (if (string-match-p "\n" cand)
           (let* ((lines (split-string cand "\n"))
                  (len (length lines))
-                 (fmatch (car (funcall
-                               selectrum-refine-candidates-function
-                               (minibuffer-contents)
-                               lines)))
+                 (input (minibuffer-contents))
+                 (fmatch (if (string-empty-p input)
+                             (with-temp-buffer
+                               (insert cand)
+                               (goto-char (point-min))
+                               (skip-chars-forward " \t\n")
+                               (buffer-substring (line-beginning-position)
+                                                 (line-end-position)))
+                           (car (funcall
+                                 selectrum-refine-candidates-function
+                                 input
+                                 lines))))
                  (match
                   (propertize
                    (replace-regexp-in-string
                     "[ \t][ \t]+"
                     (propertize whitespace/display 'face whitespace/face)
-                    (if (string-empty-p (minibuffer-contents))
-                        ""
-                      ;; Show first matched line.
-                      (or fmatch "")) 'fixed-case 'literal)
+                    (or fmatch "") 'fixed-case 'literal)
                    'selectrum-candidate-display-prefix
                    (propertize (format "(%d lines)" len)
                                'face newline/face)))
