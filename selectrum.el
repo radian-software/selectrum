@@ -821,37 +821,35 @@ any. MINDEX is the maximum and FINDEX the first index. NUM is the
 number of currently displayed candidates. How the candidates are
 inserted is determined by
 `selectrum-insert-candidates-function'."
-  (with-current-buffer buf
-    (erase-buffer)
-    (funcall
-     insert-fun
-     buf
-     win
-     (lambda (first-index-displayed
-              ncands &optional annot-fun)
-       (with-current-buffer (window-buffer (active-minibuffer-window))
-         (setq selectrum--first-index-displayed
-               first-index-displayed)
-         (selectrum--candidates-display-strings
-          (funcall
-           selectrum-highlight-candidates-function
-           input
-           (seq-take
-            (nthcdr
-             first-index-displayed
-             candidates)
-            ncands))
-          (when (and first-index-displayed index)
-            (- index first-index-displayed))
-          annot-fun)))
-     nlines
-     ncols
-     index
-     mindex
-     findex
-     (when (and findex num)
-       (+ findex
-          (max 0 (1- num)))))))
+  (funcall
+   insert-fun
+   buf
+   win
+   (lambda (first-index-displayed
+            ncands &optional annot-fun)
+     (with-current-buffer (window-buffer (active-minibuffer-window))
+       (setq selectrum--first-index-displayed
+             first-index-displayed)
+       (selectrum--candidates-display-strings
+        (funcall
+         selectrum-highlight-candidates-function
+         input
+         (seq-take
+          (nthcdr
+           first-index-displayed
+           candidates)
+          ncands))
+        (when (and first-index-displayed index)
+          (- index first-index-displayed))
+        annot-fun)))
+   nlines
+   ncols
+   index
+   mindex
+   findex
+   (when (and findex num)
+     (+ findex
+        (max 0 (1- num))))))
 
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
@@ -987,7 +985,10 @@ the update."
                       (- (window-body-width window)
                          (point-max)
                          2)))
-             (buffer (get-buffer-create selectrum--candidates-buffer))
+             (buffer (with-current-buffer
+                         (get-buffer-create selectrum--candidates-buffer)
+                       (erase-buffer)
+                       (current-buffer)))
              (default
                (if (or (and selectrum--current-candidate-index
                             (< selectrum--current-candidate-index 0))
