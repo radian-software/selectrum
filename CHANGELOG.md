@@ -67,6 +67,10 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302]).
 
 ### Bugs fixed
+* `selectrum-extend-current-candidate-highlight`,
+  `selectrum-show-indices`, `selectrum-right-margin-padding` and
+  `selectrum-multiline-display-settings` wouldn't use the local
+  session bindings if there were any, which has been fixed ([#317]).
 * `selectrum-insert-current-candidate` would duplicate the prompt for
   `completing-read-multiple` when the prompt was selected, which has
   been fixed. The behavior is now like in `completing-read` ([#296]).
@@ -148,6 +152,7 @@ The format is based on [Keep a Changelog].
 [#309]: https://github.com/raxod502/selectrum/pull/309
 [#312]: https://github.com/raxod502/selectrum/issues/312
 [#316]: https://github.com/raxod502/selectrum/pull/316
+[#317]: https://github.com/raxod502/selectrum/pull/317
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
