@@ -1164,6 +1164,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                                                  :annotf annotf
                                                  :docsigf docsigf))
                            (t candidates)))
+         (extend selectrum-extend-current-candidate-highlight)
+         (show-indices selectrum-show-indices)
+         (margin-padding selectrum-right-margin-padding)
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1212,9 +1215,9 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                   (selectrum--add-face
                    displayed-candidate 'selectrum-current-candidate)))
           (insert "\n")
-          (when selectrum-show-indices
-            (let* ((display-fn (if (functionp selectrum-show-indices)
-                                   selectrum-show-indices
+          (when show-indices
+            (let* ((display-fn (if (functionp show-indices)
+                                   show-indices
                                  (lambda (i) (format "%2d " i))))
                    (curr-index (substring-no-properties
                                 (funcall display-fn (1+ index)))))
@@ -1233,12 +1236,12 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
                'display
                `(space :align-to (- right-fringe
                                     ,(string-width right-margin)
-                                    selectrum-right-margin-padding)))
+                                    ,margin-padding)))
               (if formatting-current-candidate
                   (selectrum--add-face
                    right-margin'selectrum-current-candidate)
                 right-margin))))
-           ((and selectrum-extend-current-candidate-highlight
+           ((and extend
                  formatting-current-candidate)
             (insert
              (propertize
@@ -1246,7 +1249,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
               'face 'selectrum-current-candidate
               'display
               `(space :align-to (- right-fringe
-                                   selectrum-right-margin-padding)))))))
+                                   ,margin-padding)))))))
         (cl-incf index))
       (goto-char (point-min))
       ;; Skip initial newline.
