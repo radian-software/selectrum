@@ -959,38 +959,38 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates)
+(defun selectrum--ensure-single-lines (candidates settings)
   "Return list of single-line CANDIDATES.
 Multi-line candidates are merged into a single line. The resulting
 single-line candidates are then shortened by replacing repeated
 whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
-`selectrum-multiline-display-settings'."
+SETTINGS, see `selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
          ;; The formatting settings are the same for all multi-line
          ;; candidates, and so only need to be gotten once from
-         ;; `selectrum-multiline-display-settings'.
+         ;; `settings'.
          ;;
          ;; - Matching lines
          (match/transformation
-          (alist-get 'match selectrum-multiline-display-settings))
+          (alist-get 'match settings))
          (match/display (car match/transformation))
          (match/face (cadr match/transformation))
          ;; - Truncated candidate
          (truncation/transformation
-          (alist-get 'truncation selectrum-multiline-display-settings))
+          (alist-get 'truncation settings))
          (truncation/display (car truncation/transformation))
          (truncation/face (cadr truncation/transformation))
          ;; - Newlines
          (newline/transformation
-          (alist-get 'newline selectrum-multiline-display-settings))
+          (alist-get 'newline settings))
          (newline/display (car newline/transformation))
          (newline/face (cadr newline/transformation))
          ;; - Repeated whitespace
          (whitespace/transformation
-          (alist-get 'whitespace selectrum-multiline-display-settings))
+          (alist-get 'whitespace settings))
          (whitespace/display (car whitespace/transformation))
          (whitespace/face (cadr whitespace/transformation)))
 
@@ -1175,7 +1175,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            ;; to the filter function (for example `orderless'
            ;; requires this).
            (funcall selectrum-highlight-candidates-function
-                    input candidates))))
+                    input candidates)
+           selectrum-multiline-display-settings)))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
