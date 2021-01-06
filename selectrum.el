@@ -807,7 +807,8 @@ the update."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
-                 ((and selectrum--init-p
+                 ((and (or selectrum--init-p
+                           (eq this-command 'next-history-element))
                        (equal selectrum--default-candidate
                               (minibuffer-contents)))
                   -1)
@@ -1273,7 +1274,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first."
+list and sorted first. If `minibuffer-default' is set it will
+have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
@@ -1297,10 +1299,15 @@ list and sorted first."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  (setq selectrum--default-candidate
-        (if (and default-candidate (symbolp default-candidate))
-            (symbol-name default-candidate)
-          default-candidate))
+  ;; If the default is added by setup hook it should have
+  ;; precedence like with default completion.
+  (let ((default (or (car-safe minibuffer-default)
+                     minibuffer-default
+                     default-candidate)))
+    (setq selectrum--default-candidate
+          (if (and default (symbolp default))
+              (symbol-name default)
+            default)))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
