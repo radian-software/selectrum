@@ -66,6 +66,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* When let binding `minibuffer-message-timeout` around
+  `minibuffer-message` the value wouldn't be applied, which has been
+  fixed ([#327]).
 * `selectrum-extend-current-candidate-highlight`,
   `selectrum-show-indices`, `selectrum-right-margin-padding` and
   `selectrum-multiline-display-settings` wouldn't use the local
@@ -155,6 +158,7 @@ The format is based on [Keep a Changelog].
 [#318]: https://github.com/raxod502/selectrum/pull/318
 [#320]: https://github.com/raxod502/selectrum/issues/320
 [#321]: https://github.com/raxod502/selectrum/pull/321
+[#327]: https://github.com/raxod502/selectrum/pull/327
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
