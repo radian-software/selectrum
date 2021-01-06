@@ -69,8 +69,8 @@ The format is based on [Keep a Changelog].
 
 ### Bugs fixed
 * When let binding `minibuffer-message-timeout` around
-  `minibuffer-message` the value wouldn't be applied, which has been
-  fixed ([#327]).
+  `minibuffer-message` within Selectrum sessions the value wouldn't be
+  applied, which has been fixed ([#327]).
 * `minibuffer-default` is now treated as the default when set, before
   it would have no effect. When a list the car is used as default as
   of now ([#324]).
