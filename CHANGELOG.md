@@ -68,6 +68,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* `selectrum-select-from-history` wasn't autoloaded which would
+  trigger an error when used before Selectrum was loaded, this has
+  been fixed ([#310], [#328]).
 * When let binding `minibuffer-message-timeout` around
   `minibuffer-message` within Selectrum sessions the value wouldn't be
   applied, which has been fixed ([#327]).
@@ -157,6 +160,7 @@ The format is based on [Keep a Changelog].
 [#306]: https://github.com/raxod502/selectrum/issues/306
 [#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
+[#310]: https://github.com/raxod502/selectrum/issues/310
 [#312]: https://github.com/raxod502/selectrum/issues/312
 [#316]: https://github.com/raxod502/selectrum/pull/316
 [#317]: https://github.com/raxod502/selectrum/pull/317
@@ -166,6 +170,7 @@ The format is based on [Keep a Changelog].
 [#323]: https://github.com/raxod502/selectrum/issues/323
 [#324]: https://github.com/raxod502/selectrum/pull/324
 [#327]: https://github.com/raxod502/selectrum/pull/327
+[#328]: https://github.com/raxod502/selectrum/pull/328
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
