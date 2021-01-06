@@ -1521,6 +1521,7 @@ indices."
         (ding)
         (minibuffer-message "No match")))))
 
+;;;###autoload
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
 If Selectrum isn't active, insert this candidate into the
