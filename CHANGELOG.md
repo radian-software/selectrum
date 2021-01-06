@@ -68,6 +68,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* When let binding `minibuffer-message-timeout` around
+  `minibuffer-message` within Selectrum sessions the value wouldn't be
+  applied, which has been fixed ([#327]).
 * `minibuffer-default` is now treated as the default when set, before
   it would have no effect. When a list the car is used as default as
   of now ([#324]).
@@ -162,6 +165,7 @@ The format is based on [Keep a Changelog].
 [#321]: https://github.com/raxod502/selectrum/pull/321
 [#323]: https://github.com/raxod502/selectrum/issues/323
 [#324]: https://github.com/raxod502/selectrum/pull/324
+[#327]: https://github.com/raxod502/selectrum/pull/327
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
