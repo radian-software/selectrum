@@ -151,7 +151,8 @@ frame you can use the provided action function
 
 (defun selectrum-default-candidate-refine-function (input candidates)
   "Default value of `selectrum-refine-candidates-function'.
-Uses `completion-styles' for filtering and highlighting."
+Uses INPUT to filter and highlight CANDIDATES according to
+`completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input))
@@ -196,8 +197,9 @@ properties will retain their ordering, which may be significant
 
 (defun selectrum-default-candidate-highlight-function (_input candidates)
   "Default value of `selectrum-highlight-candidates-function'.
-`selectrum-default-candidate-refine-function' does the
-highlighting according to `completion-styles'."
+Returns CANDIDATES unchanged, this is a no-op as
+`selectrum-default-candidate-refine-function' uses
+`completion-styles' which already handles highlighting."
   candidates)
 
 (defcustom selectrum-highlight-candidates-function
