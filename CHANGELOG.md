@@ -68,6 +68,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* `selectrum-completion-in-region` could trigger an error when
+  `completion-all-completions` would be called within a session, which
+  has been fixed ([#315], [#329]).
 * `selectrum-select-from-history` wasn't autoloaded which would
   trigger an error when used before Selectrum was loaded, this has
   been fixed ([#310], [#328]).
@@ -162,6 +165,7 @@ The format is based on [Keep a Changelog].
 [#309]: https://github.com/raxod502/selectrum/pull/309
 [#310]: https://github.com/raxod502/selectrum/issues/310
 [#312]: https://github.com/raxod502/selectrum/issues/312
+[#315]: https://github.com/raxod502/selectrum/issues/315
 [#316]: https://github.com/raxod502/selectrum/pull/316
 [#317]: https://github.com/raxod502/selectrum/pull/317
 [#318]: https://github.com/raxod502/selectrum/pull/318
@@ -171,6 +175,7 @@ The format is based on [Keep a Changelog].
 [#324]: https://github.com/raxod502/selectrum/pull/324
 [#327]: https://github.com/raxod502/selectrum/pull/327
 [#328]: https://github.com/raxod502/selectrum/pull/328
+[#329]: https://github.com/raxod502/selectrum/pull/329
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
