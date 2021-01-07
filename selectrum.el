@@ -149,14 +149,15 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defun selectrum--refine-candidates-with-completions-styles (input candidates)
+(defun selectrum-refine-candidates-with-completions-styles (input candidates)
   "Use INPUT to filter CANDIDATES accordint to `completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input))
    nil))
 
-(defcustom selectrum-refine-candidates-function nil
+(defcustom selectrum-refine-candidates-function
+  #'selectrum-refine-candidates-with-completions-styles
   "Function used to decide which candidates should be displayed.
 If nil, candidates will be filtered according to
 `completion-styles'.
@@ -194,11 +195,12 @@ properties will retain their ordering, which may be significant
 \(e.g. for `load-path' shadows in `read-library-name')."
   :type 'function)
 
-(defun selectrum-ignore-highlighting (_input candidates)
+(defun selectrum-candidates-identity (_input candidates)
   "Used when refinement already does highlight CANDIDATES."
   candidates)
 
-(defcustom selectrum-highlight-candidates-function #'selectrum-ignore-highlighting
+(defcustom selectrum-highlight-candidates-function
+  #'selectrum-candidates-identity
   "Function used to highlight matched candidates.
 When `selectrum-refine-candidates-function' is nil the
 highlighting is handled by `completion-styles', this option has
@@ -1265,9 +1267,6 @@ CANDIDATES is the list of strings that was passed to
 list and sorted first. If `minibuffer-default' is set it will
 have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
-  (unless selectrum-refine-candidates-function
-    (setq-local selectrum-refine-candidates-function
-                #'selectrum--refine-candidates-with-completions-styles))
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
