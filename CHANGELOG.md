@@ -179,6 +179,7 @@ The format is based on [Keep a Changelog].
 [#327]: https://github.com/raxod502/selectrum/pull/327
 [#328]: https://github.com/raxod502/selectrum/pull/328
 [#329]: https://github.com/raxod502/selectrum/pull/329
+[#331]: https://github.com/raxod502/selectrum/pull/331
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
