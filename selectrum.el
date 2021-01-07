@@ -957,7 +957,7 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates settings)
+(defun selectrum--ensure-single-lines (refine-fun candidates settings)
   "Return list of single-line CANDIDATES.
 Multi-line candidates are merged into a single line. The resulting
 single-line candidates are then shortened by replacing repeated
@@ -1005,7 +1005,7 @@ SETTINGS, see `selectrum-multiline-display-settings'."
                                (buffer-substring (line-beginning-position)
                                                  (line-end-position)))
                            (car (funcall
-                                 selectrum-refine-candidates-function
+                                 refine-fun
                                  input
                                  lines))))
                  (match
@@ -1172,6 +1172,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (margin-padding selectrum-right-margin-padding)
          (lines
           (selectrum--ensure-single-lines
+           selectrum-refine-candidates-function
            ;; First pass the candidates to the highlight function
            ;; before stripping multi-lines because it might expect
            ;; getting passed the same candidates as were passed
