@@ -185,6 +185,15 @@ list of strings."
                        (string-lessp c1 c2)))))
     candidates))
 
+(defcustom selectrum-completion-in-region-styles
+  '(basic partial-completion emacs22)
+  "The `completion-styles' used by `selectrum-completion-in-region'.
+These are used for the initial filtering of candidates according
+to the text around point. The initial filtering styles for
+completion in region might generally differ from the styles you
+want to use for usual completion."
+  :type 'completion--styles-type)
+
 (defcustom selectrum-preprocess-candidates-function
   #'selectrum-default-candidate-preprocess-function
   "Function used to preprocess the list of candidates.
@@ -1786,16 +1795,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          (exit-func (plist-get completion-extra-properties
                                :exit-function))
          (cands (nconc
-                 ;; `completion-styles' is used for the initial
-                 ;; filtering here internally! Selectrum doesn't use
-                 ;; `completion-styles' in other places yet. For
-                 ;; completion in region this matches the expected
-                 ;; behavior because the candidates should be
-                 ;; determined according to the sourrounding text
-                 ;; that gets completed for which
-                 ;; `completion-styles' is typically configured.
-                 (completion-all-completions input collection predicate
-                                             (- end start) meta)
+                 (let ((completion-styles
+                        selectrum-completion-in-region-styles))
+                   (completion-all-completions
+                    input collection predicate
+                    (- end start) meta))
                  nil))
          ;; See doc of `completion-extra-properties'.
          (exit-status nil)
