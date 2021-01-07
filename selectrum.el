@@ -149,25 +149,24 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defun selectrum-default-candidate-refine-function (input candidates)
-  "Default value of `selectrum-refine-candidates-function'.
-Uses INPUT to filter and highlight CANDIDATES according to
-`completion-styles'."
+(defun selectrum--refine-candidates-with-completions-styles (input candidates)
+  "Use INPUT to filter CANDIDATES accordint to `completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input))
    nil))
 
-(defcustom selectrum-refine-candidates-function
-  #'selectrum-default-candidate-refine-function
+(defcustom selectrum-refine-candidates-function nil
   "Function used to decide which candidates should be displayed.
-Receives two arguments, the user input (a string) and the list of
-candidates (strings).
+If nil, candidates will be filtered according to
+`completion-styles'.
 
-Returns a new list of candidates. Should not modify the input
-list. The returned list may be modified by Selectrum, so a copy
-of the input should be made. (Beware that `cl-remove-if' doesn't
-make a copy if there's nothing to remove.)"
+If set, the function receives two arguments, the user input (a
+string) and the list of candidates (strings). Returns a new list
+of candidates. Should not modify the input list. The returned
+list may be modified by Selectrum, so a copy of the input should
+be made. (Beware that `cl-remove-if' doesn't make a copy if
+there's nothing to remove.)"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -195,21 +194,24 @@ properties will retain their ordering, which may be significant
 \(e.g. for `load-path' shadows in `read-library-name')."
   :type 'function)
 
-(defun selectrum-default-candidate-highlight-function (_input candidates)
-  "Default value of `selectrum-highlight-candidates-function'.
-Returns CANDIDATES unchanged, this is a no-op as
-`selectrum-default-candidate-refine-function' uses
-`completion-styles' which already handles highlighting."
+(defun selectrum-ignore-highlighting (_input candidates)
+  "Used when `selectrum-refine-candidates-function' is nil.
+In that case `completion-styles' already handles highlighting of
+CANDIDATES."
   candidates)
 
-(defcustom selectrum-highlight-candidates-function
-  #'selectrum-default-candidate-highlight-function
+(defcustom selectrum-highlight-candidates-function #'selectrum-ignore-highlighting
   "Function used to highlight matched candidates.
-Receive two arguments, the input string and the list of
+When `selectrum-refine-candidates-function' is nil the
+highlighting is handled by `completion-styles', this option has
+no effect in this case.
+
+If set, the function should highlight the candidates returned
+from `selectrum-refine-candidates-function'. The function
+receives two arguments, the input string and the list of
 candidates (strings) that are going to be displayed (length at
 most `selectrum-num-candidates-displayed'). Return a list of
-propertized candidates. Do not modify the input list or
-strings."
+propertized candidates. Do not modify the input list or strings."
   :type 'function)
 
 (defvar selectrum-minibuffer-map
@@ -1265,6 +1267,11 @@ CANDIDATES is the list of strings that was passed to
 list and sorted first. If `minibuffer-default' is set it will
 have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
+  (unless selectrum-refine-candidates-function
+    (setq-local selectrum-refine-candidates-function
+                #'selectrum--refine-candidates-with-completions-styles)
+    (setq-local selectrum-highlight-candidates-function
+                #'selectrum-ignore-highlighting))
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
