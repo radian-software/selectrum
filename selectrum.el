@@ -150,7 +150,7 @@ frame you can use the provided action function
                alist))
 
 (defun selectrum-refine-candidates-with-completions-styles (input candidates)
-  "Use INPUT to filter CANDIDATES accordint to `completion-styles'."
+  "Use INPUT to filter CANDIDATES using `completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input))
@@ -159,15 +159,12 @@ frame you can use the provided action function
 (defcustom selectrum-refine-candidates-function
   #'selectrum-refine-candidates-with-completions-styles
   "Function used to decide which candidates should be displayed.
-If nil, candidates will be filtered according to
-`completion-styles'.
-
-If set, the function receives two arguments, the user input (a
-string) and the list of candidates (strings). Returns a new list
-of candidates. Should not modify the input list. The returned
-list may be modified by Selectrum, so a copy of the input should
-be made. (Beware that `cl-remove-if' doesn't make a copy if
-there's nothing to remove.)"
+The function receives two arguments, the user input (a string)
+and the list of candidates (strings). Returns a new list of
+candidates. Should not modify the input list. The returned list
+may be modified by Selectrum, so a copy of the input should be
+made. (Beware that `cl-remove-if' doesn't make a copy if there's
+nothing to remove.)"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -202,16 +199,11 @@ properties will retain their ordering, which may be significant
 (defcustom selectrum-highlight-candidates-function
   #'selectrum-candidates-identity
   "Function used to highlight matched candidates.
-When `selectrum-refine-candidates-function' is nil the
-highlighting is handled by `completion-styles', this option has
-no effect in this case.
-
-If set, the function should highlight the candidates for display.
-The function receives two arguments, the input string and the
-list of candidates (strings) that are going to be
-displayed (length at most `selectrum-num-candidates-displayed').
-Return a list of propertized candidates. Do not modify the input
-list or strings."
+The function should highlight the candidates for display. The
+function receives two arguments, the input string and the list of
+candidates (strings) that are going to be displayed (length at
+most `selectrum-num-candidates-displayed'). Return a list of
+propertized candidates. Do not modify the input list or strings."
   :type 'function)
 
 (defvar selectrum-minibuffer-map
