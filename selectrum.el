@@ -151,13 +151,11 @@ frame you can use the provided action function
 
 (defun selectrum-default-candidate-refine-function (input candidates)
   "Default value of `selectrum-refine-candidates-function'.
-Return only candidates that contain the input as a substring.
-INPUT is a string, CANDIDATES is a list of strings."
-  (let ((regexp (regexp-quote input)))
-    (cl-delete-if-not
-     (lambda (candidate)
-       (string-match-p regexp candidate))
-     (copy-sequence candidates))))
+Uses `completion-styles' for filtering and highlighting."
+  (nconc
+   (completion-all-completions
+    input candidates nil (length input))
+   nil))
 
 (defcustom selectrum-refine-candidates-function
   #'selectrum-default-candidate-refine-function
@@ -196,23 +194,11 @@ properties will retain their ordering, which may be significant
 \(e.g. for `load-path' shadows in `read-library-name')."
   :type 'function)
 
-(defun selectrum-default-candidate-highlight-function (input candidates)
+(defun selectrum-default-candidate-highlight-function (_input candidates)
   "Default value of `selectrum-highlight-candidates-function'.
-Highlight the substring match with
-`selectrum-primary-highlight'. INPUT is a string, CANDIDATES is a
-list of strings."
-  (let ((regexp (regexp-quote input)))
-    (save-match-data
-      (mapcar
-       (lambda (candidate)
-         (when (string-match regexp candidate)
-           (setq candidate (copy-sequence candidate))
-           (put-text-property
-            (match-beginning 0) (match-end 0)
-            'face 'selectrum-primary-highlight
-            candidate))
-         candidate)
-       candidates))))
+`selectrum-default-candidate-refine-function' does the
+highlighting according to `completion-styles'."
+  candidates)
 
 (defcustom selectrum-highlight-candidates-function
   #'selectrum-default-candidate-highlight-function
