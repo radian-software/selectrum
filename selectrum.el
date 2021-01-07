@@ -1821,12 +1821,10 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (setq result
                  (if (not (cdr cands))
                      (car cands)
-                   (selectrum-completing-read
-                    "Completion: "
-                    (lambda (string pred action)
-                      (if (eq action 'metadata)
-                          meta
-                        (complete-with-action action cands string pred)))))
+                   (selectrum-read
+                    "Completion: " cands
+                    :minibuffer-completion-table collection
+                    :minibuffer-completion-predicate predicate))
                  exit-status (cond ((not (member result cands)) 'sole)
                                    (t 'finished)))))
         (delete-region bound end)
