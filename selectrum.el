@@ -195,9 +195,7 @@ properties will retain their ordering, which may be significant
   :type 'function)
 
 (defun selectrum-ignore-highlighting (_input candidates)
-  "Used when `selectrum-refine-candidates-function' is nil.
-In that case `completion-styles' already handles highlighting of
-CANDIDATES."
+  "Used when refinement already does highlight CANDIDATES."
   candidates)
 
 (defcustom selectrum-highlight-candidates-function #'selectrum-ignore-highlighting
@@ -206,12 +204,12 @@ When `selectrum-refine-candidates-function' is nil the
 highlighting is handled by `completion-styles', this option has
 no effect in this case.
 
-If set, the function should highlight the candidates returned
-from `selectrum-refine-candidates-function'. The function
-receives two arguments, the input string and the list of
-candidates (strings) that are going to be displayed (length at
-most `selectrum-num-candidates-displayed'). Return a list of
-propertized candidates. Do not modify the input list or strings."
+If set, the function should highlight the candidates for display.
+The function receives two arguments, the input string and the
+list of candidates (strings) that are going to be
+displayed (length at most `selectrum-num-candidates-displayed').
+Return a list of propertized candidates. Do not modify the input
+list or strings."
   :type 'function)
 
 (defvar selectrum-minibuffer-map
@@ -1269,9 +1267,7 @@ have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
   (unless selectrum-refine-candidates-function
     (setq-local selectrum-refine-candidates-function
-                #'selectrum--refine-candidates-with-completions-styles)
-    (setq-local selectrum-highlight-candidates-function
-                #'selectrum-ignore-highlighting))
+                #'selectrum--refine-candidates-with-completions-styles))
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
