@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* You can now configure `completion-styles` for the initial filtering
+  of `selectrum-completion-in-region` using
+  `selectrum-completion-in-region-styles` ([#331]).
 * The prompt gets selected when using `next-history-element` and the
   prompt equals the default ([#323], [#324]).
 * Computation of candidates is faster for `describe-variable` ([#312],
@@ -176,6 +179,7 @@ The format is based on [Keep a Changelog].
 [#327]: https://github.com/raxod502/selectrum/pull/327
 [#328]: https://github.com/raxod502/selectrum/pull/328
 [#329]: https://github.com/raxod502/selectrum/pull/329
+[#331]: https://github.com/raxod502/selectrum/pull/331
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
