@@ -1899,6 +1899,7 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
+         (sortf selectrum-preprocess-candidates-function)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -1907,8 +1908,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond ((equal last-dir dir)
+                           (setq-local selectrum-preprocess-candidates-function
+                                       #'identity)
                            selectrum--preprocessed-candidates)
                           (t
+                           (setq-local selectrum-preprocess-candidates-function
+                                       sortf)
                            (condition-case _
                                (delete
                                 "./"
