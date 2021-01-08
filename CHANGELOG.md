@@ -72,6 +72,12 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* `selectrum-select-from-history` set variables
+  `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
+  `selectrum-candidate-selected-hook` and
+  `enable-recursive-minibuffers` for subsequent recursive sessions,
+  which has been fixed. It is also enhanced to trigger an error when
+  called outside the minibuffer now [#337].
 * `selectrum-completion-in-region` could trigger an error when
   `completion-all-completions` would be called within a session, which
   has been fixed ([#315], [#329]).
@@ -183,6 +189,7 @@ The format is based on [Keep a Changelog].
 [#331]: https://github.com/raxod502/selectrum/pull/331
 [#334]: https://github.com/raxod502/selectrum/issues/334
 [#335]: https://github.com/raxod502/selectrum/pull/335
+[#337]: https://github.com/raxod502/selectrum/pull/337
 [#339]: https://github.com/raxod502/selectrum/pull/339
 
 ## 3.0 (released 2020-10-20)
