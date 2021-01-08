@@ -1457,16 +1457,20 @@ indices."
     (user-error "Cannot select a candidate when Selectrum is not active"))
   (with-selected-window (active-minibuffer-window)
     (let ((index (selectrum--index-for-arg arg)))
-      (when (or (not selectrum--match-required-p)
-                (and index (>= index 0))
-                (and minibuffer-completing-file-name
-                     (file-exists-p
-                      (substitute-in-file-name
-                       (minibuffer-contents))))
-                (string-empty-p
-                 (minibuffer-contents)))
-        (selectrum--exit-with
-         (selectrum--get-candidate index))))))
+      (if (or (not selectrum--match-required-p)
+              (string-empty-p
+               (minibuffer-contents))
+              (and index (>= index 0))
+              (if minibuffer-completing-file-name
+                  (file-exists-p
+                   (substitute-in-file-name
+                    (minibuffer-contents)))
+                (member (minibuffer-contents)
+                        selectrum--refined-candidates)))
+          (selectrum--exit-with
+           (selectrum--get-candidate index))
+        (minibuffer-message
+         (propertize "Match required" 'face 'minibuffer-prompt))))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
