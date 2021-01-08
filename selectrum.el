@@ -1536,15 +1536,25 @@ indices."
 If Selectrum isn't active, insert this candidate into the
 minibuffer."
   (interactive)
-  (let ((selectrum-should-sort-p nil)
-        (enable-recursive-minibuffers t)
-        (history (symbol-value minibuffer-history-variable)))
+  (unless (minibufferp)
+    (user-error "Command only works in minibuffer"))
+  (let ((history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result
-           (let ((selectrum-candidate-inserted-hook nil)
-                 (selectrum-candidate-selected-hook nil))
-             (selectrum-read "History: " history :history t))))
+    (let* ((enable-rec enable-recursive-minibuffers)
+           (result
+            (minibuffer-with-setup-hook
+                (lambda ()
+                  (setq-local selectrum-should-sort-p nil)
+                  (setq-local selectrum-candidate-inserted-hook nil)
+                  (setq-local selectrum-candidate-selected-hook nil))
+              (setq-local enable-recursive-minibuffers t)
+              (unwind-protect
+                  (selectrum-read "History: "
+                                  history
+                                  :history t
+                                  :require-match t)
+                (setq-local enable-recursive-minibuffers enable-rec)))))
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
