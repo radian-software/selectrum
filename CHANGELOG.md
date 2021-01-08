@@ -32,7 +32,8 @@ The format is based on [Keep a Changelog].
   `selectrum-candidate-selected-hook` one by one in the order they
   were added. Before the hook would not run for the multi candidates
   case ([#296]).
-* File completions are faster because recomputation only happens on
+* File completions are faster because the internal handling was
+  updated ([#334], [#335]). Most notably recomputation only happens on
   directory change now. Before, the candidates where recomputed on
   each input change which could slow down file completions
   significantly for cases where `read-file-name-internal` would be
@@ -180,6 +181,8 @@ The format is based on [Keep a Changelog].
 [#328]: https://github.com/raxod502/selectrum/pull/328
 [#329]: https://github.com/raxod502/selectrum/pull/329
 [#331]: https://github.com/raxod502/selectrum/pull/331
+[#334]: https://github.com/raxod502/selectrum/issues/334
+[#335]: https://github.com/raxod502/selectrum/pull/335
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

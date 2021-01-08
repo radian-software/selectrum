@@ -1910,12 +1910,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            selectrum--preprocessed-candidates)
                           (t
                            (condition-case _
-                               (funcall collection dir
-                                        (lambda (i)
-                                          (and (not (member i '("./" "../")))
-                                               (or (not predicate)
-                                                   (funcall predicate i))))
-                                        t)
+                               (delete
+                                "./"
+                                (delete
+                                 "../"
+                                 (funcall collection dir predicate t)))
                              ;; May happen in case user quits out
                              ;; of a TRAMP prompt.
                              (quit))))))
