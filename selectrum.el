@@ -1944,7 +1944,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    ;; session.
                    (setq sortf selectrum-preprocess-candidates-function)
                    ;; Ensure the variable is also set when
-                   ;; selectrum--completing-read-file-name is called directly.
+                   ;; selectrum--completing-read-file-name is called
+                   ;; directly.
                    (setq-local minibuffer-completing-file-name t)
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
