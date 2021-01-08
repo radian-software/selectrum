@@ -33,11 +33,11 @@ The format is based on [Keep a Changelog].
   were added. Before the hook would not run for the multi candidates
   case ([#296]).
 * File completions are faster because the internal handling was
-  updated ([#334], [#335]). Most notably recomputation only happens on
-  directory change now. Before, the candidates where recomputed on
-  each input change which could slow down file completions
-  significantly for cases where `read-file-name-internal` would be
-  slow already ([#210], [#276], [#277]).
+  updated ([#334], [#335], [#339]). Most notably recomputation only
+  happens on directory change now. Before, the candidates where
+  recomputed on each input change which could slow down file
+  completions significantly for cases where `read-file-name-internal`
+  would be slow already ([#210], [#276], [#277]).
 * You can now give a prefix argument to selection moving commands
   ([#275]).
 * If completion table metadata or `completion-extra-properties` define
@@ -190,6 +190,7 @@ The format is based on [Keep a Changelog].
 [#334]: https://github.com/raxod502/selectrum/issues/334
 [#335]: https://github.com/raxod502/selectrum/pull/335
 [#337]: https://github.com/raxod502/selectrum/pull/337
+[#339]: https://github.com/raxod502/selectrum/pull/339
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
