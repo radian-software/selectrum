@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Improved exit behaviour of `selectrum-select-current-candidate`. The
+  commands gives feedback now when match is required and submission
+  not possible. Also it allows submission of the prompt when a match
+  is required but it is a member of candidates ([#338]).
 * You can now configure `completion-styles` for the initial filtering
   of `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles` ([#331]).
