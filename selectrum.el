@@ -1909,7 +1909,7 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
-         (sortf selectrum-preprocess-candidates-function)
+         (sortf nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -1940,6 +1940,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
         ;; The hook needs to run late as `read-file-name-default' sets
         ;; its own syntax table in `minibuffer-with-setup-hook'.
         (:append (lambda ()
+                   ;; Pickup the value as configured for current
+                   ;; session.
+                   (setq sortf selectrum-preprocess-candidates-function)
                    ;; Ensure the variable is also set when
                    ;; selectrum--completing-read-file-name is called directly.
                    (setq-local minibuffer-completing-file-name t)
