@@ -777,7 +777,9 @@ the update."
         (setq selectrum--refined-candidates
               (funcall selectrum-refine-candidates-function
                        input selectrum--preprocessed-candidates))
-        (when selectrum-move-default-candidate
+        (when (or selectrum-move-default-candidate
+                  ;; FIXME: Remove after consult updated.
+                  (bound-and-true-p selectrum--move-default-candidate-p))
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
                  selectrum--default-candidate
@@ -821,7 +823,9 @@ the update."
                        (equal selectrum--default-candidate
                               (minibuffer-contents)))
                   -1)
-                 (selectrum-move-default-candidate
+                 ((or selectrum-move-default-candidate
+                      ;; FIXME: Remove after consult updated.
+                      (bound-and-true-p selectrum--move-default-candidate-p))
                   0)
                  (t
                   (or (cl-position selectrum--default-candidate
