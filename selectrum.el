@@ -1537,7 +1537,7 @@ If Selectrum isn't active, insert this candidate into the
 minibuffer."
   (interactive)
   (unless (minibufferp)
-    (user-error "Command only works in minibuffer"))
+    (user-error "Command can only be used in minibuffer"))
   (let ((history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
