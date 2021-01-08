@@ -81,11 +81,6 @@ parts of the input."
 This is let-bound to nil in some contexts, and should be
 respected by user functions for optimal results.")
 
-(defvar selectrum-move-default-candidate nil
-  "Non-nil means move default candidate to start of list.
-Nil means select the default candidate initially even if it's not
-at the start of the list.")
-
 (defvar selectrum--minibuffer-default-in-prompt-regexps
   (let ((minibuffer-eldef-shorten-default nil))
     (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
@@ -100,6 +95,12 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :group 'convenience
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
+
+(defcustom selectrum-move-default-candidate t
+  "Non-nil means move default candidate to start of list.
+Nil means select the default candidate initially even if it's not
+at the start of the list."
+  :type 'boolean)
 
 (defcustom selectrum-num-candidates-displayed 10
   "Maximum number of candidate lines which are displayed.
@@ -1584,7 +1585,6 @@ Otherwise, just eval BODY."
             '(selectrum--preprocessed-candidates
               selectrum--refined-candidates
               selectrum--match-required-p
-              selectrum-move-default-candidate
               selectrum--default-candidate
               selectrum--visual-input
               selectrum--read-args
@@ -1641,12 +1641,9 @@ listed candidates (so, for example,
 HISTORY is the `minibuffer-history-variable' to use (by default
 `minibuffer-history').
 
-NO-MOVE-DEFAULT-CANDIDATE, if non-nil, means that the default
-candidate is not sorted first. Instead, it is left at its
-original position in the candidate list. However, it is still
-selected initially. This is handy for `switch-to-buffer' and
-friends, for which getting the candidate list out of order at all
-is very confusing.
+NO-MOVE-DEFAULT-CANDIDATE is ignored and only kept for backward
+compatibility reasons. Use `selectrum-move-default-candidate'
+instead.
 
 MAY-MODIFY-CANDIDATES, if non-nil, means that Selectrum is
 allowed to modify the CANDIDATES list destructively. Otherwise a
@@ -1658,6 +1655,7 @@ and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. By passing
 these as keyword arguments they will be dynamically bound as per
 semantics of `cl-defun'."
+  (ignore no-move-default-candidate)
   (unless (or may-modify-candidates
               (functionp candidates))
     (setq candidates (copy-sequence candidates)))
@@ -1667,7 +1665,6 @@ semantics of `cl-defun'."
       (setq selectrum--last-command this-command)
       (setq selectrum--last-prefix-arg current-prefix-arg))
     (setq selectrum--match-required-p require-match)
-    (setq selectrum-move-default-candidate (not no-move-default-candidate))
     (minibuffer-with-setup-hook
         (:append (lambda ()
                    (selectrum--minibuffer-setup-hook
@@ -1882,15 +1879,17 @@ PREDICATE, see `read-buffer'."
                        candidates)))
               `((candidates . ,candidates)
                 (input . ,input))))))
-    (selectrum-read
-     prompt candidates
-     :default-candidate def
-     :require-match (eq require-match t)
-     :history 'buffer-name-history
-     :no-move-default-candidate t
-     :may-modify-candidates t
-     :minibuffer-completion-table #'internal-complete-buffer
-     :minibuffer-completion-predicate predicate)))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          (setq-local selectrum-move-default-candidate t))
+      (selectrum-read
+       prompt candidates
+       :default-candidate def
+       :require-match (eq require-match t)
+       :history 'buffer-name-history
+       :may-modify-candidates t
+       :minibuffer-completion-table #'internal-complete-buffer
+       :minibuffer-completion-predicate predicate))))
 
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
