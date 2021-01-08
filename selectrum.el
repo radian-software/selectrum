@@ -81,6 +81,11 @@ parts of the input."
 This is let-bound to nil in some contexts, and should be
 respected by user functions for optimal results.")
 
+(defvar selectrum-move-default-candidate nil
+  "Non-nil means move default candidate to start of list.
+Nil means select the default candidate initially even if it's not
+at the start of the list.")
+
 (defvar selectrum--minibuffer-default-in-prompt-regexps
   (let ((minibuffer-eldef-shorten-default nil))
     (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
@@ -523,11 +528,6 @@ input that does not match any of the displayed candidates.")
 (defvar selectrum--crm-p nil
   "Non-nil for `selectrum-completing-read-multiple' sessions.")
 
-(defvar selectrum--move-default-candidate-p nil
-  "Non-nil means move default candidate to start of list.
-Nil means select the default candidate initially even if it's not
-at the start of the list.")
-
 (defvar selectrum--default-candidate nil
   "Default candidate, or nil if none given.")
 
@@ -777,7 +777,7 @@ the update."
         (setq selectrum--refined-candidates
               (funcall selectrum-refine-candidates-function
                        input selectrum--preprocessed-candidates))
-        (when selectrum--move-default-candidate-p
+        (when selectrum-move-default-candidate
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
                  selectrum--default-candidate
@@ -821,7 +821,7 @@ the update."
                        (equal selectrum--default-candidate
                               (minibuffer-contents)))
                   -1)
-                 (selectrum--move-default-candidate-p
+                 (selectrum-move-default-candidate
                   0)
                  (t
                   (or (cl-position selectrum--default-candidate
@@ -1580,7 +1580,7 @@ Otherwise, just eval BODY."
             '(selectrum--preprocessed-candidates
               selectrum--refined-candidates
               selectrum--match-required-p
-              selectrum--move-default-candidate-p
+              selectrum-move-default-candidate
               selectrum--default-candidate
               selectrum--visual-input
               selectrum--read-args
@@ -1663,7 +1663,7 @@ semantics of `cl-defun'."
       (setq selectrum--last-command this-command)
       (setq selectrum--last-prefix-arg current-prefix-arg))
     (setq selectrum--match-required-p require-match)
-    (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
+    (setq selectrum-move-default-candidate (not no-move-default-candidate))
     (minibuffer-with-setup-hook
         (:append (lambda ()
                    (selectrum--minibuffer-setup-hook
