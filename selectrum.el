@@ -1291,7 +1291,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. If `minibuffer-default' is set it will
-have precedence over DEFAULT-CANDIDATE."
+have precedence over DEFAULT-CANDIDATE. LAST-BUFFER is the buffer
+the session was started from."
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer last-buffer)
   (add-hook
