@@ -819,8 +819,9 @@ the update."
                  ((or (and selectrum--init-p
                            (equal selectrum--default-candidate
                                   (minibuffer-contents)))
-                      (memq this-command '(next-history-element
-                                           previous-history-element)))
+                      (and (not (= (minibuffer-prompt-end) (point-max)))
+                           (memq this-command '(next-history-element
+                                                previous-history-element))))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
