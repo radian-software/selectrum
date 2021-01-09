@@ -1288,9 +1288,6 @@ CANDIDATES is the list of strings that was passed to
 list and sorted first. If `minibuffer-default' is set it will
 have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
-  (setq-local resize-mini-windows 'grow-only)
-  (setq-local max-mini-window-height
-              (1+ selectrum-num-candidates-displayed))
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
@@ -1684,6 +1681,7 @@ semantics of `cl-defun'."
     (setq selectrum--match-required-p require-match)
     (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
     (let* ((prompt (selectrum--remove-default-from-prompt prompt))
+           ;; Needs to be let bound to have an effect.
            (minibuffer-allow-text-properties t)
            (res
             (minibuffer-with-setup-hook
