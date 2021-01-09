@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Improved exit behaviour of `selectrum-select-current-candidate`. The
+  commands gives feedback now when match is required and submission
+  not possible. Also it allows submission of the prompt when a match
+  is required and the prompt is a member of candidates ([#338]).
 * You can now configure `completion-styles` for the initial filtering
   of `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles` ([#331]).
@@ -190,6 +194,7 @@ The format is based on [Keep a Changelog].
 [#334]: https://github.com/raxod502/selectrum/issues/334
 [#335]: https://github.com/raxod502/selectrum/pull/335
 [#337]: https://github.com/raxod502/selectrum/pull/337
+[#338]: https://github.com/raxod502/selectrum/pull/338
 [#339]: https://github.com/raxod502/selectrum/pull/339
 
 ## 3.0 (released 2020-10-20)
