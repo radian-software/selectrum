@@ -816,10 +816,11 @@ the update."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
-                 ((and (or selectrum--init-p
-                           (eq this-command 'next-history-element))
-                       (equal selectrum--default-candidate
-                              (minibuffer-contents)))
+                 ((or (and selectrum--init-p
+                           (equal selectrum--default-candidate
+                                  (minibuffer-contents)))
+                      (memq this-command '(next-history-element
+                                           previous-history-element)))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
