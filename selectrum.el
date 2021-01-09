@@ -200,6 +200,15 @@ list of strings."
                        (string-lessp c1 c2)))))
     candidates))
 
+(defcustom selectrum-completion-in-region-styles
+  '(basic partial-completion emacs22)
+  "The `completion-styles' used by `selectrum-completion-in-region'.
+These are used for the initial filtering of candidates according
+to the text around point. The initial filtering styles for
+completion in region might generally differ from the styles you
+want to use for usual completion."
+  :type 'completion--styles-type)
+
 (defcustom selectrum-preprocess-candidates-function
   #'selectrum-default-candidate-preprocess-function
   "Function used to preprocess the list of candidates.
@@ -946,7 +955,8 @@ the update."
                        (not (member selectrum--default-candidate
                                     selectrum--refined-candidates)))
                   -1)
-                 ((and selectrum--init-p
+                 ((and (or selectrum--init-p
+                           (eq this-command 'next-history-element))
                        (equal selectrum--default-candidate
                               (minibuffer-contents)))
                   -1)
@@ -1398,7 +1408,8 @@ defaults to `minibuffer-completion-table'. PRED defaults to
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first."
+list and sorted first. If `minibuffer-default' is set it will
+have precedence over DEFAULT-CANDIDATE."
   (setq-local selectrum-active-p t)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
@@ -1422,10 +1433,15 @@ list and sorted first."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  (setq selectrum--default-candidate
-        (if (and default-candidate (symbolp default-candidate))
-            (symbol-name default-candidate)
-          default-candidate))
+  ;; If the default is added by setup hook it should have
+  ;; precedence like with default completion.
+  (let ((default (or (car-safe minibuffer-default)
+                     minibuffer-default
+                     default-candidate)))
+    (setq selectrum--default-candidate
+          (if (and default (symbolp default))
+              (symbol-name default)
+            default)))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
@@ -1630,7 +1646,7 @@ indices."
             (apply
              #'run-hook-with-args
              'selectrum-candidate-inserted-hook
-             full selectrum--read-args))
+             candidate selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
@@ -1639,20 +1655,31 @@ indices."
         (ding)
         (minibuffer-message "No match")))))
 
+;;;###autoload
 (defun selectrum-select-from-history ()
   "Select a candidate from the minibuffer history.
 If Selectrum isn't active, insert this candidate into the
 minibuffer."
   (interactive)
-  (let ((selectrum-should-sort-p nil)
-        (enable-recursive-minibuffers t)
-        (history (symbol-value minibuffer-history-variable)))
+  (unless (minibufferp)
+    (user-error "Command can only be used in minibuffer"))
+  (let ((history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result
-           (let ((selectrum-candidate-inserted-hook nil)
-                 (selectrum-candidate-selected-hook nil))
-             (selectrum-read "History: " history :history t))))
+    (let* ((enable-rec enable-recursive-minibuffers)
+           (result
+            (minibuffer-with-setup-hook
+                (lambda ()
+                  (setq-local selectrum-should-sort-p nil)
+                  (setq-local selectrum-candidate-inserted-hook nil)
+                  (setq-local selectrum-candidate-selected-hook nil))
+              (setq-local enable-recursive-minibuffers t)
+              (unwind-protect
+                  (selectrum-read "History: "
+                                  history
+                                  :history t
+                                  :require-match t)
+                (setq-local enable-recursive-minibuffers enable-rec)))))
       (if (and selectrum--match-required-p
                (not (member result selectrum--refined-candidates)))
           (user-error "That history element is not one of the candidates")
@@ -1904,16 +1931,11 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          (exit-func (plist-get completion-extra-properties
                                :exit-function))
          (cands (nconc
-                 ;; `completion-styles' is used for the initial
-                 ;; filtering here internally! Selectrum doesn't use
-                 ;; `completion-styles' in other places yet. For
-                 ;; completion in region this matches the expected
-                 ;; behavior because the candidates should be
-                 ;; determined according to the sourrounding text
-                 ;; that gets completed for which
-                 ;; `completion-styles' is typically configured.
-                 (completion-all-completions input collection predicate
-                                             (- end start) meta)
+                 (let ((completion-styles
+                        selectrum-completion-in-region-styles))
+                   (completion-all-completions
+                    input collection predicate
+                    (- end start) meta))
                  nil))
          ;; See doc of `completion-extra-properties'.
          (exit-status nil)
@@ -1939,12 +1961,10 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (setq result
                  (if (not (cdr cands))
                      (car cands)
-                   (selectrum-completing-read
-                    "Completion: "
-                    (lambda (string pred action)
-                      (if (eq action 'metadata)
-                          meta
-                        (complete-with-action action cands string pred)))))
+                   (selectrum-read
+                    "Completion: " cands
+                    :minibuffer-completion-table collection
+                    :minibuffer-completion-predicate predicate))
                  exit-status (cond ((not (member result cands)) 'sole)
                                    (t 'finished)))))
         (delete-region bound end)
@@ -2015,6 +2035,7 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
+         (sortf nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -2023,15 +2044,18 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond ((equal last-dir dir)
+                           (setq-local selectrum-preprocess-candidates-function
+                                       #'identity)
                            selectrum--preprocessed-candidates)
                           (t
+                           (setq-local selectrum-preprocess-candidates-function
+                                       sortf)
                            (condition-case _
-                               (funcall collection dir
-                                        (lambda (i)
-                                          (and (not (member i '("./" "../")))
-                                               (or (not predicate)
-                                                   (funcall predicate i))))
-                                        t)
+                               (delete
+                                "./"
+                                (delete
+                                 "../"
+                                 (funcall collection dir predicate t)))
                              ;; May happen in case user quits out
                              ;; of a TRAMP prompt.
                              (quit))))))
@@ -2042,8 +2066,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
         ;; The hook needs to run late as `read-file-name-default' sets
         ;; its own syntax table in `minibuffer-with-setup-hook'.
         (:append (lambda ()
+                   ;; Pickup the value as configured for current
+                   ;; session.
+                   (setq sortf selectrum-preprocess-candidates-function)
                    ;; Ensure the variable is also set when
-                   ;; selectrum--completing-read-file-name is called directly.
+                   ;; selectrum--completing-read-file-name is called
+                   ;; directly.
                    (setq-local minibuffer-completing-file-name t)
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
@@ -2239,26 +2267,28 @@ ARGS are standard as in all `:around' advice."
       ;; Delay execution so candidates get displayed first.
       (run-at-time
        0 nil
-       (lambda ()
-         (cl-letf* ((orig-put-text-property
-                     (symbol-function #'put-text-property))
-                    ((symbol-function #'put-text-property)
-                     (lambda (beg end key val &rest args)
-                       ;; Set cursor property like
-                       ;; `set-minibuffer-message' in Emacs 27.
-                       (apply orig-put-text-property
-                              beg end key (if (eq key 'cursor) 1 val)
-                              args)))
-                    (orig-make-overlay
-                     (symbol-function #'make-overlay))
-                    ((symbol-function #'make-overlay)
-                     (lambda (&rest args)
-                       (let ((ov (apply orig-make-overlay args)))
-                         ;; Set overlay priority like
+       (let ((timeout minibuffer-message-timeout))
+         (lambda ()
+           (cl-letf* ((minibuffer-message-timeout timeout)
+                      (orig-put-text-property
+                       (symbol-function #'put-text-property))
+                      ((symbol-function #'put-text-property)
+                       (lambda (beg end key val &rest args)
+                         ;; Set cursor property like
                          ;; `set-minibuffer-message' in Emacs 27.
-                         (overlay-put ov 'priority 1100)
-                         ov))))
-           (apply func args))))
+                         (apply orig-put-text-property
+                                beg end key (if (eq key 'cursor) 1 val)
+                                args)))
+                      (orig-make-overlay
+                       (symbol-function #'make-overlay))
+                      ((symbol-function #'make-overlay)
+                       (lambda (&rest args)
+                         (let ((ov (apply orig-make-overlay args)))
+                           ;; Set overlay priority like
+                           ;; `set-minibuffer-message' in Emacs 27.
+                           (overlay-put ov 'priority 1100)
+                           ov))))
+             (apply func args)))))
     (apply func args)))
 
 ;; You may ask why we copy the entire minor-mode definition into the

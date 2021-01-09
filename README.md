@@ -316,6 +316,9 @@ matching and case-insensitive matching.
     * Customize the face `completions-common-part` to change the
       appearance of the common prefix in `completion-in-region`
       candidates.
+* You can configure `completion-styles` for the initial filtering of
+  `selectrum-completion-in-region` using
+  `selectrum-completion-in-region-styles`.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color

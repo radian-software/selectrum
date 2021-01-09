@@ -20,6 +20,11 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* You can now configure `completion-styles` for the initial filtering
+  of `selectrum-completion-in-region` using
+  `selectrum-completion-in-region-styles` ([#331]).
+* The prompt gets selected when using `next-history-element` and the
+  prompt equals the default ([#323], [#324]).
 * Computation of candidates is faster for `describe-variable` ([#312],
   [#316], [#320], [#321]).
 * Candidates of `completing-read-multiple` which are submitted by
@@ -27,11 +32,12 @@ The format is based on [Keep a Changelog].
   `selectrum-candidate-selected-hook` one by one in the order they
   were added. Before the hook would not run for the multi candidates
   case ([#296]).
-* File completions are faster because recomputation only happens on
-  directory change now. Before, the candidates where recomputed on
-  each input change which could slow down file completions
-  significantly for cases where `read-file-name-internal` would be
-  slow already ([#210], [#276], [#277]).
+* File completions are faster because the internal handling was
+  updated ([#334], [#335], [#339]). Most notably recomputation only
+  happens on directory change now. Before, the candidates where
+  recomputed on each input change which could slow down file
+  completions significantly for cases where `read-file-name-internal`
+  would be slow already ([#210], [#276], [#277]).
 * You can now give a prefix argument to selection moving commands
   ([#275]).
 * If completion table metadata or `completion-extra-properties` define
@@ -66,6 +72,24 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* `selectrum-select-from-history` set variables
+  `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
+  `selectrum-candidate-selected-hook` and
+  `enable-recursive-minibuffers` for subsequent recursive sessions,
+  which has been fixed. It is also enhanced to trigger an error when
+  called outside the minibuffer now [#337].
+* `selectrum-completion-in-region` could trigger an error when
+  `completion-all-completions` would be called within a session, which
+  has been fixed ([#315], [#329]).
+* `selectrum-select-from-history` wasn't autoloaded which would
+  trigger an error when used before Selectrum was loaded, this has
+  been fixed ([#310], [#328]).
+* When let binding `minibuffer-message-timeout` around
+  `minibuffer-message` within Selectrum sessions the value wouldn't be
+  applied, which has been fixed ([#327]).
+* `minibuffer-default` is now treated as the default when set, before
+  it would have no effect. When a list the car is used as default as
+  of now ([#324]).
 * `selectrum-extend-current-candidate-highlight`,
   `selectrum-show-indices`, `selectrum-right-margin-padding` and
   `selectrum-multiline-display-settings` wouldn't use the local
@@ -149,12 +173,24 @@ The format is based on [Keep a Changelog].
 [#306]: https://github.com/raxod502/selectrum/issues/306
 [#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
+[#310]: https://github.com/raxod502/selectrum/issues/310
 [#312]: https://github.com/raxod502/selectrum/issues/312
+[#315]: https://github.com/raxod502/selectrum/issues/315
 [#316]: https://github.com/raxod502/selectrum/pull/316
 [#317]: https://github.com/raxod502/selectrum/pull/317
 [#318]: https://github.com/raxod502/selectrum/pull/318
 [#320]: https://github.com/raxod502/selectrum/issues/320
 [#321]: https://github.com/raxod502/selectrum/pull/321
+[#323]: https://github.com/raxod502/selectrum/issues/323
+[#324]: https://github.com/raxod502/selectrum/pull/324
+[#327]: https://github.com/raxod502/selectrum/pull/327
+[#328]: https://github.com/raxod502/selectrum/pull/328
+[#329]: https://github.com/raxod502/selectrum/pull/329
+[#331]: https://github.com/raxod502/selectrum/pull/331
+[#334]: https://github.com/raxod502/selectrum/issues/334
+[#335]: https://github.com/raxod502/selectrum/pull/335
+[#337]: https://github.com/raxod502/selectrum/pull/337
+[#339]: https://github.com/raxod502/selectrum/pull/339
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
