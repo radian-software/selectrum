@@ -20,11 +20,8 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* Minibuffer settings `minibuffer-allow-text-properties`,
-  `resize-mini-windows` and `max-mini-window-height` are now locally
-  set for the current session and icomplete-mode is also only
-  deactivated per session so recursive sessions are unaffected
-  ([#342]).
+* `icomplete-mode` is now only disabled for the current session so
+  recursive sessions are unaffected ([#342]).
 * With commands `next-history-element` and `previous-history-element`
   the inserted history element will get selected which helps when the
   element isn't a member of the candidate set and fixes a problem with
