@@ -1287,6 +1287,7 @@ CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
 list and sorted first. If `minibuffer-default' is set it will
 have precedence over DEFAULT-CANDIDATE."
+  (setq-local selectrum-active-p t)
   (setq-local minibuffer-allow-text-properties t)
   (setq-local resize-mini-windows 'grow-only)
   (setq-local max-mini-window-height
