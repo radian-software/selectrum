@@ -443,39 +443,6 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
-(defun selectrum--normalize-collection (collection &optional predicate)
-  "Normalize COLLECTION into a list of strings.
-COLLECTION may be a list of strings or symbols or cons cells, an
-obarray, a hash table, or a function, as per the docstring of
-`all-completions'. The returned list may be mutated without
-damaging the original COLLECTION.
-
-If PREDICATE is non-nil, then it filters the collection as in
-`all-completions'."
-  ;; Making the last buffer current avoids the cost of potential
-  ;; buffer switching for each candidate within the predicate (see
-  ;; `describe-variable').
-  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
-                           selectrum--last-buffer
-                         (current-buffer))
-    (let ((completion-regexp-list nil))
-      (all-completions "" collection predicate))))
-
-(defun selectrum--remove-default-from-prompt (prompt)
-  "Remove the indication of the default value from PROMPT.
-Selectrum has its own methods for indicating the default value,
-making other methods redundant."
-  (save-match-data
-    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
-      (cl-dolist (matcher regexps prompt)
-        (let ((regex (if (stringp matcher) matcher (car matcher))))
-          (when (string-match regex prompt)
-            (cl-return
-             (replace-match "" nil nil prompt
-                            (if (consp matcher)
-                                (cadr matcher)
-                              0)))))))))
-
 ;;;; Minibuffer state
 
 ;;;;; Variables
@@ -581,6 +548,39 @@ This is non-nil during the first call of
   "Buffer to display candidates using `selectrum-display-action'.")
 
 ;;;;; Utility functions
+
+(defun selectrum--normalize-collection (collection &optional predicate)
+  "Normalize COLLECTION into a list of strings.
+COLLECTION may be a list of strings or symbols or cons cells, an
+obarray, a hash table, or a function, as per the docstring of
+`all-completions'. The returned list may be mutated without
+damaging the original COLLECTION.
+
+If PREDICATE is non-nil, then it filters the collection as in
+`all-completions'."
+  ;; Making the last buffer current avoids the cost of potential
+  ;; buffer switching for each candidate within the predicate (see
+  ;; `describe-variable').
+  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
+                           selectrum--last-buffer
+                         (current-buffer))
+    (let ((completion-regexp-list nil))
+      (all-completions "" collection predicate))))
+
+(defun selectrum--remove-default-from-prompt (prompt)
+  "Remove the indication of the default value from PROMPT.
+Selectrum has its own methods for indicating the default value,
+making other methods redundant."
+  (save-match-data
+    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+      (cl-dolist (matcher regexps prompt)
+        (let ((regex (if (stringp matcher) matcher (car matcher))))
+          (when (string-match regex prompt)
+            (cl-return
+             (replace-match "" nil nil prompt
+                            (if (consp matcher)
+                                (cadr matcher)
+                              0)))))))))
 
 (defun selectrum-get-current-candidate (&optional notfull)
   "Return currently selected Selectrum candidate.
