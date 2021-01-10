@@ -583,7 +583,8 @@ If NOTFULL is non-nil don't use canonical representation of
 candidate and return the candidate as displayed."
   (when (and selectrum-active-p
              selectrum--current-candidate-index
-             selectrum--refined-candidates)
+             (or selectrum--refined-candidates
+                 (< selectrum--current-candidate-index 0)))
     (if notfull
         (selectrum--get-candidate
          selectrum--current-candidate-index)
