@@ -1284,13 +1284,10 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
     (delete-overlay selectrum--count-overlay))
   (setq selectrum--count-overlay nil))
 
-(cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate)
+(defun selectrum--minibuffer-setup-hook (candidates)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
-`selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first. If `minibuffer-default' is set it will
-have precedence over DEFAULT-CANDIDATE."
+`selectrum-read'."
   (setq-local auto-hscroll-mode t)
   (setq-local selectrum-active-p t)
   (add-hook
@@ -1315,11 +1312,8 @@ have precedence over DEFAULT-CANDIDATE."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  ;; If the default is added by setup hook it should have
-  ;; precedence like with default completion.
   (let ((default (or (car-safe minibuffer-default)
-                     minibuffer-default
-                     default-candidate)))
+                     minibuffer-default)))
     (setq selectrum--default-candidate
           (if (and default (symbolp default))
               (symbol-name default)
@@ -1688,8 +1682,7 @@ semantics of `cl-defun'."
     (minibuffer-with-setup-hook
         (:append (lambda ()
                    (selectrum--minibuffer-setup-hook
-                    candidates
-                    :default-candidate default-candidate)))
+                    candidates)))
       (let* ((minibuffer-allow-text-properties t)
              (resize-mini-windows 'grow-only)
              (max-mini-window-height
@@ -1699,7 +1692,7 @@ semantics of `cl-defun'."
              (icomplete-mode nil)
              (res (read-from-minibuffer
                    prompt initial-input selectrum-minibuffer-map nil
-                   (or history 'minibuffer-history))))
+                   (or history 'minibuffer-history) default-candidate)))
         (cond (minibuffer-completion-table
                ;; Behave like completing-read-default which strips the
                ;; text properties but leaves the default unchanged
