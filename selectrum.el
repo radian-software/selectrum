@@ -578,11 +578,12 @@ This is non-nil during the first call of
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum-get-current-candidate (&optional notfull)
-  "Return currently selected Selectrum candidate.
+  "Return currently selected Selectrum candidate if there is one.
 If NOTFULL is non-nil don't use canonical representation of
 candidate and return the candidate as displayed."
   (when (and selectrum-active-p
-             selectrum--current-candidate-index)
+             selectrum--current-candidate-index
+             selectrum--refined-candidates)
     (if notfull
         (selectrum--get-candidate
          selectrum--current-candidate-index)
