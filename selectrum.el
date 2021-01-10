@@ -804,15 +804,16 @@ the update."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
+                 ;; Check for candidates needs to be first!
+                 ((null selectrum--refined-candidates)
+                  (when (not selectrum--match-required-p)
+                    -1))
                  (keep-selected
                   (or (cl-position keep-selected
                                    selectrum--refined-candidates
                                    :key #'selectrum--get-full
                                    :test #'equal)
                       0))
-                 ((null selectrum--refined-candidates)
-                  (when (not selectrum--match-required-p)
-                    -1))
                  ((and selectrum--default-candidate
                        (string-empty-p (minibuffer-contents))
                        (not (member selectrum--default-candidate
