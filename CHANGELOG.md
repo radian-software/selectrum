@@ -21,10 +21,11 @@ The format is based on [Keep a Changelog].
 
 ### Enhancements
 * With commands `next-history-element` and `previous-history-element`
-  the inserted history element will get selected which helps when the
-  element isn't a member of the candidate set and fixes a problem with
-  file completions when the element is a directory. Before the first
-  file in that directory would be selected ([#323], [#324], [#341]).
+  the inserted history element will get selected when a match isn't
+  required which helps when the element isn't a member of the
+  candidate set and also fixes a problem with file completions when
+  the element is a directory. Before the first file in that directory
+  would be selected ([#323], [#324], [#341], [#346]).
 * Improved exit behaviour of `selectrum-select-current-candidate`. The
   commands gives feedback now when match is required and submission
   not possible. Also it allows submission of the prompt when a match
@@ -205,6 +206,7 @@ The format is based on [Keep a Changelog].
 [#341]: https://github.com/raxod502/selectrum/pull/341
 [#344]: https://github.com/raxod502/selectrum/issues/344
 [#345]: https://github.com/raxod502/selectrum/pull/345
+[#346]: https://github.com/raxod502/selectrum/pull/346
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
