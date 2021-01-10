@@ -81,7 +81,7 @@ The format is based on [Keep a Changelog].
 
 ### Bugs fixed
 * When there were no candidates `selectrum-get-current-candidate`
-  would throw an error, which has been fixed ([#347]).
+  would throw an error, which has been fixed ([#347], [#348]).
 * When `auto-hscroll-mode` was set to `current-line` prompts which
   exceeded the frame width would introduce constant back and forth
   scrolling issues, which has been fixed ([#344], [#345]).
@@ -210,6 +210,7 @@ The format is based on [Keep a Changelog].
 [#345]: https://github.com/raxod502/selectrum/pull/345
 [#346]: https://github.com/raxod502/selectrum/pull/346
 [#347]: https://github.com/raxod502/selectrum/pull/347
+[#348]: https://github.com/raxod502/selectrum/pull/348
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
