@@ -821,7 +821,8 @@ the update."
                                   (minibuffer-contents)))
                       (and (not (= (minibuffer-prompt-end) (point-max)))
                            (memq this-command '(next-history-element
-                                                previous-history-element))))
+                                                previous-history-element))
+                           (not selectrum--match-required-p)))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
