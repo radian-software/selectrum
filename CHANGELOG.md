@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog].
 ### Features
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
-  async completions ([#306], [#307]).
+  async completions ([#306], [#307], [#349]).
 * The user option `selectrum-display-action` can be used to show
   candidates in another window or frame ([#230], [#309]).
 * The user option `selectrum-show-indices` can now be a function that
@@ -211,6 +211,7 @@ The format is based on [Keep a Changelog].
 [#346]: https://github.com/raxod502/selectrum/pull/346
 [#347]: https://github.com/raxod502/selectrum/pull/347
 [#348]: https://github.com/raxod502/selectrum/pull/348
+[#349]: https://github.com/raxod502/selectrum/pull/349
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
