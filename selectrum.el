@@ -1699,7 +1699,7 @@ semantics of `cl-defun'."
              (icomplete-mode nil)
              (res (read-from-minibuffer
                    prompt initial-input selectrum-minibuffer-map nil
-                   (or history 'minibuffer-history))))
+                   (or history 'minibuffer-history) default-candidate)))
         (cond (minibuffer-completion-table
                ;; Behave like completing-read-default which strips the
                ;; text properties but leaves the default unchanged
