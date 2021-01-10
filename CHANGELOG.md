@@ -79,6 +79,9 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* When `auto-hscroll-mode` was set to `current-line` prompts which
+  exceeded the frame width would introduce constant back and forth
+  scrolling issues, which has been fixed ([#344], [#345]).
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
@@ -200,6 +203,8 @@ The format is based on [Keep a Changelog].
 [#338]: https://github.com/raxod502/selectrum/pull/338
 [#339]: https://github.com/raxod502/selectrum/pull/339
 [#341]: https://github.com/raxod502/selectrum/pull/341
+[#344]: https://github.com/raxod502/selectrum/issues/344
+[#345]: https://github.com/raxod502/selectrum/pull/345
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

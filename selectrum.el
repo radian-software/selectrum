@@ -1293,6 +1293,7 @@ CANDIDATES is the list of strings that was passed to
 list and sorted first. If `minibuffer-default' is set it will
 have precedence over DEFAULT-CANDIDATE. LAST-BUFFER is the buffer
 the session was started from."
+  (setq-local auto-hscroll-mode t)
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer last-buffer)
   (add-hook
