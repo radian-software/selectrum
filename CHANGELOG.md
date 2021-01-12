@@ -81,7 +81,7 @@ The format is based on [Keep a Changelog].
 
 ### Bugs fixed
 * Selectrum did not set `minibuffer-default` for the current
-  completion session, which has been fixed ([#350], [#352]).
+  completion session, which has been fixed ([#350], [#352], [#354]).
 * When there were no candidates `selectrum-get-current-candidate`
   would throw an error, which has been fixed ([#347], [#348]).
 * When `auto-hscroll-mode` was set to `current-line` prompts which
@@ -217,6 +217,7 @@ The format is based on [Keep a Changelog].
 [#349]: https://github.com/raxod502/selectrum/pull/349
 [#350]: https://github.com/raxod502/selectrum/issues/350
 [#352]: https://github.com/raxod502/selectrum/pull/352
+[#354]: https://github.com/raxod502/selectrum/pull/354
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
