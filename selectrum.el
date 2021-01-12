@@ -443,9 +443,40 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
-;;;; Minibuffer state
+(defun selectrum--normalize-collection (collection &optional predicate)
+  "Normalize COLLECTION into a list of strings.
+COLLECTION may be a list of strings or symbols or cons cells, an
+obarray, a hash table, or a function, as per the docstring of
+`all-completions'. The returned list may be mutated without
+damaging the original COLLECTION.
 
-;;;;; Variables
+If PREDICATE is non-nil, then it filters the collection as in
+`all-completions'."
+  ;; Making the last buffer current avoids the cost of potential
+  ;; buffer switching for each candidate within the predicate (see
+  ;; `describe-variable').
+  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
+                           selectrum--last-buffer
+                         (current-buffer))
+    (let ((completion-regexp-list nil))
+      (all-completions "" collection predicate))))
+
+(defun selectrum--remove-default-from-prompt (prompt)
+  "Remove the indication of the default value from PROMPT.
+Selectrum has its own methods for indicating the default value,
+making other methods redundant."
+  (save-match-data
+    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
+      (cl-dolist (matcher regexps prompt)
+        (let ((regex (if (stringp matcher) matcher (car matcher))))
+          (when (string-match regex prompt)
+            (cl-return
+             (replace-match "" nil nil prompt
+                            (if (consp matcher)
+                                (cadr matcher)
+                              0)))))))))
+
+;;;; Minibuffer state
 
 (defvar-local selectrum--last-buffer nil
   "The buffer that was current before the active session")
@@ -547,47 +578,16 @@ This is non-nil during the first call of
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
-;;;;; Utility functions
-
-(defun selectrum--normalize-collection (collection &optional predicate)
-  "Normalize COLLECTION into a list of strings.
-COLLECTION may be a list of strings or symbols or cons cells, an
-obarray, a hash table, or a function, as per the docstring of
-`all-completions'. The returned list may be mutated without
-damaging the original COLLECTION.
-
-If PREDICATE is non-nil, then it filters the collection as in
-`all-completions'."
-  ;; Making the last buffer current avoids the cost of potential
-  ;; buffer switching for each candidate within the predicate (see
-  ;; `describe-variable').
-  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
-                           selectrum--last-buffer
-                         (current-buffer))
-    (let ((completion-regexp-list nil))
-      (all-completions "" collection predicate))))
-
-(defun selectrum--remove-default-from-prompt (prompt)
-  "Remove the indication of the default value from PROMPT.
-Selectrum has its own methods for indicating the default value,
-making other methods redundant."
-  (save-match-data
-    (let ((regexps selectrum--minibuffer-default-in-prompt-regexps))
-      (cl-dolist (matcher regexps prompt)
-        (let ((regex (if (stringp matcher) matcher (car matcher))))
-          (when (string-match regex prompt)
-            (cl-return
-             (replace-match "" nil nil prompt
-                            (if (consp matcher)
-                                (cadr matcher)
-                              0)))))))))
+;;;;; Minibuffer state utility functions
 
 (defun selectrum-get-current-candidate (&optional notfull)
-  "Return currently selected Selectrum candidate.
+  "Return currently selected Selectrum candidate if there is one.
 If NOTFULL is non-nil don't use canonical representation of
 candidate and return the candidate as displayed."
   (when (and selectrum-active-p
-             selectrum--current-candidate-index)
+             selectrum--current-candidate-index
+             (or selectrum--refined-candidates
+                 (< selectrum--current-candidate-index 0)))
     (if notfull
         (selectrum--get-candidate
          selectrum--current-candidate-index)
@@ -807,15 +807,16 @@ the update."
               (setq selectrum--repeat nil))
           (setq selectrum--current-candidate-index
                 (cond
+                 ;; Check for candidates needs to be first!
+                 ((null selectrum--refined-candidates)
+                  (when (not selectrum--match-required-p)
+                    -1))
                  (keep-selected
                   (or (cl-position keep-selected
                                    selectrum--refined-candidates
                                    :key #'selectrum--get-full
                                    :test #'equal)
                       0))
-                 ((null selectrum--refined-candidates)
-                  (when (not selectrum--match-required-p)
-                    -1))
                  ((and selectrum--default-candidate
                        (string-empty-p (minibuffer-contents))
                        (not (member selectrum--default-candidate
@@ -826,7 +827,8 @@ the update."
                                   (minibuffer-contents)))
                       (and (not (= (minibuffer-prompt-end) (point-max)))
                            (memq this-command '(next-history-element
-                                                previous-history-element))))
+                                                previous-history-element))
+                           (not selectrum--match-required-p)))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
@@ -1285,17 +1287,13 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
     (delete-overlay selectrum--count-overlay))
   (setq selectrum--count-overlay nil))
 
-(cl-defun selectrum--minibuffer-setup-hook
-    (candidates &key default-candidate last-buffer)
+(defun selectrum--minibuffer-setup-hook (candidates buf)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
-`selectrum-read'. DEFAULT-CANDIDATE, if provided, is added to the
-list and sorted first. If `minibuffer-default' is set it will
-have precedence over DEFAULT-CANDIDATE. LAST-BUFFER is the buffer
-the session was started from."
-  (setq-local auto-hscroll-mode t)
+`selectrum-read'."
   (setq-local selectrum-active-p t)
-  (setq-local selectrum--last-buffer last-buffer)
+  (setq-local selectrum--last-buffer buf)
+  (setq-local auto-hscroll-mode t)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
@@ -1318,11 +1316,8 @@ the session was started from."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  ;; If the default is added by setup hook it should have
-  ;; precedence like with default completion.
   (let ((default (or (car-safe minibuffer-default)
-                     minibuffer-default
-                     default-candidate)))
+                     minibuffer-default)))
     (setq selectrum--default-candidate
           (if (and default (symbolp default))
               (symbol-name default)
@@ -1699,13 +1694,10 @@ semantics of `cl-defun'."
            (res
             (minibuffer-with-setup-hook
                 (:append (lambda ()
-                           (selectrum--minibuffer-setup-hook
-                            candidates
-                            :default-candidate default-candidate
-                            :last-buffer buf)))
+                           (selectrum--minibuffer-setup-hook candidates buf)))
               (read-from-minibuffer
                prompt initial-input selectrum-minibuffer-map nil
-               (or history 'minibuffer-history)))))
+               (or history 'minibuffer-history) default-candidate))))
       (cond (minibuffer-completion-table
              ;; Behave like completing-read-default which strips the
              ;; text properties but leaves the default unchanged
