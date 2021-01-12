@@ -1951,25 +1951,25 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      (t
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
-                      (condition-case _
-                          (let* ((insertp
-                                  (eq this-command
-                                      'selectrum-insert-current-candidate))
-                                 ;; Don't trigger tramp when browsing
-                                 ;; history, unless requested.
-                                 (non-essential
-                                  (and (not insertp)
-                                       (memq this-command
-                                             '(previous-history-element
-                                               next-history-element)))))
+                      (let* ((insertp
+                              (eq this-command
+                                  'selectrum-insert-current-candidate))
+                             ;; Don't trigger tramp when browsing
+                             ;; history, unless requested.
+                             (non-essential
+                              (and (not insertp)
+                                   (memq this-command
+                                         '(previous-history-element
+                                           next-history-element)))))
+                        (condition-case _
                             (delete
                              "./"
                              (delete
                               "../"
-                              (funcall collection dir predicate t))))
-                        ;; May happen in case user quits out
-                        ;; of a TRAMP prompt.
-                        (quit))))))
+                              (funcall collection dir predicate t)))
+                          ;; May happen in case user quits out
+                          ;; of a TRAMP prompt.
+                          (quit)))))))
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
