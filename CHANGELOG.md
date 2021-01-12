@@ -34,7 +34,7 @@ The format is based on [Keep a Changelog].
   of `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles` ([#331]).
 * Computation of candidates is faster for `describe-variable` ([#312],
-  [#316], [#320], [#321]).
+  [#316], [#320], [#321], [#343]).
 * Candidates of `completing-read-multiple` which are submitted by
   `selectrum-select-current-candidate` are now passed to
   `selectrum-candidate-selected-hook` one by one in the order they
@@ -208,6 +208,7 @@ The format is based on [Keep a Changelog].
 [#338]: https://github.com/raxod502/selectrum/pull/338
 [#339]: https://github.com/raxod502/selectrum/pull/339
 [#341]: https://github.com/raxod502/selectrum/pull/341
+[#343]: https://github.com/raxod502/selectrum/pull/343
 [#344]: https://github.com/raxod502/selectrum/issues/344
 [#345]: https://github.com/raxod502/selectrum/pull/345
 [#346]: https://github.com/raxod502/selectrum/pull/346
