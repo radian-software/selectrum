@@ -1290,7 +1290,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
 (defun selectrum--minibuffer-setup-hook (candidates buf)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
-`selectrum-read'."
+`selectrum-read' and BUF the buffer the session was started
+from."
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer buf)
   (setq-local auto-hscroll-mode t)
