@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog].
 ### Features
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
-  async completions ([#306], [#307]).
+  async completions ([#306], [#307], [#349]).
 * The user option `selectrum-display-action` can be used to show
   candidates in another window or frame ([#230], [#309]).
 * The user option `selectrum-show-indices` can now be a function that
@@ -20,13 +20,21 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* With commands `next-history-element` and `previous-history-element`
+  the inserted history element will get selected when a match isn't
+  required which helps when the element isn't a member of the
+  candidate set and also fixes a problem with file completions when
+  the element is a directory. Before the first file in that directory
+  would be selected ([#323], [#324], [#341], [#346]).
+* Improved exit behaviour of `selectrum-select-current-candidate`. The
+  commands gives feedback now when match is required and submission
+  not possible. Also it allows submission of the prompt when a match
+  is required and the prompt is a member of candidates ([#338]).
 * You can now configure `completion-styles` for the initial filtering
   of `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles` ([#331]).
-* The prompt gets selected when using `next-history-element` and the
-  prompt equals the default ([#323], [#324]).
 * Computation of candidates is faster for `describe-variable` ([#312],
-  [#316], [#320], [#321]).
+  [#316], [#320], [#321], [#343]).
 * Candidates of `completing-read-multiple` which are submitted by
   `selectrum-select-current-candidate` are now passed to
   `selectrum-candidate-selected-hook` one by one in the order they
@@ -72,6 +80,13 @@ The format is based on [Keep a Changelog].
   they contain ([#266], [#302], [#318]).
 
 ### Bugs fixed
+* Selectrum did not set `minibuffer-default` for the current
+  completion session, which has been fixed ([#350], [#352], [#354]).
+* When there were no candidates `selectrum-get-current-candidate`
+  would throw an error, which has been fixed ([#347], [#348]).
+* When `auto-hscroll-mode` was set to `current-line` prompts which
+  exceeded the frame width would introduce constant back and forth
+  scrolling issues, which has been fixed ([#344], [#345]).
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
@@ -190,7 +205,19 @@ The format is based on [Keep a Changelog].
 [#334]: https://github.com/raxod502/selectrum/issues/334
 [#335]: https://github.com/raxod502/selectrum/pull/335
 [#337]: https://github.com/raxod502/selectrum/pull/337
+[#338]: https://github.com/raxod502/selectrum/pull/338
 [#339]: https://github.com/raxod502/selectrum/pull/339
+[#341]: https://github.com/raxod502/selectrum/pull/341
+[#343]: https://github.com/raxod502/selectrum/pull/343
+[#344]: https://github.com/raxod502/selectrum/issues/344
+[#345]: https://github.com/raxod502/selectrum/pull/345
+[#346]: https://github.com/raxod502/selectrum/pull/346
+[#347]: https://github.com/raxod502/selectrum/pull/347
+[#348]: https://github.com/raxod502/selectrum/pull/348
+[#349]: https://github.com/raxod502/selectrum/pull/349
+[#350]: https://github.com/raxod502/selectrum/issues/350
+[#352]: https://github.com/raxod502/selectrum/pull/352
+[#354]: https://github.com/raxod502/selectrum/pull/354
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
