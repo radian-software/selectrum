@@ -191,7 +191,8 @@ list of strings."
 These are used for the initial filtering of candidates according
 to the text around point. The initial filtering styles for
 completion in region might generally differ from the styles you
-want to use for usual completion."
+want to use for usual completion. If this option is nil the
+candidates will be filtered by `all-completions'."
   :type 'completion--styles-type)
 
 (defcustom selectrum-preprocess-candidates-function
@@ -1817,13 +1818,16 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                                     input collection predicate ""))))))
          (exit-func (plist-get completion-extra-properties
                                :exit-function))
-         (cands (nconc
-                 (let ((completion-styles
-                        selectrum-completion-in-region-styles))
-                   (completion-all-completions
-                    input collection predicate
-                    (- end start) meta))
-                 nil))
+         (cands (if (not selectrum-completion-in-region-styles)
+                    (let ((completion-regexp-list nil))
+                      (all-completions input collection predicate))
+                  (nconc
+                   (let ((completion-styles
+                          selectrum-completion-in-region-styles))
+                     (completion-all-completions
+                      input collection predicate
+                      (- end start) meta))
+                   nil)))
          ;; See doc of `completion-extra-properties'.
          (exit-status nil)
          (result nil))

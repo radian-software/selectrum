@@ -30,9 +30,9 @@ The format is based on [Keep a Changelog].
   commands gives feedback now when match is required and submission
   not possible. Also it allows submission of the prompt when a match
   is required and the prompt is a member of candidates ([#338]).
-* You can now configure `completion-styles` for the initial filtering
-  of `selectrum-completion-in-region` using
-  `selectrum-completion-in-region-styles` ([#331]).
+* You can now configure the initial filtering for candidates in
+  `selectrum-completion-in-region` using
+  `selectrum-completion-in-region-styles` ([#331], [#356]).
 * Computation of candidates is faster for `describe-variable` ([#312],
   [#316], [#320], [#321], [#343]).
 * Candidates of `completing-read-multiple` which are submitted by
@@ -218,6 +218,7 @@ The format is based on [Keep a Changelog].
 [#350]: https://github.com/raxod502/selectrum/issues/350
 [#352]: https://github.com/raxod502/selectrum/pull/352
 [#354]: https://github.com/raxod502/selectrum/pull/354
+[#356]: https://github.com/raxod502/selectrum/pull/356
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
