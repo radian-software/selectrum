@@ -721,6 +721,12 @@ greather than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
+(defun selectrum--at-existing-prompt-path-p ()
+  "Return non-nil when current file prompt exists."
+  (and minibuffer-completing-file-name
+       (file-exists-p
+        (substitute-in-file-name (minibuffer-contents)))))
+
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (selectrum--update))
@@ -810,7 +816,8 @@ the update."
                 (cond
                  ;; Check for candidates needs to be first!
                  ((null selectrum--refined-candidates)
-                  (when (not selectrum--match-required-p)
+                  (when (or (not selectrum--match-required-p)
+                            (selectrum--at-existing-prompt-path-p))
                     -1))
                  (keep-selected
                   (or (cl-position keep-selected
@@ -829,7 +836,8 @@ the update."
                       (and (not (= (minibuffer-prompt-end) (point-max)))
                            (memq this-command '(next-history-element
                                                 previous-history-element))
-                           (not selectrum--match-required-p)))
+                           (or (not selectrum--match-required-p)
+                               (selectrum--at-existing-prompt-path-p))))
                   -1)
                  (selectrum--move-default-candidate-p
                   0)
@@ -1348,9 +1356,7 @@ overridden and BUF the buffer the session was started from."
            (+ selectrum--current-candidate-index (or arg 1))
            (if (and selectrum--match-required-p
                     (cond (minibuffer-completing-file-name
-                           (not (file-exists-p
-                                 (substitute-in-file-name
-                                  (minibuffer-contents)))))
+                           (not (selectrum--at-existing-prompt-path-p)))
                           (t
                            (not (string-empty-p
                                  (minibuffer-contents))))))
@@ -1467,9 +1473,7 @@ indices."
                (minibuffer-contents))
               (and index (>= index 0))
               (if minibuffer-completing-file-name
-                  (file-exists-p
-                   (substitute-in-file-name
-                    (minibuffer-contents)))
+                  (selectrum--at-existing-prompt-path-p)
                 (member (minibuffer-contents)
                         selectrum--refined-candidates)))
           (selectrum--exit-with
