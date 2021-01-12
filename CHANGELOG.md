@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* When there are no candidates in file completions the prompt will
+  also be selected when a match is required, before one could submit
+  the prompt but there was no indication ([#357]).
 * With commands `next-history-element` and `previous-history-element`
   the inserted history element will get selected when a match isn't
   required which helps when the element isn't a member of the
@@ -219,6 +222,7 @@ The format is based on [Keep a Changelog].
 [#352]: https://github.com/raxod502/selectrum/pull/352
 [#354]: https://github.com/raxod502/selectrum/pull/354
 [#356]: https://github.com/raxod502/selectrum/pull/356
+[#357]: https://github.com/raxod502/selectrum/pull/357
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
