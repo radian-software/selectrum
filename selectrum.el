@@ -150,7 +150,7 @@ frame you can use the provided action function
                alist))
 
 (defcustom selectrum-insert-candidates-function
-  #'selectrum-insert-candidates-vertically
+  #'selectrum-insert-candidates-horizontally
   "Function to insert candidates for display.
 The insertion function should insert candidates into the buffer
 passed as first argument. The remaining arguments are the same as
@@ -163,6 +163,27 @@ the insertion function can also apply local settings of Selectrum
 options, this can be used if options are incompatible with the
 current insertion method."
   :type 'function)
+
+(defvar selectrum-insert-candidates-switch-alist
+  '((selectrum-insert-candidates-horizontally
+     . selectrum-insert-candidates-horizontally-switcher)
+    (selectrum-insert-candidates-horizontally
+     . selectrum-insert-candidates-vertically-switcher)))
+
+(let ((highlight selectrum-extend-current-candidate-highlight))
+  (defun selectrum-insert-candidates-horizontally-switcher (&optional reset)
+    (cond (reset
+           (setq-local selectrum-extend-current-candidate-highlight highlight))
+          (t
+           (setq highlight selectrum-extend-current-candidate-highlight)
+           (setq-local selectrum-extend-current-candidate-highlight nil)
+           (when (window-minibuffer-p)
+             (setf (window-height) 1))))))
+
+(defun selectrum-insert-candidates-vertically-switcher (&optional reset)
+  (unless reset
+    (when (window-minibuffer-p)
+      (selectrum--update-minibuffer-height))))
 
 (defun selectrum-default-candidate-refine-function (input candidates)
   "Default value of `selectrum-refine-candidates-function'.
@@ -788,9 +809,7 @@ LAST-INDEX-DISPLAYED the index of the last one."
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'."
-  (ignore nrows win)
-  ;; FIXME: this will change it permanently for other insertion functions
-  (setq-local selectrum-extend-current-candidate-highlight nil)
+  (ignore nrows)
   (let* ((first-index-displayed
           (cond ((or (not index)
                      (not first-index-displayed)
