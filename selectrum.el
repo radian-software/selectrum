@@ -1291,8 +1291,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT is the default value which can be
-overridden by `minibuffer-default' and BUF the buffer the session
-was started from."
+overridden and BUF the buffer the session was started from."
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer buf)
   (setq-local auto-hscroll-mode t)
@@ -1318,12 +1317,10 @@ was started from."
                (funcall selectrum-preprocess-candidates-function
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
-  (let ((default (or (car-safe minibuffer-default)
-                     minibuffer-default default)))
-    (setq selectrum--default-candidate
-          (if (and default (symbolp default))
-              (symbol-name default)
-            default)))
+  (setq selectrum--default-candidate
+        (if (and default (symbolp default))
+            (symbol-name default)
+          default))
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
@@ -1697,7 +1694,11 @@ semantics of `cl-defun'."
             (minibuffer-with-setup-hook
                 (:append (lambda ()
                            (selectrum--minibuffer-setup-hook
-                            candidates default-candidate buf)))
+                            candidates
+                            (or (car-safe minibuffer-default)
+                                minibuffer-default
+                                default-candidate)
+                            buf)))
               (read-from-minibuffer
                prompt initial-input selectrum-minibuffer-map nil
                (or history 'minibuffer-history) default-candidate))))
