@@ -789,6 +789,7 @@ For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'."
   (ignore nrows win)
+  ;; FIXME: this will change it permanently for other insertion functions
   (setq-local selectrum-extend-current-candidate-highlight nil)
   (let* ((first-index-displayed
           (cond ((or (not index)
