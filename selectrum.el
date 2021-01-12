@@ -1505,7 +1505,8 @@ inserted automatically when using
 Give a prefix argument ARG to select the nth displayed candidate.
 Zero means to select the current user input. See
 `selectrum-show-indices' which can be used to show candidate
-indices."
+indices. When the prompt is selected this command triggers a
+refresh."
   (interactive "P")
   (with-selected-window (active-minibuffer-window)
     (if-let ((index (selectrum--index-for-arg arg))
@@ -1938,22 +1939,37 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    ;; The input used for matching current dir entries.
                    (matchstr (file-name-nondirectory input))
                    (cands
-                    (cond ((equal last-dir dir)
-                           (setq-local selectrum-preprocess-candidates-function
-                                       #'identity)
-                           selectrum--preprocessed-candidates)
-                          (t
-                           (setq-local selectrum-preprocess-candidates-function
-                                       sortf)
-                           (condition-case _
-                               (delete
-                                "./"
-                                (delete
-                                 "../"
-                                 (funcall collection dir predicate t)))
-                             ;; May happen in case user quits out
-                             ;; of a TRAMP prompt.
-                             (quit))))))
+                    (cond
+                     ((and (equal last-dir dir)
+                           ;; Force refresh and give tramp a chance to
+                           ;; trigger.
+                           (not (eq this-command
+                                    'selectrum-insert-current-candidate)))
+                      (setq-local selectrum-preprocess-candidates-function
+                                  #'identity)
+                      selectrum--preprocessed-candidates)
+                     (t
+                      (setq-local selectrum-preprocess-candidates-function
+                                  sortf)
+                      (let* ((insertp
+                              (eq this-command
+                                  'selectrum-insert-current-candidate))
+                             ;; Don't trigger tramp when browsing
+                             ;; history, unless requested.
+                             (non-essential
+                              (and (not insertp)
+                                   (memq this-command
+                                         '(previous-history-element
+                                           next-history-element)))))
+                        (condition-case _
+                            (delete
+                             "./"
+                             (delete
+                              "../"
+                              (funcall collection dir predicate t)))
+                          ;; May happen in case user quits out
+                          ;; of a TRAMP prompt.
+                          (quit)))))))
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))

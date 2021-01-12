@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* When using `next-history-element` or `previous-history-element`
+  don't automatically open tramp connections for remote paths. To
+  trigger tramp for a selected history element you can use
+  `selectrum-insert-current-candidate` ([#358]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
@@ -222,6 +226,7 @@ The format is based on [Keep a Changelog].
 [#354]: https://github.com/raxod502/selectrum/pull/354
 [#356]: https://github.com/raxod502/selectrum/pull/356
 [#357]: https://github.com/raxod502/selectrum/pull/357
+[#358]: https://github.com/raxod502/selectrum/pull/358
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
