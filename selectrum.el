@@ -1287,11 +1287,12 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
     (delete-overlay selectrum--count-overlay))
   (setq selectrum--count-overlay nil))
 
-(defun selectrum--minibuffer-setup-hook (candidates buf)
+(defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of strings that was passed to
-`selectrum-read' and BUF the buffer the session was started
-from."
+`selectrum-read'. DEFAULT is the default value which can be
+overridden by `minibuffer-default' and BUF the buffer the session
+was started from."
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer buf)
   (setq-local auto-hscroll-mode t)
@@ -1318,7 +1319,7 @@ from."
                         candidates))
          (setq selectrum--total-num-candidates (length candidates))))
   (let ((default (or (car-safe minibuffer-default)
-                     minibuffer-default)))
+                     minibuffer-default default)))
     (setq selectrum--default-candidate
           (if (and default (symbolp default))
               (symbol-name default)
@@ -1695,7 +1696,8 @@ semantics of `cl-defun'."
            (res
             (minibuffer-with-setup-hook
                 (:append (lambda ()
-                           (selectrum--minibuffer-setup-hook candidates buf)))
+                           (selectrum--minibuffer-setup-hook
+                            candidates default-candidate buf)))
               (read-from-minibuffer
                prompt initial-input selectrum-minibuffer-map nil
                (or history 'minibuffer-history) default-candidate))))
