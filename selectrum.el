@@ -810,7 +810,8 @@ the update."
                 (cond
                  ;; Check for candidates needs to be first!
                  ((null selectrum--refined-candidates)
-                  (when (not selectrum--match-required-p)
+                  (when (or (not selectrum--match-required-p)
+                            minibuffer-completing-file-name)
                     -1))
                  (keep-selected
                   (or (cl-position keep-selected
