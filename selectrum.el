@@ -1967,11 +1967,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                        'selectrum-insert-current-candidate)))))
                         (condition-case _
                             (prog1
-                              (delete
-                               "./"
-                               (delete
-                                "../"
-                                (funcall collection dir predicate t)))
+                                (delete
+                                 "./"
+                                 (delete
+                                  "../"
+                                  (funcall collection dir predicate t)))
                               (setq-local minibuffer-history-position 0))
                           ;; May happen in case user quits out
                           ;; of a TRAMP prompt.
