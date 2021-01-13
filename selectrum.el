@@ -1749,6 +1749,19 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    :minibuffer-completion-table collection
    :minibuffer-completion-predicate predicate))
 
+(defmacro selectrum-with-keymap (keymap &rest body)
+  "Merge KEYMAP with `selectrum-minibuffer-map' and use it as the local map.
+Wrap `selectrum-read' calls in this macro to override/extend
+`selectrum-minibuffer-map' locally in BODY."
+  (declare (indent 1))
+  `(minibuffer-with-setup-hook
+       (lambda ()
+         (when selectrum-active-p
+           (let ((map (copy-keymap ,keymap)))
+             (set-keymap-parent map selectrum-minibuffer-map)
+             (use-local-map map))))
+     ,@body))
+
 (defvar selectrum--old-completing-read-function nil
   "Previous value of `completing-read-function'.")
 

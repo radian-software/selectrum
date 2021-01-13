@@ -199,6 +199,42 @@ editing bindings. So, for example:
   `M-r` will invoke an improved version of history search with
   completion.
 
+`selectrum-with-keymap` can be used to locally change the keymap for a
+selectrum session. One example is in `find-file`, you may want to use
+`RET` on a directory to navigate to it like `TAB` does, rather than open
+it in `dired`. You could do:
+
+```elisp
+(defvar my-minibuffer-file-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") 'my-file-select-current-candidate)
+    map)
+  "Keymap used for `find-file'.")
+
+(defun my-file-select-current-candidate (&optional arg)
+  "An alternative to `selectrum-select-current-candidate'.
+This inserts the candidate if it's a directory, otherwise selects
+it."
+  (interactive "P")
+  (let* ((index (selectrum--index-for-arg arg))
+         (candidate (selectrum--get-candidate index))
+         (path (selectrum--get-full candidate)))
+    (call-interactively
+     (if (file-directory-p path)
+         'selectrum-insert-current-candidate
+       'selectrum-select-current-candidate))))
+
+(defun my-find-file ()
+  "An alternative to `find-file'.
+This completes the directory when pressing `RET', rather than
+open it in dired.
+
+You can still use `C-j' to open it in dired."
+  (interactive)
+  (selectrum-with-keymap my-minibuffer-file-map
+    (call-interactively #'find-file)))
+```
+
 ### Sorting and filtering
 
 The default sorting and filtering in Selectrum is quite primitive.

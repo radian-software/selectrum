@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-complete-in-buffer` can be used to
   control whether Selectrum should handle in buffer completion (the
   default is t) ([#261]).
+* The macro `selectrum-with-keymap` locally changes the keymap for a
+  selectrum session. See [#218].
 
 ### Enhancements
 * The `selectrum-select-from-history` command has been improved. You
@@ -188,6 +190,7 @@ The format is based on [Keep a Changelog].
 [#212]: https://github.com/raxod502/selectrum/issues/212
 [#213]: https://github.com/raxod502/selectrum/pull/213
 [#215]: https://github.com/raxod502/selectrum/pull/215
+[#218]: https://github.com/raxod502/selectrum/issues/218
 [#220]: https://github.com/raxod502/selectrum/pull/220
 [#221]: https://github.com/raxod502/selectrum/pull/221
 [#242]: https://github.com/raxod502/selectrum/pull/242
