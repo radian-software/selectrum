@@ -20,6 +20,11 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The `selectrum-select-from-history` command has been improved. You
+  can now insert a history item into the previous session using your
+  default binding for `selectrum-insert-current-candidate`. To submit
+  the history item and exit use `selectrum-select-current-candidate`
+  ([#362]).
 * When using commands where the prompt would exceed the window width
   the horizontal scroll wouldn't reset afterwards when a smaller
   element was pulled into the prompt under certain conditions (for
@@ -241,6 +246,7 @@ The format is based on [Keep a Changelog].
 [#359]: https://github.com/raxod502/selectrum/pull/359
 [#360]: https://github.com/raxod502/selectrum/pull/360
 [#361]: https://github.com/raxod502/selectrum/pull/361
+[#362]: https://github.com/raxod502/selectrum/pull/362
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
