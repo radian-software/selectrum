@@ -1554,35 +1554,54 @@ refresh."
 
 ;;;###autoload
 (defun selectrum-select-from-history ()
-  "Select a candidate from the minibuffer history.
-If Selectrum isn't active, insert this candidate into the
-minibuffer."
+  "Submit or insert candidate from minibuffer history.
+To insert the history item into the previous session use the
+binding for `selectrum-insert-current-candidate'. To submit the
+history item and exit use `selectrum-select-current-candidate'."
   (interactive)
   (unless (minibufferp)
     (user-error "Command can only be used in minibuffer"))
   (let ((history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let* ((enable-rec enable-recursive-minibuffers)
-           (result
-            (minibuffer-with-setup-hook
-                (lambda ()
-                  (setq-local selectrum-should-sort-p nil)
-                  (setq-local selectrum-candidate-inserted-hook nil)
-                  (setq-local selectrum-candidate-selected-hook nil))
-              (setq-local enable-recursive-minibuffers t)
-              (unwind-protect
-                  (selectrum-read "History: "
-                                  history
-                                  :history t
-                                  :require-match t)
-                (setq-local enable-recursive-minibuffers enable-rec)))))
-      (if (and selectrum--match-required-p
-               (not (member result selectrum--refined-candidates)))
-          (user-error "That history element is not one of the candidates")
-        (if selectrum-active-p
-            (selectrum--exit-with result)
-          (insert result))))))
+    (let ((result
+           (minibuffer-with-setup-hook
+               (lambda ()
+                 (setq-local enable-recursive-minibuffers t)
+                 (setq-local selectrum-should-sort-p nil)
+                 (setq-local selectrum-candidate-inserted-hook nil)
+                 (setq-local selectrum-candidate-selected-hook nil)
+                 (use-local-map (make-composed-keymap nil (current-local-map)))
+                 (define-key (current-local-map)
+                   [remap selectrum-insert-current-candidate]
+                   'selectrum--insert-history)
+                 (let ((inhibit-read-only t))
+                   (goto-char (or (search-backward ":" nil t)
+                                  (1- (minibuffer-prompt-end))))
+                   (insert
+                    (apply
+                     #'propertize
+                     " [history]"
+                     (text-properties-at (point))))))
+             (catch 'selectrum-insert-action
+               (completing-read
+                (minibuffer-prompt) history nil t nil t)))))
+      (if (get-text-property 0 'selectum--insert result)
+          (progn
+            (delete-minibuffer-contents)
+            (insert result))
+        (if (and selectrum--match-required-p
+                 (not (member result selectrum--refined-candidates)))
+            (user-error "That history element is not one of the candidates")
+          (selectrum--exit-with result))))))
+
+(defun selectrum--insert-history ()
+  "Insert history item.
+Only to be used from `selectrum-select-from-history'"
+  (interactive)
+  (throw 'selectrum-insert-action
+         (propertize (selectrum-get-current-candidate 'notfull)
+                     'selectum--insert t)))
 
 (defvar selectrum--minibuffer-local-filename-syntax
   (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
