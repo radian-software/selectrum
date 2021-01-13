@@ -1948,7 +1948,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond
-                     ((not (zerop minibuffer-history-position))
+                     ((and minibuffer-history-position
+                           (not (zerop minibuffer-history-position)))
                       nil)
                      ((and (equal last-dir dir)
                            ;; Allow forcing refresh.
@@ -1961,7 +1962,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((non-essential
-                             (not (zerop minibuffer-history-position))))
+                             (and minibuffer-history-position
+                                  (not (zerop minibuffer-history-position)))))
                         (condition-case _
                             (delete
                              "./"
