@@ -1962,7 +1962,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   sortf)
                       (let ((non-essential
                              (or (and minibuffer-history-position
-                                      (not (zerop minibuffer-history-position)))
+                                      (not (zerop
+                                            minibuffer-history-position)))
                                  non-essential)))
                         (condition-case _
                             (delete
