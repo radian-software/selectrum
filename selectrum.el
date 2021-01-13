@@ -1935,6 +1935,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
          (sortf nil)
+         (msg nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -1943,9 +1944,18 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond
+                     ((and (not (zerop minibuffer-history-position))
+                           (not (eq this-command
+                                    'selectrum-insert-current-candidate)))
+                      (minibuffer-message
+                       (concat
+                        (format "%s/%s "
+                                minibuffer-history-position
+                                (length (symbol-value minibuffer-history-variable)))
+                        msg))
+                      nil)
                      ((and (equal last-dir dir)
-                           ;; Force refresh and give tramp a chance to
-                           ;; trigger.
+                           ;; Allow forcing refresh.
                            (not (eq this-command
                                     'selectrum-insert-current-candidate)))
                       (setq-local selectrum-preprocess-candidates-function
@@ -1954,22 +1964,19 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      (t
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
-                      (let* ((insertp
-                              (eq this-command
-                                  'selectrum-insert-current-candidate))
-                             ;; Don't trigger tramp when browsing
-                             ;; history, unless requested.
-                             (non-essential
-                              (and (not insertp)
-                                   (memq this-command
-                                         '(previous-history-element
-                                           next-history-element)))))
+                      (let ((non-essential
+                             (and (not (zerop minibuffer-history-position))
+                                  (not
+                                   (eq this-command
+                                       'selectrum-insert-current-candidate)))))
                         (condition-case _
-                            (delete
-                             "./"
-                             (delete
-                              "../"
-                              (funcall collection dir predicate t)))
+                            (prog1
+                              (delete
+                               "./"
+                               (delete
+                                "../"
+                                (funcall collection dir predicate t)))
+                              (setq-local minibuffer-history-position 0))
                           ;; May happen in case user quits out
                           ;; of a TRAMP prompt.
                           (quit)))))))
@@ -1983,6 +1990,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    ;; Pickup the value as configured for current
                    ;; session.
                    (setq sortf selectrum-preprocess-candidates-function)
+                   (setq msg (propertize
+                              (substitute-command-keys
+                               "Press \\[selectrum-insert-current-candidate] to refresh")
+                              'face 'minibuffer-prompt))
                    ;; Ensure the variable is also set when
                    ;; selectrum--completing-read-file-name is called
                    ;; directly.
