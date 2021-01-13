@@ -149,26 +149,23 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defun selectrum-default-candidate-refine-function (input candidates)
-  "Default value of `selectrum-refine-candidates-function'.
-Return only candidates that contain the input as a substring.
-INPUT is a string, CANDIDATES is a list of strings."
-  (let ((regexp (regexp-quote input)))
-    (cl-delete-if-not
-     (lambda (candidate)
-       (string-match-p regexp candidate))
-     (copy-sequence candidates))))
+(defun selectrum-refine-candidates-using-completions-styles (input candidates)
+  "Use INPUT to filter and highlight CANDIDATES.
+Uses `completion-styles'."
+  (nconc
+   (completion-all-completions
+    input candidates nil (length input))
+   nil))
 
 (defcustom selectrum-refine-candidates-function
-  #'selectrum-default-candidate-refine-function
+  #'selectrum-refine-candidates-using-completions-styles
   "Function used to decide which candidates should be displayed.
-Receives two arguments, the user input (a string) and the list of
-candidates (strings).
-
-Returns a new list of candidates. Should not modify the input
-list. The returned list may be modified by Selectrum, so a copy
-of the input should be made. (Beware that `cl-remove-if' doesn't
-make a copy if there's nothing to remove.)"
+The function receives two arguments, the user input (a string)
+and the list of candidates (strings). Returns a new list of
+candidates. Should not modify the input list. The returned list
+may be modified by Selectrum, so a copy of the input should be
+made. (Beware that `cl-remove-if' doesn't make a copy if there's
+nothing to remove.)"
   :type 'function)
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
@@ -206,32 +203,18 @@ properties will retain their ordering, which may be significant
 \(e.g. for `load-path' shadows in `read-library-name')."
   :type 'function)
 
-(defun selectrum-default-candidate-highlight-function (input candidates)
-  "Default value of `selectrum-highlight-candidates-function'.
-Highlight the substring match with
-`selectrum-primary-highlight'. INPUT is a string, CANDIDATES is a
-list of strings."
-  (let ((regexp (regexp-quote input)))
-    (save-match-data
-      (mapcar
-       (lambda (candidate)
-         (when (string-match regexp candidate)
-           (setq candidate (copy-sequence candidate))
-           (put-text-property
-            (match-beginning 0) (match-end 0)
-            'face 'selectrum-primary-highlight
-            candidate))
-         candidate)
-       candidates))))
+(defun selectrum-candidates-identity (_input candidates)
+  "Return CANDIDATES unchanged."
+  candidates)
 
 (defcustom selectrum-highlight-candidates-function
-  #'selectrum-default-candidate-highlight-function
-  "Function used to highlight matched candidates.
-Receive two arguments, the input string and the list of
-candidates (strings) that are going to be displayed (length at
-most `selectrum-num-candidates-displayed'). Return a list of
-propertized candidates. Do not modify the input list or
-strings."
+  #'selectrum-candidates-identity
+  "Function used to highlight matched candidates for display.
+The function receives two arguments, the input string and the
+list of candidates (strings) that are going to be
+displayed (length at most `selectrum-num-candidates-displayed').
+Return a list of propertized candidates. Do not modify the input
+list or strings."
   :type 'function)
 
 (defvar selectrum-minibuffer-map

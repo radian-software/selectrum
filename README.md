@@ -98,10 +98,15 @@ To enable Selectrum, simply add to your init-file:
 
 Now all of your favorite Emacs commands will automatically use
 Selectrum. However, the default sorting and filtering is very basic.
-It is recommended to use
-[`prescient.el`](https://github.com/raxod502/prescient.el) to enable
-more intelligent sorting and filtering. Simply install the
-`selectrum-prescient` package from MELPA and add to your init-file:
+The standard filtering function uses the built-in `completion-styles`.
+It is recommended to use other packages with more intelligent sorting
+and filtering abilities.
+[`prescient.el`](https://github.com/raxod502/prescient.el) provides
+functions for more intelligent sorting and filtering and there is also
+[orderless](https://github.com/oantolin/orderless) which provides an
+enhanced and flexible style for `completion-styles`. To setup
+`prescient` simply install `selectrum-prescient` package from MELPA
+and add the following to your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -189,12 +194,11 @@ editing bindings. So, for example:
 
 The default sorting and filtering in Selectrum is quite primitive.
 First candidates are sorted alphabetically, and then they are filtered
-down to those that contain your input as a substring. The part of each
-candidate that matches your input is highlighted. This default
-behavior is intended as a lowest common denominator that will
-definitely work.
+and highlighted using `completion-styles`. This default behavior is
+intended as a lowest common denominator that will definitely work.
 
-However, it is strongly recommended that you set up
+However, it is strongly recommended that you customize
+`completion-styles` or set up
 [`prescient.el`](https://github.com/raxod502/prescient.el) in order to
 get more intelligent sorting and filtering. (See the "getting started"
 section for how to do this.) With `prescient.el`:
@@ -212,9 +216,9 @@ section for how to do this.) With `prescient.el`:
 * The part of each candidate that matched your input is highlighted,
   with the initials of an initialism highlighted in a second color.
 
-It is possible to supply your own sorting, filtering, and highlighting
-logic if you would like. For that, see the developer guide later in
-this documentation.
+It is also possible to supply your own sorting, filtering, and
+highlighting logic if you would like. For that, see the developer
+guide later in this documentation.
 
 Selectrum adds two special features on top of whatever sorting and
 filtering is selected:
