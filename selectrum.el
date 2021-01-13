@@ -199,12 +199,12 @@ properties will retain their ordering, which may be significant
 
 (defcustom selectrum-highlight-candidates-function
   #'selectrum-candidates-identity
-  "Function used to highlight matched candidates.
-The function should highlight the candidates for display. The
-function receives two arguments, the input string and the list of
-candidates (strings) that are going to be displayed (length at
-most `selectrum-num-candidates-displayed'). Return a list of
-propertized candidates. Do not modify the input list or strings."
+  "Function used to highlight matched candidates for display.
+The function receives two arguments, the input string and the
+list of candidates (strings) that are going to be
+displayed (length at most `selectrum-num-candidates-displayed').
+Return a list of propertized candidates. Do not modify the input
+list or strings."
   :type 'function)
 
 (defvar selectrum-minibuffer-map
