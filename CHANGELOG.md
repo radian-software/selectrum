@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog].
   insert it using `selectrum-insert-current-candidate` ([#359]).
 * `selectrum-insert-current-candidate` will reset
   `minibuffer-history-position`, so when using history commands again
-  after choosing an item from histroy previously you start from the
+  after choosing an item from history previously you start from the
   beginning ([#361]).
 * When using history commands don't automatically trigger a refresh.
   This is especially useful to prevent unintended opening of tramp
