@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Breaking changes
+* `selectrum-default-candidate-refine-function` and
+  `selectrum-default-candidate-highlight-function` have been removed.
+  The new default functions used for
+  `selectrum-refine-candidates-function` and
+  `selectrum-highlight-candidates-function` filter and highlight
+  candidates according to `completion-styles` now.
+
 ### Features
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for

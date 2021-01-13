@@ -149,15 +149,16 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defun selectrum-refine-candidates-with-completions-styles (input candidates)
-  "Use INPUT to filter CANDIDATES using `completion-styles'."
+(defun selectrum-refine-candidates-using-completions-styles (input candidates)
+  "Use INPUT to filter and highlight CANDIDATES.
+Uses `completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input))
    nil))
 
 (defcustom selectrum-refine-candidates-function
-  #'selectrum-refine-candidates-with-completions-styles
+  #'selectrum-refine-candidates-using-completions-styles
   "Function used to decide which candidates should be displayed.
 The function receives two arguments, the user input (a string)
 and the list of candidates (strings). Returns a new list of
@@ -193,7 +194,7 @@ properties will retain their ordering, which may be significant
   :type 'function)
 
 (defun selectrum-candidates-identity (_input candidates)
-  "Used when refinement already does highlight CANDIDATES."
+  "Return CANDIDATES unchanged."
   candidates)
 
 (defcustom selectrum-highlight-candidates-function
