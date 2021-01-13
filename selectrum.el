@@ -1963,8 +1963,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((non-essential
-                             (and minibuffer-history-position
-                                  (not (zerop minibuffer-history-position)))))
+                             (or (and minibuffer-history-position
+                                      (not (zerop minibuffer-history-position)))
+                                 non-essential)))
                         (condition-case _
                             (delete
                              "./"
