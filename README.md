@@ -99,8 +99,7 @@ To enable Selectrum, simply add to your init-file:
 Now all of your favorite Emacs commands will automatically use
 Selectrum. However, the default sorting and filtering is very basic.
 The standard filtering function uses the built-in `completion-styles`.
-It is recommended to use other packages with more intelligent sorting
-and filtering abilities.
+It is recommended to use packages which improve that.
 [`prescient.el`](https://github.com/raxod502/prescient.el) provides
 functions for more intelligent sorting and filtering and there is also
 [orderless](https://github.com/oantolin/orderless) which provides an
