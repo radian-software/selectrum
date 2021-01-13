@@ -99,8 +99,8 @@ To enable Selectrum, simply add to your init-file:
 Now all of your favorite Emacs commands will automatically use
 Selectrum. However, the default sorting and filtering is very basic.
 The standard filtering function uses `completion-styles`. You can make
-use of the built-in `substring` and `flex` style to enhance that a bit
-but it is recommended to use packages which improve this further.
+use of the built-in `substring` and `flex` style to enhance these a
+bit but it is recommended to use packages which improve this further.
 There is [`prescient.el`](https://github.com/raxod502/prescient.el)
 which provides functions for more intelligent sorting and filtering
 and [`orderless`](https://github.com/oantolin/orderless) which
@@ -116,6 +116,15 @@ MELPA and add the following to your init-file:
 ;; intelligent over time
 (prescient-persist-mode +1)
 ```
+
+If you don't want to install additional packages you can setup the
+built-in `completion-styles` to improve things a bit:
+
+```elisp
+;; In Emacs 27 there is also a flex style which you might like.
+(setq completion-styles '(substring partial-completion))
+```
+
 
 ## User guide
 
