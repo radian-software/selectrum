@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* When using commands where the prompt would exceed the window width
+  the horizontal scroll wouldn't reset afterwards when a smaller
+  element was pulled into the prompt under certain conditions (for
+  example when using history commands), which has been fixed ([#360]).
 * When the prompt is empty and the default value is shown you can now
   insert it using `selectrum-insert-current-candidate` ([#359]).
 * When using `next-history-element` or `previous-history-element`
@@ -230,6 +234,7 @@ The format is based on [Keep a Changelog].
 [#357]: https://github.com/raxod502/selectrum/pull/357
 [#358]: https://github.com/raxod502/selectrum/pull/358
 [#359]: https://github.com/raxod502/selectrum/pull/359
+[#360]: https://github.com/raxod502/selectrum/pull/360
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
