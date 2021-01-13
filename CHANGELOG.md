@@ -27,9 +27,9 @@ The format is based on [Keep a Changelog].
 * When the prompt is empty and the default value is shown you can now
   insert it using `selectrum-insert-current-candidate` ([#359]).
 * `selectrum-insert-current-candidate` will reset
-  `minibuffer-history-position`, so when using history commands again
-  after choosing an item from history previously you start from the
-  beginning ([#361]).
+  `minibuffer-history-position`, so with repeated use of history
+  commands after choosing items from history previously, you restart
+  from the beginning ([#361]).
 * When using history commands don't automatically trigger a refresh.
   This is especially useful to prevent unintended opening of tramp
   connections for remote paths. To trigger a refresh for a selected
@@ -240,6 +240,7 @@ The format is based on [Keep a Changelog].
 [#358]: https://github.com/raxod502/selectrum/pull/358
 [#359]: https://github.com/raxod502/selectrum/pull/359
 [#360]: https://github.com/raxod502/selectrum/pull/360
+[#361]: https://github.com/raxod502/selectrum/pull/361
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
