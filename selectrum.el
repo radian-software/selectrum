@@ -1938,7 +1938,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
          (sortf nil)
-         (msg nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -1950,12 +1949,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ((and (not (zerop minibuffer-history-position))
                            (not (eq this-command
                                     'selectrum-insert-current-candidate)))
-                      (minibuffer-message
-                       (concat
-                        (format "%s/%s "
-                                minibuffer-history-position
-                                (length (symbol-value minibuffer-history-variable)))
-                        msg))
                       nil)
                      ((and (equal last-dir dir)
                            ;; Allow forcing refresh.
@@ -1993,10 +1986,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    ;; Pickup the value as configured for current
                    ;; session.
                    (setq sortf selectrum-preprocess-candidates-function)
-                   (setq msg (propertize
-                              (substitute-command-keys
-                               "Press \\[selectrum-insert-current-candidate] to refresh")
-                              'face 'minibuffer-prompt))
                    ;; Ensure the variable is also set when
                    ;; selectrum--completing-read-file-name is called
                    ;; directly.
