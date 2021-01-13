@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* When using commands where the prompt would exceed the window with
+* When using commands where the prompt would exceed the window width
   the horizontal scroll wouldn't reset afterwards when a smaller
   element was pulled into the prompt under certain conditions (for
   example when using history commands), which has been fixed ([#360]).
