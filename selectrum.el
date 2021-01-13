@@ -1954,8 +1954,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (not (zerop minibuffer-history-position)))
                       nil)
                      ((and (equal last-dir dir)
-                           (not (and minibuffer-history-position
-                                     (zerop minibuffer-history-position))))
+                           (not (eq this-command
+                                    'selectrum-insert-current-candidate)))
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
