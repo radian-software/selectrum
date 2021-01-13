@@ -837,8 +837,8 @@ the update."
                            (equal selectrum--default-candidate
                                   (minibuffer-contents)))
                       (and (not (= (minibuffer-prompt-end) (point-max)))
-                           (memq this-command '(next-history-element
-                                                previous-history-element))
+                           (and minibuffer-history-position
+                                (not (zerop minibuffer-history-position)))
                            (or (not selectrum--match-required-p)
                                (selectrum--at-existing-prompt-path-p))))
                   -1)
@@ -1545,7 +1545,9 @@ refresh."
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
-          (setq selectrum--previous-input-string nil))
+          (setq selectrum--previous-input-string nil)
+          ;; Reset history as current candidate was accepted.
+          (setq-local minibuffer-history-position 0))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1946,27 +1948,23 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond
+                     ((and minibuffer-history-position
+                           (not (zerop minibuffer-history-position)))
+                      nil)
                      ((and (equal last-dir dir)
-                           ;; Force refresh and give tramp a chance to
-                           ;; trigger.
-                           (not (eq this-command
-                                    'selectrum-insert-current-candidate)))
+                           (not (and minibuffer-history-position
+                                     (zerop minibuffer-history-position))))
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
-                      (let* ((insertp
-                              (eq this-command
-                                  'selectrum-insert-current-candidate))
-                             ;; Don't trigger tramp when browsing
-                             ;; history, unless requested.
-                             (non-essential
-                              (and (not insertp)
-                                   (memq this-command
-                                         '(previous-history-element
-                                           next-history-element)))))
+                      (let ((non-essential
+                             (or (and minibuffer-history-position
+                                      (not (zerop
+                                            minibuffer-history-position)))
+                                 non-essential)))
                         (condition-case _
                             (delete
                              "./"

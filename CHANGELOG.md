@@ -26,10 +26,15 @@ The format is based on [Keep a Changelog].
   example when using history commands), which has been fixed ([#360]).
 * When the prompt is empty and the default value is shown you can now
   insert it using `selectrum-insert-current-candidate` ([#359]).
-* When using `next-history-element` or `previous-history-element`
-  don't automatically open tramp connections for remote paths. To
-  trigger tramp for a selected history element you can use
-  `selectrum-insert-current-candidate` ([#358]).
+* `selectrum-insert-current-candidate` will reset
+  `minibuffer-history-position`, so that after "choosing" an item and
+  using other history commands in succession the history will start
+  from the beginning ([#361]).
+* History commands don't automatically trigger a refresh in file
+  completions. This is especially useful to prevent unintended opening
+  of tramp connections. To trigger a refresh for a selected history
+  element you can use `selectrum-insert-current-candidate` ([#358],
+  [#361]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
@@ -235,6 +240,7 @@ The format is based on [Keep a Changelog].
 [#358]: https://github.com/raxod502/selectrum/pull/358
 [#359]: https://github.com/raxod502/selectrum/pull/359
 [#360]: https://github.com/raxod502/selectrum/pull/360
+[#361]: https://github.com/raxod502/selectrum/pull/361
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
