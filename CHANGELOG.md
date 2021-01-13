@@ -27,14 +27,14 @@ The format is based on [Keep a Changelog].
 * When the prompt is empty and the default value is shown you can now
   insert it using `selectrum-insert-current-candidate` ([#359]).
 * `selectrum-insert-current-candidate` will reset
-  `minibuffer-history-position`, so with repeated use of history
-  commands after choosing items from history previously, you restart
-  from the beginning ([#361]).
-* When using history commands don't automatically trigger a refresh.
-  This is especially useful to prevent unintended opening of tramp
-  connections for remote paths. To trigger a refresh for a selected
-  history element you can use `selectrum-insert-current-candidate`
-  ([#358], [#361]).
+  `minibuffer-history-position`, so that after "choosing" an item and
+  using other history commands in succession the history will start
+  from the beginnging ([#361]).
+* History commands don't automatically trigger a refresh in file
+  completions. This is especially useful to prevent unintended opening
+  of tramp connections. To trigger a refresh for a selected history
+  element you can use `selectrum-insert-current-candidate` ([#358],
+  [#361]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
