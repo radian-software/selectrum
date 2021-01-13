@@ -29,7 +29,7 @@ The format is based on [Keep a Changelog].
 * `selectrum-insert-current-candidate` will reset
   `minibuffer-history-position`, so that after "choosing" an item and
   using other history commands in succession the history will start
-  from the beginnging ([#361]).
+  from the beginning ([#361]).
 * History commands don't automatically trigger a refresh in file
   completions. This is especially useful to prevent unintended opening
   of tramp connections. To trigger a refresh for a selected history
