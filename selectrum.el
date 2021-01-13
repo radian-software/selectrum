@@ -1545,7 +1545,9 @@ refresh."
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
-          (setq selectrum--previous-input-string nil))
+          (setq selectrum--previous-input-string nil)
+          ;; Reset history as current candidate was accepted.
+          (setq-local minibuffer-history-position 0))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1946,9 +1948,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory input))
                    (cands
                     (cond
-                     ((and (not (zerop minibuffer-history-position))
-                           (not (eq this-command
-                                    'selectrum-insert-current-candidate)))
+                     ((not (zerop minibuffer-history-position))
                       nil)
                      ((and (equal last-dir dir)
                            ;; Allow forcing refresh.
@@ -1961,10 +1961,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((non-essential
-                             (and (not (zerop minibuffer-history-position))
-                                  (not
-                                   (eq this-command
-                                       'selectrum-insert-current-candidate)))))
+                             (not (zerop minibuffer-history-position))))
                         (condition-case _
                             (delete
                              "./"
