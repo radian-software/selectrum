@@ -1959,7 +1959,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (path (substitute-in-file-name input))
                    (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
-                   ;; trigger CI rebuild
                    (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
