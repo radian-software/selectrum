@@ -46,11 +46,11 @@ The format is based on [Keep a Changelog].
   `minibuffer-history-position`, so that after "choosing" an item and
   using other history commands in succession the history will start
   from the beginning ([#361], [#368]).
-* History commands don't automatically trigger a refresh in file
-  completions. This is especially useful to prevent unintended opening
-  of tramp connections. To trigger a refresh for a selected history
-  element you can use `selectrum-insert-current-candidate` ([#358],
-  [#361], [#365], [#367], [#368], [#370]).
+* History commands don't automatically trigger a refresh for tramp
+  paths. This is useful to prevent unintended opening of tramp
+  connections. To trigger a refresh for the selected tramp path you
+  can use `selectrum-insert-current-candidate` ([#358], [#361],
+  [#365], [#367], [#368], [#370]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
