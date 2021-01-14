@@ -1998,16 +1998,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
     (minibuffer-with-setup-hook
         ;; The hook needs to run late as `read-file-name-default' sets
         ;; its own syntax table in `minibuffer-with-setup-hook'.
-        (lambda ()
-          ;; Pickup the value as configured for current
-          ;; session.
-          (setq sortf selectrum-preprocess-candidates-function)
-          ;; Ensure the variable is also set when
-          ;; selectrum--completing-read-file-name is called
-          ;; directly.
-          (setq-local minibuffer-completing-file-name t)
-          (set-syntax-table
-           selectrum--minibuffer-local-filename-syntax))
+        (:append (lambda ()
+                   ;; Pickup the value as configured for current
+                   ;; session.
+                   (setq sortf selectrum-preprocess-candidates-function)
+                   ;; Ensure the variable is also set when
+                   ;; selectrum--completing-read-file-name is called
+                   ;; directly.
+                   (setq-local minibuffer-completing-file-name t)
+                   (set-syntax-table
+                    selectrum--minibuffer-local-filename-syntax)))
       (selectrum-read
        prompt coll
        :default-candidate (or (car-safe def) def)
