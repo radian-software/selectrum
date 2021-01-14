@@ -1955,14 +1955,21 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
-                   (dir (or (file-name-directory input) ""))
+                   (path (substitute-in-file-name input))
+                   (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
-                   (matchstr (file-name-nondirectory input))
+                   (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
                      ((and minibuffer-history-position
                            (not selectrum--refresh-next-file-completion)
-                           (not (zerop minibuffer-history-position)))
+                           (not (zerop minibuffer-history-position))
+                           ;; Check for tramp path.
+                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
+                      (setq last-dir dir)
+                      (minibuffer-message
+                       (substitute-command-keys
+                        "Press \\[selectrum-insert-current-candidate] to refresh"))
                       nil)
                      ((and (equal last-dir dir)
                            (not selectrum--refresh-next-file-completion)
