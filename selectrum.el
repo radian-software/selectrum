@@ -1967,7 +1967,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            ;; Check for tramp path, see
                            ;; `tramp-initial-file-name-regexp'.
                            (string-match-p "\\`/[^/:]+:[^/:]*:" path))
-                      (setq last-dir dir)
                       (minibuffer-message
                        (substitute-command-keys
                         "Press \\[selectrum-insert-current-candidate] to refresh"))
@@ -1983,7 +1982,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
-                      (setq last-dir dir)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
@@ -2001,6 +1999,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           ;; May happen in case user quits out
                           ;; of a TRAMP prompt.
                           (quit)))))))
+              (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
     (minibuffer-with-setup-hook
