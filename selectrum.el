@@ -1485,6 +1485,9 @@ If current `crm-separator' has a mapping the separator gets
 inserted automatically when using
 `selectrum-insert-current-candidate'.")
 
+(defvar-local selectrum--refresh-next-file-completion nil
+  "Non-nil when command should trigger refresh.")
+
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
 
@@ -1529,11 +1532,15 @@ refresh."
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
-          ;; Checked in `selectrum--completing-read-file-name' so make
-          ;; sure it is set correctly.
-          (setq this-command 'selectrum-insert-current-candidate)
-          ;; Reset history as current candidate was accepted.
-          (setq-local minibuffer-history-position 0))
+          (when minibuffer-history-position
+            (when (and minibuffer-completing-file-name
+                       (not (zerop minibuffer-history-position)))
+              ;; Choosing a history item needs to trigger a refresh.
+              (setq-local selectrum--refresh-next-file-completion t))
+            ;; Reset history state as current candidate was accepted.
+            (setq-local minibuffer-history-position 0)
+            (setq-local minibuffer-text-before-history
+                        (minibuffer-contents-no-properties))))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1954,15 +1961,22 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (cands
                     (cond
                      ((and minibuffer-history-position
+                           (not selectrum--refresh-next-file-completion)
                            (not (zerop minibuffer-history-position)))
                       nil)
                      ((and (equal last-dir dir)
-                           (not (eq this-command
-                                    'selectrum-insert-current-candidate)))
+                           (not selectrum--refresh-next-file-completion)
+                           (not (and minibuffer-history-position
+                                     (zerop minibuffer-history-position)
+                                     (memq this-command
+                                           '(previous-history-element
+                                             next-history-element)))))
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
+                      (setq last-dir dir)
+                      (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((non-essential
@@ -1979,7 +1993,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           ;; May happen in case user quits out
                           ;; of a TRAMP prompt.
                           (quit)))))))
-              (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
     (minibuffer-with-setup-hook

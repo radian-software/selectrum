@@ -42,12 +42,12 @@ The format is based on [Keep a Changelog].
 * `selectrum-insert-current-candidate` will reset
   `minibuffer-history-position`, so that after "choosing" an item and
   using other history commands in succession the history will start
-  from the beginning ([#361]).
+  from the beginning ([#361], [#368]).
 * History commands don't automatically trigger a refresh in file
   completions. This is especially useful to prevent unintended opening
   of tramp connections. To trigger a refresh for a selected history
   element you can use `selectrum-insert-current-candidate` ([#358],
-  [#361], [#365]).
+  [#361], [#365], [#367], [#368]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
@@ -256,6 +256,8 @@ The format is based on [Keep a Changelog].
 [#361]: https://github.com/raxod502/selectrum/pull/361
 [#362]: https://github.com/raxod502/selectrum/pull/362
 [#365]: https://github.com/raxod502/selectrum/pull/365
+[#367]: https://github.com/raxod502/selectrum/pull/367
+[#368]: https://github.com/raxod502/selectrum/pull/368
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
