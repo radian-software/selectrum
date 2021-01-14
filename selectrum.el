@@ -723,9 +723,6 @@ the update."
     (goto-char (max (point) (minibuffer-prompt-end)))
     ;; For some reason this resets and thus can't be set in setup hook.
     (setq-local truncate-lines t)
-    ;; Esnure minibuffer window resets any scroll, for example history
-    ;; commands can increase scroll but fail to reset it.
-    (set-window-hscroll (active-minibuffer-window) 0)
     (let ((inhibit-read-only t)
           ;; Don't record undo information while messing with the
           ;; minibuffer, as per
