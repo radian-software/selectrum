@@ -1485,6 +1485,13 @@ If current `crm-separator' has a mapping the separator gets
 inserted automatically when using
 `selectrum-insert-current-candidate'.")
 
+(defun selectrum--reset-minibuffer-history-state ()
+  "Reset history for current prompt."
+  ;; Reset history state as current candidate was accepted.
+  (setq-local minibuffer-history-position 0)
+  (setq-local minibuffer-text-before-history
+              (minibuffer-contents-no-properties)))
+
 (defvar-local selectrum--refresh-next-file-completion nil
   "Non-nil when command should trigger refresh.")
 
@@ -1537,10 +1544,7 @@ refresh."
                        (not (zerop minibuffer-history-position)))
               ;; Choosing a history item needs to trigger a refresh.
               (setq-local selectrum--refresh-next-file-completion t))
-            ;; Reset history state as current candidate was accepted.
-            (setq-local minibuffer-history-position 0)
-            (setq-local minibuffer-text-before-history
-                        (minibuffer-contents-no-properties))))
+            (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1582,7 +1586,8 @@ history item and exit use `selectrum-select-current-candidate'."
       (if (get-text-property 0 'selectum--insert result)
           (progn
             (delete-minibuffer-contents)
-            (insert result))
+            (insert result)
+            (selectrum--reset-minibuffer-history-state))
         (if (and selectrum--match-required-p
                  (not (member result selectrum--refined-candidates)))
             (user-error "That history element is not one of the candidates")
