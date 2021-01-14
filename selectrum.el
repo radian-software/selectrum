@@ -1485,6 +1485,9 @@ If current `crm-separator' has a mapping the separator gets
 inserted automatically when using
 `selectrum-insert-current-candidate'.")
 
+(defvar selectrum--refresh-next-file-completion nil
+  "When non-nil refresh the next file completion.")
+
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
 
@@ -1529,11 +1532,13 @@ refresh."
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
-          ;; Checked in `selectrum--completing-read-file-name' so make
-          ;; sure it is set correctly.
-          (setq this-command 'selectrum-insert-current-candidate)
-          ;; Reset history as current candidate was accepted.
-          (setq-local minibuffer-history-position 0))
+          (when (and minibuffer-completing-file-name
+                     minibuffer-history-position
+                     (not (zerop minibuffer-history-position)))
+            ;; Force refresh and reset history as current candidate
+            ;; was accepted.
+            (setq-local selectrum--refresh-next-file-completion t)
+            (setq-local minibuffer-history-position 0)))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1957,12 +1962,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (not (zerop minibuffer-history-position)))
                       nil)
                      ((and (equal last-dir dir)
-                           (not (eq this-command
-                                    'selectrum-insert-current-candidate)))
+                           (not selectrum--refresh-next-file-completion))
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
+                      (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((non-essential
