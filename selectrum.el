@@ -1502,12 +1502,12 @@ refresh."
              (candidate (selectrum--get-candidate index))
              (full (selectrum--get-full candidate)))
         (progn
-          ;; Ignore for prompt selection.
           (if (and selectrum--current-candidate-index
                    (< selectrum--current-candidate-index 0))
-              (when (and (= (minibuffer-prompt-end) (point-max))
-                         selectrum--default-candidate)
-                (insert selectrum--default-candidate))
+              (if (and (= (minibuffer-prompt-end) (point-max))
+                       selectrum--default-candidate)
+                  (insert selectrum--default-candidate)
+                (goto-char (point-max)))
             (cond ((not selectrum--crm-p)
                    (delete-region (minibuffer-prompt-end)
                                   (point-max))
