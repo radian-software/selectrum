@@ -38,7 +38,10 @@ The format is based on [Keep a Changelog].
   element was pulled into the prompt under certain conditions (for
   example when using history commands), which has been fixed ([#360]).
 * When the prompt is empty and the default value is shown you can now
-  insert it using `selectrum-insert-current-candidate` ([#359]).
+  insert it using `selectrum-insert-current-candidate`. Also
+  `selectrum-insert-current-candidate` now moves point to end of the
+  prompt even when there were no candidate insertion to have
+  consistent UI behaviour ([#359], [#369]).
 * `selectrum-insert-current-candidate` will reset
   `minibuffer-history-position`, so that after "choosing" an item and
   using other history commands in succession the history will start
@@ -258,6 +261,7 @@ The format is based on [Keep a Changelog].
 [#365]: https://github.com/raxod502/selectrum/pull/365
 [#367]: https://github.com/raxod502/selectrum/pull/367
 [#368]: https://github.com/raxod502/selectrum/pull/368
+[#369]: https://github.com/raxod502/selectrum/pull/369
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
