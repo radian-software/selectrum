@@ -1535,6 +1535,7 @@ refresh."
           (when minibuffer-history-position
             (when (and minibuffer-completing-file-name
                        (not (zerop minibuffer-history-position)))
+              ;; Choosing a history item needs to trigger a refresh.
               (setq-local selectrum--refresh-next-file-completion t))
             ;; Reset history state as current candidate was accepted.
             (setq-local minibuffer-history-position 0)
