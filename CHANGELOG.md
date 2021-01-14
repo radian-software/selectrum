@@ -120,7 +120,9 @@ The format is based on [Keep a Changelog].
 * When `auto-hscroll-mode` was set to `current-line` prompts which
   exceeded the frame width would introduce constant back and forth
   scrolling issues, which has been fixed ([#344], [#345], [#374]).
-  Currently there is still a cursor display issue on initial input.
+  Also display of long prompts with line truncation would have cursor
+  display and prompt navigation issues, which has been improved by
+  unsetting line truncation in these cases ([#375]).
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
