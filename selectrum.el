@@ -1529,6 +1529,9 @@ refresh."
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
+          ;; Checked in `selectrum--completing-read-file-name' so make
+          ;; sure it is set correctly.
+          (setq this-command 'selectrum-insert-current-candidate)
           ;; Reset history as current candidate was accepted.
           (setq-local minibuffer-history-position 0))
       (unless completion-fail-discreetly
