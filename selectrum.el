@@ -1964,7 +1964,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ((and minibuffer-history-position
                            (not selectrum--refresh-next-file-completion)
                            (not (zerop minibuffer-history-position))
-                           ;; Check for tramp path.
+                           ;; Check for tramp path, see
+                           ;; `tramp-initial-file-name-regexp'.
                            (string-match-p "\\`/[^/:]+:[^/:]*:" path))
                       (setq last-dir dir)
                       (minibuffer-message
