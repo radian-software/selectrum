@@ -1485,6 +1485,12 @@ If current `crm-separator' has a mapping the separator gets
 inserted automatically when using
 `selectrum-insert-current-candidate'.")
 
+(defun selectrum--reset-minibuffer-history-state ()
+  "Reset history for current prompt."
+  (setq-local minibuffer-history-position 0)
+  (setq-local minibuffer-text-before-history
+              (minibuffer-contents-no-properties)))
+
 (defvar-local selectrum--refresh-next-file-completion nil
   "Non-nil when command should trigger refresh.")
 
@@ -1537,10 +1543,7 @@ refresh."
                        (not (zerop minibuffer-history-position)))
               ;; Choosing a history item needs to trigger a refresh.
               (setq-local selectrum--refresh-next-file-completion t))
-            ;; Reset history state as current candidate was accepted.
-            (setq-local minibuffer-history-position 0)
-            (setq-local minibuffer-text-before-history
-                        (minibuffer-contents-no-properties))))
+            (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
         (ding)
         (minibuffer-message "No match")))))
@@ -1582,7 +1585,8 @@ history item and exit use `selectrum-select-current-candidate'."
       (if (get-text-property 0 'selectum--insert result)
           (progn
             (delete-minibuffer-contents)
-            (insert result))
+            (insert result)
+            (selectrum--reset-minibuffer-history-state))
         (if (and selectrum--match-required-p
                  (not (member result selectrum--refined-candidates)))
             (user-error "That history element is not one of the candidates")
@@ -1951,19 +1955,26 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
+         (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
-                   (dir (or (file-name-directory input) ""))
+                   (path (substitute-in-file-name input))
+                   (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
-                   (matchstr (file-name-nondirectory input))
+                   (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
                      ((and minibuffer-history-position
+                           (not (zerop minibuffer-history-position))
                            (not selectrum--refresh-next-file-completion)
-                           (not (zerop minibuffer-history-position)))
-                      nil)
+                           ;; Check for tramp path, see
+                           ;; `tramp-initial-file-name-regexp'.
+                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
+                      (prog1 nil
+                        (minibuffer-message
+                         (substitute-command-keys msg))))
                      ((and (equal last-dir dir)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
@@ -1975,7 +1986,6 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
-                      (setq last-dir dir)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
@@ -1993,6 +2003,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           ;; May happen in case user quits out
                           ;; of a TRAMP prompt.
                           (quit)))))))
+              (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
     (minibuffer-with-setup-hook
