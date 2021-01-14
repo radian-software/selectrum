@@ -786,8 +786,7 @@ to show up, and filtering and sorting still did not work.
 
 A deeper problem with Snails is that, like Ivy, it goes the route of
 wrapping every possible command with a "backend" rather than using
-existing Emacs interfaces to handle all possible commands. It's also
-worth noting that Snails is unusable by design in a tty environment.
+existing Emacs interfaces to handle all possible commands.
 
 ### Sallet
 
