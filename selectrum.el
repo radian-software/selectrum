@@ -1951,6 +1951,7 @@ PREDICATE, see `read-buffer'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
             HIST, DEF, _INHERIT-INPUT-METHOD see `completing-read'."
   (let* ((last-dir nil)
+         (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
          (coll
           (lambda (input)
@@ -1962,15 +1963,14 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (cands
                     (cond
                      ((and minibuffer-history-position
-                           (not selectrum--refresh-next-file-completion)
                            (not (zerop minibuffer-history-position))
+                           (not selectrum--refresh-next-file-completion)
                            ;; Check for tramp path, see
                            ;; `tramp-initial-file-name-regexp'.
                            (string-match-p "\\`/[^/:]+:[^/:]*:" path))
-                      (minibuffer-message
-                       (substitute-command-keys
-                        "Press \\[selectrum-insert-current-candidate] to refresh"))
-                      nil)
+                      (prog1 nil
+                        (minibuffer-message
+                         (substitute-command-keys msg))))
                      ((and (equal last-dir dir)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
