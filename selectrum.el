@@ -1487,7 +1487,6 @@ inserted automatically when using
 
 (defun selectrum--reset-minibuffer-history-state ()
   "Reset history for current prompt."
-  ;; Reset history state as current candidate was accepted.
   (setq-local minibuffer-history-position 0)
   (setq-local minibuffer-text-before-history
               (minibuffer-contents-no-properties)))
