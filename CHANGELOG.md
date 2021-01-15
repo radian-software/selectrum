@@ -58,7 +58,7 @@ The format is based on [Keep a Changelog].
   required which helps when the element isn't a member of the
   candidate set and also fixes a problem with file completions when
   the element is a directory. Before the first file in that directory
-  would be selected ([#323], [#324], [#341], [#346]).
+  would be selected ([#323], [#324], [#341], [#346], [#380]).
 * Improved exit behaviour of `selectrum-select-current-candidate`. The
   commands gives feedback now when match is required and submission
   not possible. Also it allows submission of the prompt when a match
@@ -270,6 +270,7 @@ The format is based on [Keep a Changelog].
 [#377]: https://github.com/raxod502/selectrum/pull/377
 [#378]: https://github.com/raxod502/selectrum/pull/378
 [#379]: https://github.com/raxod502/selectrum/pull/379
+[#380]: https://github.com/raxod502/selectrum/pull/380
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
