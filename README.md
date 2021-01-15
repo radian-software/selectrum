@@ -98,10 +98,15 @@ To enable Selectrum, simply add to your init-file:
 
 Now all of your favorite Emacs commands will automatically use
 Selectrum. However, the default sorting and filtering is very basic.
-It is recommended to use
-[`prescient.el`](https://github.com/raxod502/prescient.el) to enable
-more intelligent sorting and filtering. Simply install the
-`selectrum-prescient` package from MELPA and add to your init-file:
+The standard filtering function uses `completion-styles`. You can make
+use of the built-in `substring` and `flex` style to enhance these a
+bit but it is recommended to use packages which improve this further.
+There is [`prescient.el`](https://github.com/raxod502/prescient.el)
+which provides functions for more intelligent sorting and filtering
+and [`orderless`](https://github.com/oantolin/orderless) which
+provides an enhanced and flexible style for `completion-styles`. To
+setup `prescient` simply install `selectrum-prescient` package from
+MELPA and add the following to your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -111,6 +116,15 @@ more intelligent sorting and filtering. Simply install the
 ;; intelligent over time
 (prescient-persist-mode +1)
 ```
+
+If you don't want to install additional packages you can setup the
+built-in `completion-styles` to improve things a bit:
+
+```elisp
+;; In Emacs 27 there is also a flex style which you might like.
+(setq completion-styles '(substring partial-completion))
+```
+
 
 ## User guide
 
@@ -189,12 +203,11 @@ editing bindings. So, for example:
 
 The default sorting and filtering in Selectrum is quite primitive.
 First candidates are sorted alphabetically, and then they are filtered
-down to those that contain your input as a substring. The part of each
-candidate that matches your input is highlighted. This default
-behavior is intended as a lowest common denominator that will
-definitely work.
+and highlighted using `completion-styles`. This default behavior is
+intended as a lowest common denominator that will definitely work.
 
-However, it is strongly recommended that you set up
+However, it is strongly recommended that you customize
+`completion-styles` or set up
 [`prescient.el`](https://github.com/raxod502/prescient.el) in order to
 get more intelligent sorting and filtering. (See the "getting started"
 section for how to do this.) With `prescient.el`:
@@ -212,9 +225,9 @@ section for how to do this.) With `prescient.el`:
 * The part of each candidate that matched your input is highlighted,
   with the initials of an initialism highlighted in a second color.
 
-It is possible to supply your own sorting, filtering, and highlighting
-logic if you would like. For that, see the developer guide later in
-this documentation.
+It is also possible to supply your own sorting, filtering, and
+highlighting logic if you would like. For that, see the developer
+guide later in this documentation.
 
 Selectrum adds two special features on top of whatever sorting and
 filtering is selected:
@@ -316,7 +329,7 @@ matching and case-insensitive matching.
     * Customize the face `completions-common-part` to change the
       appearance of the common prefix in `completion-in-region`
       candidates.
-* You can configure `completion-styles` for the initial filtering of
+* You can configure the initial filtering of
   `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles`.
 
@@ -773,8 +786,7 @@ to show up, and filtering and sorting still did not work.
 
 A deeper problem with Snails is that, like Ivy, it goes the route of
 wrapping every possible command with a "backend" rather than using
-existing Emacs interfaces to handle all possible commands. It's also
-worth noting that Snails is unusable by design in a tty environment.
+existing Emacs interfaces to handle all possible commands.
 
 ### Sallet
 

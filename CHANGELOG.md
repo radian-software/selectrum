@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Breaking changes
+* `selectrum-default-candidate-refine-function` and
+  `selectrum-default-candidate-highlight-function` have been removed.
+  The new default functions used for
+  `selectrum-refine-candidates-function` and
+  `selectrum-highlight-candidates-function` filter and highlight
+  candidates according to `completion-styles` now.
+
 ### Features
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
@@ -20,6 +28,31 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The `selectrum-select-from-history` command has been improved. You
+  can now insert a history item into the previous session using your
+  default binding for `selectrum-insert-current-candidate`. To submit
+  the history item and exit use `selectrum-select-current-candidate`
+  ([#362]).
+* When using commands where the prompt would exceed the window width
+  the horizontal scroll wouldn't reset afterwards when a smaller
+  element was pulled into the prompt under certain conditions (for
+  example when using history commands), which has been fixed ([#360]).
+* When the prompt is empty and the default value is shown you can now
+  insert it using `selectrum-insert-current-candidate`. Also
+  `selectrum-insert-current-candidate` now moves point to end of the
+  prompt even when there were no candidate insertion to have
+  consistent UI behaviour ([#359], [#369]).
+* `selectrum-insert-current-candidate` will reset
+  `minibuffer-history-position`, so that after "choosing" an item and
+  using other history commands in succession the history will start
+  from the beginning ([#361], [#368]).
+* History commands don't automatically trigger a refresh for tramp
+  paths. This is useful to prevent unintended opening of tramp
+  connections. To trigger a refresh for the selected tramp path you
+  can use `selectrum-insert-current-candidate` ([#358], [#361],
+  [#365], [#367], [#368], [#372]).
+* In file completions the prompt will also be selected when a match is
+  required and the path exists ([#357]).
 * With commands `next-history-element` and `previous-history-element`
   the inserted history element will get selected when a match isn't
   required which helps when the element isn't a member of the
@@ -30,9 +63,9 @@ The format is based on [Keep a Changelog].
   commands gives feedback now when match is required and submission
   not possible. Also it allows submission of the prompt when a match
   is required and the prompt is a member of candidates ([#338]).
-* You can now configure `completion-styles` for the initial filtering
-  of `selectrum-completion-in-region` using
-  `selectrum-completion-in-region-styles` ([#331]).
+* You can now configure the initial filtering for candidates in
+  `selectrum-completion-in-region` using
+  `selectrum-completion-in-region-styles` ([#331], [#356]).
 * Computation of candidates is faster for `describe-variable` ([#312],
   [#316], [#320], [#321], [#343]).
 * Candidates of `completing-read-multiple` which are submitted by
@@ -86,7 +119,8 @@ The format is based on [Keep a Changelog].
   would throw an error, which has been fixed ([#347], [#348]).
 * When `auto-hscroll-mode` was set to `current-line` prompts which
   exceeded the frame width would introduce constant back and forth
-  scrolling issues, which has been fixed ([#344], [#345]).
+  scrolling issues, which has been fixed ([#344], [#345], [#374]).
+  Currently there is still a cursor display issue on initial input.
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
@@ -218,6 +252,18 @@ The format is based on [Keep a Changelog].
 [#350]: https://github.com/raxod502/selectrum/issues/350
 [#352]: https://github.com/raxod502/selectrum/pull/352
 [#354]: https://github.com/raxod502/selectrum/pull/354
+[#356]: https://github.com/raxod502/selectrum/pull/356
+[#357]: https://github.com/raxod502/selectrum/pull/357
+[#358]: https://github.com/raxod502/selectrum/pull/358
+[#359]: https://github.com/raxod502/selectrum/pull/359
+[#360]: https://github.com/raxod502/selectrum/pull/360
+[#361]: https://github.com/raxod502/selectrum/pull/361
+[#362]: https://github.com/raxod502/selectrum/pull/362
+[#365]: https://github.com/raxod502/selectrum/pull/365
+[#367]: https://github.com/raxod502/selectrum/pull/367
+[#368]: https://github.com/raxod502/selectrum/pull/368
+[#369]: https://github.com/raxod502/selectrum/pull/369
+[#372]: https://github.com/raxod502/selectrum/pull/372
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
