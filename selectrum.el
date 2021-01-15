@@ -1014,7 +1014,12 @@ If PADDING is non-nil lines are padded with it."
     (dolist (cand candidates (nreverse single/lines))
       (let ((line
              (if (not (string-match-p "\n" cand))
-                 cand
+                 (propertize
+                  cand
+                  'selectrum-candidate-display-prefix
+                  (concat padding
+                          (get-text-property
+                           0 'selectrum-candidate-display-prefix cand)))
                (let* ((lines (split-string cand "\n"))
                       (len (length lines))
                       (input (minibuffer-contents))
@@ -1030,6 +1035,10 @@ If PADDING is non-nil lines are padded with it."
                                       selectrum-refine-candidates-function
                                       input
                                       lines))))
+                      (prefix
+                       (concat padding
+                               (propertize (format "(%d lines)" len)
+                                           'face newline/face)))
                       (match
                        (propertize
                         (replace-regexp-in-string
@@ -1037,9 +1046,7 @@ If PADDING is non-nil lines are padded with it."
                          (propertize whitespace/display
                                      'face whitespace/face)
                          (or fmatch "") 'fixed-case 'literal)
-                        'selectrum-candidate-display-prefix
-                        (propertize (format "(%d lines)" len)
-                                    'face newline/face)))
+                        'selectrum-candidate-display-prefix prefix))
                       (annot (replace-regexp-in-string
                               "\n" (propertize newline/display
                                                'face newline/face)
@@ -1065,7 +1072,7 @@ If PADDING is non-nil lines are padded with it."
                   (if (string-empty-p match) " " match)
                   'selectrum-candidate-display-suffix
                   annot)))))
-        (push (concat padding line) single/lines)))))
+        (push line single/lines)))))
 
 (defun selectrum--annotation (fun cand face)
   "Return annotation for candidate.
