@@ -874,6 +874,7 @@ the update."
                 selectrum--refined-candidates)
                ncands))
              (candidate-string (selectrum--candidates-display-string
+                                window
                                 displayed-candidates
                                 input
                                 highlighted-index))
@@ -1167,11 +1168,12 @@ suffix."
                                    suffix))))))
             res))))
 
-(defun selectrum--candidates-display-string (candidates
+(defun selectrum--candidates-display-string (window
+                                             candidates
                                              input
                                              highlighted-index
                                              &optional table pred props)
-  "Get display string for CANDIDATES.
+  "Get WINDOW display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
@@ -1195,7 +1197,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
-         (padding (when (not (zerop (window-hscroll)))
+         (padding (when (and (window-minibuffer-p window)
+                             (not (zerop (window-hscroll))))
                     (make-string (window-hscroll) ?\s)))
          (lines
           (selectrum--ensure-single-lines
