@@ -721,6 +721,10 @@ the update."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
+    ;; Scroll the minibuffer when current prompt exceeds window width.
+    (let* ((width (window-width)))
+      (when (> (point-max) width)
+        (set-window-hscroll nil (- (point) (/ width 4)))))
     ;; For some reason this resets and thus can't be set in setup hook.
     (setq-local truncate-lines t)
     (let ((inhibit-read-only t)
@@ -967,14 +971,17 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates settings)
+(defun selectrum--ensure-single-lines (candidates settings &optional padding)
   "Return list of single-line CANDIDATES.
-Multi-line candidates are merged into a single line. The resulting
-single-line candidates are then shortened by replacing repeated
-whitespace and maybe truncating the result.
+
+Multi-line candidates are merged into a single line. The
+resulting single-line candidates are then shortened by replacing
+repeated whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
-SETTINGS, see `selectrum-multiline-display-settings'."
+SETTINGS, see `selectrum-multiline-display-settings'.
+
+If PADDING is non-nil lines are padded with it."
   (let* ((single/lines ())
 
          ;; The formatting settings are the same for all multi-line
@@ -1003,53 +1010,60 @@ SETTINGS, see `selectrum-multiline-display-settings'."
          (whitespace/face (cadr whitespace/transformation)))
 
     (dolist (cand candidates (nreverse single/lines))
-      (if (string-match-p "\n" cand)
-          (let* ((lines (split-string cand "\n"))
-                 (len (length lines))
-                 (input (minibuffer-contents))
-                 (fmatch (if (string-empty-p input)
-                             (with-temp-buffer
-                               (insert cand)
-                               (goto-char (point-min))
-                               (skip-chars-forward " \t\n")
-                               (buffer-substring (line-beginning-position)
-                                                 (line-end-position)))
-                           (car (funcall
-                                 selectrum-refine-candidates-function
-                                 input
-                                 lines))))
-                 (match
-                  (propertize
-                   (replace-regexp-in-string
-                    "[ \t][ \t]+"
-                    (propertize whitespace/display 'face whitespace/face)
-                    (or fmatch "") 'fixed-case 'literal)
-                   'selectrum-candidate-display-prefix
-                   (propertize (format "(%d lines)" len)
-                               'face newline/face)))
-                 (annot (replace-regexp-in-string
-                         "\n" (propertize newline/display 'face newline/face)
-                         (replace-regexp-in-string
-                          "[ \t][ \t]+"
-                          (propertize whitespace/display 'face whitespace/face)
-                          (concat (unless (string-empty-p match)
-                                    (propertize match/display
-                                                'face match/face))
-                                  (if (< (length cand) 1000)
-                                      cand
-                                    (concat
-                                     (substring cand 0 1000)
-                                     (propertize truncation/display
-                                                 'face truncation/face))))
-                          ;; Replacements should be fixed-case and
-                          ;; literal, to make things simpler.
-                          'fixed-case 'literal)
-                         'fixed-case 'literal))
-                 (line (propertize (if (string-empty-p match) " " match)
-                                   'selectrum-candidate-display-suffix
-                                   annot)))
-            (push line single/lines))
-        (push cand single/lines)))))
+      (let ((line
+             (if (not (string-match-p "\n" cand))
+                 cand
+               (let* ((lines (split-string cand "\n"))
+                      (len (length lines))
+                      (input (minibuffer-contents))
+                      (fmatch (if (string-empty-p input)
+                                  (with-temp-buffer
+                                    (insert cand)
+                                    (goto-char (point-min))
+                                    (skip-chars-forward " \t\n")
+                                    (buffer-substring
+                                     (line-beginning-position)
+                                     (line-end-position)))
+                                (car (funcall
+                                      selectrum-refine-candidates-function
+                                      input
+                                      lines))))
+                      (match
+                       (propertize
+                        (replace-regexp-in-string
+                         "[ \t][ \t]+"
+                         (propertize whitespace/display
+                                     'face whitespace/face)
+                         (or fmatch "") 'fixed-case 'literal)
+                        'selectrum-candidate-display-prefix
+                        (propertize (format "(%d lines)" len)
+                                    'face newline/face)))
+                      (annot (replace-regexp-in-string
+                              "\n" (propertize newline/display
+                                               'face newline/face)
+                              (replace-regexp-in-string
+                               "[ \t][ \t]+"
+                               (propertize whitespace/display
+                                           'face whitespace/face)
+                               (concat
+                                (unless (string-empty-p match)
+                                  (propertize match/display
+                                              'face match/face))
+                                (if (< (length cand) 1000)
+                                    cand
+                                  (concat
+                                   (substring cand 0 1000)
+                                   (propertize truncation/display
+                                               'face truncation/face))))
+                               ;; Replacements should be fixed-case and
+                               ;; literal, to make things simpler.
+                               'fixed-case 'literal)
+                              'fixed-case 'literal)))
+                 (propertize
+                  (if (string-empty-p match) " " match)
+                  'selectrum-candidate-display-suffix
+                  annot)))))
+        (push (concat padding line) single/lines)))))
 
 (defun selectrum--annotation (fun cand face)
   "Return annotation for candidate.
@@ -1180,6 +1194,8 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
+         (padding (when (> (point-max) (window-width))
+                    (make-string (window-hscroll) ?\s)))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1189,7 +1205,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            ;; requires this).
            (funcall selectrum-highlight-candidates-function
                     input candidates)
-           selectrum-multiline-display-settings)))
+           selectrum-multiline-display-settings padding)))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
