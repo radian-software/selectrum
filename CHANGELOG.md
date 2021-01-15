@@ -121,7 +121,7 @@ The format is based on [Keep a Changelog].
   the available window width. When `auto-hscroll-mode` was set to
   `current-line` it would introduce constant back and forth scrolling
   issues and other values also wouldn't allow to use such a prompt
-  correctly ([#344], [#345], [#374], [#375], [#377]).
+  correctly ([#344], [#345], [#374], [#375], [#377], [#378]).
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
@@ -265,6 +265,10 @@ The format is based on [Keep a Changelog].
 [#368]: https://github.com/raxod502/selectrum/pull/368
 [#369]: https://github.com/raxod502/selectrum/pull/369
 [#372]: https://github.com/raxod502/selectrum/pull/372
+[#374]: https://github.com/raxod502/selectrum/pull/374
+[#375]: https://github.com/raxod502/selectrum/pull/375
+[#377]: https://github.com/raxod502/selectrum/pull/377
+[#378]: https://github.com/raxod502/selectrum/pull/378
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
