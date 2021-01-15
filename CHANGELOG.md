@@ -117,9 +117,11 @@ The format is based on [Keep a Changelog].
   completion session, which has been fixed ([#350], [#352], [#354]).
 * When there were no candidates `selectrum-get-current-candidate`
   would throw an error, which has been fixed ([#347], [#348]).
-* When `auto-hscroll-mode` was set to `current-line` prompts which
-  exceeded the frame width would introduce constant back and forth
-  scrolling issues, which has been fixed ([#344], [#345], [#374], [#375]).
+* There were UI and display problems when the prompt width exceeded
+  the available window width. When `auto-hscroll-mode` was set to
+  `current-line` it would introduce constant back and forth scrolling
+  issues and other values also wouldn't allow to use such a prompt
+  correctly ([#344], [#345], [#374], [#375]).
 * `selectrum-select-from-history` set variables
   `selectrum-should-sort-p`, `selectrum-candidate-inserted-hook`,
   `selectrum-candidate-selected-hook` and
