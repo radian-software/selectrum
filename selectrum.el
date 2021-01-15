@@ -722,9 +722,9 @@ the update."
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
     ;; Scroll the minibuffer when prompt is long.
-    (when-let* ((width (window-width))
-                (scrollp (> (point-max) width)))
-      (set-window-hscroll nil (- (point) (/ width 4))))
+    (let* ((width (window-width)))
+      (when (> (point-max) width)
+        (set-window-hscroll nil (- (point) (/ width 4)))))
     ;; For some reason this resets and thus can't be set in setup hook.
     (setq-local truncate-lines t)
     (let ((inhibit-read-only t)
