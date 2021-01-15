@@ -721,7 +721,7 @@ the update."
   (unless selectrum--skip-updates-p
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
-    ;; Scroll the minibuffer when prompt is long.
+    ;; Scroll the minibuffer when current prompt exceeds window width.
     (let* ((width (window-width)))
       (when (> (point-max) width)
         (set-window-hscroll nil (- (point) (/ width 4)))))
