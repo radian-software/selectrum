@@ -822,8 +822,12 @@ the update."
                            (equal selectrum--default-candidate
                                   (minibuffer-contents)))
                       (and (not (= (minibuffer-prompt-end) (point-max)))
-                           (and minibuffer-history-position
-                                (not (zerop minibuffer-history-position)))
+                           (or (and minibuffer-history-position
+                                    (not (zerop minibuffer-history-position))
+                                    isearch-mode)
+                               (memq this-command
+                                     '(next-history-element
+                                       previous-history-element)))
                            (or (not selectrum--match-required-p)
                                (selectrum--at-existing-prompt-path-p))))
                   -1)

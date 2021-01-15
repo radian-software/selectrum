@@ -53,12 +53,10 @@ The format is based on [Keep a Changelog].
   [#365], [#367], [#368], [#372]).
 * In file completions the prompt will also be selected when a match is
   required and the path exists ([#357]).
-* With commands `next-history-element` and `previous-history-element`
-  the inserted history element will get selected when a match isn't
-  required which helps when the element isn't a member of the
-  candidate set and also fixes a problem with file completions when
-  the element is a directory. Before the first file in that directory
-  would be selected ([#323], [#324], [#341], [#346]).
+* Improved selection behaviour for history commands. When using
+  `next-history-element`, `previous-history-element` or isearch for
+  history browsing the inserted history element will get selected when
+  a match isn't required ([#323], [#324], [#341], [#346], [#380]).
 * Improved exit behaviour of `selectrum-select-current-candidate`. The
   commands gives feedback now when match is required and submission
   not possible. Also it allows submission of the prompt when a match
@@ -270,6 +268,7 @@ The format is based on [Keep a Changelog].
 [#377]: https://github.com/raxod502/selectrum/pull/377
 [#378]: https://github.com/raxod502/selectrum/pull/378
 [#379]: https://github.com/raxod502/selectrum/pull/379
+[#380]: https://github.com/raxod502/selectrum/pull/380
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
