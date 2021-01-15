@@ -723,7 +723,8 @@ the update."
     (goto-char (max (point) (minibuffer-prompt-end)))
     ;; Scroll the minibuffer when current prompt exceeds window width.
     (let* ((width (window-width)))
-      (when (> (point-max) width)
+      (if (< (point) (max (- width (/ width 4)) 1))
+          (set-window-hscroll nil 0)
         (set-window-hscroll nil (- (point) (/ width 4)))))
     ;; For some reason this resets and thus can't be set in setup hook.
     (setq-local truncate-lines t)
@@ -1194,7 +1195,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
-         (padding (when (> (point-max) (window-width))
+         (padding (when (not (zerop (window-hscroll)))
                     (make-string (window-hscroll) ?\s)))
          (lines
           (selectrum--ensure-single-lines
@@ -1302,7 +1303,7 @@ CANDIDATES is the list of strings that was passed to
 overridden and BUF the buffer the session was started from."
   (setq-local selectrum-active-p t)
   (setq-local selectrum--last-buffer buf)
-  (setq-local auto-hscroll-mode t)
+  (setq-local auto-hscroll-mode nil)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
