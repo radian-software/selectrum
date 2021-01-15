@@ -1350,22 +1350,18 @@ overridden and BUF the buffer the session was started from."
   "Move selection ARG candidates down, stopping at the end."
   (interactive "p")
   (when selectrum--current-candidate-index
-    (if (and (< selectrum--current-candidate-index 0)
-             (not truncate-lines)
-             (not (and arg (> arg 0) (eobp))))
-        (line-move-visual arg)
-      (setq selectrum--current-candidate-index
-            (selectrum--clamp
-             (+ selectrum--current-candidate-index (or arg 1))
-             (if (and selectrum--match-required-p
-                      (cond (minibuffer-completing-file-name
-                             (not (selectrum--at-existing-prompt-path-p)))
-                            (t
-                             (not (string-empty-p
-                                   (minibuffer-contents))))))
-                 0
-               -1)
-             (1- (length selectrum--refined-candidates)))))))
+    (setq selectrum--current-candidate-index
+          (selectrum--clamp
+           (+ selectrum--current-candidate-index (or arg 1))
+           (if (and selectrum--match-required-p
+                    (cond (minibuffer-completing-file-name
+                           (not (selectrum--at-existing-prompt-path-p)))
+                          (t
+                           (not (string-empty-p
+                                 (minibuffer-contents))))))
+               0
+             -1)
+           (1- (length selectrum--refined-candidates))))))
 
 (defun selectrum-previous-page (&optional arg)
   "Move selection upwards by ARG pages, stopping at the beginning."
