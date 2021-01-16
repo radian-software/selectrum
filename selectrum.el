@@ -121,10 +121,7 @@ If this is nil the candidates are shown in the minibuffer.
 Otherwise the candidates are shown in the window as determined
 from the display action. Note that if you specify a window height
 lower than `selectrum-num-candidates-displayed' the window will
-be resized if needed to display that number of candidates. If the
-window height is higher than `selectrum-num-candidates-displayed'
-Selectrum will ignore this setting and use all of the available
-height to display candidates.
+be resized if needed to display that number of candidates.
 
 For the format see the ACTION argument of `display-buffer'. For
 example to display candidates in some available window use:
@@ -231,8 +228,7 @@ properties will retain their ordering, which may be significant
   #'selectrum-candidates-identity
   "Function used to highlight matched candidates for display.
 The function receives two arguments, the input string and the
-list of candidates (strings) that are going to be
-displayed (length at most `selectrum-num-candidates-displayed').
+list of candidates (strings) that are going to be displayed.
 Return a list of propertized candidates. Do not modify the input
 list or strings."
   :type 'function)
@@ -325,17 +321,6 @@ treated as if it were (lambda (i) (format \"%2d \" i))."
 This options controls insertion of additional usage information
 into the prompt when using commands which use
 `completing-read-multiple'."
-  :type 'boolean)
-
-(defcustom selectrum-fix-minibuffer-height nil
-  "Non-nil means the minibuffer always has the same height.
-In this case the height will be set to
-`selectrum-num-candidates-displayed' lines and will stay at this
-height even if there are fewer candidates or the display height
-of the candidates take up more space. If this option is nil the
-minibuffer height will be determined by the actual display height
-of the initial number of candidates and adjusts dynamically to
-display up to `selectrum-num-candidates-displayed' candidates."
   :type 'boolean)
 
 (defcustom selectrum-right-margin-padding 1
@@ -1143,17 +1128,11 @@ Also works for frames if WINDOW is the root window of its frame."
 
 (defun selectrum--update-minibuffer-height (window)
   "Update window height of minibuffer WINDOW.
-WINDOW will be updated to fit its content vertically if needed or
-will be set to `selectrum-num-candidates-displayed' if
-`selectrum-fix-minibuffer-height' is non-nil."
-  (if selectrum-fix-minibuffer-height
-      (let ((n (1+ (selectrum--num-candidates-displayed window))))
-        (with-selected-window window
-          (setf (window-height) n)))
-    (let ((dheight (cdr (window-text-pixel-size window)))
-          (wheight (window-pixel-height window)))
-      (window-resize
-       window (- dheight wheight) nil nil 'pixelwise))))
+WINDOW will be updated to fit its content vertically."
+  (let ((dheight (cdr (window-text-pixel-size window)))
+        (wheight (window-pixel-height window)))
+    (window-resize
+     window (- dheight wheight) nil nil 'pixelwise)))
 
 (defun selectrum--ensure-single-lines (candidates settings)
   "Return list of single-line CANDIDATES.
