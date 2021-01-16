@@ -1086,8 +1086,8 @@ the update."
         ;; Add padding for scrolled prompt.
         (when (and (window-minibuffer-p window)
                    (> (window-height window) 1)
-                   (not (zerop (window-hscroll))))
-          (let ((padding (make-string (window-hscroll) ?\s)))
+                   (not (zerop (window-hscroll window))))
+          (let ((padding (make-string (window-hscroll window) ?\s)))
             (with-current-buffer buffer
               (goto-char (point-min))
               (while (not (eobp))
@@ -1155,9 +1155,7 @@ resulting single-line candidates are then shortened by replacing
 repeated whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
-SETTINGS, see `selectrum-multiline-display-settings'.
-
-If PADDING is non-nil lines are padded with it."
+SETTINGS, see `selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
          ;; The formatting settings are the same for all multi-line
