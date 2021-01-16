@@ -144,14 +144,10 @@ frame you can use the provided action function
 (defcustom selectrum-insert-candidates-function
   #'selectrum-insert-candidates-vertically
   "Function to insert candidates for display.
-The insertion function should insert candidates into the buffer
-passed as first argument. The remaining arguments are the same as
-for `selectrum-insert-candidates-vertically'. The function should
-return the number of candidates it inserted for display. As the
-name implies `selectrum-insert-candidates-vertically' inserts
-candidates vertically, to display candidates horizontally like
-`icomplete' you can use
-`selectrum-insert-candidates-horizontally'."
+The insertion function should insert candidates into the current
+buffer. The arguments are the same as for
+`selectrum-insert-candidates-vertically'. The function should
+return the number of candidates it inserted for display."
   :type 'function)
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
@@ -701,50 +697,48 @@ greather than the window height."
            (window-body-height window 'pixelwise))))
 
 (defun selectrum-insert-candidates-vertically
-    (buf win cb nrows ncols
+    (win cb nrows ncols
          index max-index first-index-displayed last-index-displayed)
-  "Insert candidates vertically.
-See `selectrum-insert-candidates-function'. BUF is the buffer to
-use for insertion. WIN is the window where buffer will get
-displayed in.Callback CB returns the candidates to be inserted.
-The callback receives two arguments, the index position and the
-number of candidates and optionally a third argument which allows
-passing and annotation function. If given the function receives
-three optional arguments: a prefix, suffix and a right margin
-annotation of the currently selected candidate and should take
-care to display them, the annotations display of others
-candidates than the current is disabled in this case. NROWS is
-the number of lines available and NCOLS the number of available
-columns. If applicable INDEX is the index of the currently
-selected candidate and MAX-INDEX is the index of the last
-candidate available. FIRST-INDEX-DISPLAYED is the index of the
-candidate that is currently the first one displayed and
+  "Insert candidates vertically into current buffer.
+See `selectrum-insert-candidates-function'. WIN is the window
+where buffer will get displayed in. Callback CB returns the
+candidates to be inserted. The callback has three arguments, the
+index position and the number of candidates and optionally the
+third argument which allows passing and annotation function. If
+given the function receives three optional arguments: a prefix,
+suffix and a right margin annotation of the currently selected
+candidate and should take care to display them, the annotations
+display of others candidates than the current is disabled in this
+case. NROWS is the number of lines available and NCOLS the number
+of available columns. If applicable INDEX is the index of the
+currently selected candidate and MAX-INDEX is the index of the
+last candidate available. FIRST-INDEX-DISPLAYED is the index of
+the candidate that is currently the first one displayed and
 LAST-INDEX-DISPLAYED the index of the last one."
   (ignore ncols first-index-displayed last-index-displayed)
-  (with-current-buffer buf
-    (let* ((first-index-displayed
-            (if (not index)
-                0
-              (selectrum--clamp
-               ;; Adding one here makes it look slightly better, as
-               ;; there are guaranteed to be more candidates shown
-               ;; below the selection than above.
-               (1+ (- index (max 1 (/ nrows 2))))
-               0
-               (max (- (1+ max-index) nrows)
-                    0))))
-           (displayed-candidates
-            (funcall cb first-index-displayed nrows)))
-      (when (window-minibuffer-p win)
-        (insert "\n"))
-      (let ((n 0))
-        (dolist (cand displayed-candidates)
-          (cl-incf n)
-          (insert cand "\n"))
-        n))))
+  (let* ((first-index-displayed
+          (if (not index)
+              0
+            (selectrum--clamp
+             ;; Adding one here makes it look slightly better, as
+             ;; there are guaranteed to be more candidates shown
+             ;; below the selection than above.
+             (1+ (- index (max 1 (/ nrows 2))))
+             0
+             (max (- (1+ max-index) nrows)
+                  0))))
+         (displayed-candidates
+          (funcall cb first-index-displayed nrows)))
+    (when (window-minibuffer-p win)
+      (insert "\n"))
+    (let ((n 0))
+      (dolist (cand displayed-candidates)
+        (cl-incf n)
+        (insert cand "\n"))
+      n)))
 
 (defun selectrum-insert-candidates-horizontally
-    (buf win cb nrows ncols
+    (win cb nrows ncols
          index max-index first-index-displayed last-index-displayed)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
@@ -772,18 +766,17 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
                    (floor ncols 4)
                    #'ignore))
          (n 0))
-    (with-current-buffer buf
-      (while (and cands
-                  (> ncols 0))
-        (let ((cand (pop cands)))
-          (setq ncols (- ncols (length cand) 3))
-          (when (or (>= ncols 0)
-                    (= n 0))
-            (insert cand)
-            (cl-incf n)
-            (when cands
-              (insert  " | ")))))
-      n)))
+    (while (and cands
+                (> ncols 0))
+      (let ((cand (pop cands)))
+        (setq ncols (- ncols (length cand) 3))
+        (when (or (>= ncols 0)
+                  (= n 0))
+          (insert cand)
+          (cl-incf n)
+          (when cands
+            (insert  " | ")))))
+      n))
 
 (let ((extend-highlight nil))
   (defun selectrum-toggle-orientation ()
@@ -840,8 +833,9 @@ the candidates are inserted is determined by
          (lindex (when (and findex num)
                    (+ findex
                       (max 0 (1- num)))))
-         (n (funcall insert-fun buf win cb
-                     nlines ncols index mindex findex lindex)))
+         (n (with-current-buffer buf
+              (funcall insert-fun win cb
+                       nlines ncols index mindex findex lindex))))
     (if (or (not index) (not findex)
             (>= (+ findex n) index))
         n
@@ -849,9 +843,9 @@ the candidates are inserted is determined by
       ;; might be out of sight in this case reinsert with the current
       ;; index displayed as the first one.
       (with-current-buffer buf
-        (erase-buffer))
-      (funcall insert-fun buf win cb
-               nlines ncols index mindex index lindex))))
+        (erase-buffer)
+        (funcall insert-fun win cb
+                 nlines ncols index mindex index lindex)))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
