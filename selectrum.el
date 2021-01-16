@@ -164,27 +164,6 @@ options, this can be used if options are incompatible with the
 current insertion method."
   :type 'function)
 
-(defvar selectrum-insert-candidates-switch-alist
-  '((selectrum-insert-candidates-horizontally
-     . selectrum-insert-candidates-horizontally-switcher)
-    (selectrum-insert-candidates-horizontally
-     . selectrum-insert-candidates-vertically-switcher)))
-
-(let ((highlight selectrum-extend-current-candidate-highlight))
-  (defun selectrum-insert-candidates-horizontally-switcher (&optional reset)
-    (cond (reset
-           (setq-local selectrum-extend-current-candidate-highlight highlight))
-          (t
-           (setq highlight selectrum-extend-current-candidate-highlight)
-           (setq-local selectrum-extend-current-candidate-highlight nil)
-           (when (window-minibuffer-p)
-             (setf (window-height) 1))))))
-
-(defun selectrum-insert-candidates-vertically-switcher (&optional reset)
-  (unless reset
-    (when (window-minibuffer-p)
-      (selectrum--update-minibuffer-height (active-minibuffer-window)))))
-
 (defun selectrum-default-candidate-refine-function (input candidates)
   "Default value of `selectrum-refine-candidates-function'.
 Return only candidates that contain the input as a substring.
@@ -303,7 +282,7 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-
+    (define-key map (kbd "M-q") 'selectrum-toggle-orientation)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -837,6 +816,27 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
             (when cands
               (insert  " | ")))))
       n)))
+
+(let ((extend-highlight nil))
+  (defun selectrum-toggle-orientation ()
+    "Toggle `selectrum-insert-candidates-function'.
+Toggles between `selectrum-insert-candidates-horizontally' and
+`selectrum-insert-candidates-vertically'."
+    (interactive)
+    (cond ((eq selectrum-insert-candidates-function
+               'selectrum-insert-candidates-horizontally)
+           (setq-local selectrum-insert-candidates-function
+                       'selectrum-insert-candidates-vertically)
+           (setq-local selectrum-extend-current-candidate-highlight
+                       extend-highlight))
+          (t
+           (setq-local selectrum-insert-candidates-function
+                       'selectrum-insert-candidates-horizontally)
+           (setq extend-highlight
+                 selectrum-extend-current-candidate-highlight)
+           (setq-local selectrum-extend-current-candidate-highlight
+                       nil)
+           (setf (window-height) 1)))))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates
