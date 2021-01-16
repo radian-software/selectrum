@@ -98,9 +98,9 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
 (defcustom selectrum-num-candidates-displayed 'auto
   "Configures how many candidates are displayed.
-When `auto' Selectrum will determine the appropriate height
-automatically. The maximum value for vertical display will be
-determined by `max-mini-window-height'."
+When `auto' the appropriate height will be determined
+automatically according to the available space and the height
+allowed by `max-mini-window-height'."
   :type 'number)
 
 (defun selectrum-display-full-frame (buf _alist)
