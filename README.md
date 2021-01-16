@@ -783,9 +783,7 @@ seems to provide a similar vertical completion interface to Selectrum.
 
 One problem with Snails is that, like Ivy, it goes the route of
 wrapping every possible command with a "backend" rather than using
-existing Emacs interfaces to handle all possible commands. Also it
-doesn't handle byte compilation and hence can't be installed like a
-regular package.
+existing Emacs interfaces to handle all possible commands. 
 
 ### Sallet
 
