@@ -96,16 +96,11 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
-(defcustom selectrum-num-candidates-displayed 10
-  "Maximum number of candidate lines which are displayed.
-Selectrum will display candidates lines up to this number or
-fewer if there are less candidates in total.
-
-For the minibuffer the window height equals this number plus one
-for the prompt line. If `selectrum-display-action' is non-nil
-this option determines the maximal window height but when the
-displaying window height is greater than that all of the
-available height will be used for candidate display."
+(defcustom selectrum-num-candidates-displayed 'auto
+  "Configures how many candidate lines are displayed.
+When `auto' Selectrum will determine the appropriate height
+automatically. For default vertical display the maximal value
+will be determined by `max-mini-window-height'."
   :type 'number)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -728,7 +723,7 @@ This is the case when the height of WINDOW fits in the range of
 `selectrum-num-candidates-displayed' and the content height is
 greather than the window height."
   (and (<= (window-body-height window)
-           selectrum-num-candidates-displayed)
+           (selectrum--num-candidates-displayed window))
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
@@ -863,7 +858,9 @@ inserted is determined by
                   (nthcdr
                    first-index-displayed
                    candidates)
-                  ncands))
+                  (if (numberp selectrum-num-candidates-displayed)
+                      selectrum-num-candidates-displayed
+                    ncands)))
                 (when (and first-index-displayed index)
                   (- index first-index-displayed))
                 annot-fun)))
@@ -880,6 +877,17 @@ inserted is determined by
 (defun selectrum--minibuffer-post-command-hook ()
   "Update minibuffer in response to user input."
   (selectrum--update))
+
+(defun selectrum--num-candidates-displayed (window)
+  "Return number of candidates to use for display."
+  (let* ((fh (frame-height
+              (window-frame (minibuffer-selected-window))))
+         (n (if (eq 'auto selectrum-num-candidates-displayed)
+                (round (* fh max-mini-window-height))
+              selectrum-num-candidates-displayed)))
+    (if selectrum-display-action
+        (max (window-body-height window) n)
+      n)))
 
 (defun selectrum--update (&optional keep-selected)
   "Update state.
@@ -1017,11 +1025,7 @@ the update."
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
-             (nlines (if (and selectrum-display-action
-                              (windowp window))
-                         (max (window-body-height window)
-                              selectrum-num-candidates-displayed)
-                       selectrum-num-candidates-displayed))
+             (nlines (selectrum--num-candidates-displayed window))
              (ncols (if selectrum-display-action
                         (window-body-width window)
                       (- (window-body-width window)
@@ -1139,7 +1143,7 @@ WINDOW will be updated to fit its content vertically if needed or
 will be set to `selectrum-num-candidates-displayed' if
 `selectrum-fix-minibuffer-height' is non-nil."
   (if selectrum-fix-minibuffer-height
-      (let ((n (1+ selectrum-num-candidates-displayed)))
+      (let ((n (1+ (selectrum--num-candidates-displayed window))))
         (with-selected-window window
           (setf (window-height) n)))
     (let ((dheight (cdr (window-text-pixel-size window)))
@@ -1895,8 +1899,6 @@ semantics of `cl-defun'."
     (setq selectrum--move-default-candidate-p (not no-move-default-candidate))
     (let* ((minibuffer-allow-text-properties t)
            (resize-mini-windows 'grow-only)
-           (max-mini-window-height
-            (1+ selectrum-num-candidates-displayed))
            (prompt (selectrum--remove-default-from-prompt prompt))
            ;; <https://github.com/raxod502/selectrum/issues/99>
            (icomplete-mode nil)
