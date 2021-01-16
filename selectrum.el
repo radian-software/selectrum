@@ -1025,7 +1025,8 @@ the update."
              (ncols (if selectrum-display-action
                         (window-body-width window)
                       (- (window-body-width window)
-                         (point-max)
+                         (- (point-max)
+                            (window-hscroll window))
                          2)))
              (buffer (with-current-buffer
                          (get-buffer-create selectrum--candidates-buffer)
