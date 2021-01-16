@@ -839,9 +839,19 @@ inserted is determined by
                   annot-fun))))
          (lindex (when (and findex num)
                    (+ findex
-                      (max 0 (1- num))))))
-    (funcall insert-fun buf win cb
-             nlines ncols index mindex findex lindex)))
+                      (max 0 (1- num)))))
+         (n (funcall insert-fun buf win cb
+                     nlines ncols index mindex findex lindex)))
+    (if (or (not index) (not findex)
+            (>= (+ findex n) index))
+        n
+      ;; When the insertion function was switched the current index
+      ;; might be out of sight in this case reinsert with the current
+      ;; index displayed as the first one.
+      (with-current-buffer buf
+        (erase-buffer))
+      (funcall insert-fun buf win cb
+               nlines ncols index mindex index lindex))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
