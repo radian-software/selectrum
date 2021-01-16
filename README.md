@@ -780,13 +780,12 @@ said.](https://github.com/melpa/melpa/pull/5008)
 [Snails](https://github.com/manateelazycat/snails) describes itself as
 a "modern, easy-to-expand fuzzy-search framework". From the README, it
 seems to provide a similar vertical completion interface to Selectrum.
-Unfortunately, the package seems to be essentially nonfunctional. I
-had to fix three bugs in the code before I could even get candidates
-to show up, and filtering and sorting still did not work.
 
-A deeper problem with Snails is that, like Ivy, it goes the route of
+One problem with Snails is that, like Ivy, it goes the route of
 wrapping every possible command with a "backend" rather than using
-existing Emacs interfaces to handle all possible commands.
+existing Emacs interfaces to handle all possible commands. Also it
+doesn't handle byte compilation and hence can't be installed like a
+regular package.
 
 ### Sallet
 
