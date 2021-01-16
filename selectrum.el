@@ -878,10 +878,17 @@ the update."
                 selectrum--refined-candidates)
                ncands))
              (candidate-string (selectrum--candidates-display-string
-                                window
                                 displayed-candidates
                                 input
                                 highlighted-index))
+             (buffer (with-current-buffer
+                         (get-buffer-create selectrum--candidates-buffer)
+                       (erase-buffer)
+                       (unless selectrum-display-action
+                         (insert "\n"))
+                       (insert candidate-string)
+                       (goto-char (point-min))
+                       (current-buffer)))
              (default
                (if (or (and highlighted-index
                             (< highlighted-index 0))
@@ -919,16 +926,22 @@ the update."
                     (minibuffer-prompt-end) (point-max)
                     '(face selectrum-current-candidate)))))
              (minibuf-after-string (or default " ")))
-        (if selectrum-display-action
-            (with-current-buffer (get-buffer-create
-                                  selectrum--candidates-buffer)
-              (erase-buffer)
-              (insert candidate-string)
-              (goto-char (point-min)))
-          (unless (string-empty-p candidate-string)
-            (setq minibuf-after-string
-                  (concat minibuf-after-string
-                          "\n" candidate-string))))
+        ;; Add padding for scrolled prompt.
+        (when (and (window-minibuffer-p window)
+                   (> (window-height window) 1)
+                   (not (zerop (window-hscroll window))))
+          (let ((padding (make-string (window-hscroll window) ?\s)))
+            (with-current-buffer buffer
+              (goto-char (point-min))
+              (while (not (eobp))
+                (insert padding)
+                (forward-line 1)))))
+        (unless (or selectrum-display-action
+                    (not selectrum--refined-candidates))
+          (setq minibuf-after-string
+                (concat minibuf-after-string
+                        (with-current-buffer buffer
+                          (buffer-string)))))
         (move-overlay selectrum--candidates-overlay
                       (point-max) (point-max) (current-buffer))
         (put-text-property 0 1 'cursor t minibuf-after-string)
@@ -977,7 +990,7 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates settings &optional padding)
+(defun selectrum--ensure-single-lines (candidates settings)
   "Return list of single-line CANDIDATES.
 
 Multi-line candidates are merged into a single line. The
@@ -985,9 +998,7 @@ resulting single-line candidates are then shortened by replacing
 repeated whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
-SETTINGS, see `selectrum-multiline-display-settings'.
-
-If PADDING is non-nil lines are padded with it."
+SETTINGS, see `selectrum-multiline-display-settings'."
   (let* ((single/lines ())
 
          ;; The formatting settings are the same for all multi-line
@@ -1018,12 +1029,7 @@ If PADDING is non-nil lines are padded with it."
     (dolist (cand candidates (nreverse single/lines))
       (let ((line
              (if (not (string-match-p "\n" cand))
-                 (propertize
-                  cand
-                  'selectrum-candidate-display-prefix
-                  (concat padding
-                          (get-text-property
-                           0 'selectrum-candidate-display-prefix cand)))
+                 cand
                (let* ((lines (split-string cand "\n"))
                       (len (length lines))
                       (input (minibuffer-contents))
@@ -1039,10 +1045,8 @@ If PADDING is non-nil lines are padded with it."
                                       selectrum-refine-candidates-function
                                       input
                                       lines))))
-                      (prefix
-                       (concat padding
-                               (propertize (format "(%d lines)" len)
-                                           'face newline/face)))
+                      (prefix (propertize (format "(%d lines)" len)
+                                          'face newline/face))
                       (match
                        (propertize
                         (replace-regexp-in-string
@@ -1179,12 +1183,11 @@ suffix."
                                    suffix))))))
             res))))
 
-(defun selectrum--candidates-display-string (window
-                                             candidates
+(defun selectrum--candidates-display-string (candidates
                                              input
                                              highlighted-index
                                              &optional table pred props)
-  "Get WINDOW display string for CANDIDATES.
+  "Get display string for CANDIDATES.
 INPUT is the current user input. CANDIDATES are the candidates
 for display. HIGHLIGHTED-INDEX is the currently selected index.
 TABLE defaults to `minibuffer-completion-table'. PRED defaults to
@@ -1208,9 +1211,6 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
-         (padding (when (and (window-minibuffer-p window)
-                             (not (zerop (window-hscroll))))
-                    (make-string (window-hscroll) ?\s)))
          (lines
           (selectrum--ensure-single-lines
            ;; First pass the candidates to the highlight function
@@ -1220,7 +1220,7 @@ TABLE defaults to `minibuffer-completion-table'. PRED defaults to
            ;; requires this).
            (funcall selectrum-highlight-candidates-function
                     input candidates)
-           selectrum-multiline-display-settings padding)))
+           selectrum-multiline-display-settings)))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
