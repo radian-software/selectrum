@@ -811,12 +811,12 @@ Toggles between `selectrum-insert-candidates-horizontally' and
     (insert-fun candidates
                 buf win nlines ncols input index mindex findex num)
   "Use INSERT-FUN to insert CANDIDATES into BUF for display.
-BUF will be displayed in window WIN. NLINES and NCOLS are the
-number of lines and columns available. INPUT is the current user
-input. INDEX is the index of the currently selected candidate if
-any. MINDEX is the maximum and FINDEX the first index. NUM is the
-number of currently displayed candidates. How the candidates are
-inserted is determined by
+BUF is supposed to be displayed in window WIN. NLINES and NCOLS
+are the number of lines and columns available. INPUT is the
+current user input. INDEX is the index of the currently selected
+candidate if any. MINDEX is the maximum and FINDEX the first
+index. NUM is the number of currently displayed candidates. How
+the candidates are inserted is determined by
 `selectrum-insert-candidates-function'."
   (let* ((cb (lambda (first-index-displayed
                       ncands &optional annot-fun)
