@@ -1100,6 +1100,7 @@ the update."
                 (insert padding)
                 (forward-line 1)))))
         (unless (or selectrum-display-action
+                    (zerop selectrum--num-candidates-displayed)
                     (not selectrum--refined-candidates))
           (setq minibuf-after-string
                 (concat minibuf-after-string
