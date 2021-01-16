@@ -692,7 +692,7 @@ This is the case when the height of WINDOW fits in the range of
 `selectrum-num-candidates-displayed' and the content height is
 greather than the window height."
   (and (<= (window-body-height window)
-           (selectrum--num-candidates-displayed window))
+           (selectrum--max-num-candidates-displayed window))
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
@@ -856,8 +856,8 @@ index. NUM is the number of currently displayed candidates."
   "Update minibuffer in response to user input."
   (selectrum--update))
 
-(defun selectrum--num-candidates-displayed (window)
-  "Return number of candidates to use for display in WINDOW."
+(defun selectrum--max-num-candidates-displayed (window)
+  "Return maximum number of cands to use for display in WINDOW."
   (let* ((fh (frame-height
               (window-frame (minibuffer-selected-window))))
          (n (if (eq 'auto selectrum-num-candidates-displayed)
@@ -1005,7 +1005,7 @@ the update."
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
-             (nlines (selectrum--num-candidates-displayed window))
+             (nlines (selectrum--max-num-candidates-displayed window))
              (ncols (if selectrum-display-action
                         (window-body-width window)
                       (- (window-body-width window)
