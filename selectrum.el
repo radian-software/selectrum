@@ -97,10 +97,10 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
 (defcustom selectrum-num-candidates-displayed 'auto
-  "Configures how many candidate lines are displayed.
+  "Configures how many candidates are displayed.
 When `auto' Selectrum will determine the appropriate height
-automatically. For default vertical display the maximal value
-will be determined by `max-mini-window-height'."
+automatically. The maximum value for vertical display will be
+determined by `max-mini-window-height'."
   :type 'number)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -865,7 +865,7 @@ inserted is determined by
   (selectrum--update))
 
 (defun selectrum--num-candidates-displayed (window)
-  "Return number of candidates to use for display."
+  "Return number of candidates to use for display in WINDOW."
   (let* ((fh (frame-height
               (window-frame (minibuffer-selected-window))))
          (n (if (eq 'auto selectrum-num-candidates-displayed)
