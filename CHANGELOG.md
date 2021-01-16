@@ -11,8 +11,18 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
+* The option `selectrum-fix-minibuffer-height` has been removed
+  ([#305]).
 
 ### Features
+* The option `selectrum-insert-candidates-function` can be used to
+  specify an insertion function for candidates. Functions for vertical
+  and horizontal display are included and you can toggle between them
+  using the new `selectrum-toggle-orientation` command ([#305]).
+* `selectrum-num-candidates-displayed` is now set to `auto` by default
+  and the number is automatically determined by the available display
+  height, the used insertion function and `max-mini-window-height`
+  ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
