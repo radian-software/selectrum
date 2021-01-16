@@ -698,7 +698,7 @@ greather than the window height."
 
 (defun selectrum-insert-candidates-vertically
     (win cb nrows ncols
-         index max-index first-index-displayed last-index-displayed)
+         &optional index max-index first-index-displayed last-index-displayed)
   "Insert candidates vertically into current buffer.
 See `selectrum-insert-candidates-function'. WIN is the window
 where buffer will get displayed in. Callback CB returns the
@@ -707,14 +707,14 @@ index position and the number of candidates and optionally the
 third argument which allows passing and annotation function. If
 given the function receives three optional arguments: a prefix,
 suffix and a right margin annotation of the currently selected
-candidate and should take care to display them, the annotations
-display of others candidates than the current is disabled in this
-case. NROWS is the number of lines available and NCOLS the number
-of available columns. If applicable INDEX is the index of the
-currently selected candidate and MAX-INDEX is the index of the
-last candidate available. FIRST-INDEX-DISPLAYED is the index of
-the candidate that is currently the first one displayed and
-LAST-INDEX-DISPLAYED the index of the last one."
+candidate and should take care of displaying them. The
+annotations display of others candidates than the current is
+disabled in this case. NROWS is the number of lines available and
+NCOLS the number of available columns. If applicable INDEX is the
+index of the currently selected candidate and MAX-INDEX is the
+index of the last candidate available. FIRST-INDEX-DISPLAYED is
+the index of the candidate that is currently the first one
+displayed and LAST-INDEX-DISPLAYED the index of the last one."
   (ignore ncols first-index-displayed last-index-displayed)
   (let* ((first-index-displayed
           (if (not index)
@@ -739,7 +739,7 @@ LAST-INDEX-DISPLAYED the index of the last one."
 
 (defun selectrum-insert-candidates-horizontally
     (win cb nrows ncols
-         index max-index first-index-displayed last-index-displayed)
+         &optional index max-index first-index-displayed last-index-displayed)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
