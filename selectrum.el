@@ -831,7 +831,8 @@ Toggles between `selectrum-insert-candidates-horizontally' and
                  selectrum-extend-current-candidate-highlight)
            (setq-local selectrum-extend-current-candidate-highlight
                        nil)
-           (setf (window-height) 1)))))
+           (unless selectrum-display-action
+             (set-window-text-height (active-minibuffer-window) 1))))))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates
