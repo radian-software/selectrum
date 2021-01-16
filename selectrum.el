@@ -1018,7 +1018,7 @@ the update."
                       (- (window-body-width window)
                          (- (point-max)
                             (window-hscroll window))
-                         2)))
+                         4)))
              (buffer (with-current-buffer
                          (get-buffer-create selectrum--candidates-buffer)
                        (erase-buffer)
