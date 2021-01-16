@@ -146,25 +146,13 @@ frame you can use the provided action function
   "Function to insert candidates for display.
 The insertion function should insert candidates into the buffer
 passed as first argument. The remaining arguments are the same as
-`selectrum-insert-candidates-vertically' and should return the
-number of candidates it inserted for display. As the name implies
-`selectrum-insert-candidates-vertically' inserts candidates
-vertically, to display candidates horizontally like `icomplete'
-you can use `selectrum-insert-candidates-horizontally'. If needed
-the insertion function can also apply local settings of Selectrum
-options, this can be used if options are incompatible with the
-current insertion method."
+for `selectrum-insert-candidates-vertically'. The function should
+return the number of candidates it inserted for display. As the
+name implies `selectrum-insert-candidates-vertically' inserts
+candidates vertically, to display candidates horizontally like
+`icomplete' you can use
+`selectrum-insert-candidates-horizontally'."
   :type 'function)
-
-(defun selectrum-default-candidate-refine-function (input candidates)
-  "Default value of `selectrum-refine-candidates-function'.
-Return only candidates that contain the input as a substring.
-INPUT is a string, CANDIDATES is a list of strings."
-  (let ((regexp (regexp-quote input)))
-    (cl-delete-if-not
-     (lambda (candidate)
-       (string-match-p regexp candidate))
-     (copy-sequence candidates))))
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
   "Use INPUT to filter and highlight CANDIDATES.
