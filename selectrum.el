@@ -778,7 +778,7 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
           (cl-incf n)
           (when cands
             (insert  " | ")))))
-      n))
+    n))
 
 (let ((extend-highlight nil))
   (defun selectrum-toggle-orientation ()
