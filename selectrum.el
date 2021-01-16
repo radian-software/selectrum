@@ -150,7 +150,7 @@ frame you can use the provided action function
                alist))
 
 (defcustom selectrum-insert-candidates-function
-  #'selectrum-insert-candidates-horizontally
+  #'selectrum-insert-candidates-vertically
   "Function to insert candidates for display.
 The insertion function should insert candidates into the buffer
 passed as first argument. The remaining arguments are the same as
@@ -856,7 +856,6 @@ inserted is determined by
                (setq selectrum--first-index-displayed
                      first-index-displayed)
                (selectrum--candidates-display-strings
-                win
                 (funcall
                  selectrum-highlight-candidates-function
                  input
@@ -1083,6 +1082,16 @@ the update."
                (1- (length selectrum--refined-candidates))
                selectrum--first-index-displayed
                selectrum--num-candidates-displayed))
+        ;; Add padding for scrolled prompt.
+        (when (and (window-minibuffer-p window)
+                   (> (window-height window) 1)
+                   (not (zerop (window-hscroll))))
+          (let ((padding (make-string (window-hscroll) ?\s)))
+            (with-current-buffer buffer
+              (goto-char (point-min))
+              (while (not (eobp))
+                (insert padding)
+                (forward-line 1)))))
         (unless (or selectrum-display-action
                     (not selectrum--refined-candidates))
           (setq minibuf-after-string
@@ -1137,7 +1146,7 @@ will be set to `selectrum-num-candidates-displayed' if
       (window-resize
        window (- dheight wheight) nil nil 'pixelwise))))
 
-(defun selectrum--ensure-single-lines (candidates settings &optional padding)
+(defun selectrum--ensure-single-lines (candidates settings)
   "Return list of single-line CANDIDATES.
 
 Multi-line candidates are merged into a single line. The
@@ -1178,12 +1187,7 @@ If PADDING is non-nil lines are padded with it."
     (dolist (cand candidates (nreverse single/lines))
       (let ((line
              (if (not (string-match-p "\n" cand))
-                 (propertize
-                  cand
-                  'selectrum-candidate-display-prefix
-                  (concat padding
-                          (get-text-property
-                           0 'selectrum-candidate-display-prefix cand)))
+                 cand
                (let* ((lines (split-string cand "\n"))
                       (len (length lines))
                       (input (minibuffer-contents))
@@ -1199,10 +1203,8 @@ If PADDING is non-nil lines are padded with it."
                                       selectrum-refine-candidates-function
                                       input
                                       lines))))
-                      (prefix
-                       (concat padding
-                               (propertize (format "(%d lines)" len)
-                                           'face newline/face)))
+                      (prefix (propertize (format "(%d lines)" len)
+                                          'face newline/face))
                       (match
                        (propertize
                         (replace-regexp-in-string
@@ -1339,8 +1341,7 @@ suffix."
                                    suffix))))))
             res))))
 
-(defun selectrum--candidates-display-strings (window
-                                              candidates
+(defun selectrum--candidates-display-strings (candidates
                                               highlighted-index
                                               annot-fun
                                               &optional table pred props)
@@ -1369,13 +1370,9 @@ defaults to `minibuffer-completion-table'. PRED defaults to
          (extend selectrum-extend-current-candidate-highlight)
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
-         (padding (when (and (window-minibuffer-p window)
-                             (> (window-height window) 1)
-                             (not (zerop (window-hscroll))))
-                    (make-string (window-hscroll) ?\s)))
          (lines (selectrum--ensure-single-lines
                  candidates
-                 selectrum-multiline-display-settings padding)))
+                 selectrum-multiline-display-settings)))
     (with-temp-buffer
       (dolist (candidate lines)
         (let* ((prefix (get-text-property
