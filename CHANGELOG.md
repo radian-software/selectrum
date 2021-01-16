@@ -20,9 +20,8 @@ The format is based on [Keep a Changelog].
   and horizontal display are included and you can toggle between them
   using the new `selectrum-toggle-orientation` command ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
-  and the number is automatically determined by the available display
-  height, the used insertion function and the value of
-  `max-mini-window-height` ([#305]).
+  and the number is automatically determined by the available space
+  and height allowed by `max-mini-window-height` ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
