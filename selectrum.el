@@ -883,7 +883,9 @@ inserted is determined by
   (let* ((fh (frame-height
               (window-frame (minibuffer-selected-window))))
          (n (if (eq 'auto selectrum-num-candidates-displayed)
-                (round (* fh max-mini-window-height))
+                (if (floatp max-mini-window-height)
+                    (round (* fh max-mini-window-height))
+                  (or max-mini-window-height 0))
               selectrum-num-candidates-displayed)))
     (if selectrum-display-action
         (max (window-body-height window) n)
