@@ -710,11 +710,12 @@ suffix and a right margin annotation of the currently selected
 candidate and should take care of displaying them. The
 annotations display of others candidates than the current is
 disabled in this case. NROWS is the number of lines available and
-NCOLS the number of available columns. If applicable INDEX is the
-index of the currently selected candidate and MAX-INDEX is the
-index of the last candidate available. FIRST-INDEX-DISPLAYED is
-the index of the candidate that is currently the first one
-displayed and LAST-INDEX-DISPLAYED the index of the last one."
+NCOLS the number of available columns. If there are candidates
+INDEX is the index of the currently selected candidate and
+MAX-INDEX is the index of the last candidate available. When
+candidates currently already displayed FIRST-INDEX-DISPLAYED is
+the index of the candidate that is currently displayed first and
+LAST-INDEX-DISPLAYED the index of the last one."
   (ignore ncols first-index-displayed last-index-displayed)
   (let* ((first-index-displayed
           (if (not index)
@@ -808,9 +809,7 @@ BUF is supposed to be displayed in window WIN. NLINES and NCOLS
 are the number of lines and columns available. INPUT is the
 current user input. INDEX is the index of the currently selected
 candidate if any. MINDEX is the maximum and FINDEX the first
-index. NUM is the number of currently displayed candidates. How
-the candidates are inserted is determined by
-`selectrum-insert-candidates-function'."
+index. NUM is the number of currently displayed candidates."
   (let* ((cb (lambda (first-index-displayed
                       ncands &optional annot-fun)
                (with-current-buffer (window-buffer (active-minibuffer-window))
