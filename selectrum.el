@@ -165,7 +165,7 @@ the number of candidates that were inserted."
   '(selectrum-insert-candidates-vertically
     selectrum-insert-candidates-horizontally)
   "List of insertion functions for cycling.
-See `selectrum-cycle-candidates-insertion'"
+See `selectrum-cycle'."
   :type '(repeat
           (choice
            (const :tag "Vertically"
@@ -281,7 +281,7 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-    (define-key map (kbd "M-q") 'selectrum-cycle-candidates-insertion)
+    (define-key map (kbd "M-q") 'selectrum-cycle)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -846,7 +846,7 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
             (insert  " - ")))))
     n))
 
-(defun selectrum-cycle-candidates-insertion ()
+(defun selectrum-cycle ()
   "Switch current `selectrum-insert-candidates-function'.
 Cycles through `selectrum-insert-candidates-functions'."
   (interactive)
