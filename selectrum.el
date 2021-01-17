@@ -100,7 +100,8 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   "Configures how many candidates are displayed.
 When `auto' the appropriate number will be determined
 automatically according to the available space and the height
-allowed by `max-mini-window-height'. The height can also be set
+allowed by `max-mini-window-height'. The minibuffer will expand
+to fit it contents accordingly. The height can also be set
 constant by using `selectrum-fix-minibuffer-height'."
   :type 'number)
 
