@@ -102,7 +102,7 @@ When `auto' the appropriate number will be determined
 automatically according to the available space and the height
 allowed by `max-mini-window-height'. The height can also be set
 constant by using `selectrum-fix-minibuffer-height'."
-  :type 'number)
+  :type '(choice (const :tag "Automatic" auto) integer))
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer will always have the same height.
