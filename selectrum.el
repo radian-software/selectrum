@@ -161,7 +161,7 @@ buffer. The arguments are the same as for
 the number of candidates that were inserted."
   :type 'function)
 
-(defcustom selectrum-insert-candidates-functions
+(defcustom selectrum-insert-candidates-function-list
   '(selectrum-insert-candidates-vertically
     selectrum-insert-candidates-horizontally)
   "List of insertion functions for cycling.
@@ -475,7 +475,7 @@ changes, and is subsequently passed to
 (defvar-local selectrum--first-index-displayed nil
   "Index of the first displayed candidate.")
 
-(defvar-local selectrum--num-candidates-displayed nil
+(defvar-local selectrum--actual-num-candidates-displayed nil
   "The actual number of candidates displayed.")
 
 (defvar selectrum--previous-input-string nil
@@ -805,23 +805,23 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 
 (defun selectrum-cycle ()
   "Switch current `selectrum-insert-candidates-function'.
-Cycles through `selectrum-insert-candidates-functions' to change
+Cycles through `selectrum-insert-candidates-function-list' to change
 the insertion function for the current session. Outside of the
 minibuffer the global value will be changed."
   (interactive)
   (when (minibufferp)
-    (make-local-variable 'selectrum-insert-candidates-functions)
+    (make-local-variable 'selectrum-insert-candidates-function-list)
     (make-local-variable 'selectrum-insert-candidates-function))
-  (while (and selectrum-insert-candidates-functions
-              (cdr selectrum-insert-candidates-functions)
+  (while (and selectrum-insert-candidates-function-list
+              (cdr selectrum-insert-candidates-function-list)
               (eq selectrum-insert-candidates-function
-                  (car selectrum-insert-candidates-functions)))
-    (setq selectrum-insert-candidates-functions
-          (append (cdr selectrum-insert-candidates-functions)
-                  (list (car selectrum-insert-candidates-functions)))))
-  (when (cdr selectrum-insert-candidates-functions)
+                  (car selectrum-insert-candidates-function-list)))
+    (setq selectrum-insert-candidates-function-list
+          (append (cdr selectrum-insert-candidates-function-list)
+                  (list (car selectrum-insert-candidates-function-list)))))
+  (when (cdr selectrum-insert-candidates-function-list)
     (setq selectrum-insert-candidates-function
-          (car selectrum-insert-candidates-functions))))
+          (car selectrum-insert-candidates-function-list))))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates buf win nlines ncols input
@@ -977,7 +977,7 @@ the update."
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
         (setq-local selectrum--first-index-displayed nil)
-        (setq-local selectrum--num-candidates-displayed nil)
+        (setq-local selectrum--actual-num-candidates-displayed nil)
         (if selectrum--repeat
             (progn
               (setq selectrum--current-candidate-index
@@ -1094,10 +1094,10 @@ the update."
                  selectrum--current-candidate-index)
                (1- (length selectrum--refined-candidates))
                selectrum--first-index-displayed
-               selectrum--num-candidates-displayed))
+               selectrum--actual-num-candidates-displayed))
              (horizp (car inserted-res))
              (inserted-num (cdr inserted-res)))
-        (setq-local selectrum--num-candidates-displayed inserted-num)
+        (setq-local selectrum--actual-num-candidates-displayed inserted-num)
         ;; Add padding for scrolled prompt.
         (when (and (window-minibuffer-p window)
                    (not horizp)
@@ -1109,7 +1109,7 @@ the update."
                 (insert padding)
                 (forward-line 1)))))
         (unless (or selectrum-display-action
-                    (zerop selectrum--num-candidates-displayed)
+                    (zerop selectrum--actual-num-candidates-displayed)
                     (not selectrum--refined-candidates))
           (setq minibuf-after-string
                 (concat minibuf-after-string
@@ -1565,7 +1565,7 @@ overridden and BUF the buffer the session was started from."
     (setq selectrum--current-candidate-index
           (selectrum--clamp
            (+ selectrum--current-candidate-index
-              (* (or arg 1) selectrum--num-candidates-displayed))
+              (* (or arg 1) selectrum--actual-num-candidates-displayed))
            0
            (1- (length selectrum--refined-candidates))))))
 
