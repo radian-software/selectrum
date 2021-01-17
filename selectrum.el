@@ -804,9 +804,7 @@ Toggles between `selectrum-insert-candidates-horizontally' and
                      'selectrum-insert-candidates-vertically))
         (t
          (setq-local selectrum-insert-candidates-function
-                     'selectrum-insert-candidates-horizontally)
-         (unless selectrum-display-action
-           (set-window-text-height (active-minibuffer-window) 1)))))
+                     'selectrum-insert-candidates-horizontally))))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates
@@ -1124,12 +1122,13 @@ window is supposed to be shown vertically."
           window
           ;; Add one for prompt.
           (1+ (selectrum--max-num-candidates-displayed window))))
+        ((not vertical)
+         ;; Resize to single line for horizontal display.
+         (set-window-text-height (active-minibuffer-window) 1))
         (t
          (when (and
                 ;; Exclude minibuffer only frame.
                 (not (frame-root-window-p window))
-                ;; Only update if content should be shown vertically.
-                vertical
                 ;; Only expand if content is aligned vertically.
                 (selectrum--expand-window-for-content-p window))
            (selectrum--update-minibuffer-height window)))))
