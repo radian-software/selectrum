@@ -462,10 +462,10 @@ changes, and is subsequently passed to
 (defvar selectrum--current-candidate-index nil
   "Index of currently selected candidate, or nil if no candidates.")
 
-(defvar selectrum--first-index-displayed nil
+(defvar-local selectrum--first-index-displayed nil
   "Index of the first displayed candidate.")
 
-(defvar selectrum--num-candidates-displayed nil
+(defvar-local selectrum--num-candidates-displayed nil
   "The actual number of candidates displayed.")
 
 (defvar selectrum--previous-input-string nil
@@ -807,8 +807,8 @@ Toggles between `selectrum-insert-candidates-horizontally' and
                      'selectrum-insert-candidates-horizontally))))
 
 (defun selectrum--insert-candidates
-    (insert-fun candidates
-                buf win nlines ncols input index mindex findex num)
+    (insert-fun candidates buf win nlines ncols input
+                &optional index mindex findex num)
   "Use INSERT-FUN to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. NLINES and NCOLS
 are the number of lines and columns available. INPUT is the
@@ -822,7 +822,8 @@ that were inserted."
          (cb (lambda (first-index-displayed
                       ncands &optional annot-fun horizontalp)
                (with-current-buffer (window-buffer (active-minibuffer-window))
-                 (setq selectrum--first-index-displayed first-index-displayed)
+                 (setq-local selectrum--first-index-displayed
+                             first-index-displayed)
                  (setq horizp horizontalp)
                  (selectrum--candidates-display-strings
                   (funcall
@@ -958,8 +959,8 @@ the update."
                selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
-        (setq selectrum--first-index-displayed nil)
-        (setq selectrum--num-candidates-displayed nil)
+        (setq-local selectrum--first-index-displayed nil)
+        (setq-local selectrum--num-candidates-displayed nil)
         (if selectrum--repeat
             (progn
               (setq selectrum--current-candidate-index
@@ -1079,10 +1080,10 @@ the update."
                selectrum--num-candidates-displayed))
              (horizp (car inserted-res))
              (inserted-num (cdr inserted-res)))
-        (setq selectrum--num-candidates-displayed inserted-num)
+        (setq-local selectrum--num-candidates-displayed inserted-num)
         ;; Add padding for scrolled prompt.
         (when (and (window-minibuffer-p window)
-                   (> (window-height window) 1)
+                   (not horizp)
                    (not (zerop (window-hscroll window))))
           (let ((padding (make-string (window-hscroll window) ?\s)))
             (with-current-buffer buffer
@@ -1827,8 +1828,6 @@ Otherwise, just eval BODY."
            (lambda (var)
              `(,var ,var))
            '(selectrum--current-candidate-index
-             selectrum--first-index-displayed
-             selectrum--num-candidates-displayed
              selectrum--previous-input-string
              selectrum--last-command
              selectrum--last-prefix-arg)))
