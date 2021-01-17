@@ -164,7 +164,7 @@ the number of candidates that were inserted."
 (defcustom selectrum-insert-candidates-functions
   '(selectrum-insert-candidates-vertically
     selectrum-insert-candidates-horizontally)
-  "List of insertion function for cycling.
+  "List of insertion functions for cycling.
 See `selectrum-cycle-candidates-insertion'"
   :type '(repeat
           (choice
