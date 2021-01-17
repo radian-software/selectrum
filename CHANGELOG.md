@@ -15,8 +15,9 @@ The format is based on [Keep a Changelog].
 ### Features
 * The option `selectrum-insert-candidates-function` can be used to
   specify an insertion function for candidates. Functions for vertical
-  and horizontal display are included and you can toggle between them
-  using the new `selectrum-toggle-orientation` command ([#305]).
+  and horizontal display are included and you cycle through insertion
+  functions using `selectrum-insert-candidates-functions` and the new
+  `selectrum-cycle` command ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
   and the number is automatically determined by the available space
   and the height allowed by `max-mini-window-height` ([#305]).
