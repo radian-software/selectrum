@@ -11,8 +11,6 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
-* The option `selectrum-fix-minibuffer-height` has been removed
-  ([#305]).
 
 ### Features
 * The option `selectrum-insert-candidates-function` can be used to
