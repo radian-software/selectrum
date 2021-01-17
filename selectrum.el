@@ -819,8 +819,9 @@ Cycles through `selectrum-insert-candidates-functions'."
     (setq selectrum-insert-candidates-functions
           (append (cdr selectrum-insert-candidates-functions)
                   (list (car selectrum-insert-candidates-functions)))))
-  (setq selectrum-insert-candidates-function
-        (car selectrum-insert-candidates-functions)))
+  (when (cdr selectrum-insert-candidates-functions)
+    (setq selectrum-insert-candidates-function
+          (car selectrum-insert-candidates-functions))))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates buf win nlines ncols input
