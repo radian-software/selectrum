@@ -807,7 +807,9 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 
 (defun selectrum-cycle ()
   "Switch current `selectrum-insert-candidates-function'.
-Cycles through `selectrum-insert-candidates-functions'."
+Cycles through `selectrum-insert-candidates-functions' to change
+the insertion function for the current session. Outside of the
+minibuffer the global value will be changed."
   (interactive)
   (when (minibufferp)
     (make-local-variable 'selectrum-insert-candidates-functions)
