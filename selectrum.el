@@ -100,16 +100,15 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   "Configures how many candidates are displayed.
 When `auto' the appropriate number will be determined
 automatically according to the available space and the height
-allowed by `max-mini-window-height'. The minibuffer will expand
-to fit it contents accordingly. The height can also be set
+allowed by `max-mini-window-height'. The height can also be set
 constant by using `selectrum-fix-minibuffer-height'."
   :type 'number)
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer will always have the same height.
-Usually when there fewer candidates than are allowed for display
-by `max-mini-window-height' the minibuffer height won't expand.
-When this option is non-nil and
+Usually when there are fewer candidates than allowed for display
+by `max-mini-window-height' the minibuffer height will be sized
+to fit its contents. When this option is non-nil and
 `selectrum-insert-candidates-function' provides vertical content
 the height will alway be set to the height allowed by
 `max-mini-window-height'."
