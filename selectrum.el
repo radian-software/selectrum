@@ -161,6 +161,19 @@ buffer. The arguments are the same as for
 the number of candidates that were inserted."
   :type 'function)
 
+(defcustom selectrum-insert-candidates-functions
+  '(selectrum-insert-candidates-vertically
+    selectrum-insert-candidates-horizontally)
+  "List of insertion function for cycling.
+See `selectrum-cycle-candidates-insertion'"
+  :type '(repeat
+          (choice
+           (const :tag "Vertically"
+             selectrum-insert-candidates-vertically)
+           (const :tag "Horizontally"
+             selectrum-insert-candidates-horizontally)
+           (function :tag "Other"))))
+
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
   "Use INPUT to filter and highlight CANDIDATES.
 Uses `completion-styles'."
@@ -268,7 +281,7 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-    (define-key map (kbd "M-q") 'selectrum-toggle-orientation)
+    (define-key map (kbd "M-q") 'selectrum-cycle-candidates-insertion)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -792,18 +805,64 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
             (insert  " | ")))))
     n))
 
-(defun selectrum-toggle-orientation ()
-  "Toggle `selectrum-insert-candidates-function'.
-Toggles between `selectrum-insert-candidates-horizontally' and
+(defun selectrum-insert-candidates-horizontally2
+    (win cb nrows ncols
+         &optional index max-index first-index-displayed last-index-displayed)
+  "Insert candidates horizontally into buffer BUF.
+For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
+FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'."
+  (ignore nrows win)
+  (let* ((first-index-displayed
+          (cond ((or (not index)
+                     (not first-index-displayed)
+                     (not last-index-displayed))
+                 0)
+                ((> index last-index-displayed)
+                 (if (= index max-index)
+                     max-index
+                   (1+ last-index-displayed)))
+                ((< index first-index-displayed)
+                 index)
+                (t
+                 first-index-displayed)))
+         (cands
+          (funcall cb first-index-displayed
+                   ;; Max number of cands for current display method:
+                   ;; 3 for separation, 1 for minimal length of a
+                   ;; candidate.
+                   (floor ncols 4)
+                   #'ignore 'horizontal))
+         (n 0))
+    (while (and cands
+                (> ncols 0))
+      (let ((cand (pop cands)))
+        (setq ncols (- ncols (length cand) 3))
+        (when (or (>= ncols 0)
+                  (= n 0))
+          (insert cand)
+          (cl-incf n)
+          (when cands
+            (insert  " - ")))))
+    n))
+
+(defun selectrum-cycle-candidates-insertion ()
+  "Switch current `selectrum-insert-candidates-function'.
+Cycles through `selectrum-insert-candidates-functions'."
   (interactive)
-  (cond ((eq selectrum-insert-candidates-function
-             'selectrum-insert-candidates-horizontally)
-         (setq-local selectrum-insert-candidates-function
-                     'selectrum-insert-candidates-vertically))
-        (t
-         (setq-local selectrum-insert-candidates-function
-                     'selectrum-insert-candidates-horizontally))))
+  (while (and selectrum-insert-candidates-functions
+              (cdr selectrum-insert-candidates-functions)
+              (eq selectrum-insert-candidates-function
+                  (car selectrum-insert-candidates-functions)))
+    (set (if (minibufferp)
+             (make-local-variable 'selectrum-insert-candidates-functions)
+           'selectrum-insert-candidates-functions)
+         (append (cdr selectrum-insert-candidates-functions)
+                 (list (car selectrum-insert-candidates-functions)))))
+  (set (if (minibufferp)
+           (make-local-variable 'selectrum-insert-candidates-function)
+         'selectrum-insert-candidates-function)
+       (car selectrum-insert-candidates-functions)))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates buf win nlines ncols input
