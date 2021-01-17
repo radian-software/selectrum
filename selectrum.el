@@ -812,16 +812,18 @@ minibuffer the global value will be changed."
   (when (minibufferp)
     (make-local-variable 'selectrum-insert-candidates-function-list)
     (make-local-variable 'selectrum-insert-candidates-function))
-  (while (and selectrum-insert-candidates-function-list
-              (cdr selectrum-insert-candidates-function-list)
-              (eq selectrum-insert-candidates-function
-                  (car selectrum-insert-candidates-function-list)))
+  (unless (eq last-command 'selectrum-cycle)
     (setq selectrum-insert-candidates-function-list
-          (append (cdr selectrum-insert-candidates-function-list)
-                  (list (car selectrum-insert-candidates-function-list)))))
-  (when (cdr selectrum-insert-candidates-function-list)
-    (setq selectrum-insert-candidates-function
-          (car selectrum-insert-candidates-function-list))))
+          (cons selectrum-insert-candidates-function
+                (delq selectrum-insert-candidates-function
+                      selectrum-insert-candidates-function-list))))
+  (setq selectrum-insert-candidates-function-list
+        (append (cdr selectrum-insert-candidates-function-list)
+                (list (car selectrum-insert-candidates-function-list))))
+  (setq selectrum-insert-candidates-function
+        (car selectrum-insert-candidates-function-list))
+  (unless (minibufferp)
+    (message "Switched to %s" selectrum-insert-candidates-function)))
 
 (defun selectrum--insert-candidates
     (insert-fun candidates buf win nlines ncols input
