@@ -168,10 +168,8 @@ the number of candidates that were inserted."
 See `selectrum-cycle'."
   :type '(repeat
           (choice
-           (const :tag "Vertically"
-             selectrum-insert-candidates-vertically)
-           (const :tag "Horizontally"
-             selectrum-insert-candidates-horizontally)
+           (const :tag "Vertically" selectrum-insert-candidates-vertically)
+           (const :tag "Horizontally" selectrum-insert-candidates-horizontally)
            (function :tag "Other"))))
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
