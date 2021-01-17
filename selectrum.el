@@ -154,7 +154,10 @@ frame you can use the provided action function
 Uses `completion-styles'."
   (nconc
    (completion-all-completions
-    input candidates nil (length input))
+    input candidates nil (length input)
+    (completion-metadata input
+                         minibuffer-completion-table
+                         minibuffer-completion-predicate))
    nil))
 
 (defcustom selectrum-refine-candidates-function
