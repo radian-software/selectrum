@@ -157,8 +157,8 @@ frame you can use the provided action function
   "Function to insert candidates for display.
 The insertion function should insert candidates into the current
 buffer. The arguments are the same as for
-`selectrum-insert-candidates-vertically'. The function should
-return the number of candidates that were inserted."
+`selectrum-insert-candidates-vertically'. The function returns
+the number of candidates that were inserted."
   :type 'function)
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
@@ -1129,7 +1129,6 @@ window is supposed to be shown vertically."
          (when (and
                 ;; Exclude minibuffer only frame.
                 (not (frame-root-window-p window))
-                ;; Only expand if content is aligned vertically.
                 (selectrum--expand-window-for-content-p window))
            (selectrum--update-minibuffer-height window)))))
 
