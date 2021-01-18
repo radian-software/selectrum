@@ -1571,7 +1571,7 @@ refresh."
           (setq selectrum--previous-input-string nil)
           (when minibuffer-history-position
             (when minibuffer-completing-file-name
-              ;; Choosing a history item needs to trigger a refresh.
+              ;; Force a refresh for files.
               (setq-local selectrum--refresh-next-file-completion t))
             (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
