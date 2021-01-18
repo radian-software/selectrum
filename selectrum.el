@@ -1987,7 +1987,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let* ((last-dir nil)
          (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
-         (env-completion nil)
+         (is-env-completion nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir might include shadowed parts.
@@ -2009,7 +2009,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                         (minibuffer-message
                          (substitute-command-keys msg))))
                      ((string-prefix-p "$" matchstr)
-                      (setq env-completion t)
+                      (setq is-env-completion t)
                       (setq matchstr (substring matchstr 1))
                       (cl-loop for var in
                                (funcall
@@ -2023,7 +2023,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 'selectrum-candidate-display-right-margin
                                 val)))
                      ((and (equal last-dir dir)
-                           (not env-completion)
+                           (not is-env-completion)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
@@ -2040,7 +2040,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           (prog1 nil
                             (minibuffer-message
                              (substitute-command-keys msg)))
-                        (setq env-completion nil)
+                        (setq is-env-completion nil)
                         (setq-local selectrum--refresh-next-file-completion
                                     nil)
                         (setq-local selectrum-preprocess-candidates-function
@@ -2062,7 +2062,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                        match 'selectrum-candidate-full
                                        (concat prefix match suffix))))))))
                      (t
-                      (setq env-completion nil)
+                      (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
