@@ -2040,15 +2040,15 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           (prog1 nil
                             (minibuffer-message
                              (substitute-command-keys msg)))
-                        (setq is-env-completion nil)
-                        (setq-local selectrum--refresh-next-file-completion
-                                    nil)
-                        (setq-local selectrum-preprocess-candidates-function
-                                    sortf)
                         (pcase-let ((`(,pattern ,all ,prefix ,suffix)
                                      (completion-pcm--find-all-completions
                                       path collection predicate
                                       (length path))))
+                          (setq is-env-completion nil)
+                          (setq-local selectrum--refresh-next-file-completion
+                                      nil)
+                          (setq-local selectrum-preprocess-candidates-function
+                                      sortf)
                           (when all
                             (cl-loop for match in
                                      (completion-pcm--hilit-commonality
