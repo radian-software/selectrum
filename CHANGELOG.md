@@ -28,11 +28,12 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* If an input path in file completions does not exist, the candidates
-  are now automatically searched by interpreting the input as an
-  partial-completion style input pattern. For tramp paths this has to
-  be triggered manually using `selectrum-insert-current-candidate` to
-  avoid possible speed problems ([#390]).
+* If the directory of the input path in file completions does not
+  exist, the candidates are now automatically gathered by interpreting
+  the input as an partial-completion style input pattern. For tramp
+  paths this has to be triggered manually using
+  `selectrum-insert-current-candidate` to avoid possible speed
+  problems ([#390]).
 * You can now complete environment variables in file completions by
   typing a "$" after a "/" ([#386], [#389]).
 * The `selectrum-select-from-history` command has been improved. You
