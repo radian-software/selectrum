@@ -1988,6 +1988,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let* ((last-dir nil)
          (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
+         (env-completion nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
@@ -2009,6 +2010,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                         (minibuffer-message
                          (substitute-command-keys msg))))
                      (env
+                      (setq env-completion t)
                       (setq matchstr (substring matchstr 1))
                       (cl-loop for var in (funcall collection env predicate t)
                                for val = (getenv var)
@@ -2020,6 +2022,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 'selectrum-candidate-display-right-margin
                                 val)))
                      ((and (equal last-dir dir)
+                           (not env-completion)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
@@ -2030,6 +2033,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
+                      (setq env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
