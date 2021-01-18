@@ -2044,7 +2044,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                         (setq-local selectrum--refresh-next-file-completion
                                     nil)
                         (setq-local selectrum-preprocess-candidates-function
-                                  sortf)
+                                    sortf)
                         (pcase-let ((`(,pattern ,all ,prefix ,suffix)
                                      (completion-pcm--find-all-completions
                                       input collection predicate
