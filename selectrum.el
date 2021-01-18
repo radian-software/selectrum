@@ -1988,14 +1988,14 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let* ((last-dir nil)
          (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
+         (env-completion nil)
          (coll
           (lambda (input)
-            (let* (;; Full path of input dir (might include shadowed parts).
-                   (dir (or (file-name-directory input) ""))
+            (let* (;; Full path of input dir might include shadowed parts.
+                   (path (substitute-in-file-name input))
+                   (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
-                   (matchstr (file-name-nondirectory input))
-                   (env (when (string-prefix-p "$" matchstr)
-                          (concat dir "$")))
+                   (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
                      ((and minibuffer-history-position
@@ -2003,14 +2003,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (not selectrum--refresh-next-file-completion)
                            ;; Check for tramp path, see
                            ;; `tramp-initial-file-name-regexp'.
-                           (string-match-p "\\`/[^/:]+:[^/:]*:"
-                                           (substitute-in-file-name input)))
+                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
                       (prog1 nil
                         (minibuffer-message
                          (substitute-command-keys msg))))
-                     (env
+                     ((string-prefix-p "$" matchstr)
+                      (setq env-completion t)
                       (setq matchstr (substring matchstr 1))
-                      (cl-loop for var in (funcall collection env predicate t)
+                      (cl-loop for var in
+                               (funcall
+                                collection (concat dir "$") predicate t)
                                for val = (getenv var)
                                collect
                                (propertize
@@ -2020,6 +2022,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 'selectrum-candidate-display-right-margin
                                 val)))
                      ((and (equal last-dir dir)
+                           (not env-completion)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
@@ -2030,6 +2033,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      (t
+                      (setq env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
