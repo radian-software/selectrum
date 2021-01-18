@@ -2033,7 +2033,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
-                     ((not (file-exists-p dir))
+                     ((and (not (string-empty-p dir))
+                           (not (file-exists-p dir)))
                       (if (and is-tramp-path
                                (not selectrum--refresh-next-file-completion))
                           (prog1 nil
