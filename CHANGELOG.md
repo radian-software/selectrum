@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* You can now complete environment variables in file completions by
+  typing a "$" after a "/" ([#386]).
 * The `selectrum-select-from-history` command has been improved. You
   can now insert a history item into the previous session using your
   default binding for `selectrum-insert-current-candidate`. To submit
@@ -271,6 +273,7 @@ The format is based on [Keep a Changelog].
 [#379]: https://github.com/raxod502/selectrum/pull/379
 [#380]: https://github.com/raxod502/selectrum/pull/380
 [#381]: https://github.com/raxod502/selectrum/pull/381
+[#386]: https://github.com/raxod502/selectrum/pull/386
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
