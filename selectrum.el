@@ -1991,10 +1991,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
          (coll
           (lambda (input)
             (let* (;; Full path of input dir (might include shadowed parts).
-                   (path (substitute-in-file-name input))
-                   (dir (or (file-name-directory path) ""))
+                   (dir (or (file-name-directory input) ""))
                    ;; The input used for matching current dir entries.
-                   (matchstr (file-name-nondirectory path))
+                   (matchstr (file-name-nondirectory input))
+                   (env (when (string-prefix-p "$" matchstr)
+                          (concat dir "$")))
                    (cands
                     (cond
                      ((and minibuffer-history-position
@@ -2002,10 +2003,22 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (not selectrum--refresh-next-file-completion)
                            ;; Check for tramp path, see
                            ;; `tramp-initial-file-name-regexp'.
-                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
+                           (string-match-p "\\`/[^/:]+:[^/:]*:"
+                                           (substitute-in-file-name input)))
                       (prog1 nil
                         (minibuffer-message
                          (substitute-command-keys msg))))
+                     (env
+                      (setq matchstr (substring matchstr 1))
+                      (cl-loop for var in (funcall collection env predicate t)
+                               for val = (getenv var)
+                               collect
+                               (propertize
+                                var
+                                'selectrum-candidate-full
+                                (concat dir val)
+                                'selectrum-candidate-display-right-margin
+                                val)))
                      ((and (equal last-dir dir)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
