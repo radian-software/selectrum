@@ -28,6 +28,13 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* In file completions where the directory path of the input does not
+  exist, the candidates are automatically gathered by interpreting the
+  input as an partial-completion style input pattern (see
+  `completion-styles-alist`). For example the input "/us/l/bi/" would
+  give results for "/usr/local/bin/". With tramp paths this has to be
+  triggered manually using `selectrum-insert-current-candidate` to
+  avoid possible speed problems ([#390]).
 * You can now complete environment variables in file completions by
   typing a "$" after a "/" ([#386], [#389]).
 * The `selectrum-select-from-history` command has been improved. You
@@ -275,6 +282,7 @@ The format is based on [Keep a Changelog].
 [#381]: https://github.com/raxod502/selectrum/pull/381
 [#386]: https://github.com/raxod502/selectrum/pull/386
 [#389]: https://github.com/raxod502/selectrum/pull/389
+[#390]: https://github.com/raxod502/selectrum/pull/390
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

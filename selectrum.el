@@ -1570,9 +1570,8 @@ refresh."
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
           (when minibuffer-history-position
-            (when (and minibuffer-completing-file-name
-                       (not (zerop minibuffer-history-position)))
-              ;; Choosing a history item needs to trigger a refresh.
+            (when minibuffer-completing-file-name
+              ;; Force a refresh for files.
               (setq-local selectrum--refresh-next-file-completion t))
             (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
@@ -1988,11 +1987,15 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   (let* ((last-dir nil)
          (msg "Press \\[selectrum-insert-current-candidate] to refresh")
          (sortf nil)
-         (env-completion nil)
+         (is-env-completion nil)
          (coll
           (lambda (input)
             (let* (;; Full path of input dir might include shadowed parts.
                    (path (substitute-in-file-name input))
+                   (is-tramp-path
+                    ;; Check for tramp path, see
+                    ;; `tramp-initial-file-name-regexp'.
+                    (string-match-p "\\`/[^/:]+:[^/:]*:" path))
                    (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
                    (matchstr (file-name-nondirectory path))
@@ -2001,14 +2004,12 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ((and minibuffer-history-position
                            (not (zerop minibuffer-history-position))
                            (not selectrum--refresh-next-file-completion)
-                           ;; Check for tramp path, see
-                           ;; `tramp-initial-file-name-regexp'.
-                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
+                           is-tramp-path)
                       (prog1 nil
                         (minibuffer-message
                          (substitute-command-keys msg))))
                      ((string-prefix-p "$" matchstr)
-                      (setq env-completion t)
+                      (setq is-env-completion t)
                       (setq matchstr (substring matchstr 1))
                       (cl-loop for var in
                                (funcall
@@ -2022,7 +2023,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 'selectrum-candidate-display-right-margin
                                 val)))
                      ((and (equal last-dir dir)
-                           (not env-completion)
+                           (not is-env-completion)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
@@ -2032,8 +2033,35 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
+                     ((and (not (string-empty-p dir))
+                           (not (file-exists-p dir)))
+                      (if (and is-tramp-path
+                               (not selectrum--refresh-next-file-completion))
+                          (prog1 nil
+                            (minibuffer-message
+                             (substitute-command-keys msg)))
+                        (pcase-let ((`(,pattern ,all ,prefix ,suffix)
+                                     (completion-pcm--find-all-completions
+                                      path collection predicate
+                                      (length path))))
+                          (setq is-env-completion nil)
+                          (setq-local selectrum--refresh-next-file-completion
+                                      nil)
+                          (setq-local selectrum-preprocess-candidates-function
+                                      sortf)
+                          (when all
+                            (cl-loop for match in
+                                     (completion-pcm--hilit-commonality
+                                      pattern all)
+                                     unless (string-suffix-p "../" match)
+                                     collect
+                                     (let ((path (string-remove-suffix
+                                                  "./" match)))
+                                       (propertize
+                                        path 'selectrum-candidate-full
+                                        (concat prefix path suffix))))))))
                      (t
-                      (setq env-completion nil)
+                      (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
