@@ -2040,8 +2040,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                           (prog1 nil
                             (minibuffer-message
                              (substitute-command-keys msg)))
+                        (setq env-completion nil)
                         (setq-local selectrum--refresh-next-file-completion
                                     nil)
+                        (setq-local selectrum-preprocess-candidates-function
+                                  sortf)
                         (pcase-let ((`(,pattern ,all ,prefix ,suffix)
                                      (completion-pcm--find-all-completions
                                       input collection predicate
