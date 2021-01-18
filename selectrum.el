@@ -238,8 +238,6 @@ list or strings."
       #'selectrum-previous-candidate)
     (define-key map [remap next-line-or-history-element]
       #'selectrum-next-candidate)
-    (define-key map [remap exit-minibuffer]
-      #'selectrum-select-current-candidate)
     (define-key map [remap scroll-down-command]
       #'selectrum-previous-page)
     (define-key map [remap scroll-up-command]
@@ -260,7 +258,11 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-
+    (define-key map [remap exit-minibuffer]
+      #'selectrum-select-current-candidate)
+    ;; Also define key explicitly, so it continues to work when
+    ;; exit-minibuffer isn't bound #387.
+    (define-key map (kbd "RET") #'selectrum-select-current-candidate)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
