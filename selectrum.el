@@ -2047,20 +2047,19 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                     sortf)
                         (pcase-let ((`(,pattern ,all ,prefix ,suffix)
                                      (completion-pcm--find-all-completions
-                                      input collection predicate
-                                      (length input))))
+                                      path collection predicate
+                                      (length path))))
                           (when all
-                            (cl-delete-if
-                             (lambda (path)
-                               (or (string-suffix-p "./" path)
-                                   (string-suffix-p "../" path)))
-                             (cl-loop for match in
-                                      (completion-pcm--hilit-commonality
-                                       pattern all)
-                                      collect
-                                      (propertize
-                                       match 'selectrum-candidate-full
-                                       (concat prefix match suffix))))))))
+                            (cl-loop for match in
+                                     (completion-pcm--hilit-commonality
+                                      pattern all)
+                                     unless (string-suffix-p "../" match)
+                                     collect
+                                     (let ((path (string-remove-suffix
+                                                  "./" match)))
+                                       (propertize
+                                        path 'selectrum-candidate-full
+                                        (concat prefix path suffix))))))))
                      (t
                       (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
