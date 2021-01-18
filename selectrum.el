@@ -1570,8 +1570,7 @@ refresh."
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
           (when minibuffer-history-position
-            (when (and minibuffer-completing-file-name
-                       (not (zerop minibuffer-history-position)))
+            (when minibuffer-completing-file-name
               ;; Choosing a history item needs to trigger a refresh.
               (setq-local selectrum--refresh-next-file-completion t))
             (selectrum--reset-minibuffer-history-state)))
@@ -1993,6 +1992,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
           (lambda (input)
             (let* (;; Full path of input dir might include shadowed parts.
                    (path (substitute-in-file-name input))
+                   (is-tramp-path
+                    ;; Check for tramp path, see
+                    ;; `tramp-initial-file-name-regexp'.
+                    (string-match-p "\\`/[^/:]+:[^/:]*:" path))
                    (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
                    (matchstr (file-name-nondirectory path))
@@ -2001,9 +2004,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ((and minibuffer-history-position
                            (not (zerop minibuffer-history-position))
                            (not selectrum--refresh-next-file-completion)
-                           ;; Check for tramp path, see
-                           ;; `tramp-initial-file-name-regexp'.
-                           (string-match-p "\\`/[^/:]+:[^/:]*:" path))
+                           is-tramp-path)
                       (prog1 nil
                         (minibuffer-message
                          (substitute-command-keys msg))))
@@ -2032,6 +2033,29 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
+                     ((not (file-exists-p dir))
+                      (if (and is-tramp-path
+                               (not selectrum--refresh-next-file-completion))
+                          (prog1 nil
+                            (minibuffer-message
+                             (substitute-command-keys msg)))
+                        (setq-local selectrum--refresh-next-file-completion nil)
+                        (pcase-let ((`(,pattern ,all ,prefix ,suffix)
+                                     (completion-pcm--find-all-completions
+                                      input collection predicate
+                                      (length input))))
+                          (when all
+                            (cl-delete-if
+                             (lambda (path)
+                               (or (string-suffix-p "./" path)
+                                   (string-suffix-p "../" path)))
+                             (cl-loop for match in
+                                      (completion-pcm--hilit-commonality
+                                       pattern all)
+                                      collect
+                                      (propertize
+                                       match 'selectrum-candidate-full
+                                       (concat prefix match suffix))))))))
                      (t
                       (setq env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
@@ -2057,16 +2081,16 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
     (minibuffer-with-setup-hook
         ;; The hook needs to run late as `read-file-name-default' sets
         ;; its own syntax table in `minibuffer-with-setup-hook'.
-        (:append (lambda ()
-                   ;; Pickup the value as configured for current
-                   ;; session.
-                   (setq sortf selectrum-preprocess-candidates-function)
-                   ;; Ensure the variable is also set when
-                   ;; selectrum--completing-read-file-name is called
-                   ;; directly.
-                   (setq-local minibuffer-completing-file-name t)
-                   (set-syntax-table
-                    selectrum--minibuffer-local-filename-syntax)))
+        (lambda ()
+          ;; Pickup the value as configured for current
+          ;; session.
+          (setq sortf selectrum-preprocess-candidates-function)
+          ;; Ensure the variable is also set when
+          ;; selectrum--completing-read-file-name is called
+          ;; directly.
+          (setq-local minibuffer-completing-file-name t)
+          (set-syntax-table
+           selectrum--minibuffer-local-filename-syntax))
       (selectrum-read
        prompt coll
        :default-candidate (or (car-safe def) def)
