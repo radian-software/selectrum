@@ -2024,7 +2024,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
          (is-env-completion nil)
          (coll
           (lambda (input)
-            (let* (;; Full path of input dir might include shadowed parts.
+            (let* (;; Path of input dir might include shadowed paths.
                    (path (substitute-in-file-name input))
                    (is-remote-path
                     (file-remote-p path))
