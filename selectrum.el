@@ -801,11 +801,11 @@ the update."
         ;; Do refinement.
         (let* ((cands selectrum--preprocessed-candidates)
                (completion-styles-alist
+                ;; Remap partial-style for file completions
+                ;; computed from partial input.
                 (if (and cands
                          (get-text-property
                           0 'selectrum--partial (car cands)))
-                    ;; Remap partial-style for file completions coming from
-                    ;; partial input path.
                     (cons '(partial-completion
                             ignore
                             selectrum--completion-pcm-all-completions
