@@ -808,8 +808,7 @@ the update."
                           0 'selectrum--partial (car cands)))
                     (cons '(partial-completion
                             ignore
-                            selectrum--completion-pcm-all-completions
-                            "")
+                            selectrum--completion-pcm-all-completions "")
                           completion-styles-alist)
                   completion-styles-alist)))
           (setq selectrum--refined-candidates
@@ -2096,11 +2095,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                      (let* ((path (string-remove-suffix
                                                    "./" match))
                                             (full (concat prefix path suffix)))
-                                       (propertize
-                                        path
-                                        'selectrum-candidate-full
-                                        full
-                                        'selectrum--partial prefix)))))))
+                                       (propertize path
+                                                   'selectrum-candidate-full
+                                                   full
+                                                   'selectrum--partial
+                                                   prefix)))))))
                      ;; Compute from file table.
                      (t
                       (setq is-env-completion nil)
