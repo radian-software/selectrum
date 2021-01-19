@@ -829,8 +829,8 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
             (insert  " | ")))))
     (if (= max-index (1- (+ first-index-displayed n)))
         (insert "]")
-        (when (search-backward " | " nil t)
-          (replace-match "")))
+      (when (search-backward " | " nil t)
+        (replace-match "")))
     n))
 
 (defun selectrum-cycle ()
