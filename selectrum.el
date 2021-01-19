@@ -821,10 +821,16 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
         (setq ncols (- ncols (length cand) 3))
         (when (or (>= ncols 0)
                   (= n 0))
+          (when (zerop n)
+            (insert "["))
           (insert cand)
           (cl-incf n)
           (when cands
             (insert  " | ")))))
+    (if (= max-index (1- (+ first-index-displayed n)))
+        (insert "]")
+        (when (search-backward " | " nil t)
+          (replace-match "")))
     n))
 
 (defun selectrum-cycle ()
