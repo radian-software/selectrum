@@ -182,8 +182,8 @@ For STRING, CANDS, PRED and POINT see
                                         'selectrum--partial cand)
                          collect (propertize partial
                                              'selectrum-candidate-full
-                                             partial))))
-  (completion-pcm-all-completions string cands pred point))
+                                             partial)))
+    (completion-pcm-all-completions string cands pred point)))
 
 (defcustom selectrum-refine-candidates-function
   #'selectrum-refine-candidates-using-completions-styles
