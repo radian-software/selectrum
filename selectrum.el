@@ -160,21 +160,25 @@ Uses `completion-styles'."
                          minibuffer-completion-predicate))
    nil))
 
-(defun selectrum--completion-pcm-all-completions (string cands pred point)
+(defun selectrum--completion-pcm-all-completions (_string cands pred _point)
   "Used for partial-style file completions.
 For STRING, CANDS, PRED and POINT see
 `completion-pcm-all-completions'."
   (when cands
     (let* ((prefix (get-text-property 0 'selectrum--partial (car cands)))
-           (len (length prefix)))
-      (setq string (substitute-in-file-name (minibuffer-contents)))
-      (setq point (length string))
-      (setq cands (cl-loop for cand in cands
-                           collect (propertize (concat prefix cand)
-                                               'selectrum-candidate-full
-                                               (get-text-property 0 'selectrum-candidate-full cand))))
-      (cl-loop for cand in (nconc (completion-pcm-all-completions string cands pred point)
-                                  nil)
+           (len (length prefix))
+           (string (substitute-in-file-name (minibuffer-contents)))
+           (point (length string))
+           (cands (cl-loop for cand in cands
+                           collect
+                           (propertize (concat prefix cand)
+                                       'selectrum-candidate-full
+                                       (get-text-property
+                                        0 'selectrum-candidate-full cand))))
+           (res (nconc (completion-pcm-all-completions
+                                   string cands pred point)
+                         nil)))
+      (cl-loop for cand in res
                collect (substring cand len)))))
 
 (defcustom selectrum-refine-candidates-function
@@ -794,15 +798,18 @@ the update."
                                    minibuffer-completion-predicate)))))
             (setq selectrum--total-num-candidates
                   (length selectrum--preprocessed-candidates))))
-        ;; Do refinement
+        ;; Do refinement.
         (let* ((cands selectrum--preprocessed-candidates)
                (completion-styles-alist
                 (if (and cands
-                         (get-text-property  0 'selectrum--partial (car cands)))
+                         (get-text-property
+                          0 'selectrum--partial (car cands)))
                     ;; Remap partial-style for file completions coming from
                     ;; partial input path.
                     (cons '(partial-completion
-                            ignore selectrum--completion-pcm-all-completions "")
+                            ignore
+                            selectrum--completion-pcm-all-completions
+                            "")
                           completion-styles-alist)
                   completion-styles-alist)))
           (setq selectrum--refined-candidates
