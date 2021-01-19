@@ -174,7 +174,7 @@ Uses `completion-styles'."
 For STRING, CANDS, PRED and POINT see
 `completion-pcm-all-completions'."
   (when cands
-    (setq string (minibuffer-contents))
+    (setq string (substitute-in-file-name (minibuffer-contents)))
     (setq point (length string))
     (setq cands (cl-loop for cand in cands
                          for partial = (get-text-property
