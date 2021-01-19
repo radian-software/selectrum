@@ -152,38 +152,30 @@ frame you can use the provided action function
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
   "Use INPUT to filter and highlight CANDIDATES.
 Uses `completion-styles'."
-  (let ((completion-styles-alist
-         ;; Remap partial-style for file completions coming from
-         ;; partial input path.
-         (if (and candidates
-                  (get-text-property  0 'selectrum--partial (car candidates)))
-             (cons '(partial-completion
-                     ignore selectrum--completion-pcm-all-completions "")
-                   completion-styles-alist)
-           completion-styles-alist)))
-    (nconc
-     (completion-all-completions
-      input candidates nil (length input)
-      (completion-metadata input
-                           minibuffer-completion-table
-                           minibuffer-completion-predicate))
-     nil)))
+  (nconc
+   (completion-all-completions
+    input candidates nil (length input)
+    (completion-metadata input
+                         minibuffer-completion-table
+                         minibuffer-completion-predicate))
+   nil))
 
 (defun selectrum--completion-pcm-all-completions (string cands pred point)
   "Used for partial-style file completions.
 For STRING, CANDS, PRED and POINT see
 `completion-pcm-all-completions'."
   (when cands
-    (setq string (substitute-in-file-name (minibuffer-contents)))
-    (setq point (length string))
-    (setq cands (cl-loop for cand in cands
-                         for partial = (get-text-property
-                                        0
-                                        'selectrum--partial cand)
-                         collect (propertize partial
-                                             'selectrum-candidate-full
-                                             partial)))
-    (completion-pcm-all-completions string cands pred point)))
+    (let* ((prefix (get-text-property 0 'selectrum--partial (car cands)))
+           (len (length prefix)))
+      (setq string (substitute-in-file-name (minibuffer-contents)))
+      (setq point (length string))
+      (setq cands (cl-loop for cand in cands
+                           collect (propertize (concat prefix cand)
+                                               'selectrum-candidate-full
+                                               (get-text-property 0 'selectrum-candidate-full cand))))
+      (cl-loop for cand in (nconc (completion-pcm-all-completions string cands pred point)
+                                  nil)
+               collect (substring cand len)))))
 
 (defcustom selectrum-refine-candidates-function
   #'selectrum-refine-candidates-using-completions-styles
@@ -802,9 +794,20 @@ the update."
                                    minibuffer-completion-predicate)))))
             (setq selectrum--total-num-candidates
                   (length selectrum--preprocessed-candidates))))
-        (setq selectrum--refined-candidates
-              (funcall selectrum-refine-candidates-function
-                       input selectrum--preprocessed-candidates))
+        ;; Do refinement
+        (let* ((cands selectrum--preprocessed-candidates)
+               (completion-styles-alist
+                (if (and cands
+                         (get-text-property  0 'selectrum--partial (car cands)))
+                    ;; Remap partial-style for file completions coming from
+                    ;; partial input path.
+                    (cons '(partial-completion
+                            ignore selectrum--completion-pcm-all-completions "")
+                          completion-styles-alist)
+                  completion-styles-alist)))
+          (setq selectrum--refined-candidates
+                (funcall selectrum-refine-candidates-function
+                         input cands)))
         (when selectrum--move-default-candidate-p
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
@@ -2085,7 +2088,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                         path
                                         'selectrum-candidate-full
                                         full
-                                        'selectrum--partial full)))))))
+                                        'selectrum--partial prefix)))))))
                      (t
                       (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
