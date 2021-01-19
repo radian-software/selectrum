@@ -96,22 +96,29 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
+(defcustom selectrum-max-window-height 10
+  "Maximal window height to expand to.
+The display window or minibuffer window will expand up to this
+height when it is to small to show the candidates. If this option
+is nil it defaults to `max-mini-window-height'. See its docstring
+for further information of possible values."
+  :type 'number)
+
 (defcustom selectrum-num-candidates-displayed 'auto
   "Configures how many candidates are displayed.
 When `auto' the appropriate number will be determined
-automatically according to the available space and the height
-allowed by `max-mini-window-height'. The height can also be set
-constant by using `selectrum-fix-minibuffer-height'."
+automatically according to the available space of the displaying
+window and the height allowed by `selectrum-max-window-height'.
+The height can also be set constant by using
+`selectrum-fix-minibuffer-height'."
   :type '(choice (const :tag "Automatic" auto) integer))
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer will always have the same height.
-Usually when there are fewer candidates than allowed for display
-by `max-mini-window-height' the minibuffer height will be sized
-to fit its contents. When this option is non-nil and
-`selectrum-insert-candidates-function' provides vertical content
-the height will alway be set to the height allowed by
-`max-mini-window-height'."
+When this option is non-nil and
+`selectrum-insert-candidates-function' presents candidates
+vertically, the height will be set to the height allowed by
+`selectrum-max-window-height'."
   :type 'boolean)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -918,12 +925,15 @@ that were inserted."
 
 (defun selectrum--max-num-candidates-displayed (window)
   "Return maximum number of cands to use for display in WINDOW."
-  (let* ((fh (frame-height
+  (let* ((max (or selectrum-max-window-height
+                  max-mini-window-height
+                  0))
+         (fh (frame-height
               (window-frame (minibuffer-selected-window))))
          (n (if (eq 'auto selectrum-num-candidates-displayed)
-                (if (floatp max-mini-window-height)
-                    (round (* fh max-mini-window-height))
-                  (or max-mini-window-height 0))
+                (if (floatp max)
+                    (round (* fh max))
+                  max)
               selectrum-num-candidates-displayed)))
     (if selectrum-display-action
         (max (window-body-height window) n)

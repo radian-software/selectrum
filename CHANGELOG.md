@@ -17,10 +17,12 @@ The format is based on [Keep a Changelog].
   specify an insertion function for candidates. Functions for vertical
   and horizontal display are included and you cycle through insertion
   functions using the new `selectrum-cycle` command which uses the new
-  `selectrum-insert-candidates-functions` option for cycling ([#305]).
+  `selectrum-insert-candidates-function-list` option for cycling
+  ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
-  and the number is automatically determined by the available space
-  and the height allowed by `max-mini-window-height` ([#305]).
+  and the number is automatically determined by the available space of
+  the displaying window and the height allowed by the new
+  `selectrum-max-window-height` option ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
