@@ -965,7 +965,6 @@ the update."
              (minibuf-after-string (or default " ")))
         ;; Add padding for scrolled prompt.
         (when (and (window-minibuffer-p window)
-                   (> (window-height window) 1)
                    (not (zerop (window-hscroll window))))
           (let ((padding (make-string (window-hscroll window) ?\s)))
             (with-current-buffer buffer
