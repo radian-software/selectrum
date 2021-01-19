@@ -2034,6 +2034,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
+                     ;; Guard against automatic tramp connections when
+                     ;; browsing history.
                      ((and minibuffer-history-position
                            (not (zerop minibuffer-history-position))
                            (not selectrum--refresh-next-file-completion)
@@ -2041,6 +2043,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (prog1 nil
                         (minibuffer-message
                          (substitute-command-keys msg))))
+                     ;; Env var completion.
                      ((string-prefix-p "$" matchstr)
                       (setq is-env-completion t)
                       (setq matchstr (substring matchstr 1))
@@ -2055,6 +2058,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 (concat dir val)
                                 'selectrum-candidate-display-right-margin
                                 val)))
+                     ;; Use cache.
                      ((and (equal last-dir dir)
                            (not is-env-completion)
                            (not selectrum--refresh-next-file-completion)
@@ -2066,6 +2070,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   #'identity)
                       selectrum--preprocessed-candidates)
+                     ;; Use partial completion.
                      ((and (not (string-empty-p dir))
                            (not (file-exists-p dir)))
                       (if (and is-remote-path
@@ -2096,6 +2101,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                         'selectrum-candidate-full
                                         full
                                         'selectrum--partial prefix)))))))
+                     ;; Compute from file table.
                      (t
                       (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
