@@ -176,8 +176,8 @@ For STRING, CANDS, PRED and POINT see
                                        (get-text-property
                                         0 'selectrum-candidate-full cand))))
            (res (nconc (completion-pcm-all-completions
-                                   string cands pred point)
-                         nil)))
+                        string cands pred point)
+                       nil)))
       (cl-loop for cand in res
                collect (substring cand len)))))
 
