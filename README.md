@@ -279,12 +279,17 @@ matching and case-insensitive matching.
 
 * By default, ten candidates are shown in the minibuffer at any given
   time. You can customize that by changing
-  `selectrum-num-candidates-displayed`.
-    * Normally `selectrum-num-candidates-displayed` acts as just a
-      maximum for the height of the minibuffer. You might prefer for
-      the minibuffer to *always* have that height, even if there are
-      fewer candidates. This behavior may be achieved by setting
+  `selectrum-max-window-height`.
+    * Normally `selectrum-max-window-height` acts as just a maximum
+      for the height a window will expand to, if there isn't enough
+      space for the current candidates. For the minibuffer you might
+      prefer to *always* have that height, even if there are fewer
+      candidates. This behavior may be achieved by setting
       `selectrum-fix-minibuffer-height` to a non-nil value.
+* The variable `selectrum-num-candidates-displayed` controls how many
+  candidates are displayed in total. The default value `auto` will
+  automatically use as many candidates as allowed by given space and
+  height settings.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the
   whole minibuffer (including the input line) in a separate frame you
