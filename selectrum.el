@@ -2027,16 +2027,17 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (path (substitute-in-file-name input))
                    (is-remote-path
                     (file-remote-p path))
+                   (is-connected
+                    (and is-remote-path
+                         (file-remote-p path nil t)))
                    (dir (or (file-name-directory path) ""))
                    ;; The input used for matching current dir entries.
                    (matchstr (file-name-nondirectory path))
                    (cands
                     (cond
-                     ;; Guard against automatic tramp connections when
-                     ;; browsing history.
-                     ((and minibuffer-history-position
-                           (not (zerop minibuffer-history-position))
-                           (not selectrum--refresh-next-file-completion)
+                     ;; Guard against automatic tramp connections.
+                     ((and (not selectrum--refresh-next-file-completion)
+                           (not is-connected)
                            is-remote-path)
                       (prog1 nil
                         (minibuffer-message
@@ -2058,6 +2059,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 val)))
                      ;; Use cache.
                      ((and (equal last-dir dir)
+                           ;; Might be tramp path.
+                           (not (equal "/" dir))
                            (not is-env-completion)
                            (not selectrum--refresh-next-file-completion)
                            (not (and minibuffer-history-position
@@ -2069,56 +2072,59 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      ;; Use partial completion.
-                     ((and (not (string-empty-p dir))
+                     ((and (not selectrum--refresh-next-file-completion)
+                           (not (string-empty-p dir))
+                           (or (not is-remote-path)
+                               is-connected)
                            (not (file-exists-p dir)))
-                      (if (and is-remote-path
-                               (not selectrum--refresh-next-file-completion))
-                          (prog1 nil
-                            (minibuffer-message
-                             (substitute-command-keys msg)))
-                        (pcase-let ((`(,pattern ,all ,prefix ,suffix)
-                                     (completion-pcm--find-all-completions
-                                      path collection predicate
-                                      (length path))))
-                          (setq is-env-completion nil)
-                          (setq-local selectrum--refresh-next-file-completion
-                                      nil)
-                          (setq-local selectrum-preprocess-candidates-function
-                                      sortf)
-                          (when all
-                            (cl-loop for match in
-                                     (completion-pcm--hilit-commonality
-                                      pattern all)
-                                     unless (string-suffix-p "../" match)
-                                     collect
-                                     (let* ((path (string-remove-suffix
-                                                   "./" match))
-                                            (full (concat prefix path suffix)))
-                                       (propertize path
-                                                   'selectrum-candidate-full
-                                                   full
-                                                   'selectrum--partial
-                                                   prefix)))))))
+                      (pcase-let ((`(,pattern ,all ,prefix ,suffix)
+                                   (completion-pcm--find-all-completions
+                                    path collection predicate
+                                    (length path))))
+                        (setq is-env-completion nil)
+                        (setq-local selectrum--refresh-next-file-completion
+                                    nil)
+                        (setq-local selectrum-preprocess-candidates-function
+                                    sortf)
+                        (when all
+                          (cl-loop for match in
+                                   (completion-pcm--hilit-commonality
+                                    pattern all)
+                                   unless (string-suffix-p "../" match)
+                                   collect
+                                   (let* ((path (string-remove-suffix
+                                                 "./" match))
+                                          (full (concat prefix path suffix)))
+                                     (propertize path
+                                                 'selectrum-candidate-full
+                                                 full
+                                                 'selectrum--partial
+                                                 prefix))))))
                      ;; Compute from file table.
                      (t
                       (setq is-env-completion nil)
                       (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
-                      (let ((non-essential
-                             (or (and minibuffer-history-position
-                                      (not (zerop
-                                            minibuffer-history-position)))
-                                 non-essential)))
-                        (condition-case _
-                            (delete
-                             "./"
-                             (delete
-                              "../"
-                              (funcall collection dir predicate t)))
-                          ;; May happen in case user quits out
-                          ;; of a TRAMP prompt.
-                          (quit)))))))
+                      (let ((files
+                             (condition-case err
+                                 (delete
+                                  "./"
+                                  (delete
+                                   "../"
+                                   (funcall collection path predicate t)))
+                               ;; May happen in case user quits out
+                               ;; of a TRAMP prompt.
+                               (quit)
+                               ;; May happen for wrong tramp paths.
+                               (file-error
+                                (unless (string-match
+                                         "tramp-cleanup-this-connection"
+                                         (error-message-string err))
+                                  (signal (car err) (cdr err)))))))
+                        (if (equal dir "/") ; Remove duplicate tramp entries.
+                            (delete-dups files)
+                          files))))))
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
