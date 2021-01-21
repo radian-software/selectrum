@@ -115,10 +115,9 @@ The height can also be set constant by using
 
 (defcustom selectrum-fix-minibuffer-height nil
   "Non-nil means the minibuffer will always have the same height.
-When this option is non-nil and
-`selectrum-insert-candidates-function' presents candidates
-vertically, the height will be set to the height allowed by
-`selectrum-max-window-height'."
+When this option is non-nil and `selectrum-insertion-settings'
+configure vertical candidate insertion, the height will be set to
+the height allowed by `selectrum-max-window-height'."
   :type 'boolean)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -159,19 +158,20 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defcustom selectrum-insert-candidates-function
-  #'selectrum-insert-candidates-vertically
-  "Function to insert candidates for display.
-The insertion function should insert candidates into the current
-buffer. The arguments are the same as for
-`selectrum-insert-candidates-vertically'. The function returns
-the number of candidates that were inserted."
+(defcustom selectrum-insertion-settings
+  '(selectrum-insert-candidates-vertically)
+  "Current insertion settings.
+The car is the insertion function and the cdr the plist settings
+for it. The arguments for the insertion function are the same as
+for `selectrum-insert-candidates-vertically'. The function
+returns the number of candidates that were inserted."
   :type 'function)
 
-(defcustom selectrum-insert-candidates-function-list
-  '(selectrum-insert-candidates-vertically
-    selectrum-insert-candidates-horizontally)
-  "List of insertion functions for cycling.
+(defcustom selectrum-insertion-settings-cycle
+  '((selectrum-insert-candidates-vertically)
+    (selectrum-insert-candidates-horizontally
+     :prefix "[" :separator " | " :suffix "]"))
+  "List of `selectrum-insertion-settings' for cycling.
 See `selectrum-cycle'."
   :type '(repeat
           (choice
@@ -751,27 +751,29 @@ greather than the window height."
 
 (defun selectrum-insert-candidates-vertically
     (win cb nrows ncols
-         &optional index max-index first-index-displayed last-index-displayed)
+         &optional index max-index first-index-displayed last-index-displayed
+         settings)
   "Insert candidates vertically into current buffer.
-See `selectrum-insert-candidates-function'. WIN is the window
-where buffer will get displayed in. Callback CB returns the
-candidates to be inserted. The callback has four arguments, the
-index position and the number of candidates and optionally the
-third argument which allows passing and annotation function. If
-given the function receives three optional arguments: a prefix,
-suffix and a right margin annotation of the currently selected
-candidate and should take care of displaying them. The
-annotations display of others candidates than the current is
-disabled in this case. The optional forth argument should be
-non-nil if candidates are supposed to be displayed horizontally.
-NROWS is the number of lines available and NCOLS the number of
-available columns. If there are candidates INDEX is the index of
-the currently selected candidate and MAX-INDEX is the index of
-the last candidate available. When candidates currently already
-displayed FIRST-INDEX-DISPLAYED is the index of the candidate
-that is currently displayed first and LAST-INDEX-DISPLAYED the
-index of the last one."
-  (ignore ncols first-index-displayed last-index-displayed)
+See `selectrum-insertion-settings'. WIN is the window where
+buffer will get displayed in. Callback CB returns the candidates
+to be inserted. The callback has four arguments, the index
+position and the number of candidates and optionally the third
+argument which allows passing and annotation function. If given
+the function receives three optional arguments: a prefix, suffix
+and a right margin annotation of the currently selected candidate
+and should take care of displaying them. The annotations display
+of others candidates than the current is disabled in this case.
+The optional forth argument should be non-nil if candidates are
+supposed to be displayed horizontally. NROWS is the number of
+lines available and NCOLS the number of available columns. If
+there are candidates INDEX is the index of the currently selected
+candidate and MAX-INDEX is the index of the last candidate
+available. When candidates currently already displayed
+FIRST-INDEX-DISPLAYED is the index of the candidate that is
+currently displayed first and LAST-INDEX-DISPLAYED the index of
+the last one. SETTINGS are a plist of additional settings, this
+function currently does use any."
+  (ignore ncols first-index-displayed last-index-displayed settings)
   (let* ((first-index-displayed
           (if (not index)
               0
@@ -795,13 +797,24 @@ index of the last one."
 
 (defun selectrum-insert-candidates-horizontally
     (win cb nrows ncols
-         &optional index max-index first-index-displayed last-index-displayed)
+         &optional index max-index first-index-displayed last-index-displayed
+         settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
-`selectrum-insert-candidates-vertically'."
+`selectrum-insert-candidates-vertically'. Currently known keys of
+the plist SETTINGS are `:prefix' for the string to insert before
+the candidate listing, `:separator' for the string to insert
+between candidates and `:suffix' for the string to insert after
+the candidate listing."
   (ignore nrows win)
-  (let* ((first-index-displayed
+  (let* ((prefix (or (plist-get settings :prefix)
+                     ""))
+         (separator (or (plist-get settings :separator)
+                        ""))
+         (suffix (or (plist-get settings :suffix)
+                     ""))
+         (first-index-displayed
           (cond ((or (not index)
                      (not first-index-displayed)
                      (not last-index-displayed))
@@ -825,47 +838,49 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
     (while (and cands
                 (> ncols 0))
       (let ((cand (pop cands)))
-        (setq ncols (- ncols (length cand) 3))
+        (setq ncols (- ncols (length cand)
+                       (+ (length prefix)
+                          (length suffix))))
         (when (or (>= ncols 0)
                   (= n 0))
           (when (zerop n)
-            (insert "["))
+            (insert prefix))
           (insert cand)
           (cl-incf n)
           (when cands
-            (insert  " | ")))))
+            (insert  separator)))))
     (if (= max-index (1- (+ first-index-displayed n)))
-        (insert "]")
-      (when (search-backward " | " nil t)
+        (insert suffix)
+      (when (search-backward separator nil t)
         (replace-match "")))
     n))
 
 (defun selectrum-cycle ()
-  "Switch current `selectrum-insert-candidates-function'.
-Cycles through `selectrum-insert-candidates-function-list' to change
-the insertion function for the current session. Outside of the
+  "Switch current `selectrum-insertion-settings'.
+Cycles through `selectrum-insertion-settings-cycle' to change the
+insertion settings for the current session. Outside of the
 minibuffer the global value will be changed."
   (interactive)
   (when (minibufferp)
-    (make-local-variable 'selectrum-insert-candidates-function-list)
-    (make-local-variable 'selectrum-insert-candidates-function))
+    (make-local-variable 'selectrum-insertion-settings-cycle)
+    (make-local-variable 'selectrum-insertion-settings))
   (unless (eq last-command 'selectrum-cycle)
-    (setq selectrum-insert-candidates-function-list
-          (cons selectrum-insert-candidates-function
-                (delq selectrum-insert-candidates-function
-                      selectrum-insert-candidates-function-list))))
-  (setq selectrum-insert-candidates-function-list
-        (append (cdr selectrum-insert-candidates-function-list)
-                (list (car selectrum-insert-candidates-function-list))))
-  (setq selectrum-insert-candidates-function
-        (car selectrum-insert-candidates-function-list))
+    (setq selectrum-insertion-settings-cycle
+          (cons selectrum-insertion-settings
+                (delete selectrum-insertion-settings
+                        selectrum-insertion-settings-cycle))))
+  (setq selectrum-insertion-settings-cycle
+        (append (cdr selectrum-insertion-settings-cycle)
+                (list (car selectrum-insertion-settings-cycle))))
+  (setq selectrum-insertion-settings
+        (car selectrum-insertion-settings-cycle))
   (unless (minibufferp)
-    (message "Switched to %s" selectrum-insert-candidates-function)))
+    (message "Switched to %s" selectrum-insertion-settings)))
 
 (defun selectrum--insert-candidates
-    (insert-fun candidates buf win nlines ncols input
-                &optional index mindex findex num)
-  "Use INSERT-FUN to insert CANDIDATES into BUF for display.
+    (insert-settings candidates buf win nlines ncols input
+                     &optional index mindex findex num)
+  "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. NLINES and NCOLS
 are the number of lines and columns available. INPUT is the
 current user input. INDEX is the index of the currently selected
@@ -875,6 +890,9 @@ Returns a cons: The car is non-nil if candidates are supposed to
 be displayed horizontally and the cdr is the number of candidates
 that were inserted."
   (let* ((horizp  nil)
+         (insert-fun (car insert-settings))
+         (settings
+          (cdr insert-settings))
          (cb (lambda (first-index-displayed
                       ncands &optional annot-fun horizontalp)
                (with-current-buffer (window-buffer (active-minibuffer-window))
@@ -900,7 +918,7 @@ that were inserted."
                       (max 0 (1- num)))))
          (n (with-current-buffer buf
               (funcall insert-fun win cb
-                       nlines ncols index mindex findex lindex))))
+                       nlines ncols index mindex findex lindex settings))))
     (cons horizp
           (if (or (not index) (not findex)
                   (>= (+ findex n) index))
@@ -911,7 +929,7 @@ that were inserted."
             (with-current-buffer buf
               (erase-buffer)
               (funcall insert-fun win cb
-                       nlines ncols index mindex index lindex))))))
+                       nlines ncols index mindex index lindex settings))))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
@@ -1138,7 +1156,7 @@ the update."
              (minibuf-after-string (or default " "))
              (inserted-res
               (selectrum--insert-candidates
-               selectrum-insert-candidates-function
+               selectrum-insertion-settings
                selectrum--refined-candidates
                buffer
                window
