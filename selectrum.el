@@ -160,27 +160,6 @@ Uses `completion-styles'."
                          minibuffer-completion-predicate))
    nil))
 
-(defun selectrum--completion-pcm-all-completions (_string cands pred _point)
-  "Used for partial-style file completions.
-For STRING, CANDS, PRED and POINT see
-`completion-pcm-all-completions'."
-  (when cands
-    (let* ((prefix (get-text-property 0 'selectrum--partial (car cands)))
-           (len (length prefix))
-           (string (substitute-in-file-name (minibuffer-contents)))
-           (point (length string))
-           (cands (cl-loop for cand in cands
-                           collect
-                           (propertize (concat prefix cand)
-                                       'selectrum-candidate-full
-                                       (get-text-property
-                                        0 'selectrum-candidate-full cand))))
-           (res (nconc (completion-pcm-all-completions
-                        string cands pred point)
-                       nil)))
-      (cl-loop for cand in res
-               collect (substring cand len)))))
-
 (defcustom selectrum-refine-candidates-function
   #'selectrum-refine-candidates-using-completions-styles
   "Function used to decide which candidates should be displayed.
@@ -1602,10 +1581,10 @@ refresh."
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
+          (when minibuffer-completing-file-name
+            ;; Force a refresh for files.
+            (setq-local selectrum--refresh-next-file-completion t))
           (when minibuffer-history-position
-            (when minibuffer-completing-file-name
-              ;; Force a refresh for files.
-              (setq-local selectrum--refresh-next-file-completion t))
             (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
         (ding)
@@ -2010,6 +1989,50 @@ PREDICATE, see `read-buffer'."
 (defvar selectrum--old-read-buffer-function nil
   "Previous value of `read-buffer-function'.")
 
+(defun selectrum--partial-file-completions
+    (path collection predicate &optional raw)
+  "Get partial comps for PATH, file COLLECTION and PREDICATE.
+Candidates are filtered for ./ and ../ and propertized for
+Selectrum unless RAW is non-nil."
+  (pcase-let ((`(,pattern ,all ,prefix ,suffix)
+               (completion-pcm--find-all-completions
+                path collection predicate
+                (length path))))
+    (when all
+      (let ((matches (completion-pcm--hilit-commonality
+                      pattern all)))
+        (if raw
+            matches
+          (cl-loop for match in matches
+                   unless (string-suffix-p "../" match)
+                   collect
+                   (let* ((path (string-remove-suffix
+                                 "./" match))
+                          (full (concat prefix path suffix)))
+                     (propertize path
+                                 'selectrum-candidate-full
+                                 full
+                                 'selectrum--partial
+                                 prefix))))))))
+
+(defun selectrum--completion-pcm-all-completions (_string cands pred _point)
+  "Used for partial-style file completions.
+For STRING, CANDS, PRED and POINT see
+`completion-pcm-all-completions'."
+  (when cands
+    (let* ((prefix (get-text-property 0 'selectrum--partial (car cands)))
+           (len (length prefix))
+           (string (substitute-in-file-name (minibuffer-contents)))
+           (cands (cl-loop for cand in cands
+                           collect
+                           (propertize (concat prefix cand)
+                                       'selectrum-candidate-full
+                                       (get-text-property
+                                        0 'selectrum-candidate-full cand))))
+           (res (selectrum--partial-file-completions string cands pred 'raw)))
+      (cl-loop for cand in res
+               collect (substring cand len)))))
+
 (defun selectrum--completing-read-file-name
     (prompt collection &optional
             predicate require-match initial-input
@@ -2077,29 +2100,13 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (or (not is-remote-path)
                                is-connected)
                            (not (file-exists-p dir)))
-                      (pcase-let ((`(,pattern ,all ,prefix ,suffix)
-                                   (completion-pcm--find-all-completions
-                                    path collection predicate
-                                    (length path))))
-                        (setq is-env-completion nil)
-                        (setq-local selectrum--refresh-next-file-completion
-                                    nil)
-                        (setq-local selectrum-preprocess-candidates-function
-                                    sortf)
-                        (when all
-                          (cl-loop for match in
-                                   (completion-pcm--hilit-commonality
-                                    pattern all)
-                                   unless (string-suffix-p "../" match)
-                                   collect
-                                   (let* ((path (string-remove-suffix
-                                                 "./" match))
-                                          (full (concat prefix path suffix)))
-                                     (propertize path
-                                                 'selectrum-candidate-full
-                                                 full
-                                                 'selectrum--partial
-                                                 prefix))))))
+                      (setq is-env-completion nil)
+                      (setq-local selectrum--refresh-next-file-completion
+                                  nil)
+                      (setq-local selectrum-preprocess-candidates-function
+                                  sortf)
+                      (selectrum--partial-file-completions
+                       path collection predicate))
                      ;; Compute from file table.
                      (t
                       (setq is-env-completion nil)
@@ -2115,16 +2122,27 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                    (funcall collection path predicate t)))
                                ;; May happen in case user quits out
                                ;; of a TRAMP prompt.
-                               (quit)
+                               (quit 'quit)
                                ;; May happen for wrong tramp paths.
                                (file-error
                                 (unless (string-match
                                          "tramp-cleanup-this-connection"
                                          (error-message-string err))
                                   (signal (car err) (cdr err)))))))
-                        (if (equal dir "/") ; Remove duplicate tramp entries.
-                            (delete-dups files)
-                          files))))))
+                        (unless (eq files 'quit)
+                          (if (and (not files)
+                                   is-remote-path
+                                   (not is-connected)
+                                   (not (file-exists-p dir)))
+                              ;; On first connection when there aren't
+                              ;; any results and dir doesn't exist try
+                              ;; to get partial completions.
+                              (selectrum--partial-file-completions
+                               path collection predicate)
+                            ;; Remove duplicate tramp entries.
+                            (if (equal dir "/")
+                                (delete-dups files)
+                              files))))))))
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
