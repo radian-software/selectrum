@@ -289,7 +289,8 @@ matching and case-insensitive matching.
       space for the current candidates. For vertically displayed
       candidates you might prefer to *always* have that height, even
       if there are fewer candidates. This behavior may be achieved by
-      setting `selectrum-min-window-height` to a non-nil value.
+      setting `selectrum-fix-vertical-window-height` to a non-nil
+      value.
 * The variable `selectrum-num-candidates-displayed` controls how many
   candidates are displayed in total. The default value `auto` will
   automatically use as many candidates as are possible to display by

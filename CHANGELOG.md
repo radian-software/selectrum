@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog].
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
 * The user option `selectrum-fix-minibuffer-height` has been replaced
-  by `selectrum-min-window-height` ([#305]).
+  by `selectrum-fix-vertical-window-height` ([#305]).
 
 ### Features
 * The option `selectrum-insertion-settings` can be used to specify

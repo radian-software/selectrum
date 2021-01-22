@@ -109,14 +109,14 @@ for further information of possible values."
 When `auto' the appropriate number will be determined
 automatically according to the available space of the displaying
 window and the height allowed by `selectrum-max-window-height'.
-The height can also be set constant by using
-`selectrum-min-window-height'."
+To configure a constant height for vertical display see
+`selectrum-fix-vertical-window-height'."
   :type '(choice (const :tag "Automatic" auto) integer))
 
-(defcustom selectrum-min-window-height nil
-  "Configure minimal window height for vertical display.
+(defcustom selectrum-fix-vertical-window-height nil
+  "Configure a fixed window height for vertical display.
 If candidates are displayed vertically and this option is non-nil
-the height will be fixed to `selectrum-max-window-height'."
+the height will be determined by `selectrum-max-window-height'."
   :type 'boolean)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -1232,7 +1232,7 @@ window is supposed to be shown vertically."
         ((not vertical)
          (set-window-text-height window 1))
         ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
-                  selectrum-min-window-height)
+                  selectrum-fix-vertical-window-height)
               vertical)
          (let* ((max (selectrum--max-num-candidate-lines window))
                 (height (if selectrum-display-action
