@@ -1222,7 +1222,8 @@ the update."
 WINDOW is the display window of current candidates and will be
 updated to fit its content. If VERTICAL is non-nil the content of
 window is supposed to be shown vertically."
-  (cond (selectrum-display-action
+  (cond ((frame-root-window-p window))
+        (selectrum-display-action
          (when (selectrum--expand-window-for-content-p window)
            (selectrum--update-display-window-height window)))
         ((and selectrum-fix-minibuffer-height vertical)
@@ -1234,10 +1235,7 @@ window is supposed to be shown vertically."
          ;; Resize to single line for horizontal display.
          (set-window-text-height (active-minibuffer-window) 1))
         (t
-         (when (and
-                ;; Exclude minibuffer only frame.
-                (not (frame-root-window-p window))
-                (selectrum--expand-window-for-content-p window))
+         (when (selectrum--expand-window-for-content-p window)
            (selectrum--update-minibuffer-height window)))))
 
 (defun selectrum--update-display-window-height (window)
