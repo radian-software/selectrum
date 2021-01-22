@@ -962,23 +962,33 @@ that were inserted."
   "Update minibuffer in response to user input."
   (selectrum--update))
 
+(defun selectrum--max-window-height (&optional frame max)
+  "Return maximal window height for frame.
+The height is determined by the `frame-height' of FRAME which
+defaults to the current one and MAX which defaults to
+`selectrum-max-window-height' and fallsback to
+`max-mini-window-height' if the former is unset."
+  (let* ((max (or max
+                  selectrum-max-window-height
+                  max-mini-window-height
+                  0))
+         (fh (frame-height
+              (or frame
+                  (window-frame (minibuffer-selected-window))))))
+    (if (floatp max)
+        (round (* fh max))
+      max)))
+
 (defun selectrum--max-num-candidate-lines (window)
   "Return maximum number of lines to use for display in WINDOW."
-  (if (numberp selectrum-num-candidates-displayed)
-      selectrum-num-candidates-displayed
-    (let* ((max (or selectrum-max-window-height
-                    max-mini-window-height
-                    0))
-           (fh (frame-height
-                (window-frame (minibuffer-selected-window))))
-           (n (if (eq 'auto selectrum-num-candidates-displayed)
-                  (if (floatp max)
-                      (round (* fh max))
-                    max)
-                selectrum-num-candidates-displayed)))
-      (if selectrum-display-action
-          (max (window-body-height window) n)
-        n))))
+  (let* ((n (if (eq 'auto selectrum-num-candidates-displayed)
+                (selectrum--max-window-height)
+              (if (numberp selectrum-num-candidates-displayed)
+                  selectrum-num-candidates-displayed
+                0))))
+    (if selectrum-display-action
+        (max (window-body-height window) n)
+      n)))
 
 (defun selectrum--update (&optional keep-selected)
   "Update state.
@@ -1234,7 +1244,7 @@ window is supposed to be shown vertically."
         ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
                   selectrum-fix-vertical-window-height)
               vertical)
-         (let* ((max (selectrum--max-num-candidate-lines window))
+         (let* ((max (selectrum--max-window-height))
                 (height (if selectrum-display-action
                             max
                           ;; Add one for prompt.
