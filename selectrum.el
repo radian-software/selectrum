@@ -747,6 +747,7 @@ content height is greather than the window height."
 (defun selectrum-insert-candidates-vertically
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
+         num-displayed
          settings)
   "Insert candidates vertically into current buffer.
 See `selectrum-insertion-settings'. WIN is the window where
@@ -766,23 +767,25 @@ currently selected candidate and MAX-INDEX is the index of the
 maximal index of the collection. When candidates are already
 displayed FIRST-INDEX-DISPLAYED is the index of the candidate
 that is displayed first and LAST-INDEX-DISPLAYED the index of the
-last one. SETTINGS are a plist of additional settings as
-specified in `selectrum-insertion-settings', this function
-currently doesn't have any."
+last one and NUM-DISPLAYED is the number of candidates displayed.
+SETTINGS are a plist of additional settings as specified in
+`selectrum-insertion-settings', this function currently doesn't
+have any."
   (ignore ncols first-index-displayed last-index-displayed settings)
-  (let* ((first-index-displayed
+  (let* ((rows (or num-displayed nrows))
+         (first-index-displayed
           (if (not index)
               0
             (selectrum--clamp
              ;; Adding one here makes it look slightly better, as
              ;; there are guaranteed to be more candidates shown
              ;; below the selection than above.
-             (1+ (- index (max 1 (/ nrows 2))))
+             (1+ (- index (max 1 (/ rows 2))))
              0
-             (max (- (1+ max-index) nrows)
+             (max (- (1+ max-index) rows)
                   0))))
          (displayed-candidates
-          (funcall cb first-index-displayed nrows)))
+          (funcall cb first-index-displayed rows)))
     (when (window-minibuffer-p win)
       (insert "\n"))
     (let ((n 0))
@@ -794,6 +797,7 @@ currently doesn't have any."
 (defun selectrum-insert-candidates-horizontally
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
+         num-displayed
          settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
@@ -807,7 +811,7 @@ insert between candidates, `:more-candidates' for the string to
 indicate that more candidates are following after the currently
 displayed ones and `:after-candidates' for a string to display
 after the displayed candidates."
-  (ignore nrows)
+  (ignore nrows num-displayed)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            ""))
          (prompt-sep (if (window-minibuffer-p win)
@@ -897,11 +901,10 @@ minibuffer the global value will be changed."
     (message "Switched to %s" selectrum-insertion-settings)))
 
 (defun selectrum--insert-candidates
-    (insert-settings candidates buf win nlines ncols input
+    (insert-settings candidates buf win input
                      &optional index mindex findex num)
   "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
-BUF is supposed to be displayed in window WIN. NLINES and NCOLS
-are the number of lines and columns available. INPUT is the
+BUF is supposed to be displayed in window WIN. INPUT is the
 current user input. INDEX is the index of the currently selected
 candidate if any. MINDEX is the maximum and FINDEX the first
 index. NUM is the number of currently displayed candidates.
@@ -909,6 +912,16 @@ Returns a cons: The car is non-nil if candidates are supposed to
 be displayed horizontally and the cdr is the number of candidates
 that were inserted."
   (let* ((horizp  nil)
+         (nlines (selectrum--max-num-candidate-lines win))
+         (ncols (if (window-minibuffer-p win)
+                    (- (window-body-width win)
+                       (- (point-max)
+                          (window-hscroll win))
+                       (length (overlay-get
+                                selectrum--count-overlay 'before-string)))
+                  (window-body-width win)))
+         (ncands (when (numberp selectrum-num-candidates-displayed)
+                   selectrum-num-candidates-displayed))
          (insert-fun (car insert-settings))
          (settings
           (cdr insert-settings))
@@ -938,7 +951,7 @@ that were inserted."
                       (max 0 (1- num)))))
          (n (with-current-buffer buf
               (funcall insert-fun win cb
-                       nlines ncols index mindex findex lindex settings))))
+                       nlines ncols index mindex findex lindex ncands settings))))
     (cons horizp
           (if (or (not index) (not findex)
                   (>= (+ findex n) index))
@@ -949,7 +962,7 @@ that were inserted."
             (with-current-buffer buf
               (erase-buffer)
               (funcall insert-fun win cb
-                       nlines ncols index mindex index lindex settings))))))
+                       nlines ncols index mindex index lindex ncands settings))))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
@@ -1134,14 +1147,6 @@ the update."
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
-             (nlines (selectrum--max-num-candidate-lines window))
-             (ncols (if selectrum-display-action
-                        (window-body-width window)
-                      (- (window-body-width window)
-                         (- (point-max)
-                            (window-hscroll window))
-                         (length (overlay-get
-                                  selectrum--count-overlay 'before-string)))))
              (buffer (with-current-buffer
                          (get-buffer-create selectrum--candidates-buffer)
                        (erase-buffer)
@@ -1189,7 +1194,7 @@ the update."
                selectrum--refined-candidates
                buffer
                window
-               nlines ncols input
+               input
                ;; Exclude selected prompt.
                (when (and selectrum--current-candidate-index
                           (not (< selectrum--current-candidate-index 0)))
