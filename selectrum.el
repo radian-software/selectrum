@@ -927,6 +927,8 @@ that were inserted."
                     (nthcdr
                      first-index-displayed
                      candidates)
+                    ;; Never allow more candidates than configured by
+                    ;; the user option.
                     (if (numberp selectrum-num-candidates-displayed)
                         selectrum-num-candidates-displayed
                       ncands)))
@@ -963,19 +965,21 @@ that were inserted."
 
 (defun selectrum--max-num-candidates-displayed (window)
   "Return maximum number of cands to use for display in WINDOW."
-  (let* ((max (or selectrum-max-window-height
-                  max-mini-window-height
-                  0))
-         (fh (frame-height
-              (window-frame (minibuffer-selected-window))))
-         (n (if (eq 'auto selectrum-num-candidates-displayed)
-                (if (floatp max)
-                    (round (* fh max))
-                  max)
-              selectrum-num-candidates-displayed)))
-    (if selectrum-display-action
-        (max (window-body-height window) n)
-      n)))
+  (if (numberp selectrum-num-candidates-displayed)
+      selectrum-num-candidates-displayed
+    (let* ((max (or selectrum-max-window-height
+                    max-mini-window-height
+                    0))
+           (fh (frame-height
+                (window-frame (minibuffer-selected-window))))
+           (n (if (eq 'auto selectrum-num-candidates-displayed)
+                  (if (floatp max)
+                      (round (* fh max))
+                    max)
+                selectrum-num-candidates-displayed)))
+      (if selectrum-display-action
+          (max (window-body-height window) n)
+        n))))
 
 (defun selectrum--update (&optional keep-selected)
   "Update state.
