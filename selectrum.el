@@ -737,9 +737,9 @@ Window will be created by `selectrum-display-action'."
 
 (defun selectrum--expand-window-for-content-p (window)
   "Return non-nil if WINDOW should be expanded.
-This is the case when the height of WINDOW fits in the range of
-`selectrum-num-candidates-displayed' and the content height is
-greather than the window height."
+This is the case when the height of WINDOW fits in the range as
+determined by `selectrum--max-num-candidates-displayed' and the
+content height is greather than the window height."
   (and (<= (window-body-height window)
            (selectrum--max-num-candidates-displayed window))
        (>= (cdr (window-text-pixel-size window))
@@ -800,19 +800,27 @@ currently doesn't have any."
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'. Currently known keys of
-the plist SETTINGS are `:start' for the string to insert before
-the candidate listing, `:separator' for the string to insert
-between candidates, `:more' for the string to indicate that more
-candidates are following after the currently displayed ones and
-`:end' for a string to display after the displayed candidates."
-  (ignore nrows win)
-  (let* ((start (or (plist-get settings :start)
-                    " "))
-         (end (or (plist-get settings :end)
+the plist SETTINGS are `:prompt-separator' for a the string to
+display after the prompt if the candidates are displayed in the
+minibuffer, `:before-candidates' for the string to insert before
+the candidate listing, `:candidates-separator' for the string to
+insert between candidates, `:more-candidates' for the string to
+indicate that more candidates are following after the currently
+displayed ones and `:after-candidates' for a string to display
+after the displayed candidates."
+  (ignore nrows)
+  (let* ((before-cands (or (plist-get settings :before-candidates)
+                           ""))
+         (prompt-sep (if (window-minibuffer-p win)
+                         (or (plist-get settings :prompt-separator)
+                             " ")
+                       ""))
+         (start (concat prompt-sep before-cands))
+         (end (or (plist-get settings :after-candidates)
                   ""))
-         (separator (or (plist-get settings :separator)
+         (separator (or (plist-get settings :candidates-separator)
                         " | "))
-         (more (or (plist-get settings :more)
+         (more (or (plist-get settings :more-candidates)
                    (propertize "..." 'face 'shadow)))
          (first-index-displayed
           (cond ((or (not index)
@@ -1218,20 +1226,19 @@ WINDOW is the display window of current candidates and will be
 updated to fit its content. If VERTICAL is non-nil the content of
 window is supposed to be shown vertically."
   (cond ((frame-root-window-p window))
-        (selectrum-display-action
-         (when (selectrum--expand-window-for-content-p window)
-           (selectrum--update-display-window-height window)))
+        ((not vertical)
+         (set-window-text-height window 1))
         ((and selectrum-fix-minibuffer-height vertical)
          (set-window-text-height
           window
           ;; Add one for prompt.
           (1+ (selectrum--max-num-candidates-displayed window))))
-        ((not vertical)
-         ;; Resize to single line for horizontal display.
-         (set-window-text-height (active-minibuffer-window) 1))
         (t
-         (when (selectrum--expand-window-for-content-p window)
-           (selectrum--update-minibuffer-height window)))))
+         (when-let ((expand (selectrum--expand-window-for-content-p window)))
+           (cond (selectrum-display-action
+                  (selectrum--update-display-window-height window))
+                 (t
+                  (selectrum--update-minibuffer-height window)))))))
 
 (defun selectrum--update-display-window-height (window)
   "Update window height of WINDOW.
