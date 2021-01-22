@@ -170,8 +170,7 @@ return the number of candidates that were inserted."
 
 (defcustom selectrum-insertion-settings-cycle
   `((selectrum-insert-candidates-vertically)
-    (selectrum-insert-candidates-horizontally
-     :start "[" :end "]"))
+    (selectrum-insert-candidates-horizontally))
   "List of `selectrum-insertion-settings' for cycling.
 Use `selectrum-cycle' to cycle through these settings."
   :type '(repeat
