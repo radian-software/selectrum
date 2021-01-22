@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
+* The user option `selectrum-fix-minibuffer-height` has been replaced
+  by `selectrum-min-window-height`.
 
 ### Features
 * The option `selectrum-insertion-settings` can be used to specify
@@ -19,9 +21,8 @@ The format is based on [Keep a Changelog].
   functions using the new `selectrum-cycle` command which uses the
   `selectrum-insertion-settings-cycle` option for cycling ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
-  and the number is automatically determined by the available space of
-  the displaying window and the height allowed by the new
-  `selectrum-max-window-height` option ([#305]).
+  by which the number is automatically determined by the available
+  space for the current display settings ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
