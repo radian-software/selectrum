@@ -161,18 +161,19 @@ frame you can use the provided action function
 (defcustom selectrum-insertion-settings
   '(selectrum-insert-candidates-vertically)
   "Current insertion settings.
-The car is the insertion function and the cdr the plist settings
-for it. The arguments for the insertion function are the same as
-for `selectrum-insert-candidates-vertically'. The function
-returns the number of candidates that were inserted."
+The car is an insertion function and the cdr a plist of settings
+understood by that function. For the arguments of an insertion
+function see `selectrum-insert-candidates-vertically'. The
+settings are passed as the last argument. The function should
+return the number of candidates that were inserted."
   :type 'function)
 
 (defcustom selectrum-insertion-settings-cycle
-  '((selectrum-insert-candidates-vertically)
+  `((selectrum-insert-candidates-vertically)
     (selectrum-insert-candidates-horizontally
-     :prefix "[" :separator " | " :suffix "]"))
+     :start "[" :end "]"))
   "List of `selectrum-insertion-settings' for cycling.
-See `selectrum-cycle'."
+Use `selectrum-cycle' to cycle through these settings."
   :type '(repeat
           (choice
            (const :tag "Vertically" selectrum-insert-candidates-vertically)
@@ -763,16 +764,17 @@ the function receives three optional arguments: a prefix, suffix
 and a right margin annotation of the currently selected candidate
 and should take care of displaying them. The annotations display
 of others candidates than the current is disabled in this case.
-The optional forth argument should be non-nil if candidates are
-supposed to be displayed horizontally. NROWS is the number of
-lines available and NCOLS the number of available columns. If
-there are candidates INDEX is the index of the currently selected
-candidate and MAX-INDEX is the index of the last candidate
-available. When candidates currently already displayed
-FIRST-INDEX-DISPLAYED is the index of the candidate that is
-currently displayed first and LAST-INDEX-DISPLAYED the index of
-the last one. SETTINGS are a plist of additional settings, this
-function currently does use any."
+The optional forth argument of the callback should be non-nil if
+candidates are supposed to be displayed horizontally. NROWS is
+the number of lines available and NCOLS the number of available
+columns. If there are candidates INDEX is the index of the
+currently selected candidate and MAX-INDEX is the index of the
+maximal index of the collection. When candidates are already
+displayed FIRST-INDEX-DISPLAYED is the index of the candidate
+that is displayed first and LAST-INDEX-DISPLAYED the index of the
+last one. SETTINGS are a plist of additional settings as
+specified in `selectrum-insertion-settings', this function
+currently doesn't have any."
   (ignore ncols first-index-displayed last-index-displayed settings)
   (let* ((first-index-displayed
           (if (not index)
@@ -803,17 +805,20 @@ function currently does use any."
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
 `selectrum-insert-candidates-vertically'. Currently known keys of
-the plist SETTINGS are `:prefix' for the string to insert before
+the plist SETTINGS are `:start' for the string to insert before
 the candidate listing, `:separator' for the string to insert
-between candidates and `:suffix' for the string to insert after
-the candidate listing."
+between candidates, `:more' for the string to indicate that more
+candidates are following after the currently displayed ones and
+`:end' for a string to display after the displayed candidates."
   (ignore nrows win)
-  (let* ((prefix (or (plist-get settings :prefix)
-                     ""))
+  (let* ((start (or (plist-get settings :start)
+                    " "))
+         (end (or (plist-get settings :end)
+                  ""))
          (separator (or (plist-get settings :separator)
-                        ""))
-         (suffix (or (plist-get settings :suffix)
-                     ""))
+                        " | "))
+         (more (or (plist-get settings :more)
+                   (propertize "..." 'face 'shadow)))
          (first-index-displayed
           (cond ((or (not index)
                      (not first-index-displayed)
@@ -829,30 +834,42 @@ the candidate listing."
                  first-index-displayed)))
          (cands
           (funcall cb first-index-displayed
-                   ;; Max number of cands for current display method:
-                   ;; 3 for separation, 1 for minimal length of a
-                   ;; candidate.
-                   (floor ncols 4)
+                   (floor ncols (1+ (length separator)))
                    #'ignore 'horizontal))
-         (n 0))
-    (while (and cands
-                (> ncols 0))
-      (let ((cand (pop cands)))
-        (setq ncols (- ncols (length cand)
-                       (+ (length prefix)
-                          (length suffix))))
-        (when (or (>= ncols 0)
-                  (= n 0))
-          (when (zerop n)
-            (insert prefix))
-          (insert cand)
-          (cl-incf n)
-          (when cands
-            (insert  separator)))))
-    (if (= max-index (1- (+ first-index-displayed n)))
-        (insert suffix)
-      (when (search-backward separator nil t)
-        (replace-match "")))
+         (n 0)
+         (insert nil))
+    (when cands
+      (let ((ncols ncols))
+        (while (and cands (> ncols 0))
+          (let ((cand (pop cands)))
+            (when (zerop n)
+              (setq ncols (- ncols (length start)))
+              (push start insert))
+            (setq ncols (- ncols (length cand) (length separator)))
+            (when (or (zerop n)
+                      (>= ncols 0))
+              (put-text-property 0 (length cand) 'cand t cand)
+              (push cand insert)
+              (push separator insert)
+              (cl-incf n)))))
+      (if (= max-index (1- (+ first-index-displayed n)))
+          (progn
+            (pop insert)
+            (push end insert))
+        (while (and insert
+                    (or (not (equal (car insert) separator))
+                        (>= (+ (length (apply #'concat insert))
+                               (length more)
+                               (length end))
+                            ncols)))
+          (when (get-text-property 0 'cand (car insert))
+            (cl-decf n))
+          (pop insert))
+        (push more insert)
+        (push end insert))
+      (setq insert (nreverse insert))
+      (while insert
+        (insert (pop insert))))
     n))
 
 (defun selectrum-cycle ()
