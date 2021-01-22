@@ -166,18 +166,14 @@ understood by that function. For the arguments of an insertion
 function see `selectrum-insert-candidates-vertically'. The
 settings are passed as the last argument. The function should
 return the number of candidates that were inserted."
-  :type 'function)
+  :type 'list)
 
 (defcustom selectrum-insertion-settings-cycle
   `((selectrum-insert-candidates-vertically)
     (selectrum-insert-candidates-horizontally))
   "List of `selectrum-insertion-settings' for cycling.
 Use `selectrum-cycle' to cycle through these settings."
-  :type '(repeat
-          (choice
-           (const :tag "Vertically" selectrum-insert-candidates-vertically)
-           (const :tag "Horizontally" selectrum-insert-candidates-horizontally)
-           (function :tag "Other"))))
+  :type 'list)
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
   "Use INPUT to filter and highlight CANDIDATES.
