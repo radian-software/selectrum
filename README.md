@@ -172,6 +172,10 @@ how to fix it.
   that use `completing-read-multiple`, such as `describe-face`. (If
   multiple selection is enabled, it is shown in the minibuffer
   prompt.)
+* To change the `selectrum-insertion-settings` cycle through
+  `selectrum-insertion-settings-cycle` settings using `M-q`. By
+  default this will cycle between vertical and horizontal display of
+  candidates.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -288,8 +292,13 @@ matching and case-insensitive matching.
       `selectrum-fix-minibuffer-height` to a non-nil value.
 * The variable `selectrum-num-candidates-displayed` controls how many
   candidates are displayed in total. The default value `auto` will
-  automatically use as many candidates as allowed by given space and
-  height settings.
+  automatically use as many candidates as are possible to display by
+  given space and height settings.
+* The option `selectrum-insertion-settings` controls how candidates
+  are inserted, settings for vertical and horizontal display are
+  included and you can cycle through insertion functions using the new
+  `selectrum-cycle` command bound which uses the
+  `selectrum-insertion-settings-cycle` option for cycling.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the
   whole minibuffer (including the input line) in a separate frame you
