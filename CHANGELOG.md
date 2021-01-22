@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog].
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
 * The user option `selectrum-fix-minibuffer-height` has been replaced
-  by `selectrum-min-window-height`.
+  by `selectrum-min-window-height` ([#305]).
 
 ### Features
 * The option `selectrum-insertion-settings` can be used to specify
@@ -238,6 +238,7 @@ The format is based on [Keep a Changelog].
 [#295]: https://github.com/raxod502/selectrum/pull/295
 [#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
+[#305]: https://github.com/raxod502/selectrum/pull/305
 [#306]: https://github.com/raxod502/selectrum/issues/306
 [#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
