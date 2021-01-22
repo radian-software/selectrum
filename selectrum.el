@@ -110,14 +110,13 @@ When `auto' the appropriate number will be determined
 automatically according to the available space of the displaying
 window and the height allowed by `selectrum-max-window-height'.
 The height can also be set constant by using
-`selectrum-fix-minibuffer-height'."
+`selectrum-min-window-height'."
   :type '(choice (const :tag "Automatic" auto) integer))
 
-(defcustom selectrum-fix-minibuffer-height nil
-  "Non-nil means the minibuffer will always have the same height.
-When this option is non-nil and `selectrum-insertion-settings'
-configure vertical candidate insertion, the height will be set to
-the height allowed by `selectrum-max-window-height'."
+(defcustom selectrum-min-window-height nil
+  "Configure minimal window height for vertical display.
+If candidates are displayed vertically and this option is non-nil
+the height will be fixed to `selectrum-max-window-height'."
   :type 'boolean)
 
 (defun selectrum-display-full-frame (buf _alist)
@@ -738,10 +737,10 @@ Window will be created by `selectrum-display-action'."
 (defun selectrum--expand-window-for-content-p (window)
   "Return non-nil if WINDOW should be expanded.
 This is the case when the height of WINDOW fits in the range as
-determined by `selectrum--max-num-candidates-displayed' and the
+determined by `selectrum--max-num-candidate-lines' and the
 content height is greather than the window height."
   (and (<= (window-body-height window)
-           (selectrum--max-num-candidates-displayed window))
+           (selectrum--max-num-candidate-lines window))
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
@@ -963,8 +962,8 @@ that were inserted."
   "Update minibuffer in response to user input."
   (selectrum--update))
 
-(defun selectrum--max-num-candidates-displayed (window)
-  "Return maximum number of cands to use for display in WINDOW."
+(defun selectrum--max-num-candidate-lines (window)
+  "Return maximum number of lines to use for display in WINDOW."
   (if (numberp selectrum-num-candidates-displayed)
       selectrum-num-candidates-displayed
     (let* ((max (or selectrum-max-window-height
@@ -1130,7 +1129,7 @@ the update."
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
-             (nlines (selectrum--max-num-candidates-displayed window))
+             (nlines (selectrum--max-num-candidate-lines window))
              (ncols (if selectrum-display-action
                         (window-body-width window)
                       (- (window-body-width window)
@@ -1232,11 +1231,15 @@ window is supposed to be shown vertically."
   (cond ((frame-root-window-p window))
         ((not vertical)
          (set-window-text-height window 1))
-        ((and selectrum-fix-minibuffer-height vertical)
-         (set-window-text-height
-          window
-          ;; Add one for prompt.
-          (1+ (selectrum--max-num-candidates-displayed window))))
+        ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
+                  selectrum-min-window-height)
+              vertical)
+         (let* ((max (selectrum--max-num-candidate-lines window))
+                (height (if selectrum-display-action
+                            max
+                          ;; Add one for prompt.
+                          (1+ max))))
+           (set-window-text-height window height)))
         (t
          (when-let ((expand (selectrum--expand-window-for-content-p window)))
            (cond (selectrum-display-action
