@@ -926,11 +926,9 @@ that were inserted."
                     (nthcdr
                      first-index-displayed
                      candidates)
-                    ;; Never allow more candidates than configured by
-                    ;; the user option.
-                    (if (numberp selectrum-num-candidates-displayed)
-                        selectrum-num-candidates-displayed
-                      ncands)))
+                    ;; Let the insertion function freely determine how
+                    ;; many candidate it can use for display.
+                    ncands))
                   (when (and first-index-displayed index)
                     (- index first-index-displayed))
                   annot-fun horizontalp))))
@@ -1145,7 +1143,8 @@ the update."
                       (- (window-body-width window)
                          (- (point-max)
                             (window-hscroll window))
-                         4)))
+                         (length (overlay-get
+                                  selectrum--count-overlay 'before-string)))))
              (buffer (with-current-buffer
                          (get-buffer-create selectrum--candidates-buffer)
                        (erase-buffer)
