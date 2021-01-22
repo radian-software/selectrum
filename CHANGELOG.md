@@ -13,12 +13,11 @@ The format is based on [Keep a Changelog].
   candidates according to `completion-styles` now.
 
 ### Features
-* The option `selectrum-insert-candidates-function` can be used to
-  specify an insertion function for candidates. Functions for vertical
-  and horizontal display are included and you cycle through insertion
-  functions using the new `selectrum-cycle` command which uses the new
-  `selectrum-insert-candidates-function-list` option for cycling
-  ([#305]).
+* The option `selectrum-insertion-settings` can be used to specify
+  insertion settings for candidates. Settings for vertical and
+  horizontal display are included and you can cycle through insertion
+  functions using the new `selectrum-cycle` command which uses the
+  `selectrum-insertion-settings-cycle` option for cycling ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
   and the number is automatically determined by the available space of
   the displaying window and the height allowed by the new
