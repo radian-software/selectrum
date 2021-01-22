@@ -926,9 +926,10 @@ that were inserted."
                     (nthcdr
                      first-index-displayed
                      candidates)
-                    ;; Let the insertion function freely determine how
-                    ;; many candidate it can use for display.
-                    ncands))
+                    ;; Never allow more candidates than configured.
+                    (if (numberp selectrum-num-candidates-displayed)
+                        selectrum-num-candidates-displayed
+                      ncands)))
                   (when (and first-index-displayed index)
                     (- index first-index-displayed))
                   annot-fun horizontalp))))
@@ -979,11 +980,7 @@ defaults to the current one and MAX which defaults to
 
 (defun selectrum--max-num-candidate-lines (window)
   "Return maximum number of lines to use for display in WINDOW."
-  (let* ((n (if (eq 'auto selectrum-num-candidates-displayed)
-                (selectrum--max-window-height)
-              (if (numberp selectrum-num-candidates-displayed)
-                  selectrum-num-candidates-displayed
-                0))))
+  (let ((n (selectrum--max-window-height)))
     (if selectrum-display-action
         (max (window-body-height window) n)
       n)))
