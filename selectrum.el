@@ -883,8 +883,8 @@ the `horizontal' description of `selectrum-display-style'."
 (defun selectrum-cycle-display ()
   "Switch current `selectrum-display-style'.
 Cycles through `selectrum-display-style-cycle' to change the
-insertion settings for the current session. Without an active
-minibuffer the global value will be changed."
+display style for the current session. Without an active
+minibuffer the global default value will be changed."
   (interactive)
   (let* ((miniw (active-minibuffer-window))
          (buf (if miniw
