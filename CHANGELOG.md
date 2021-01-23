@@ -15,11 +15,11 @@ The format is based on [Keep a Changelog].
   by `selectrum-fix-vertical-window-height` ([#305]).
 
 ### Features
-* The option `selectrum-display-style` can be used to specify
-  insertion settings for candidates. Settings for vertical and
-  horizontal display are included and you can cycle through insertion
-  settings using the new `selectrum-cycle-display` command which uses
-  the `selectrum-display-style-cycle` option for cycling ([#305]).
+* The option `selectrum-display-style` can be used to configure the
+  display style for candidates. Vertical and horizontal display styles
+  are included and you can cycle through styles using the new
+  `selectrum-cycle-display-style` command which uses the
+  `selectrum-display-style-cycle-list` option for cycling ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
   by which the number is automatically determined using the available
   space and current display settings ([#305]).

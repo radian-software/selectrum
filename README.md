@@ -173,7 +173,9 @@ how to fix it.
   multiple selection is enabled, it is shown in the minibuffer
   prompt.)
 * *To change the display style of candidates:* use `M-q` which will
-  cycle through `selectrum-display-style-cycle`.
+  cycle through `selectrum-display-style-cycle-list`. With the default
+  configuration this command will toggle between the vertical and an
+  `icomplete` like horizontal display.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -295,9 +297,9 @@ matching and case-insensitive matching.
   given space and height settings.
 * The option `selectrum-display-style` controls how candidates are
   displayed, settings for vertical and horizontal display are included
-  and you can cycle through display variants using the new
-  `selectrum-cycle-display` command bound which uses the
-  `selectrum-display-style-cycle` option for cycling.
+  and you can cycle through display styles using the new
+  `selectrum-cycle-display-style` command which uses the
+  `selectrum-display-style-cycle-list` for cycling.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the
   whole minibuffer (including the input line) in a separate frame you

@@ -136,8 +136,8 @@ in a single window spanning the current frame:
 If this is nil the candidates are shown in the minibuffer.
 Otherwise the candidates are shown in the window as determined
 from the display action. Note that if you specify a window height
-lower than `selectrum-num-candidates-displayed' the window will
-be resized if needed to display that number of candidates.
+lower than `selectrum-max-window-height' the window will be
+resized if needed to display that number of candidates.
 
 For the format see the ACTION argument of `display-buffer'. For
 example to display candidates in some available window use:
@@ -163,21 +163,23 @@ frame you can use the provided action function
 The car is a symbol of the current display style. Currently
 available styles are `vertical' and `horizontal'. The cdr is a
 plist of settings. Currently there are only settings for the
-`horizontal' stlye: `:prompt-separator' for the string to display
-after the prompt if the candidates are displayed in the
-minibuffer, `:before-candidates' for the string to insert before
-the candidate listing, `:candidates-separator' for the string to
+`horizontal' style:
+
+`:prompt-separator' for the string to display after the prompt if
+the candidates are displayed in the minibuffer,
+`:before-candidates' for the string to insert before the
+candidate listing, `:candidates-separator' for the string to
 insert between candidates, `:more-candidates' for the string to
 indicate that more candidates are following after the currently
 displayed ones and `:after-candidates' for a string to display
 after the displayed candidates."
   :type 'list)
 
-(defcustom selectrum-display-style-cycle
+(defcustom selectrum-display-style-cycle-list
   '((vertical)
     (horizontal))
-  "Styles of `selectrum-display-style' for cycling.
-Use `selectrum-cycle-display' to cycle through these settings."
+  "List of `selectrum-display-style' styles.
+Use `selectrum-cycle-display-style' to cycle through these."
   :type 'list)
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
@@ -311,7 +313,7 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-    (define-key map (kbd "M-q") 'selectrum-cycle-display)
+    (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -744,28 +746,29 @@ Window will be created by `selectrum-display-action'."
   "Return non-nil if WINDOW should be expanded.
 This is the case when the height of WINDOW fits in the range as
 determined by `selectrum--max-num-candidate-lines' and the
-content height is greather than the window height."
+content height is greater than the window height."
   (and (<= (window-body-height window)
            (selectrum--max-num-candidate-lines window))
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
-(defun selectrum--insert-candidates-vertically
+(defun selectrum--vertical-display-style
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates vertically into current buffer.
-See `selectrum-display-style'. WIN is the window where
-buffer will get displayed in. Callback CB returns the candidates
-to be inserted. The callback has four arguments, the index
-position and the number of candidates and optionally the third
-argument which allows passing and annotation function. If given
-the function receives three optional arguments: a prefix, suffix
-and a right margin annotation of the currently selected candidate
-and should take care of displaying them. The annotations display
-of others candidates than the current is disabled in this case.
-The optional forth argument of the callback should be non-nil if
+Used as insertion function for `vertical' display style, see
+`selectrum-display-style'. WIN is the window where buffer will
+get displayed in. Callback CB returns the candidates to be
+inserted. The callback has four arguments, the index position and
+the number of candidates and optionally the third argument which
+allows passing and annotation function. If given the function
+receives three optional arguments: a prefix, suffix and a right
+margin annotation of the currently selected candidate and should
+take care of displaying them. The annotations display of others
+candidates than the current is disabled in this case. The
+optional forth argument of the callback should be non-nil if
 candidates are supposed to be displayed horizontally. NROWS is
 the number of lines available and NCOLS the number of available
 columns. If there are candidates INDEX is the index of the
@@ -803,7 +806,7 @@ currently doesn't have any."
         (insert cand "\n"))
       n)))
 
-(defun selectrum--insert-candidates-horizontally
+(defun selectrum--horizontal-display-style
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
          max-num
@@ -811,7 +814,7 @@ currently doesn't have any."
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
-see `selectrum--insert-candidates-vertically'. For known keys see
+see `selectrum--vertical-display-style'. For known keys see
 the `horizontal' description of `selectrum-display-style'."
   (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
@@ -881,11 +884,12 @@ the `horizontal' description of `selectrum-display-style'."
         (insert (pop insert))))
     n))
 
-(defun selectrum-cycle-display ()
-  "Switch current `selectrum-display-style'.
-Cycles through `selectrum-display-style-cycle' to change the
-display style for the current session. Without an active
-minibuffer the global default value will be changed."
+(defun selectrum-cycle-display-style ()
+  "Change current `selectrum-display-style'.
+Cycles from current style through styles listed in
+`selectrum-display-style-cycle-list'. With an active minibuffer
+the display style is only changed for the current session.
+Without that the global default value will be changed."
   (interactive)
   (let* ((miniw (active-minibuffer-window))
          (buf (if miniw
@@ -893,18 +897,18 @@ minibuffer the global default value will be changed."
                 (current-buffer))))
     (with-current-buffer buf
       (when miniw
-        (make-local-variable 'selectrum-display-style-cycle)
+        (make-local-variable 'selectrum-display-style-cycle-list)
         (make-local-variable 'selectrum-display-style))
-      (unless (eq last-command 'selectrum-cycle-display)
-        (setq selectrum-display-style-cycle
+      (unless (eq last-command 'selectrum-cycle-display-style)
+        (setq selectrum-display-style-cycle-list
               (cons selectrum-display-style
                     (delete selectrum-display-style
-                            selectrum-display-style-cycle))))
-      (setq selectrum-display-style-cycle
-            (append (cdr selectrum-display-style-cycle)
-                    (list (car selectrum-display-style-cycle))))
+                            selectrum-display-style-cycle-list))))
+      (setq selectrum-display-style-cycle-list
+            (append (cdr selectrum-display-style-cycle-list)
+                    (list (car selectrum-display-style-cycle-list))))
       (setq selectrum-display-style
-            (car selectrum-display-style-cycle))
+            (car selectrum-display-style-cycle-list))
       (unless miniw
         (message "Switched to %s" selectrum-display-style)))))
 
@@ -932,9 +936,9 @@ that were inserted."
                    selectrum-num-candidates-displayed))
          (insert-variant (car insert-settings))
          (insert-fun (cond ((eq insert-variant 'horizontal)
-                            #'selectrum--insert-candidates-horizontally)
+                            #'selectrum--horizontal-display-style)
                            (t
-                            #'selectrum--insert-candidates-vertically)))
+                            #'selectrum--vertical-display-style)))
          (settings
           (cdr insert-settings))
          (cb (lambda (first-index-displayed
@@ -992,7 +996,7 @@ that were inserted."
   "Return maximal window height for frame.
 The height is determined by the `frame-height' of FRAME which
 defaults to the current one and MAX which defaults to
-`selectrum-max-window-height' and fallsback to
+`selectrum-max-window-height' and falls back to
 `max-mini-window-height' if the former is unset."
   (let* ((max (or max
                   selectrum-max-window-height
