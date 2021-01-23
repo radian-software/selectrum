@@ -811,15 +811,8 @@ currently doesn't have any."
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED and MAX-NUM see
-`selectrum--insert-candidates-vertically'. Currently known keys
-of the plist SETTINGS are `:prompt-separator' for a the string to
-display after the prompt if the candidates are displayed in the
-minibuffer, `:before-candidates' for the string to insert before
-the candidate listing, `:candidates-separator' for the string to
-insert between candidates, `:more-candidates' for the string to
-indicate that more candidates are following after the currently
-displayed ones and `:after-candidates' for a string to display
-after the displayed candidates."
+`selectrum--insert-candidates-vertically'. For known keys see the
+`horizontal' description of `selectrum-insertion-settings'."
   (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            ""))
