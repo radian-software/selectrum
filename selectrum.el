@@ -747,7 +747,7 @@ content height is greather than the window height."
 (defun selectrum-insert-candidates-vertically
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
-         num-displayed
+         max-num
          settings)
   "Insert candidates vertically into current buffer.
 See `selectrum-insertion-settings'. WIN is the window where
@@ -881,24 +881,29 @@ after the displayed candidates."
 (defun selectrum-cycle ()
   "Switch current `selectrum-insertion-settings'.
 Cycles through `selectrum-insertion-settings-cycle' to change the
-insertion settings for the current session. Outside of the
+insertion settings for the current session. Without and active
 minibuffer the global value will be changed."
   (interactive)
-  (when (minibufferp)
-    (make-local-variable 'selectrum-insertion-settings-cycle)
-    (make-local-variable 'selectrum-insertion-settings))
-  (unless (eq last-command 'selectrum-cycle)
-    (setq selectrum-insertion-settings-cycle
-          (cons selectrum-insertion-settings
-                (delete selectrum-insertion-settings
-                        selectrum-insertion-settings-cycle))))
-  (setq selectrum-insertion-settings-cycle
-        (append (cdr selectrum-insertion-settings-cycle)
-                (list (car selectrum-insertion-settings-cycle))))
-  (setq selectrum-insertion-settings
-        (car selectrum-insertion-settings-cycle))
-  (unless (minibufferp)
-    (message "Switched to %s" selectrum-insertion-settings)))
+  (let* ((miniw (active-minibuffer-window))
+         (buf (if miniw
+                  (window-buffer miniw)
+                (current-buffer))))
+    (with-current-buffer buf
+      (when miniw
+        (make-local-variable 'selectrum-insertion-settings-cycle)
+        (make-local-variable 'selectrum-insertion-settings))
+      (unless (eq last-command 'selectrum-cycle)
+        (setq selectrum-insertion-settings-cycle
+              (cons selectrum-insertion-settings
+                    (delete selectrum-insertion-settings
+                            selectrum-insertion-settings-cycle))))
+      (setq selectrum-insertion-settings-cycle
+            (append (cdr selectrum-insertion-settings-cycle)
+                    (list (car selectrum-insertion-settings-cycle))))
+      (setq selectrum-insertion-settings
+            (car selectrum-insertion-settings-cycle))
+      (unless miniw
+        (message "Switched to %s" selectrum-insertion-settings)))))
 
 (defun selectrum--insert-candidates
     (insert-settings candidates buf win input
