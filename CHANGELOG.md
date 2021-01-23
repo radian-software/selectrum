@@ -23,18 +23,18 @@ The format is based on [Keep a Changelog].
 ### Features
 * The new option `selectrum-max-window-height` can now be used to
   configure the maximal display window height analogue to the built-in
-  `max-mini-window-height` option. The new option replaces the usage
-  of the formerly used `selectrum-num-candidates-displayed` option
-  which now can be used to configure the number of actual candidates
-  displayed without affecting the window height ([#305]).
+  `max-mini-window-height`. The new option replaces the usage of the
+  formerly used `selectrum-num-candidates-displayed` setting which is
+  now set to `auto` by default. By using `auto` the number of
+  candidates is automatically determined using the available space and
+  current display settings. When setting the value to a number this
+  will determine the number of actual displayed candidates without
+  having an effect on the window height ([#305]).
 * The option `selectrum-display-style` can be used to configure the
   display style for candidates. Vertical and horizontal display styles
   are included and you can cycle through styles using the new
   `selectrum-cycle-display-style` command which uses the
   `selectrum-display-style-cycle-list` option for cycling ([#305]).
-* `selectrum-num-candidates-displayed` is now set to `auto` by default
-  by which the number is automatically determined using the available
-  space and current display settings ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
