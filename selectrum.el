@@ -157,7 +157,7 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
-(defcustom selectrum-insertion-settings
+(defcustom selectrum-display-style
   '(vertical)
   "Current insertion settings.
 The car is a symbol describing the current insertion variant.
@@ -173,10 +173,10 @@ after the currently displayed ones and `:after-candidates' for a
 string to display after the displayed candidates."
   :type 'list)
 
-(defcustom selectrum-insertion-settings-cycle
+(defcustom selectrum-display-style-cycle
   '((vertical)
     (horizontal))
-  "List of `selectrum-insertion-settings' for cycling.
+  "Styles of `selectrum-display-style' for cycling.
 Use `selectrum-cycle' to cycle through these settings."
   :type 'list)
 
@@ -756,7 +756,7 @@ content height is greather than the window height."
          max-num
          settings)
   "Insert candidates vertically into current buffer.
-See `selectrum-insertion-settings'. WIN is the window where
+See `selectrum-display-style'. WIN is the window where
 buffer will get displayed in. Callback CB returns the candidates
 to be inserted. The callback has four arguments, the index
 position and the number of candidates and optionally the third
@@ -778,7 +778,7 @@ candidates to be displayed, the callback won't return more
 candidates than that anyway but the number can be useful if the
 insertion function behaviour depends on the number of candidates
 that get displayed. SETTINGS are a plist of additional settings
-as specified in `selectrum-insertion-settings', this function
+as specified in `selectrum-display-style', this function
 currently doesn't have any."
   (ignore ncols first-index-displayed last-index-displayed settings)
   (let* ((rows (or max-num nrows))
@@ -812,7 +812,7 @@ currently doesn't have any."
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
 see `selectrum--insert-candidates-vertically'. For known keys see
-the `horizontal' description of `selectrum-insertion-settings'."
+the `horizontal' description of `selectrum-display-style'."
   (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            ""))
@@ -881,8 +881,8 @@ the `horizontal' description of `selectrum-insertion-settings'."
     n))
 
 (defun selectrum-cycle ()
-  "Switch current `selectrum-insertion-settings'.
-Cycles through `selectrum-insertion-settings-cycle' to change the
+  "Switch current `selectrum-display-style'.
+Cycles through `selectrum-display-style-cycle' to change the
 insertion settings for the current session. Without an active
 minibuffer the global value will be changed."
   (interactive)
@@ -892,20 +892,20 @@ minibuffer the global value will be changed."
                 (current-buffer))))
     (with-current-buffer buf
       (when miniw
-        (make-local-variable 'selectrum-insertion-settings-cycle)
-        (make-local-variable 'selectrum-insertion-settings))
+        (make-local-variable 'selectrum-display-style-cycle)
+        (make-local-variable 'selectrum-display-style))
       (unless (eq last-command 'selectrum-cycle)
-        (setq selectrum-insertion-settings-cycle
-              (cons selectrum-insertion-settings
-                    (delete selectrum-insertion-settings
-                            selectrum-insertion-settings-cycle))))
-      (setq selectrum-insertion-settings-cycle
-            (append (cdr selectrum-insertion-settings-cycle)
-                    (list (car selectrum-insertion-settings-cycle))))
-      (setq selectrum-insertion-settings
-            (car selectrum-insertion-settings-cycle))
+        (setq selectrum-display-style-cycle
+              (cons selectrum-display-style
+                    (delete selectrum-display-style
+                            selectrum-display-style-cycle))))
+      (setq selectrum-display-style-cycle
+            (append (cdr selectrum-display-style-cycle)
+                    (list (car selectrum-display-style-cycle))))
+      (setq selectrum-display-style
+            (car selectrum-display-style-cycle))
       (unless miniw
-        (message "Switched to %s" selectrum-insertion-settings)))))
+        (message "Switched to %s" selectrum-display-style)))))
 
 (defun selectrum--insert-candidates
     (insert-settings candidates buf win input
@@ -1203,7 +1203,7 @@ the update."
              (minibuf-after-string (or default " "))
              (inserted-res
               (selectrum--insert-candidates
-               selectrum-insertion-settings
+               selectrum-display-style
                selectrum--refined-candidates
                buffer
                window
