@@ -173,9 +173,10 @@ how to fix it.
   multiple selection is enabled, it is shown in the minibuffer
   prompt.)
 * *To change the display style of candidates:* use `M-q` which will
-  cycle through `selectrum-display-style-cycle-list`. With the default
-  configuration this command will toggle between the vertical and an
-  `icomplete` like horizontal display.
+  cycle from the currently used style through the styles in
+  `selectrum-display-style-cycle-list`. With the default configuration
+  this command will toggle between the vertical and an `icomplete`
+  like horizontal display.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
