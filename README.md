@@ -172,8 +172,8 @@ how to fix it.
   that use `completing-read-multiple`, such as `describe-face`. (If
   multiple selection is enabled, it is shown in the minibuffer
   prompt.)
-* To cycle through `selectrum-insertion-settings` to change how
-  candidates are inserted for display use `M-q`.
+* *To change the display style of candidates:* use `M-q` which will
+  cycle through `selectrum-insertion-settings`.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select

@@ -21,8 +21,8 @@ The format is based on [Keep a Changelog].
   settings using the new `selectrum-cycle` command which uses the
   `selectrum-insertion-settings-cycle` option for cycling ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
-  by which the number is automatically determined by the available
-  space for the current display settings ([#305]).
+  by which the number is automatically determined using the available
+  space and current display settings ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
