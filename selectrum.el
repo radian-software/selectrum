@@ -158,18 +158,24 @@ frame you can use the provided action function
                alist))
 
 (defcustom selectrum-insertion-settings
-  '(selectrum-insert-candidates-vertically)
+  '(vertical)
   "Current insertion settings.
-The car is an insertion function and the cdr a plist of settings
-understood by that function. For the arguments of an insertion
-function see `selectrum-insert-candidates-vertically'. The
-settings are passed as the last argument. The function should
-return the number of candidates that were inserted."
+The car is a symbol describing the current insertion variant.
+Currently understood symbols are `vertical' and `horizontal'. The
+cdr is a plist of settings for that variant. Currently there are
+only settings for `horizontal': `:prompt-separator' for a the
+string to display after the prompt if the candidates are
+displayed in the minibuffer, `:before-candidates' for the string
+to insert before the candidate listing, `:candidates-separator'
+for the string to insert between candidates, `:more-candidates'
+for the string to indicate that more candidates are following
+after the currently displayed ones and `:after-candidates' for a
+string to display after the displayed candidates."
   :type 'list)
 
 (defcustom selectrum-insertion-settings-cycle
-  `((selectrum-insert-candidates-vertically)
-    (selectrum-insert-candidates-horizontally))
+  '((vertical)
+    (horizontal))
   "List of `selectrum-insertion-settings' for cycling.
 Use `selectrum-cycle' to cycle through these settings."
   :type 'list)
@@ -744,7 +750,7 @@ content height is greather than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
-(defun selectrum-insert-candidates-vertically
+(defun selectrum--insert-candidates-vertically
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
          max-num
@@ -797,16 +803,16 @@ currently doesn't have any."
         (insert cand "\n"))
       n)))
 
-(defun selectrum-insert-candidates-horizontally
+(defun selectrum--insert-candidates-horizontally
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
-FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED see
-`selectrum-insert-candidates-vertically'. Currently known keys of
-the plist SETTINGS are `:prompt-separator' for a the string to
+FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED and MAX-NUM see
+`selectrum--insert-candidates-vertically'. Currently known keys
+of the plist SETTINGS are `:prompt-separator' for a the string to
 display after the prompt if the candidates are displayed in the
 minibuffer, `:before-candidates' for the string to insert before
 the candidate listing, `:candidates-separator' for the string to
@@ -930,7 +936,11 @@ that were inserted."
                   (window-body-width win)))
          (ncands (when (numberp selectrum-num-candidates-displayed)
                    selectrum-num-candidates-displayed))
-         (insert-fun (car insert-settings))
+         (insert-variant (car insert-settings))
+         (insert-fun (cond ((eq insert-variant 'horizontal)
+                            #'selectrum--insert-candidates-horizontally)
+                           (t
+                            #'selectrum--insert-candidates-vertically)))
          (settings
           (cdr insert-settings))
          (cb (lambda (first-index-displayed
@@ -959,7 +969,8 @@ that were inserted."
                       (max 0 (1- num)))))
          (n (with-current-buffer buf
               (funcall insert-fun win cb
-                       nlines ncols index mindex findex lindex ncands settings))))
+                       nlines ncols index mindex findex lindex
+                       ncands settings))))
     (cons horizp
           (if (or (not index) (not findex)
                   (>= (+ findex n) index))
@@ -970,7 +981,8 @@ that were inserted."
             (with-current-buffer buf
               (erase-buffer)
               (funcall insert-fun win cb
-                       nlines ncols index mindex index lindex ncands settings))))))
+                       nlines ncols index mindex index lindex
+                       ncands settings))))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
