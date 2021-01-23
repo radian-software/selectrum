@@ -883,7 +883,7 @@ FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED and MAX-NUM see
 (defun selectrum-cycle ()
   "Switch current `selectrum-insertion-settings'.
 Cycles through `selectrum-insertion-settings-cycle' to change the
-insertion settings for the current session. Without and active
+insertion settings for the current session. Without an active
 minibuffer the global value will be changed."
   (interactive)
   (let* ((miniw (active-minibuffer-window))
@@ -1254,7 +1254,9 @@ updated to fit its content. If VERTICAL is non-nil the content of
 window is supposed to be shown vertically."
   (cond ((frame-root-window-p window))
         ((not vertical)
-         (set-window-text-height window 1))
+         (when (or (window-minibuffer-p window)
+                   (not (window-in-direction 'above)))
+           (set-window-text-height window 1)))
         ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
                   selectrum-fix-vertical-window-height)
               vertical)
