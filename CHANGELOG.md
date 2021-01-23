@@ -14,11 +14,11 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-fix-minibuffer-height` has been replaced
   by `selectrum-fix-vertical-window-height` ([#305]).
 * The default value of `selectrum-num-candidates-displayed` has
-  changed to `auto`. If you have set
-  `selectrum-num-candidates-displayed` to a non default value you
-  should remove that customization and use the new
-  `selectrum-max-window-height` option instead ([#305]).
-
+  changed to `auto`. If you have customized
+  `selectrum-num-candidates-displayed` you should remove that from
+  your configuration or also adjust it to `auto`. For configuring the
+  window height you should use the new `selectrum-max-window-height`
+  option now ([#305]).
 
 ### Features
 * The new option `selectrum-max-window-height` can now be used to
