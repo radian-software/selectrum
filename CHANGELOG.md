@@ -13,8 +13,20 @@ The format is based on [Keep a Changelog].
   candidates according to `completion-styles` now.
 * The user option `selectrum-fix-minibuffer-height` has been replaced
   by `selectrum-fix-vertical-window-height` ([#305]).
+* The default value of `selectrum-num-candidates-displayed` has
+  changed to `auto`. If you have set
+  `selectrum-num-candidates-displayed` to a non default value you
+  should remove that customization and use the new
+  `selectrum-max-window-height` option instead ([#305]).
+
 
 ### Features
+* The new option `selectrum-max-window-height` can now be used to
+  configure the maximal display window height analogue to the built-in
+  `max-mini-window-height` option. The new option replaces the usage
+  of the formerly used `selectrum-num-candidates-displayed` option
+  which now can be used to configure the number of actual candidates
+  displayed without affecting the window height ([#305]).
 * The option `selectrum-display-style` can be used to configure the
   display style for candidates. Vertical and horizontal display styles
   are included and you can cycle through styles using the new
