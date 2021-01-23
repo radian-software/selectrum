@@ -810,9 +810,9 @@ currently doesn't have any."
          settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
-FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED and MAX-NUM see
-`selectrum--insert-candidates-vertically'. For known keys see the
-`horizontal' description of `selectrum-insertion-settings'."
+FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
+see `selectrum--insert-candidates-vertically'. For known keys see
+the `horizontal' description of `selectrum-insertion-settings'."
   (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            ""))
