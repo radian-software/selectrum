@@ -159,18 +159,18 @@ frame you can use the provided action function
 
 (defcustom selectrum-display-style
   '(vertical)
-  "Current insertion settings.
-The car is a symbol describing the current insertion variant.
-Currently understood symbols are `vertical' and `horizontal'. The
-cdr is a plist of settings for that variant. Currently there are
-only settings for `horizontal': `:prompt-separator' for a the
-string to display after the prompt if the candidates are
-displayed in the minibuffer, `:before-candidates' for the string
-to insert before the candidate listing, `:candidates-separator'
-for the string to insert between candidates, `:more-candidates'
-for the string to indicate that more candidates are following
-after the currently displayed ones and `:after-candidates' for a
-string to display after the displayed candidates."
+  "Current display style for candidates.
+The car is a symbol of the current display style. Currently
+available styles are `vertical' and `horizontal'. The cdr is a
+plist of settings. Currently there are only settings for the
+`horizontal' stlye: `:prompt-separator' for the string to display
+after the prompt if the candidates are displayed in the
+minibuffer, `:before-candidates' for the string to insert before
+the candidate listing, `:candidates-separator' for the string to
+insert between candidates, `:more-candidates' for the string to
+indicate that more candidates are following after the currently
+displayed ones and `:after-candidates' for a string to display
+after the displayed candidates."
   :type 'list)
 
 (defcustom selectrum-display-style-cycle
