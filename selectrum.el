@@ -177,7 +177,7 @@ after the displayed candidates."
   '((vertical)
     (horizontal))
   "Styles of `selectrum-display-style' for cycling.
-Use `selectrum-cycle' to cycle through these settings."
+Use `selectrum-cycle-display' to cycle through these settings."
   :type 'list)
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
@@ -311,7 +311,7 @@ list or strings."
     (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-    (define-key map (kbd "M-q") 'selectrum-cycle)
+    (define-key map (kbd "M-q") 'selectrum-cycle-display)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -880,7 +880,7 @@ the `horizontal' description of `selectrum-display-style'."
         (insert (pop insert))))
     n))
 
-(defun selectrum-cycle ()
+(defun selectrum-cycle-display ()
   "Switch current `selectrum-display-style'.
 Cycles through `selectrum-display-style-cycle' to change the
 insertion settings for the current session. Without an active
@@ -894,7 +894,7 @@ minibuffer the global value will be changed."
       (when miniw
         (make-local-variable 'selectrum-display-style-cycle)
         (make-local-variable 'selectrum-display-style))
-      (unless (eq last-command 'selectrum-cycle)
+      (unless (eq last-command 'selectrum-cycle-display)
         (setq selectrum-display-style-cycle
               (cons selectrum-display-style
                     (delete selectrum-display-style

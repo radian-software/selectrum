@@ -296,7 +296,7 @@ matching and case-insensitive matching.
 * The option `selectrum-display-style` controls how candidates are
   displayed, settings for vertical and horizontal display are included
   and you can cycle through display variants using the new
-  `selectrum-cycle` command bound which uses the
+  `selectrum-cycle-display` command bound which uses the
   `selectrum-display-style-cycle` option for cycling.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the

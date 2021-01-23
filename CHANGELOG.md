@@ -18,8 +18,8 @@ The format is based on [Keep a Changelog].
 * The option `selectrum-display-style` can be used to specify
   insertion settings for candidates. Settings for vertical and
   horizontal display are included and you can cycle through insertion
-  settings using the new `selectrum-cycle` command which uses the
-  `selectrum-display-style-cycle` option for cycling ([#305]).
+  settings using the new `selectrum-cycle-display` command which uses
+  the `selectrum-display-style-cycle` option for cycling ([#305]).
 * `selectrum-num-candidates-displayed` is now set to `auto` by default
   by which the number is automatically determined using the available
   space and current display settings ([#305]).
