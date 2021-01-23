@@ -865,6 +865,7 @@ the `horizontal' description of `selectrum-display-style'."
             (pop insert)
             (push end insert))
         (while (and insert
+                    (not (= n 1))
                     (or (not (equal (car insert) separator))
                         (>= (+ (length (apply #'concat insert))
                                (length more)
