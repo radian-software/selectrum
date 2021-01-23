@@ -767,12 +767,15 @@ currently selected candidate and MAX-INDEX is the index of the
 maximal index of the collection. When candidates are already
 displayed FIRST-INDEX-DISPLAYED is the index of the candidate
 that is displayed first and LAST-INDEX-DISPLAYED the index of the
-last one and NUM-DISPLAYED is the number of candidates displayed.
-SETTINGS are a plist of additional settings as specified in
-`selectrum-insertion-settings', this function currently doesn't
-have any."
+last one and MAX-NUM if given specifies the maximal number of
+candidates to be displayed, the callback won't return more
+candidates than that anyway but the number can be useful if the
+insertion function behaviour depends on the number of candidates
+that get displayed. SETTINGS are a plist of additional settings
+as specified in `selectrum-insertion-settings', this function
+currently doesn't have any."
   (ignore ncols first-index-displayed last-index-displayed settings)
-  (let* ((rows (or num-displayed nrows))
+  (let* ((rows (or max-num nrows))
          (first-index-displayed
           (if (not index)
               0
@@ -797,7 +800,7 @@ have any."
 (defun selectrum-insert-candidates-horizontally
     (win cb nrows ncols
          &optional index max-index first-index-displayed last-index-displayed
-         num-displayed
+         max-num
          settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
@@ -811,7 +814,7 @@ insert between candidates, `:more-candidates' for the string to
 indicate that more candidates are following after the currently
 displayed ones and `:after-candidates' for a string to display
 after the displayed candidates."
-  (ignore nrows num-displayed)
+  (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            ""))
          (prompt-sep (if (window-minibuffer-p win)
