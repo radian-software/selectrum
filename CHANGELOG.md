@@ -11,8 +11,30 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
+* The user option `selectrum-fix-minibuffer-height` has been replaced
+  by `selectrum-fix-vertical-window-height` ([#305]).
+* The default value of `selectrum-num-candidates-displayed` has
+  changed to `auto`. If you have customized
+  `selectrum-num-candidates-displayed` you should remove that from
+  your configuration or also adjust it to `auto`. For configuring the
+  window height you should use the new `selectrum-max-window-height`
+  option now ([#305]).
 
 ### Features
+* The new option `selectrum-max-window-height` can now be used to
+  configure the maximal display window height analogue to the built-in
+  `max-mini-window-height`. The new option replaces the usage of the
+  formerly used `selectrum-num-candidates-displayed` setting which is
+  now set to `auto` by default. By using `auto` the number of
+  candidates is automatically determined using the available space and
+  current display settings. When setting the value to a number this
+  will determine the actual amount of displayed candidates without
+  having an effect on the window height ([#305]).
+* The option `selectrum-display-style` can be used to configure the
+  display style for candidates. Vertical and horizontal display styles
+  are included and you can cycle through styles using the new
+  `selectrum-cycle-display-style` command which uses the
+  `selectrum-display-style-cycle-list` option for cycling ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
@@ -228,6 +250,7 @@ The format is based on [Keep a Changelog].
 [#295]: https://github.com/raxod502/selectrum/pull/295
 [#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
+[#305]: https://github.com/raxod502/selectrum/pull/305
 [#306]: https://github.com/raxod502/selectrum/issues/306
 [#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
