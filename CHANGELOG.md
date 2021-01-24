@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog].
   now set to `auto` by default. By using `auto` the number of
   candidates is automatically determined using the available space and
   current display settings. When setting the value to a number this
-  will determine the number of actual displayed candidates without
+  will determine the actual amount of displayed candidates without
   having an effect on the window height ([#305]).
 * The option `selectrum-display-style` can be used to configure the
   display style for candidates. Vertical and horizontal display styles

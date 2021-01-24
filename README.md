@@ -298,8 +298,8 @@ matching and case-insensitive matching.
   given space and height settings.
 * The option `selectrum-display-style` controls how candidates are
   displayed, settings for vertical and horizontal display are included
-  and you can cycle through display styles using the new
-  `selectrum-cycle-display-style` command which uses the
+  and you can cycle through display styles using the command
+  `selectrum-cycle-display-style` which uses
   `selectrum-display-style-cycle-list` for cycling.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the
