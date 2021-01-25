@@ -2050,16 +2050,22 @@ semantics of `cl-defun'."
            (buf (current-buffer))
            (res
             (minibuffer-with-setup-hook
-                (:append (lambda ()
-                           (selectrum--minibuffer-setup-hook
-                            candidates
-                            (or (car-safe minibuffer-default)
-                                minibuffer-default
-                                default-candidate)
-                            buf)))
-              (read-from-minibuffer
-               prompt initial-input selectrum-minibuffer-map nil
-               (or history 'minibuffer-history) default-candidate))))
+                (lambda ()
+                  ;; Already set the active flag as early as possible
+                  ;; so client setup hooks can use it to detect if
+                  ;; they are running in a Selectrum session.
+                  (setq-local selectrum-active-p t))
+              (minibuffer-with-setup-hook
+                  (:append (lambda ()
+                             (selectrum--minibuffer-setup-hook
+                              candidates
+                              (or (car-safe minibuffer-default)
+                                  minibuffer-default
+                                  default-candidate)
+                              buf)))
+                (read-from-minibuffer
+                 prompt initial-input selectrum-minibuffer-map nil
+                 (or history 'minibuffer-history) default-candidate)))))
       (cond (minibuffer-completion-table
              ;; Behave like completing-read-default which strips the
              ;; text properties but leaves the default unchanged
