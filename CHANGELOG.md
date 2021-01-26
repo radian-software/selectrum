@@ -50,6 +50,14 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Tramp completions have been improved. You now get completion for
+  tramp methods and hosts. If a connection hasn't been established yet
+  and you are manually typing the path, a message is shown that you
+  can refresh using `selectrum-insert-current-candidate` which helps
+  correcting typos before trying to establish a new connection. Lastly
+  if tramp would error or you would quit from a password prompt
+  Selectrum stopped working until you restarted the session, which has
+  been fixed ([#392], [#394]).
 * Selectrum will allow recursive sessions for
   `selectrum-completion-in-region` and `selectrum-select-from-history`
   so these commands work even if `enable-recursive-minibuffers` is not
@@ -312,7 +320,9 @@ The format is based on [Keep a Changelog].
 [#386]: https://github.com/raxod502/selectrum/pull/386
 [#389]: https://github.com/raxod502/selectrum/pull/389
 [#390]: https://github.com/raxod502/selectrum/pull/390
+[#392]: https://github.com/raxod502/selectrum/issues/392
 [#393]: https://github.com/raxod502/selectrum/pull/393
+[#394]: https://github.com/raxod502/selectrum/pull/394
 [#397]: https://github.com/raxod502/selectrum/pull/397
 [#398]: https://github.com/raxod502/selectrum/pull/398
 
