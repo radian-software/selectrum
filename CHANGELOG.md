@@ -142,8 +142,9 @@ The format is based on [Keep a Changelog].
   will now switch the selection to the first candidate. Before the
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
-* Multiline candidates are now prefixed with the number of newlines
-  they contain ([#266], [#302], [#318]).
+* Default settings of `selectrum-multiline-display-settings` have been
+  improved. There is now also a displayed line count by default which
+  can be configured as well ([#266], [#302], [#318], [#398]).
 
 ### Bugs fixed
 * Selectrum did not set `minibuffer-default` for the current
@@ -313,6 +314,7 @@ The format is based on [Keep a Changelog].
 [#390]: https://github.com/raxod502/selectrum/pull/390
 [#393]: https://github.com/raxod502/selectrum/pull/393
 [#397]: https://github.com/raxod502/selectrum/pull/397
+[#398]: https://github.com/raxod502/selectrum/pull/398
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
