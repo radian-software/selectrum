@@ -1898,7 +1898,8 @@ history item and exit use `selectrum-select-current-candidate'."
                   (setq-local selectrum-should-sort-p nil)
                   (setq-local selectrum-candidate-inserted-hook nil)
                   (setq-local selectrum-candidate-selected-hook nil)
-                  (use-local-map (make-composed-keymap nil (current-local-map)))
+                  (use-local-map
+                   (make-composed-keymap nil (current-local-map)))
                   (define-key (current-local-map)
                     [remap selectrum-insert-current-candidate]
                     'selectrum--insert-history)
