@@ -1032,9 +1032,14 @@ the update."
             (setq selectrum--preprocessed-candidates
                   (cond (dynamic
                          (let* ((result
-                                 (funcall
-                                  selectrum--dynamic-candidates
-                                  input))
+                                 ;; Ensure dynamic functions won't
+                                 ;; break in post command hook.
+                                 (condition-case-unless-debug err
+                                     (funcall
+                                      selectrum--dynamic-candidates
+                                      input)
+                                   (error (message (error-message-string err))
+                                          nil)))
                                 (cands
                                  ;; Avoid modifying the returned
                                  ;; candidates to let the function
@@ -2405,7 +2410,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
                       (let ((files
-                             (condition-case err
+                             (condition-case _
                                  (delete
                                   "./"
                                   (delete
@@ -2413,13 +2418,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                    (funcall collection path predicate t)))
                                ;; May happen in case user quits out
                                ;; of a TRAMP prompt.
-                               (quit 'quit)
-                               ;; May happen for wrong tramp paths.
-                               (file-error
-                                (unless (string-match
-                                         "tramp-cleanup-this-connection"
-                                         (error-message-string err))
-                                  (signal (car err) (cdr err)))))))
+                               (quit 'quit))))
                         (unless (eq files 'quit)
                           (if (and (not files)
                                    is-remote-path
