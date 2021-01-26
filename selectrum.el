@@ -380,10 +380,10 @@ This option is a workaround for 2 problems:
   :type 'integer)
 
 (defcustom selectrum-multiline-display-settings
-  '((match      "->"  success)
+  '((match      ""  success)
     (truncation "..." shadow)
     (newline    "\\n" warning)
-    (line-count "(%d lines)" warning)
+    (line-count "%d lines" warning)
     (whitespace " "  shadow))
   "Settings used to configure the formatting of multi-line candidates.
 
