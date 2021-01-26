@@ -405,7 +405,7 @@ There are three values that make a setting:
    truncated candidate.
    - `match' determines the string to insert between the matching
    line and the flattened candidate.
-   - `line-count' determines the string to display the line count.
+   - `line-count' determines the string for displaying the line count.
 2. A string to indicate the display change. For `line-count' it should
    be a format string for a decimal or the empty string for no display.
 3. A face to assign to the indicator string.
