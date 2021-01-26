@@ -11,8 +11,30 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
+* The user option `selectrum-fix-minibuffer-height` has been replaced
+  by `selectrum-fix-vertical-window-height` ([#305]).
+* The default value of `selectrum-num-candidates-displayed` has
+  changed to `auto`. If you have customized
+  `selectrum-num-candidates-displayed` you should remove that from
+  your configuration or also adjust it to `auto`. For configuring the
+  window height you should use the new `selectrum-max-window-height`
+  option now ([#305]).
 
 ### Features
+* The new option `selectrum-max-window-height` can now be used to
+  configure the maximal display window height analogue to the built-in
+  `max-mini-window-height`. The new option replaces the usage of the
+  formerly used `selectrum-num-candidates-displayed` setting which is
+  now set to `auto` by default. By using `auto` the number of
+  candidates is automatically determined using the available space and
+  current display settings. When setting the value to a number this
+  will determine the actual amount of displayed candidates without
+  having an effect on the window height ([#305]).
+* The option `selectrum-display-style` can be used to configure the
+  display style for candidates. Vertical and horizontal display styles
+  are included and you can cycle through styles using the new
+  `selectrum-cycle-display-style` command which uses the
+  `selectrum-display-style-cycle-list` option for cycling ([#305]).
 * `selectrum-exhibit` got an optional argument which allows to keep
   the current candidate selected after the update which is helpful for
   async completions ([#306], [#307], [#349]).
@@ -36,6 +58,10 @@ The format is based on [Keep a Changelog].
   if tramp would error or you would quit from a password prompt
   Selectrum stopped working until you restarted the session, which has
   been fixed ([#392]).
+* Selectrum will allow recursive sessions for
+  `selectrum-completion-in-region` and `selectrum-select-from-history`
+  so these commands work even if `enable-recursive-minibuffers` is not
+  set by the user ([#100], [#397]).
 * In file completions where the directory path of the input does not
   exist, the candidates are automatically gathered by interpreting the
   input as an partial-completion style input pattern (see
@@ -124,8 +150,9 @@ The format is based on [Keep a Changelog].
   will now switch the selection to the first candidate. Before the
   prompt was reinserted in place so it did not have any useful effect
   ([#263]).
-* Multiline candidates are now prefixed with the number of newlines
-  they contain ([#266], [#302], [#318]).
+* Default settings of `selectrum-multiline-display-settings` have been
+  improved. There is now also a displayed line count by default which
+  can be configured as well ([#266], [#302], [#318], [#398]).
 
 ### Bugs fixed
 * Selectrum did not set `minibuffer-default` for the current
@@ -202,6 +229,7 @@ The format is based on [Keep a Changelog].
   property in file completions were overwritten for directories and
   not displayed, which has been fixed ([#256], [#255]).
 
+[#100]: https://github.com/raxod502/selectrum/issues/100
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
 [#208]: https://github.com/raxod502/selectrum/pull/208
@@ -236,6 +264,7 @@ The format is based on [Keep a Changelog].
 [#295]: https://github.com/raxod502/selectrum/pull/295
 [#296]: https://github.com/raxod502/selectrum/pull/296
 [#302]: https://github.com/raxod502/selectrum/pull/302
+[#305]: https://github.com/raxod502/selectrum/pull/305
 [#306]: https://github.com/raxod502/selectrum/issues/306
 [#307]: https://github.com/raxod502/selectrum/pull/307
 [#309]: https://github.com/raxod502/selectrum/pull/309
@@ -292,6 +321,8 @@ The format is based on [Keep a Changelog].
 [#389]: https://github.com/raxod502/selectrum/pull/389
 [#390]: https://github.com/raxod502/selectrum/pull/390
 [#393]: https://github.com/raxod502/selectrum/pull/393
+[#397]: https://github.com/raxod502/selectrum/pull/397
+[#398]: https://github.com/raxod502/selectrum/pull/398
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

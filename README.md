@@ -172,6 +172,11 @@ how to fix it.
   that use `completing-read-multiple`, such as `describe-face`. (If
   multiple selection is enabled, it is shown in the minibuffer
   prompt.)
+* *To change the display style of candidates:* use `M-q` which will
+  cycle from the currently used style through the styles in
+  `selectrum-display-style-cycle-list`. With the default configuration
+  this command will toggle between the vertical and an `icomplete`
+  like horizontal display.
 
 Selectrum respects your custom keybindings, so if you've bound
 `next-line` to `M-*` for some reason, then pressing `M-*` will select
@@ -279,12 +284,23 @@ matching and case-insensitive matching.
 
 * By default, ten candidates are shown in the minibuffer at any given
   time. You can customize that by changing
-  `selectrum-num-candidates-displayed`.
-    * Normally `selectrum-num-candidates-displayed` acts as just a
-      maximum for the height of the minibuffer. You might prefer for
-      the minibuffer to *always* have that height, even if there are
-      fewer candidates. This behavior may be achieved by setting
-      `selectrum-fix-minibuffer-height` to a non-nil value.
+  `selectrum-max-window-height`.
+    * Normally `selectrum-max-window-height` acts as just a maximum
+      for the height a window will expand to, if there isn't enough
+      space for the current candidates. For vertically displayed
+      candidates you might prefer to *always* have that height, even
+      if there are fewer candidates. This behavior may be achieved by
+      setting `selectrum-fix-vertical-window-height` to a non-nil
+      value.
+* The variable `selectrum-num-candidates-displayed` controls how many
+  candidates are displayed in total. The default value `auto` will
+  automatically use as many candidates as are possible to display by
+  given space and height settings.
+* The option `selectrum-display-style` controls how candidates are
+  displayed, settings for vertical and horizontal display are included
+  and you can cycle through display styles using the command
+  `selectrum-cycle-display-style` which uses
+  `selectrum-display-style-cycle-list` for cycling.
 * You can use `selectrum-display-action` to display candidates in a
   window or frame outside the minibuffer. If you want to display the
   whole minibuffer (including the input line) in a separate frame you
