@@ -403,8 +403,8 @@ There are three values that make a setting:
    whitespace, which shortens the candidate.
    - `truncation' determines the string to append to a flattened and
    truncated candidate.
-   - `match' determines the string to insert between the matching
-   line and the flattened candidate.
+   - `match' determines the string to insert between the first
+   line and the matched lines.
    - `line-count' determines the string for displaying the line count.
 2. A string to indicate the display change. For `line-count' it should
    be a format string for a decimal or the empty string for no display.
