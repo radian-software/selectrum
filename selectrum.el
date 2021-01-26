@@ -381,9 +381,9 @@ This option is a workaround for 2 problems:
 
 (defcustom selectrum-multiline-display-settings
   '((match      ":"  warning)
-    (truncation "..." shadow)
-    (newline    "\\n" warning)
     (line-count "%d lines" warning)
+    (newline    "\\n" warning)
+    (truncation "..." shadow)
     (whitespace " "  shadow))
   "Settings used to configure the formatting of multi-line candidates.
 
