@@ -380,7 +380,7 @@ This option is a workaround for 2 problems:
   :type 'integer)
 
 (defcustom selectrum-multiline-display-settings
-  '((match      ""  success)
+  '((match      ":"  warning)
     (truncation "..." shadow)
     (newline    "\\n" warning)
     (line-count "%d lines" warning)
