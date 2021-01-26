@@ -50,6 +50,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* Selectrum will allow recursive sessions for
+  `selectrum-completion-in-region` and `selectrum-select-from-history`
+  so these commands work even if `enable-recursive-minibuffers` is not
+  set by the user ([#100], [#397]).
 * In file completions where the directory path of the input does not
   exist, the candidates are automatically gathered by interpreting the
   input as an partial-completion style input pattern (see
@@ -216,6 +220,7 @@ The format is based on [Keep a Changelog].
   property in file completions were overwritten for directories and
   not displayed, which has been fixed ([#256], [#255]).
 
+[#100]: https://github.com/raxod502/selectrum/issues/100
 [#194]: https://github.com/raxod502/selectrum/issues/194
 [#200]: https://github.com/raxod502/selectrum/pull/200
 [#208]: https://github.com/raxod502/selectrum/pull/208
@@ -307,6 +312,7 @@ The format is based on [Keep a Changelog].
 [#389]: https://github.com/raxod502/selectrum/pull/389
 [#390]: https://github.com/raxod502/selectrum/pull/390
 [#393]: https://github.com/raxod502/selectrum/pull/393
+[#397]: https://github.com/raxod502/selectrum/pull/397
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

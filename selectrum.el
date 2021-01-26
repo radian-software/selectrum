@@ -1891,28 +1891,29 @@ history item and exit use `selectrum-select-current-candidate'."
   (let ((history (symbol-value minibuffer-history-variable)))
     (when (eq history t)
       (user-error "No history is recorded for this command"))
-    (let ((result
-           (minibuffer-with-setup-hook
-               (lambda ()
-                 (setq-local enable-recursive-minibuffers t)
-                 (setq-local selectrum-should-sort-p nil)
-                 (setq-local selectrum-candidate-inserted-hook nil)
-                 (setq-local selectrum-candidate-selected-hook nil)
-                 (use-local-map (make-composed-keymap nil (current-local-map)))
-                 (define-key (current-local-map)
-                   [remap selectrum-insert-current-candidate]
-                   'selectrum--insert-history)
-                 (let ((inhibit-read-only t))
-                   (goto-char (or (search-backward ":" nil t)
-                                  (1- (minibuffer-prompt-end))))
-                   (insert
-                    (apply
-                     #'propertize
-                     " [history]"
-                     (text-properties-at (point))))))
-             (catch 'selectrum-insert-action
-               (completing-read
-                (minibuffer-prompt) history nil t nil t)))))
+    (let* ((enable-recursive-minibuffers t)
+           (result
+            (minibuffer-with-setup-hook
+                (lambda ()
+                  (setq-local selectrum-should-sort-p nil)
+                  (setq-local selectrum-candidate-inserted-hook nil)
+                  (setq-local selectrum-candidate-selected-hook nil)
+                  (use-local-map
+                   (make-composed-keymap nil (current-local-map)))
+                  (define-key (current-local-map)
+                    [remap selectrum-insert-current-candidate]
+                    'selectrum--insert-history)
+                  (let ((inhibit-read-only t))
+                    (goto-char (or (search-backward ":" nil t)
+                                   (1- (minibuffer-prompt-end))))
+                    (insert
+                     (apply
+                      #'propertize
+                      " [history]"
+                      (text-properties-at (point))))))
+              (catch 'selectrum-insert-action
+                (completing-read
+                 (minibuffer-prompt) history nil t nil t)))))
       (if (get-text-property 0 'selectum--insert result)
           (progn
             (delete-minibuffer-contents)
@@ -2172,7 +2173,8 @@ the prompt."
   "Complete in-buffer text using a list of candidates.
 Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
-  (let* ((input (buffer-substring-no-properties start end))
+  (let* ((enable-recursive-minibuffers t)
+         (input (buffer-substring-no-properties start end))
          (meta (completion-metadata input collection predicate))
          (category (completion-metadata-get meta 'category))
          (bound (pcase category
