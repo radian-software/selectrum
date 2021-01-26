@@ -50,9 +50,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* When `enable-recursive-minibuffers` is nil Selectrum will
-  temporarily let bind it to a non-nil value for commands which
-  require it ([#100], [#397]).
+* Selectrum will allow recursive sessions for
+  `selectrum-completion-in-region` and `selectrum-select-from-history`
+  so these commands work even if `enable-recursive-minibuffers` is not
+  set by the user ([#100], [#397]).
 * In file completions where the directory path of the input does not
   exist, the candidates are automatically gathered by interpreting the
   input as an partial-completion style input pattern (see
