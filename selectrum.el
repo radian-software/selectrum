@@ -384,7 +384,7 @@ This option is a workaround for 2 problems:
     (truncation "..." shadow)
     (newline    "\\n" warning)
     (line-count "(%d lines)" warning)
-    (whitespace ".."  shadow))
+    (whitespace " "  shadow))
   "Settings used to configure the formatting of multi-line candidates.
 
 Currently, multi-line candidates are flattened, stripped of
