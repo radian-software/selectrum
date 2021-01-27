@@ -19,8 +19,8 @@ The format is based on [Keep a Changelog].
   your configuration or also adjust it to `auto`. For configuring the
   window height you should use the new `selectrum-max-window-height`
   option now ([#305]).
-* The text property `selectrum-candidate-full` has been removed
-  ([#403]).
+* The special text property `selectrum-candidate-full` to change the
+  canonical representation of a candidate has been removed ([#403]).
 
 ### Features
 * The new option `selectrum-max-window-height` can now be used to
