@@ -2480,21 +2480,25 @@ PREDICATE, see `read-file-name'."
             (let ((default (if (consp default-filename)
                                (car default-filename)
                              default-filename)))
-              (when (and default
-                         ;; ./ should be omitted.
-                         (not (equal
-                               (expand-file-name default)
-                               (expand-file-name default-directory))))
-                (setq default
-                      ;; The candidate should be sorted by it's
-                      ;; relative name.
-                      (file-relative-name default
-                                          default-directory))
+              ;; Get the default back for internal handling as it
+              ;; wasn't passed to `read-file-name-default'. See
+              ;; comment below.
+              (when default
+                (when (equal (file-name-directory
+                              (directory-file-name
+                               (expand-file-name
+                                default)))
+                             (file-name-directory
+                              (expand-file-name
+                               default-directory)))
+                  ;; Make the default sorted first by its relative name
+                  ;; when it is inside the prompting directory.
+                  (setq default
+                        (file-relative-name default default-directory)))
                 (if (consp default-filename)
                     (setcar default-filename default)
                   (setq default-filename default))
-                ;; Change the passed DEFAULT arg to make the default
-                ;; get sorted first.
+                ;; Adjust the DEFAULT arg.
                 (setf (nth 6 args) default-filename))
               (apply #'selectrum--completing-read-file-name args)))))
     (read-file-name-default

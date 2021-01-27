@@ -50,6 +50,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The sorting of passed defaults for file completions has been
+  improved such that paths like "/home/user/default", "~/default" or a
+  relative passed default get sorted first when they exist within the
+  prompting directory ([#402]).
 * Tramp completions have been improved. You now get completion for
   tramp methods and hosts. If a connection hasn't been established yet
   and you are manually typing the path, a message is shown that you
