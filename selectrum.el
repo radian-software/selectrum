@@ -2486,13 +2486,10 @@ PREDICATE, see `read-file-name'."
                                (expand-file-name default)
                                (expand-file-name default-directory))))
                 (setq default
-                      ;; Sort for directories needs any final
-                      ;; slash removed.
-                      (directory-file-name
-                       ;; The candidate should be sorted by it's
-                       ;; relative name.
-                       (file-relative-name default
-                                           default-directory)))
+                      ;; The candidate should be sorted by it's
+                      ;; relative name.
+                      (file-relative-name default
+                                          default-directory))
                 (if (consp default-filename)
                     (setcar default-filename default)
                   (setq default-filename default))
