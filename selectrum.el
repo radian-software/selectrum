@@ -2477,20 +2477,28 @@ PREDICATE, see `read-file-name'."
          (completing-read-function
           (lambda (&rest args)
             (setq completing-read-function crf)
-            (when (and default-filename
-                       ;; ./ should be omitted.
-                       (not (equal
-                             (expand-file-name default-filename)
-                             (expand-file-name default-directory))))
-              (setf (nth 6 args)        ; DEFAULT
-                    ;; Sort for directories needs any final
-                    ;; slash removed.
-                    (directory-file-name
-                     ;; The candidate should be sorted by it's
-                     ;; relative name.
-                     (file-relative-name default-filename
-                                         default-directory))))
-            (apply #'selectrum--completing-read-file-name args))))
+            (let ((default (if (consp default-filename)
+                               (car default-filename)
+                             default-filename)))
+              (when (and default
+                         ;; ./ should be omitted.
+                         (not (equal
+                               (expand-file-name default)
+                               (expand-file-name default-directory))))
+                (setq default
+                      ;; Sort for directories needs any final
+                      ;; slash removed.
+                      (directory-file-name
+                       ;; The candidate should be sorted by it's
+                       ;; relative name.
+                       (file-relative-name default
+                                           default-directory)))
+                (if (consp default-filename)
+                    (setcar default-filename default)
+                  (setq default-filename default))
+                ;; Change the passed DEFAULT arg.
+                (setf (nth 6 args) default-filename))
+              (apply #'selectrum--completing-read-file-name args)))))
     (read-file-name-default
      prompt dir
      ;; We don't pass default-candidate here to avoid that
