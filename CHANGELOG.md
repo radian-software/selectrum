@@ -19,7 +19,8 @@ The format is based on [Keep a Changelog].
   your configuration or also adjust it to `auto`. For configuring the
   window height you should use the new `selectrum-max-window-height`
   option now ([#305]).
-* The text property `selectrum-candidate-full` has been removed.
+* The text property `selectrum-candidate-full` has been removed
+  ([#403]).
 
 ### Features
 * The new option `selectrum-max-window-height` can now be used to
@@ -334,6 +335,7 @@ The format is based on [Keep a Changelog].
 [#398]: https://github.com/raxod502/selectrum/pull/398
 [#401]: https://github.com/raxod502/selectrum/pull/401
 [#402]: https://github.com/raxod502/selectrum/pull/402
+[#403]: https://github.com/raxod502/selectrum/pull/403
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
