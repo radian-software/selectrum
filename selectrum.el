@@ -2493,7 +2493,8 @@ PREDICATE, see `read-file-name'."
                 (if (consp default-filename)
                     (setcar default-filename default)
                   (setq default-filename default))
-                ;; Change the passed DEFAULT arg.
+                ;; Change the passed DEFAULT arg to make the default
+                ;; get sorted first.
                 (setf (nth 6 args) default-filename))
               (apply #'selectrum--completing-read-file-name args)))))
     (read-file-name-default
