@@ -2465,6 +2465,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
   "Read file name using Selectrum. Can be used as `read-file-name-function'.
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
+  (when (listp default-filename)
+    (setq default-filename
+          (cl-loop for elt in default-filename
+                   if (stringp elt) return elt)))
   (let* ((crf completing-read-function)
          ;; See <https://github.com/raxod502/selectrum/issues/61>.
          ;; When you invoke another `completing-read' command
