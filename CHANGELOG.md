@@ -55,7 +55,7 @@ The format is based on [Keep a Changelog].
 * The sorting of passed defaults for file completions has been
   improved such that paths like "/home/user/default", "~/default" or a
   relative passed default get sorted first when they exist within the
-  prompting directory ([#402]).
+  prompting directory ([#402], [#404]).
 * Tramp completions have been improved. You now get completion for
   tramp methods and hosts. If a connection hasn't been established yet
   and you are manually typing the path, a message is shown that you
@@ -336,6 +336,7 @@ The format is based on [Keep a Changelog].
 [#401]: https://github.com/raxod502/selectrum/pull/401
 [#402]: https://github.com/raxod502/selectrum/pull/402
 [#403]: https://github.com/raxod502/selectrum/pull/403
+[#404]: https://github.com/raxod502/selectrum/pull/404
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
