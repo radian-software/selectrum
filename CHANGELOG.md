@@ -63,7 +63,7 @@ The format is based on [Keep a Changelog].
   correcting typos before trying to establish a new connection. Lastly
   if tramp would error or you would quit from a password prompt
   Selectrum stopped working until you restarted the session, which has
-  been fixed ([#392], [#394]).
+  been fixed ([#392], [#394], [#405]).
 * Selectrum will allow recursive sessions for
   `selectrum-completion-in-region` and `selectrum-select-from-history`
   so these commands work even if `enable-recursive-minibuffers` is not
