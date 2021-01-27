@@ -2384,7 +2384,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            ;; Might be tramp path.
                            (not (equal "/" dir))
                            (not is-env-completion)
-                           (not selectrum--refresh-next-file-completion)
+                           (or (not selectrum--refresh-next-file-completion)
+                               ;; Reuse cache if inserting file names
+                               ;; in same dir.
+                               (not (directory-name-p matchstr)))
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
                                      (memq this-command
