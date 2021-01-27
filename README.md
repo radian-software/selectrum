@@ -530,13 +530,15 @@ of Emacs' garbage collector.
 
 ### Text properties
 
-What has been described so far suffices for most cases. However, some
-types of candidate selection (in particular, `find-file`) are more
-complex. This complexity is minimized by abstracting the essential
-requirements of the `find-file` implementation into a simple API.
+Selectrum allows changing the display of candidates within the
+constraints of the official API by make use of text properties of
+completion candidates. However it is preferable to use an annotation
+function (or affixation which is introduced in Emacs 28), see `(info
+"(elisp) Programmed Completion") to make the annotations work with any
+compliant completion framework.
 
-The API is based primarily on the following three text properties,
-which may be applied to candidates using `propertize`:
+The following text properties can be used, which may be applied to
+candidates using `propertize`:
 
 * `selectrum-candidate-display-prefix`: controls how the candidate is
   displayed in the list shown in the minibuffer. If this property is
@@ -553,16 +555,10 @@ Besides, we have:
 * `selectrum-candidate-display-right-margin`: if this property is
   presented, its value is displayed at the right margin after the
   candidate. Currently Selectrum doesn't make use of this property. It
-  can be used to display supplementary information in user-defined
-  commands.
+  can be used to display supplementary information.
 
 Note that sorting, filtering, and highlighting is done on the standard
 values of candidates, before any of these text properties are handled.
-
-To really understand how these pieces work together, it is best to
-inspect the source code of `selectrum-read-buffer` and
-`selectrum-read-file-name` (an effort has been made to make the code
-readable).
 
 ### Hooks
 
