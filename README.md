@@ -547,13 +547,6 @@ which may be applied to candidates using `propertize`:
   but it's postpended instead of prepended when the candidate is
   dispalyed. This is used, for example, to display candidate
   annotations under `completion-in-region`.
-* `selectrum-candidate-full`: controls how the candidate appears in
-  the user input area of the minibuffer. If this property is present,
-  then it specifies the canonical representation of the candidate.
-  This is the value that will be returned from `selectrum-read`. It is
-  also the value that will be inserted when the user presses `TAB`. In
-  `find-file`, the canonical representation of each candidate is its
-  absolute path on the filesystem.
 
 Besides, we have:
 
