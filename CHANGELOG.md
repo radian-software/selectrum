@@ -63,7 +63,7 @@ The format is based on [Keep a Changelog].
   correcting typos before trying to establish a new connection. Lastly
   if tramp would error or you would quit from a password prompt
   Selectrum stopped working until you restarted the session, which has
-  been fixed ([#392], [#394], [#405]).
+  been fixed ([#392], [#394], [#405], [#408]).
 * Selectrum will allow recursive sessions for
   `selectrum-completion-in-region` and `selectrum-select-from-history`
   so these commands work even if `enable-recursive-minibuffers` is not
@@ -338,6 +338,7 @@ The format is based on [Keep a Changelog].
 [#403]: https://github.com/raxod502/selectrum/pull/403
 [#404]: https://github.com/raxod502/selectrum/pull/404
 [#405]: https://github.com/raxod502/selectrum/pull/405
+[#408]: https://github.com/raxod502/selectrum/pull/408
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes

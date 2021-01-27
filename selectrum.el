@@ -649,10 +649,12 @@ behavior."
         (if (and selectrum--current-candidate-index
                  (< selectrum--current-candidate-index 0))
             candidate
-          (let ((pathprefix (minibuffer-contents)))
-            (unless (file-directory-p (substitute-in-file-name pathprefix))
-              (setq pathprefix (or (file-name-directory pathprefix) "")))
-            (concat pathprefix candidate))))
+          (let* ((input (minibuffer-contents))
+                 (path (substitute-in-file-name input))
+                 (dirlen (length (file-name-directory path)))
+                 (prefixlen (car (completion--sifn-requote dirlen input)))
+                 (prefix (substring input 0 prefixlen)))
+            (concat prefix candidate))))
       candidate))
 
 (defun selectrum--get-candidate (index)
