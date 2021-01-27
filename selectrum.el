@@ -2483,7 +2483,10 @@ PREDICATE, see `read-file-name'."
               ;; Get the default back for internal handling as it
               ;; wasn't passed to `read-file-name-default'. See
               ;; comment below.
-              (when default
+              (when (and default
+                         (not (equal
+                               (expand-file-name default-filename)
+                               (expand-file-name default-directory))))
                 (when (equal (file-name-directory
                               (directory-file-name
                                (expand-file-name
