@@ -155,8 +155,8 @@ The format is based on [Keep a Changelog].
   can be configured as well ([#266], [#302], [#318], [#398]).
 
 ### Bugs fixed
-* `selectrum-read-file-name` would error when passing a list for
-  `default-filename`, which has been fixed ([#401], [#402]).
+* Selectrum would error when providing a list as default value in file
+  completions, which has been fixed ([#401], [#402]).
 * Selectrum did not set `minibuffer-default` for the current
   completion session, which has been fixed ([#350], [#352], [#354]).
 * When there were no candidates `selectrum-get-current-candidate`
