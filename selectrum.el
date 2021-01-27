@@ -2487,7 +2487,7 @@ PREDICATE, see `read-file-name'."
                          ;; Don't pass when they are the same in which
                          ;; case the prompt should get selected.
                          (not (equal
-                               (expand-file-name default-filename)
+                               (expand-file-name default)
                                (expand-file-name default-directory))))
                 (when (equal (file-name-directory
                               (directory-file-name
