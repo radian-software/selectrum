@@ -644,7 +644,7 @@ behavior."
 
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
-  (or (get-text-property 0 'selectrum-candidate-full candidate)
+  (or (get-text-property 0 'selectrum--candidate-full candidate)
       (when minibuffer-completing-file-name
         (if (and selectrum--current-candidate-index
                  (< selectrum--current-candidate-index 0))
@@ -2306,7 +2306,7 @@ Selectrum unless RAW is non-nil."
                                  "./" match))
                           (full (concat prefix path suffix)))
                      (propertize path
-                                 'selectrum-candidate-full
+                                 'selectrum--candidate-full
                                  full
                                  'selectrum--partial
                                  prefix))))))))
@@ -2322,9 +2322,9 @@ For STRING, CANDS, PRED and POINT see
            (cands (cl-loop for cand in cands
                            collect
                            (propertize (concat prefix cand)
-                                       'selectrum-candidate-full
+                                       'selectrum--candidate-full
                                        (get-text-property
-                                        0 'selectrum-candidate-full cand))))
+                                        0 'selectrum--candidate-full cand))))
            (res (selectrum--partial-file-completions string cands pred 'raw)))
       (cl-loop for cand in res
                collect (substring cand len)))))
@@ -2372,7 +2372,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                collect
                                (propertize
                                 var
-                                'selectrum-candidate-full
+                                'selectrum--candidate-full
                                 (concat dir val)
                                 'selectrum-candidate-display-right-margin
                                 val)))
