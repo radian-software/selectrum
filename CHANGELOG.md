@@ -50,6 +50,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The sorting of passed defaults for file completions has been
+  improved such that paths like "/home/user/default", "~/default" or a
+  relative passed default get sorted first when they exist within the
+  prompting directory ([#402]).
 * Tramp completions have been improved. You now get completion for
   tramp methods and hosts. If a connection hasn't been established yet
   and you are manually typing the path, a message is shown that you
@@ -155,6 +159,8 @@ The format is based on [Keep a Changelog].
   can be configured as well ([#266], [#302], [#318], [#398]).
 
 ### Bugs fixed
+* Selectrum would error when providing a list as default value in file
+  completions, which has been fixed ([#401], [#402]).
 * Selectrum did not set `minibuffer-default` for the current
   completion session, which has been fixed ([#350], [#352], [#354]).
 * When there were no candidates `selectrum-get-current-candidate`
@@ -325,6 +331,8 @@ The format is based on [Keep a Changelog].
 [#394]: https://github.com/raxod502/selectrum/pull/394
 [#397]: https://github.com/raxod502/selectrum/pull/397
 [#398]: https://github.com/raxod502/selectrum/pull/398
+[#401]: https://github.com/raxod502/selectrum/pull/401
+[#402]: https://github.com/raxod502/selectrum/pull/402
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
