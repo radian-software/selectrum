@@ -2483,7 +2483,12 @@ PREDICATE, see `read-file-name'."
               ;; Get the default back for internal handling as it
               ;; wasn't passed to `read-file-name-default'. See
               ;; comment below.
-              (when default
+              (when (and default
+                         ;; Don't pass when they are the same in which
+                         ;; case the prompt should get selected.
+                         (not (equal
+                               (expand-file-name default)
+                               (expand-file-name default-directory))))
                 (when (equal (file-name-directory
                               (directory-file-name
                                (expand-file-name
