@@ -156,7 +156,7 @@ The format is based on [Keep a Changelog].
 
 ### Bugs fixed
 * `selectrum-read-file-name` now accepts a list for `default-filename`
-  and behaves according to the original `read-file-name`
+  and behaves according to the original `read-file-name` ([#401]).
 * Selectrum did not set `minibuffer-default` for the current
   completion session, which has been fixed ([#350], [#352], [#354]).
 * When there were no candidates `selectrum-get-current-candidate`
@@ -327,6 +327,7 @@ The format is based on [Keep a Changelog].
 [#394]: https://github.com/raxod502/selectrum/pull/394
 [#397]: https://github.com/raxod502/selectrum/pull/397
 [#398]: https://github.com/raxod502/selectrum/pull/398
+[#401]: https://github.com/raxod502/selectrum/pull/401
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
