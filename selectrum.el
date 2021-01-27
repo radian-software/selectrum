@@ -649,8 +649,9 @@ behavior."
         (if (and selectrum--current-candidate-index
                  (< selectrum--current-candidate-index 0))
             candidate
-          (let* ((input (minibuffer-contents))
-                 (pathprefix (or (file-name-directory input) "")))
+          (let ((pathprefix (minibuffer-contents)))
+            (unless (file-directory-p (substitute-in-file-name pathprefix))
+              (setq pathprefix (or (file-name-directory pathprefix) "")))
             (concat pathprefix candidate))))
       candidate))
 
