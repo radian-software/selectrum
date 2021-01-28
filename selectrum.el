@@ -2388,6 +2388,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                ;; Reuse cache if inserting file names
                                ;; in same dir.
                                (and (not (directory-name-p matchstr))
+                                    (or (not is-remote-path)
+                                        is-connected)
                                     (file-exists-p dir)))
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
@@ -2400,9 +2402,9 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                      ;; Use partial completion.
                      ((and (not selectrum--inserted-file-completion)
                            (not (string-empty-p dir))
-                           (not (file-exists-p dir))
                            (or (not is-remote-path)
-                               is-connected))
+                               is-connected)
+                           (not (file-exists-p dir)))
                       (setq is-env-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
