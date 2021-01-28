@@ -2353,6 +2353,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                     (and is-remote-path
                          (file-remote-p path nil t)))
                    (dir (or (file-name-directory path) ""))
+                   (maybe-tramp (equal dir "/"))
                    ;; The input used for matching current dir entries.
                    (matchstr (file-name-nondirectory path))
                    (cands
@@ -2381,8 +2382,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                 val)))
                      ;; Use cache.
                      ((and (equal last-dir dir)
-                           ;; Might be tramp path.
-                           (not (equal "/" dir))
+                           (not maybe-tramp)
                            (not is-env-completion)
                            (or (not selectrum--inserted-file-completion)
                                ;; Reuse cache if inserting file names
@@ -2423,7 +2423,11 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   "./"
                                   (delete
                                    "../"
-                                   (funcall collection path predicate t)))
+                                   (funcall collection
+                                            (if maybe-tramp
+                                                path
+                                              dir)
+                                            predicate t)))
                                ;; May happen in case user quits out
                                ;; of a TRAMP prompt.
                                (quit 'quit))))
@@ -2438,7 +2442,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                               (selectrum--partial-file-completions
                                path collection predicate)
                             ;; Remove duplicate tramp entries.
-                            (if (equal dir "/")
+                            (if maybe-tramp
                                 (delete-dups files)
                               files))))))))
               (setq last-dir dir)
