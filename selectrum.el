@@ -1828,7 +1828,7 @@ inserted automatically when using
   (setq-local minibuffer-text-before-history
               (minibuffer-contents-no-properties)))
 
-(defvar-local selectrum--refresh-next-file-completion nil
+(defvar-local selectrum--inserted-file-completion nil
   "Non-nil when command should trigger refresh.")
 
 (defun selectrum-insert-current-candidate (&optional arg)
@@ -1876,8 +1876,8 @@ refresh."
           ;; selected this will switch selection to first candidate.
           (setq selectrum--previous-input-string nil)
           (when minibuffer-completing-file-name
-            ;; Force a refresh for files.
-            (setq-local selectrum--refresh-next-file-completion t))
+            ;; Possibly force a refresh for files.
+            (setq-local selectrum--inserted-file-completion t))
           (when minibuffer-history-position
             (selectrum--reset-minibuffer-history-state)))
       (unless completion-fail-discreetly
@@ -2358,7 +2358,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (cands
                     (cond
                      ;; Guard against automatic tramp connections.
-                     ((and (not selectrum--refresh-next-file-completion)
+                     ((and (not selectrum--inserted-file-completion)
                            (not is-connected)
                            is-remote-path)
                       (prog1 nil
@@ -2384,7 +2384,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            ;; Might be tramp path.
                            (not (equal "/" dir))
                            (not is-env-completion)
-                           (or (not selectrum--refresh-next-file-completion)
+                           (or (not selectrum--inserted-file-completion)
                                ;; Reuse cache if inserting file names
                                ;; in same dir.
                                (not (directory-name-p matchstr)))
@@ -2397,24 +2397,23 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                                   #'identity)
                       selectrum--preprocessed-candidates)
                      ;; Use partial completion.
-                     ((and (not selectrum--refresh-next-file-completion)
+                     ((and (not selectrum--inserted-file-completion)
                            (not (string-empty-p dir))
+                           (not (file-exists-p dir))
                            (or (not is-remote-path)
-                               is-connected)
-                           (not (file-exists-p dir)))
+                               is-connected))
                       (setq is-env-completion nil)
-                      (setq-local selectrum--refresh-next-file-completion
-                                  nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
+                      (setq-local selectrum--inserted-file-completion nil)
                       (selectrum--partial-file-completions
                        path collection predicate))
                      ;; Compute from file table.
                      (t
                       (setq is-env-completion nil)
-                      (setq-local selectrum--refresh-next-file-completion nil)
                       (setq-local selectrum-preprocess-candidates-function
                                   sortf)
+                      (setq-local selectrum--inserted-file-completion nil)
                       (let ((files
                              (condition-case _
                                  (delete
