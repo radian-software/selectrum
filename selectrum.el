@@ -2387,7 +2387,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                            (or (not selectrum--inserted-file-completion)
                                ;; Reuse cache if inserting file names
                                ;; in same dir.
-                               (not (directory-name-p matchstr)))
+                               (and (not (directory-name-p matchstr))
+                                    (file-exists-p dir)))
                            (not (and minibuffer-history-position
                                      (zerop minibuffer-history-position)
                                      (memq this-command
