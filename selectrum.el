@@ -417,7 +417,8 @@ Nil (the default) means to only highlight the displayed text."
 (defcustom selectrum-complete-in-buffer t
   "If non-nil, use Selectrum for `completion-in-region'.
 This option needs to be set before activating `selectrum-mode'."
-  :type 'boolean)
+  :type 'boolean
+  :group 'selectrum)
 
 ;;;; Utility functions
 
