@@ -1446,7 +1446,8 @@ has a face property."
 (defun selectrum--display-string (str)
   "Return display string of STR.
 Any replacing display specs in STR are included. This avoids
-display problems with display specs (#235, #411)."
+display problems with strings that contain replacing display
+specs."
   (let ((len (length str))
         (display "")
         (start 0)

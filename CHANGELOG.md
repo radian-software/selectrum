@@ -161,6 +161,12 @@ The format is based on [Keep a Changelog].
   can be configured as well ([#266], [#302], [#318], [#398]).
 
 ### Bugs fixed
+* Candidate parts which used the `display` property wouldn't be
+  correctly highlighted on selection, which has been fixed ([#411],
+  [#413]).
+* The minibuffer prompt face would bleed into the candidates when the
+  candidate strings used the `display` property, which has been fixed
+  ([#235], [#413]).
 * Selectrum would error when providing a list as default value in file
   completions, which has been fixed ([#401], [#402]).
 * Selectrum did not set `minibuffer-default` for the current
@@ -249,6 +255,7 @@ The format is based on [Keep a Changelog].
 [#221]: https://github.com/raxod502/selectrum/pull/221
 [#242]: https://github.com/raxod502/selectrum/pull/242
 [#230]: https://github.com/raxod502/selectrum/pull/230
+[#235]: https://github.com/raxod502/selectrum/issues/235
 [#236]: https://github.com/raxod502/selectrum/issues/236
 [#240]: https://github.com/raxod502/selectrum/issues/240
 [#250]: https://github.com/raxod502/selectrum/pull/250
@@ -339,6 +346,8 @@ The format is based on [Keep a Changelog].
 [#404]: https://github.com/raxod502/selectrum/pull/404
 [#405]: https://github.com/raxod502/selectrum/pull/405
 [#408]: https://github.com/raxod502/selectrum/pull/408
+[#411]: https://github.com/raxod502/selectrum/issues/411
+[#413]: https://github.com/raxod502/selectrum/pull/413
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
