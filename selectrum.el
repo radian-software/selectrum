@@ -1443,6 +1443,23 @@ has a face property."
                     cand)))
         (push new res)))))
 
+(defun selectrum--display-string (str)
+  "Return display string of STR.
+Any replacing display specs in STR are included. This avoids
+display problems with display specs (#235, #411)."
+  (let ((len (length str))
+        (display "")
+        (start 0)
+        (end 0))
+    (while (not (eq len end))
+      (setq end (next-single-property-change start 'display str len))
+      (if-let* ((val  (get-text-property start 'display str))
+                (stringp (stringp val)))
+          (setq display (concat display val))
+        (setq display (concat display (substring str start end))))
+      (setq start end))
+    display))
+
 (defun selectrum--add-face (str face)
   "Return copy of STR with FACE added."
   ;; Avoid trampling highlighting done by
@@ -1546,9 +1563,10 @@ defaults to `completion-extra-properties'."
                               0 'selectrum-candidate-display-right-margin
                               candidate))
                (displayed-candidate
-                (if annot-fun
-                    candidate
-                  (concat prefix candidate suffix)))
+                (selectrum--display-string
+                 (if annot-fun
+                     candidate
+                   (concat prefix candidate suffix))))
                (formatting-current-candidate
                 (equal index highlighted-index)))
           ;; Add the ability to interact with candidates via the mouse.
