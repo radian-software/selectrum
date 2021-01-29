@@ -898,24 +898,23 @@ Without that the global default value will be changed."
         (message "Switched to %s" selectrum-display-style)))))
 
 (defun selectrum--insert-candidates
-    (insert-settings candidates buf win input
+    (insert-settings candidates buf win input plen
                      &optional index mindex findex num)
   "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. INPUT is the
-current user input. INDEX is the index of the currently selected
-candidate if any. MINDEX is the maximum and FINDEX the first
-index. NUM is the number of currently displayed candidates.
-Returns a cons: The car is non-nil if candidates are supposed to
-be displayed horizontally and the cdr is the number of candidates
-that were inserted."
+current user input. PLEN is the prompt prefix length. INDEX
+is the index of the currently selected candidate if any. MINDEX
+is the maximum and FINDEX the first index. NUM is the number of
+currently displayed candidates. Returns a cons: The car is
+non-nil if candidates are supposed to be displayed horizontally
+and the cdr is the number of candidates that were inserted."
   (let* ((horizp  nil)
          (nlines (selectrum--max-num-candidate-lines win))
          (ncols (if (window-minibuffer-p win)
                     (- (window-body-width win)
                        (- (point-max)
                           (window-hscroll win))
-                       (length (overlay-get
-                                selectrum--count-overlay 'before-string)))
+                       plen)
                   (window-body-width win)))
          (ncands (when (numberp selectrum-num-candidates-displayed)
                    selectrum-num-candidates-displayed))
@@ -1098,6 +1097,7 @@ the update."
                selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
+        (setq input (or selectrum--visual-input input))
         (setq-local selectrum--first-index-displayed nil)
         (setq-local selectrum--actual-num-candidates-displayed nil)
         (if selectrum--repeat
@@ -1146,12 +1146,17 @@ the update."
                                    :key #'selectrum--get-full
                                    :test #'equal)
                       0))))))
-      (overlay-put selectrum--count-overlay
-                   'before-string (selectrum--count-info))
-      (overlay-put selectrum--count-overlay
-                   'priority 1)
-      (setq input (or selectrum--visual-input input))
-      (let* ((window (if selectrum-display-action
+      ;; Handle prompt selection.
+      (if (and selectrum--current-candidate-index
+               (< selectrum--current-candidate-index 0))
+          (add-text-properties
+           (minibuffer-prompt-end) (point-max)
+           '(face selectrum-current-candidate))
+        (remove-text-properties
+         (minibuffer-prompt-end) (point-max)
+         '(face selectrum-current-candidate)))
+      (let* ((count-info (selectrum--count-info))
+             (window (if selectrum-display-action
                          (and selectrum--refined-candidates
                               (selectrum--get-display-window))
                        (active-minibuffer-window)))
@@ -1160,41 +1165,32 @@ the update."
                        (erase-buffer)
                        (current-buffer)))
              (default
-               (if (or (and selectrum--current-candidate-index
-                            (< selectrum--current-candidate-index 0))
-                       (and (not selectrum--match-required-p)
-                            (not selectrum--refined-candidates))
-                       (and selectrum--default-candidate
-                            (not minibuffer-completing-file-name)
-                            (not (member selectrum--default-candidate
-                                         selectrum--refined-candidates))))
-                   (if (= (minibuffer-prompt-end) (point-max))
-                       (format " %s %s%s"
-                               (propertize
-                                "[default value:"
-                                'face 'minibuffer-prompt)
-                               (propertize
-                                (or (and selectrum--default-candidate
-                                         (substring-no-properties
-                                          selectrum--default-candidate))
-                                    "\"\"")
-                                'face
-                                (if (and selectrum--current-candidate-index
-                                         (< selectrum--current-candidate-index
-                                            0))
-                                    'selectrum-current-candidate
-                                  'minibuffer-prompt))
-                               (propertize "]" 'face 'minibuffer-prompt))
-                     (when (and selectrum--current-candidate-index
+               (when (and (= (minibuffer-prompt-end) (point-max))
+                          (or
+                           (and selectrum--current-candidate-index
                                 (< selectrum--current-candidate-index 0))
-                       (prog1 nil
-                         (add-text-properties
-                          (minibuffer-prompt-end) (point-max)
-                          '(face selectrum-current-candidate)))))
-                 (prog1 nil
-                   (remove-text-properties
-                    (minibuffer-prompt-end) (point-max)
-                    '(face selectrum-current-candidate)))))
+                           (and (not selectrum--match-required-p)
+                                (not selectrum--refined-candidates))
+                           (and selectrum--default-candidate
+                                (not minibuffer-completing-file-name)
+                                (not (member selectrum--default-candidate
+                                             selectrum--refined-candidates)))))
+                 (format " %s %s%s"
+                         (propertize
+                          "[default value:"
+                          'face 'minibuffer-prompt)
+                         (propertize
+                          (or (and selectrum--default-candidate
+                                   (substring-no-properties
+                                    selectrum--default-candidate))
+                              "\"\"")
+                          'face
+                          (if (and selectrum--current-candidate-index
+                                   (< selectrum--current-candidate-index
+                                      0))
+                              'selectrum-current-candidate
+                            'minibuffer-prompt))
+                         (propertize "]" 'face 'minibuffer-prompt))))
              (minibuf-after-string (or default " "))
              (inserted-res
               (selectrum--insert-candidates
@@ -1203,6 +1199,10 @@ the update."
                buffer
                window
                input
+               ;; FIXME: This only takes our count overlay into
+               ;; account there might be other overlays prefixing the
+               ;; prompt.
+               (length count-info)
                ;; Exclude selected prompt.
                (when (and selectrum--current-candidate-index
                           (not (< selectrum--current-candidate-index 0)))
@@ -1235,6 +1235,10 @@ the update."
         (put-text-property 0 1 'cursor t minibuf-after-string)
         (overlay-put selectrum--candidates-overlay
                      'after-string minibuf-after-string)
+        (overlay-put selectrum--count-overlay
+                     'before-string count-info)
+        (overlay-put selectrum--count-overlay
+                     'priority 1)
         (when window
           (selectrum--update-window-height
            window (not horizp)))
