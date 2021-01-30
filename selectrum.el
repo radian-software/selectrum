@@ -1286,7 +1286,8 @@ Also works for frames if WINDOW is the root window of its frame."
   "Update window height of minibuffer WINDOW.
 WINDOW will be updated to fit its content vertically."
   (let ((dheight (cdr (window-text-pixel-size window)))
-        (wheight (window-pixel-height window)))
+        (wheight (window-pixel-height window))
+        (window-resize-pixelwise t))
     (window-resize
      window (- dheight wheight) nil nil 'pixelwise)))
 
