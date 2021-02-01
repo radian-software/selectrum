@@ -454,6 +454,27 @@ destructively and return the modified list."
         (setq link (cdr link))))
     (nconc (nreverse elts) (cdr lst))))
 
+(defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
+  "Variant of `minibuffer-with-setup-hook' using a symbol and `fset'.
+This macro is only needed to prevent memory leaking issues with
+the upstream `minibuffer-with-setup-hook' macro. FUN is the hook
+function and BODY opens the minibuffer."
+  ;; Copied from https://github.com/minad/consult/commit/27e055e.
+  (declare (indent 1) (debug t))
+  (let ((hook (make-symbol "hook"))
+        (append))
+    (when (eq (car-safe fun) :append)
+      (setq append '(t) fun (cadr fun)))
+    `(let ((,hook (make-symbol "selectrum--minibuffer-setup")))
+       (fset ,hook (lambda ()
+                     (remove-hook 'minibuffer-setup-hook ,hook)
+                     (funcall ,fun)))
+       (unwind-protect
+           (progn
+             (add-hook 'minibuffer-setup-hook ,hook ,@append)
+             ,@body)
+         (remove-hook 'minibuffer-setup-hook ,hook)))))
+
 ;;;; Minibuffer state
 
 (defvar-local selectrum--last-buffer nil
@@ -1923,7 +1944,7 @@ history item and exit use `selectrum-select-current-candidate'."
       (user-error "No history is recorded for this command"))
     (let* ((enable-recursive-minibuffers t)
            (result
-            (minibuffer-with-setup-hook
+            (selectrum--minibuffer-with-setup-hook
                 (lambda ()
                   (setq-local selectrum-should-sort-p nil)
                   (setq-local selectrum-candidate-inserted-hook nil)
@@ -2080,13 +2101,13 @@ semantics of `cl-defun'."
            (icomplete-mode nil)
            (buf (current-buffer))
            (res
-            (minibuffer-with-setup-hook
+            (selectrum--minibuffer-with-setup-hook
                 (lambda ()
                   ;; Already set the active flag as early as possible
                   ;; so client setup hooks can use it to detect if
                   ;; they are running in a Selectrum session.
                   (setq-local selectrum-active-p t))
-              (minibuffer-with-setup-hook
+              (selectrum--minibuffer-with-setup-hook
                   (:append (lambda ()
                              (selectrum--minibuffer-setup-hook
                               candidates
@@ -2164,7 +2185,7 @@ the prompt."
          (res nil))
     (setq
      res
-     (minibuffer-with-setup-hook
+     (selectrum--minibuffer-with-setup-hook
          (lambda ()
            (setq-local selectrum--crm-p t)
            (when selectrum-completing-read-multiple-show-help
@@ -2473,7 +2494,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
-    (minibuffer-with-setup-hook
+    (selectrum--minibuffer-with-setup-hook
         ;; The hook needs to run late as `read-file-name-default' sets
         ;; its own syntax table in `minibuffer-with-setup-hook'.
         (:append (lambda ()
