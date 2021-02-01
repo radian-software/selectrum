@@ -163,6 +163,8 @@ The format is based on [Keep a Changelog].
 * Default settings of `selectrum-multiline-display-settings` have been
   improved. There is now also a displayed line count by default which
   can be configured as well ([#266], [#302], [#318], [#398]).
+* `selectrum-completion-in-region` doesn't sort now as the
+  `completon-at-point-function` backend may does its own sorting.
 
 ### Bugs fixed
 * Candidate parts which used the `display` property wouldn't be

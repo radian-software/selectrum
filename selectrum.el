@@ -2224,7 +2224,8 @@ the prompt."
   "Complete in-buffer text using a list of candidates.
 Can be used as `completion-in-region-function'. For START, END,
 COLLECTION, and PREDICATE, see `completion-in-region'."
-  (let* ((enable-recursive-minibuffers t)
+  (let* ((selectrum-should-sort-p nil)
+         (enable-recursive-minibuffers t)
          (input (buffer-substring-no-properties start end))
          (meta (completion-metadata input collection predicate))
          (category (completion-metadata-get meta 'category))
