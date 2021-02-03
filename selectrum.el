@@ -83,8 +83,7 @@ respected by user functions for optimal results.")
 
 (defvar selectrum--minibuffer-default-in-prompt-regexps
   (let ((minibuffer-eldef-shorten-default nil))
-    (cl-remove-if (lambda (i) (and (consp i) (nth 2 i)))
-                  (minibuffer-default--in-prompt-regexps)))
+    (minibuffer-default--in-prompt-regexps))
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
@@ -579,6 +578,9 @@ This is non-nil during the first call of
 
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
+
+(defvar-local selectrum--virtual-default-file nil
+  "If set used as a virtual file to prompt with.")
 
 ;;;;; Minibuffer state utility functions
 
@@ -1102,6 +1104,13 @@ the update."
           (setq selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function
                          input cands)))
+        (when selectrum--virtual-default-file
+          (setq selectrum--refined-candidates
+                (cons (propertize
+                       selectrum--virtual-default-file
+                       'face 'shadow)
+                      selectrum--refined-candidates))
+          (setq-local selectrum--virtual-default-file nil))
         (when selectrum--move-default-candidate-p
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
@@ -2535,35 +2544,42 @@ PREDICATE, see `read-file-name'."
          (completing-read-function
           (lambda (&rest args)
             (setq completing-read-function crf)
-            (let ((default (if (consp default-filename)
-                               (car default-filename)
-                             default-filename)))
-              ;; Get the default back for internal handling as it
-              ;; wasn't passed to `read-file-name-default'. See
-              ;; comment below.
-              (when (and default
-                         ;; Don't pass when they are the same in which
-                         ;; case the prompt should get selected.
-                         (not (equal
-                               (expand-file-name default)
-                               (expand-file-name default-directory))))
-                (when (equal (file-name-directory
-                              (directory-file-name
-                               (expand-file-name
-                                default)))
-                             (file-name-directory
-                              (expand-file-name
-                               default-directory)))
+            (if (not default-filename)
+                (apply #'selectrum--completing-read-file-name args)
+              (let* ((default (if (consp default-filename)
+                                  (car default-filename)
+                                default-filename))
+                     (df (expand-file-name default))
+                     (dd (expand-file-name default-directory))
+                     (default-in-prompt-dir
+                       (equal (file-name-directory
+                               (directory-file-name df))
+                              (file-name-directory dd)))
+                     (virtual (when (or (not default-in-prompt-dir)
+                                        (not (file-exists-p default)))
+                                (propertize
+                                 (string-remove-prefix dd df)
+                                 'selectrum--candidate-full
+                                 default))))
+                ;; Ajudst default for internal handling as it wasn't
+                ;; passed to `read-file-name-default'. See comment at
+                ;; `read-file-name-default' call below.
+                (unless (equal df dd)   ; Prompt selection.
                   ;; Make the default sorted first by its relative name
                   ;; when it is inside the prompting directory.
-                  (setq default
-                        (file-relative-name default default-directory)))
-                (if (consp default-filename)
-                    (setcar default-filename default)
-                  (setq default-filename default))
-                ;; Adjust the DEFAULT arg.
-                (setf (nth 6 args) default-filename))
-              (apply #'selectrum--completing-read-file-name args)))))
+                  (when default-in-prompt-dir
+                    (setq default
+                          (file-relative-name default default-directory)))
+                  (if (consp default-filename)
+                      (setcar default-filename default)
+                    (setq default-filename default))
+                  ;; Adjust the DEFAULT arg.
+                  (setf (nth 6 args) default-filename))
+                (minibuffer-with-setup-hook
+                    (lambda ()
+                      (when virtual
+                        (setq-local selectrum--virtual-default-file virtual)))
+                  (apply #'selectrum--completing-read-file-name args)))))))
     (read-file-name-default
      prompt dir
      ;; We don't pass default-candidate here to avoid that
