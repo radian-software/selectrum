@@ -52,6 +52,10 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The accessibility of the default value in file completions has been
+  improved. When the default exists in the prompting directory it gets
+  sorted first otherwise the default is included as a virtual
+  candidate ([#400], [#420], [#421]).
 * Depending on the used font and display settings like `line-spacing`
   the minibuffer height could be slightly off so that the displayed
   candidates wouldn't be completely visible, which has been fixed
@@ -345,6 +349,7 @@ The format is based on [Keep a Changelog].
 [#394]: https://github.com/raxod502/selectrum/pull/394
 [#397]: https://github.com/raxod502/selectrum/pull/397
 [#398]: https://github.com/raxod502/selectrum/pull/398
+[#400]: https://github.com/raxod502/selectrum/issues/400
 [#401]: https://github.com/raxod502/selectrum/pull/401
 [#402]: https://github.com/raxod502/selectrum/pull/402
 [#403]: https://github.com/raxod502/selectrum/pull/403
@@ -354,6 +359,8 @@ The format is based on [Keep a Changelog].
 [#411]: https://github.com/raxod502/selectrum/issues/411
 [#413]: https://github.com/raxod502/selectrum/pull/413
 [#414]: https://github.com/raxod502/selectrum/pull/414
+[#420]: https://github.com/raxod502/selectrum/issues/420
+[#421]: https://github.com/raxod502/selectrum/pull/421
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
