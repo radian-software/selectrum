@@ -1111,7 +1111,8 @@ the update."
                        'face 'shadow)
                       selectrum--refined-candidates))
           (setq-local selectrum--virtual-default-file nil))
-        (when selectrum--move-default-candidate-p
+        (when (and selectrum--move-default-candidate-p
+                   selectrum--default-candidate)
           (setq selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
                  selectrum--default-candidate
@@ -2575,7 +2576,7 @@ PREDICATE, see `read-file-name'."
                     (setq default-filename default))
                   ;; Adjust the DEFAULT arg.
                   (setf (nth 6 args) default-filename))
-                (minibuffer-with-setup-hook
+                (selectrum--minibuffer-with-setup-hook
                     (lambda ()
                       (when virtual
                         (setq-local selectrum--virtual-default-file virtual)))
