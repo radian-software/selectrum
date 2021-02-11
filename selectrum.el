@@ -406,11 +406,15 @@ setting."
                        (string :tag "Indicator string")
                        (face :tag "Indicator face"))))
 
-(defcustom selectrum-extend-current-candidate-highlight nil
+(defcustom selectrum-extend-current-candidate-highlight 'auto
   "Whether to extend highlighting of the current candidate until the margin.
 
-Nil (the default) means to only highlight the displayed text."
-  :type 'boolean)
+When set to nil only highlight the displayed text. When set to
+`auto' (the default) Selectrum will only highlight the displayed
+text unless the session defines any annotations in which case the
+highlighting is automatically extended. Any other non-nil value
+means to always extend the highlighting."
+  :type '(choice (const :tag "Automatic" auto) boolean))
 
 ;;;###autoload
 (defcustom selectrum-complete-in-buffer t
@@ -1576,8 +1580,11 @@ defaults to `completion-extra-properties'."
                                                  :annotf annotf
                                                  :docsigf docsigf))
                            (t candidates)))
-         (extend (and selectrum-extend-current-candidate-highlight
-                      (not horizontalp)))
+         (extend (and (not horizontalp)
+                      (if (eq selectrum-extend-current-candidate-highlight
+                              'auto)
+                          (or aff annotf docsigf)
+                        selectrum-extend-current-candidate-highlight)))
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
          (lines (selectrum--ensure-single-lines
