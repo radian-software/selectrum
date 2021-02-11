@@ -52,6 +52,11 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The background of `selectrum-current-candidate` face gets prepended
+  so the selection stays visible for candidates with `:background`
+  property. This change is only noticeable in Emacs versions >= 27 as
+  for previous versions `selectrum-current-candidate` face gets
+  prepended by default ([#425], [#431]).
 * The default value of `selectrum-extend-current-candidate-highlight`
   has been changed to `auto` which will automatically extend the
   highlighting if the session uses annotations ([#427], [#430]).
@@ -363,9 +368,11 @@ The format is based on [Keep a Changelog].
 [#413]: https://github.com/raxod502/selectrum/pull/413
 [#414]: https://github.com/raxod502/selectrum/pull/414
 [#420]: https://github.com/raxod502/selectrum/issues/420
+[#425]: https://github.com/raxod502/selectrum/issues/425
 [#421]: https://github.com/raxod502/selectrum/pull/421
 [#427]: https://github.com/raxod502/selectrum/issues/427
 [#430]: https://github.com/raxod502/selectrum/pull/430
+[#431]: https://github.com/raxod502/selectrum/pull/431
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
