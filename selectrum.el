@@ -1567,8 +1567,7 @@ defaults to `completion-extra-properties'."
          (annotf (or (selectrum--get-meta 'annotation-function table pred)
                      (plist-get props :annotation-function)))
          (aff (or (selectrum--get-meta 'affixation-function table pred)
-                  (plist-get completion-extra-properties
-                             :affixation-function)))
+                  (plist-get props :affixation-function)))
          (docsigf (plist-get props :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
