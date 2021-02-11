@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog].
   canonical representation of a candidate has been removed ([#403]).
 
 ### Features
-* Line spacing is taken into account when using fixed window heights
+* Line spacing is taken into account when using a fixed window height
   ([#424], [#432]).
 * The new option `selectrum-max-window-height` can now be used to
   configure the maximal display window height analogue to the built-in
