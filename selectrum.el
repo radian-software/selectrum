@@ -1292,9 +1292,7 @@ window is supposed to be shown vertically."
                    (and (window-at-side-p window 'bottom)
                         (not (window-at-side-p window 'top))))
            (set-window-text-height window 1)))
-        ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
-                  selectrum-fix-vertical-window-height)
-              vertical)
+        ((and vertical selectrum-fix-vertical-window-height)
          (let* ((max (selectrum--max-window-height))
                 (lines (if selectrum-display-action
                            max
