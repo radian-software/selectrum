@@ -414,7 +414,7 @@ When set to nil only highlight the displayed text. When set to
 text unless the session defines any annotations in which case the
 highlighting is automatically extended. Any other non-nil value
 means to always extend the highlighting."
-  :type 'boolean)
+  :type '(choice (const :tag "Automatic" auto) boolean))
 
 ;;;###autoload
 (defcustom selectrum-complete-in-buffer t
