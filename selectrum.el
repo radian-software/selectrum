@@ -1583,9 +1583,7 @@ defaults to `completion-extra-properties'."
          (extend (and (not horizontalp)
                       (if (eq selectrum-extend-current-candidate-highlight
                               'auto)
-                          (or aff
-                              annotf
-                              docsigf)
+                          (or aff annotf docsigf)
                         selectrum-extend-current-candidate-highlight)))
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
