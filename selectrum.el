@@ -1296,20 +1296,22 @@ window is supposed to be shown vertically."
                   selectrum-fix-vertical-window-height)
               vertical)
          (let* ((max (selectrum--max-window-height))
-                (height (if selectrum-display-action
-                            max
-                          ;; Add one for prompt.
-                          (1+ max))))
-           (set-window-text-height window height)))
+                (lines (if selectrum-display-action
+                           max
+                         ;; Add one for prompt.
+                         (1+ max)))
+                ;; Include possible line spacing.
+                (height (* lines (line-pixel-height))))
+           (selectrum--set-window-height window height)))
         (t
          (when-let ((expand (selectrum--expand-window-for-content-p window)))
            (cond (selectrum-display-action
-                  (selectrum--update-display-window-height window))
+                  (selectrum--fit-window-to-buffer window))
                  (t
-                  (selectrum--update-minibuffer-height window)))))))
+                  (selectrum--set-window-height window)))))))
 
-(defun selectrum--update-display-window-height (window)
-  "Update window height of WINDOW.
+(defun selectrum--fit-window-to-buffer (window)
+  "Fit window height to its buffer contents.
 Also works for frames if WINDOW is the root window of its frame."
   (let ((window-resize-pixelwise t)
         (window-size-fixed nil)
@@ -1317,10 +1319,11 @@ Also works for frames if WINDOW is the root window of its frame."
         (fit-window-to-buffer-horizontally nil))
     (fit-window-to-buffer window nil 1)))
 
-(defun selectrum--update-minibuffer-height (window)
-  "Update window height of minibuffer WINDOW.
-WINDOW will be updated to fit its content vertically."
-  (let ((dheight (cdr (window-text-pixel-size window)))
+(defun selectrum--set-window-height (window &optional height)
+  "Set window height of WINDOW to HEIGHT pixel.
+If HEIGHT is not given WINDOW will be updated to fit its content
+vertically."
+  (let ((dheight (or height (cdr (window-text-pixel-size window))))
         (wheight (window-pixel-height window))
         (window-resize-pixelwise t))
     (window-resize
