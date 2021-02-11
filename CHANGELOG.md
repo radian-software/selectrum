@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog].
   canonical representation of a candidate has been removed ([#403]).
 
 ### Features
+* Line spacing is taken into account when using fixed window heights
+  ([#424], [#432]).
 * The new option `selectrum-max-window-height` can now be used to
   configure the maximal display window height analogue to the built-in
   `max-mini-window-height`. The new option replaces the usage of the
@@ -368,11 +370,13 @@ The format is based on [Keep a Changelog].
 [#413]: https://github.com/raxod502/selectrum/pull/413
 [#414]: https://github.com/raxod502/selectrum/pull/414
 [#420]: https://github.com/raxod502/selectrum/issues/420
+[#424]: https://github.com/raxod502/selectrum/issues/424
 [#425]: https://github.com/raxod502/selectrum/issues/425
 [#421]: https://github.com/raxod502/selectrum/pull/421
 [#427]: https://github.com/raxod502/selectrum/issues/427
 [#430]: https://github.com/raxod502/selectrum/pull/430
 [#431]: https://github.com/raxod502/selectrum/pull/431
+[#432]: https://github.com/raxod502/selectrum/pull/432
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
