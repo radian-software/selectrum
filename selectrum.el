@@ -1529,7 +1529,7 @@ specs."
       ;; Prepend the background to ensure selection is always visible.
       (add-face-text-property
        0 (length str)
-       `(:background ,(face-attribute face :background nil 'inherit))
+       `(:background ,(face-attribute face :background nil 'default))
        nil str))
     str))
 
