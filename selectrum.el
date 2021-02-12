@@ -1482,21 +1482,21 @@ has a face property."
 
 (defun selectrum--display-string (str)
   "Return display string of STR.
-Any replacing display specs in STR are included. This avoids
-display problems with strings that contain replacing display
-specs."
+Any string display specs in STR are replaced with the string they
+will display as. This avoids prompt bleeding issues that occur
+with display specs used within the after-string overlay."
   (let ((len (length str))
-        (display "")
-        (start 0)
-        (end 0))
-    (while (not (eq len end))
-      (setq end (next-single-property-change start 'display str len))
-      (let ((val  (get-text-property start 'display str)))
-        (if (and val (stringp val))
-            (setq display (concat display val))
-          (setq display (concat display (substring str start end)))))
-      (setq start end))
-    display))
+        (pos 0)
+        (chunks ()))
+    (while (not (eq pos len))
+      (let* ((end (next-single-property-change pos 'display str len))
+             (display (get-text-property pos 'display str))
+             (chunk (if (stringp display)
+                        display
+                      (substring str pos end))))
+        (push chunk chunks)
+        (setq pos end)))
+    (apply #'concat (nreverse chunks))))
 
 (defun selectrum--selection-highlight (str)
   "Return copy of STR with selection highlight."
