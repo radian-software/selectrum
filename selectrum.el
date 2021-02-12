@@ -1525,12 +1525,7 @@ specs."
       (add-face-text-property
        0 (length str)
        face
-       'append str)
-      ;; Prepend the background to ensure selection is always visible.
-      (add-face-text-property
-       0 (length str)
-       `(:background ,(face-attribute face :background nil 'default))
-       nil str))
+       'append str))
     str))
 
 (defun selectrum--affixate (fun candidates)
