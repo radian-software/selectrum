@@ -1132,7 +1132,6 @@ the update."
                selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
-        (setq input (or selectrum--visual-input input))
         (setq-local selectrum--first-index-displayed nil)
         (setq-local selectrum--actual-num-candidates-displayed nil)
         (if selectrum--repeat
@@ -1181,6 +1180,8 @@ the update."
                                    :key #'selectrum--get-full
                                    :test #'equal)
                       0))))))
+      ;; Always keep the visual input if defined.
+      (setq input (or selectrum--visual-input input))
       ;; Handle prompt selection.
       (if (and selectrum--current-candidate-index
                (< selectrum--current-candidate-index 0))
