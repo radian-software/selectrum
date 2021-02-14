@@ -2852,7 +2852,6 @@ ARGS are standard as in all `:around' advice."
 ;; Local Variables:
 ;; checkdoc-verb-check-experimental-flag: nil
 ;; indent-tabs-mode: nil
-;; outline-regexp: ";;;;* "
 ;; sentence-end-double-space: nil
 ;; End:
 
