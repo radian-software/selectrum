@@ -30,13 +30,6 @@
 
 ;;; Code:
 
-;; To see the outline of this file, run M-x outline-minor-mode and
-;; then press C-c @ C-t. To also show the top-level functions and
-;; variable declarations in each section, run M-x occur with the
-;; following query: ^;;;;* \|^(
-
-;;;; Libraries
-
 (require 'cl-lib)
 (require 'crm)
 (require 'map)
@@ -45,7 +38,7 @@
 (require 'seq)
 (require 'subr-x)
 
-;;;; Faces
+;;; Faces
 
 (defface selectrum-current-candidate
   '((t :inherit highlight))
@@ -74,7 +67,7 @@ parts of the input."
   "Face used to display docsigs of completion tables."
   :group 'selectrum-faces)
 
-;;;; Variables
+;;; Variables
 
 (defvar selectrum-should-sort-p t
   "Non-nil if preprocessing and refinement functions should sort.
@@ -87,7 +80,7 @@ respected by user functions for optimal results.")
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
-;;;; User options
+;;; User options
 
 (defgroup selectrum nil
   "Simple incremental narrowing framework with sane API."
@@ -423,7 +416,7 @@ This option needs to be set before activating `selectrum-mode'."
   :type 'boolean
   :group 'selectrum)
 
-;;;; Utility functions
+;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
@@ -478,7 +471,7 @@ function and BODY opens the minibuffer."
              ,@body)
          (remove-hook 'minibuffer-setup-hook ,hook)))))
 
-;;;; Minibuffer state
+;;; Minibuffer state
 
 (defvar-local selectrum--last-buffer nil
   "The buffer that was current before the active session")
@@ -589,7 +582,7 @@ This is non-nil during the first call of
 (defvar-local selectrum--line-height nil
   "The `line-pixel-height' of current session.")
 
-;;;;; Minibuffer state utility functions
+;;;; Minibuffer state utility functions
 
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
@@ -722,7 +715,7 @@ when possible (it is still a member of the candidate set)."
        (and keep-selection
             (selectrum-get-current-candidate))))))
 
-;;;; Hook functions
+;;; Hook functions
 
 (defun selectrum--count-info ()
   "Return a string of count information to be prepended to prompt."
@@ -1730,7 +1723,7 @@ overridden and BUF the buffer the session was started from."
    #'selectrum--minibuffer-post-command-hook
    nil 'local))
 
-;;;; Minibuffer commands
+;;; Minibuffer commands
 
 (defun selectrum-previous-candidate (&optional arg)
   "Move selection ARG candidates up, stopping at the beginning."
@@ -2012,7 +2005,7 @@ Only to be used from `selectrum-select-from-history'"
 Same as `minibuffer-local-filename-syntax' but considers spaces
 as symbol constituents.")
 
-;;;; Main entry points
+;;; Main entry points
 
 (defmacro selectrum--let-maybe (pred varlist &rest body)
   "If PRED evaluates to non-nil, bind variables in VARLIST and eval BODY.
@@ -2845,7 +2838,7 @@ ARGS are standard as in all `:around' advice."
         (define-key minibuffer-local-map
           [remap previous-matching-history-element] nil)))))
 
-;;;; Closing remarks
+;;; Closing remarks
 
 (provide 'selectrum)
 
