@@ -250,6 +250,8 @@ The format is based on [Keep a Changelog].
 * Annotations or usage or `selectrum-candidate-display-suffix`
   property in file completions were overwritten for directories and
   not displayed, which has been fixed ([#256], [#255]).
+* `selectrum-repeat` did not set `this-command` when calling the
+  last command, which has been fixed ([#438], [#439]).
 
 [#100]: https://github.com/raxod502/selectrum/issues/100
 [#194]: https://github.com/raxod502/selectrum/issues/194
@@ -361,6 +363,8 @@ The format is based on [Keep a Changelog].
 [#414]: https://github.com/raxod502/selectrum/pull/414
 [#420]: https://github.com/raxod502/selectrum/issues/420
 [#421]: https://github.com/raxod502/selectrum/pull/421
+[#438]: https://github.com/raxod502/selectrum/issues/438
+[#439]: https://github.com/raxod502/selectrum/pull/439
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
