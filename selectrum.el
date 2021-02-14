@@ -30,13 +30,6 @@
 
 ;;; Code:
 
-;; To see the outline of this file, run M-x outline-minor-mode and
-;; then press C-c @ C-t. To also show the top-level functions and
-;; variable declarations in each section, run M-x occur with the
-;; following query: ^;;;;* \|^(
-
-;;;; Libraries
-
 (require 'cl-lib)
 (require 'crm)
 (require 'map)
@@ -45,7 +38,7 @@
 (require 'seq)
 (require 'subr-x)
 
-;;;; Faces
+;;; Faces
 
 (defface selectrum-current-candidate
   '((t :inherit highlight))
@@ -74,7 +67,7 @@ parts of the input."
   "Face used to display docsigs of completion tables."
   :group 'selectrum-faces)
 
-;;;; Variables
+;;; Variables
 
 (defvar selectrum-should-sort-p t
   "Non-nil if preprocessing and refinement functions should sort.
@@ -87,7 +80,7 @@ respected by user functions for optimal results.")
   "Regexps for determining if the prompt message includes the default value.
 See `minibuffer-default-in-prompt-regexps', from which this is derived.")
 
-;;;; User options
+;;; User options
 
 (defgroup selectrum nil
   "Simple incremental narrowing framework with sane API."
@@ -406,11 +399,15 @@ setting."
                        (string :tag "Indicator string")
                        (face :tag "Indicator face"))))
 
-(defcustom selectrum-extend-current-candidate-highlight nil
+(defcustom selectrum-extend-current-candidate-highlight 'auto
   "Whether to extend highlighting of the current candidate until the margin.
 
-Nil (the default) means to only highlight the displayed text."
-  :type 'boolean)
+When set to nil only highlight the displayed text. When set to
+`auto' (the default) Selectrum will only highlight the displayed
+text unless the session defines any annotations in which case the
+highlighting is automatically extended. Any other non-nil value
+means to always extend the highlighting."
+  :type '(choice (const :tag "Automatic" auto) boolean))
 
 ;;;###autoload
 (defcustom selectrum-complete-in-buffer t
@@ -419,7 +416,7 @@ This option needs to be set before activating `selectrum-mode'."
   :type 'boolean
   :group 'selectrum)
 
-;;;; Utility functions
+;;; Utility functions
 
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
@@ -474,7 +471,7 @@ function and BODY opens the minibuffer."
              ,@body)
          (remove-hook 'minibuffer-setup-hook ,hook)))))
 
-;;;; Minibuffer state
+;;; Minibuffer state
 
 (defvar-local selectrum--last-buffer nil
   "The buffer that was current before the active session")
@@ -582,7 +579,10 @@ This is non-nil during the first call of
 (defvar-local selectrum--virtual-default-file nil
   "If set used as a virtual file to prompt with.")
 
-;;;;; Minibuffer state utility functions
+(defvar-local selectrum--line-height nil
+  "The `line-pixel-height' of current session.")
+
+;;;; Minibuffer state utility functions
 
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
@@ -715,7 +715,7 @@ when possible (it is still a member of the candidate set)."
        (and keep-selection
             (selectrum-get-current-candidate))))))
 
-;;;; Hook functions
+;;; Hook functions
 
 (defun selectrum--count-info ()
   "Return a string of count information to be prepended to prompt."
@@ -1128,7 +1128,6 @@ the update."
                selectrum--refined-candidates))
         (setq selectrum--refined-candidates
               (delete "" selectrum--refined-candidates))
-        (setq input (or selectrum--visual-input input))
         (setq-local selectrum--first-index-displayed nil)
         (setq-local selectrum--actual-num-candidates-displayed nil)
         (if selectrum--repeat
@@ -1177,6 +1176,8 @@ the update."
                                    :key #'selectrum--get-full
                                    :test #'equal)
                       0))))))
+      ;; Always keep the visual input if defined.
+      (setq input (or selectrum--visual-input input))
       ;; Handle prompt selection.
       (if (and selectrum--current-candidate-index
                (< selectrum--current-candidate-index 0))
@@ -1288,24 +1289,24 @@ window is supposed to be shown vertically."
                    (and (window-at-side-p window 'bottom)
                         (not (window-at-side-p window 'top))))
            (set-window-text-height window 1)))
-        ((and (or (bound-and-true-p selectrum-fix-minibuffer-height)
-                  selectrum-fix-vertical-window-height)
-              vertical)
+        ((and vertical selectrum-fix-vertical-window-height)
          (let* ((max (selectrum--max-window-height))
-                (height (if selectrum-display-action
-                            max
-                          ;; Add one for prompt.
-                          (1+ max))))
-           (set-window-text-height window height)))
+                (lines (if selectrum-display-action
+                           max
+                         ;; Add one for prompt.
+                         (1+ max)))
+                ;; Include possible line spacing.
+                (height (* lines selectrum--line-height)))
+           (selectrum--set-window-height window height)))
         (t
          (when-let ((expand (selectrum--expand-window-for-content-p window)))
            (cond (selectrum-display-action
-                  (selectrum--update-display-window-height window))
+                  (selectrum--fit-window-to-buffer window))
                  (t
-                  (selectrum--update-minibuffer-height window)))))))
+                  (selectrum--set-window-height window)))))))
 
-(defun selectrum--update-display-window-height (window)
-  "Update window height of WINDOW.
+(defun selectrum--fit-window-to-buffer (window)
+  "Fit window height to its buffer contents.
 Also works for frames if WINDOW is the root window of its frame."
   (let ((window-resize-pixelwise t)
         (window-size-fixed nil)
@@ -1313,10 +1314,11 @@ Also works for frames if WINDOW is the root window of its frame."
         (fit-window-to-buffer-horizontally nil))
     (fit-window-to-buffer window nil 1)))
 
-(defun selectrum--update-minibuffer-height (window)
-  "Update window height of minibuffer WINDOW.
-WINDOW will be updated to fit its content vertically."
-  (let ((dheight (cdr (window-text-pixel-size window)))
+(defun selectrum--set-window-height (window &optional height)
+  "Set window height of WINDOW to HEIGHT pixel.
+If HEIGHT is not given WINDOW will be updated to fit its content
+vertically."
+  (let ((dheight (or height (cdr (window-text-pixel-size window))))
         (wheight (window-pixel-height window))
         (window-resize-pixelwise t))
     (window-resize
@@ -1477,24 +1479,24 @@ has a face property."
 
 (defun selectrum--display-string (str)
   "Return display string of STR.
-Any replacing display specs in STR are included. This avoids
-display problems with strings that contain replacing display
-specs."
+Any string display specs in STR are replaced with the string they
+will display as. This avoids prompt bleeding issues that occur
+with display specs used within the after-string overlay."
   (let ((len (length str))
-        (display "")
-        (start 0)
-        (end 0))
-    (while (not (eq len end))
-      (setq end (next-single-property-change start 'display str len))
-      (let ((val  (get-text-property start 'display str)))
-        (if (and val (stringp val))
-            (setq display (concat display val))
-          (setq display (concat display (substring str start end)))))
-      (setq start end))
-    display))
+        (pos 0)
+        (chunks ()))
+    (while (not (eq pos len))
+      (let* ((end (next-single-property-change pos 'display str len))
+             (display (get-text-property pos 'display str))
+             (chunk (if (stringp display)
+                        display
+                      (substring str pos end))))
+        (push chunk chunks)
+        (setq pos end)))
+    (apply #'concat (nreverse chunks))))
 
-(defun selectrum--add-face (str face)
-  "Return copy of STR with FACE added."
+(defun selectrum--selection-highlight (str)
+  "Return copy of STR with selection highlight."
   ;; Avoid trampling highlighting done by
   ;; `selectrum-highlight-candidates-function'. In
   ;; Emacs<27 `add-face-text-property' has a bug but
@@ -1511,16 +1513,17 @@ specs."
   ;; <https://github.com/raxod502/selectrum/issues/21>
   ;; <https://github.com/raxod502/selectrum/issues/58>
   ;; <https://github.com/raxod502/selectrum/pull/76>
-  (setq str (copy-sequence str))
-  (if (version< emacs-version "27")
-      (font-lock-prepend-text-property
+  (let ((str (copy-sequence str))
+        (face 'selectrum-current-candidate))
+    (if (version< emacs-version "27")
+        (font-lock-prepend-text-property
+         0 (length str)
+         'face face str)
+      (add-face-text-property
        0 (length str)
-       'face face str)
-    (add-face-text-property
-     0 (length str)
-     face
-     'append str))
-  str)
+       face
+       'append str))
+    str))
 
 (defun selectrum--affixate (fun candidates)
   "Use affixation FUN to transform CANDIDATES.
@@ -1567,8 +1570,7 @@ defaults to `completion-extra-properties'."
          (annotf (or (selectrum--get-meta 'annotation-function table pred)
                      (plist-get props :annotation-function)))
          (aff (or (selectrum--get-meta 'affixation-function table pred)
-                  (plist-get completion-extra-properties
-                             :affixation-function)))
+                  (plist-get props :affixation-function)))
          (docsigf (plist-get props :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
@@ -1577,8 +1579,11 @@ defaults to `completion-extra-properties'."
                                                  :annotf annotf
                                                  :docsigf docsigf))
                            (t candidates)))
-         (extend (and selectrum-extend-current-candidate-highlight
-                      (not horizontalp)))
+         (extend (and (not horizontalp)
+                      (if (eq selectrum-extend-current-candidate-highlight
+                              'auto)
+                          (or aff annotf docsigf)
+                        selectrum-extend-current-candidate-highlight)))
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
          (lines (selectrum--ensure-single-lines
@@ -1623,8 +1628,7 @@ defaults to `completion-extra-properties'."
            displayed-candidate)
           (when formatting-current-candidate
             (setq displayed-candidate
-                  (selectrum--add-face
-                   displayed-candidate 'selectrum-current-candidate))
+                  (selectrum--selection-highlight displayed-candidate))
             (when annot-fun
               (funcall annot-fun prefix suffix right-margin)))
           (insert "\n")
@@ -1651,8 +1655,7 @@ defaults to `completion-extra-properties'."
                                     ,(string-width right-margin)
                                     ,margin-padding)))
               (if formatting-current-candidate
-                  (selectrum--add-face
-                   right-margin'selectrum-current-candidate)
+                  (selectrum--selection-highlight right-margin)
                 right-margin))))
            ((and extend
                  formatting-current-candidate)
@@ -1714,12 +1717,13 @@ overridden and BUF the buffer the session was started from."
   ;; is assigned.
   (setq selectrum--previous-input-string nil)
   (setq selectrum--count-overlay (make-overlay (point-min) (point-min)))
+  (setq-local selectrum--line-height (line-pixel-height))
   (add-hook
    'post-command-hook
    #'selectrum--minibuffer-post-command-hook
    nil 'local))
 
-;;;; Minibuffer commands
+;;; Minibuffer commands
 
 (defun selectrum-previous-candidate (&optional arg)
   "Move selection ARG candidates up, stopping at the beginning."
@@ -2001,7 +2005,7 @@ Only to be used from `selectrum-select-from-history'"
 Same as `minibuffer-local-filename-syntax' but considers spaces
 as symbol constituents.")
 
-;;;; Main entry points
+;;; Main entry points
 
 (defmacro selectrum--let-maybe (pred varlist &rest body)
   "If PRED evaluates to non-nil, bind variables in VARLIST and eval BODY.
@@ -2835,14 +2839,13 @@ ARGS are standard as in all `:around' advice."
         (define-key minibuffer-local-map
           [remap previous-matching-history-element] nil)))))
 
-;;;; Closing remarks
+;;; Closing remarks
 
 (provide 'selectrum)
 
 ;; Local Variables:
 ;; checkdoc-verb-check-experimental-flag: nil
 ;; indent-tabs-mode: nil
-;; outline-regexp: ";;;;* "
 ;; sentence-end-double-space: nil
 ;; End:
 
