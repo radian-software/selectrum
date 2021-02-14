@@ -586,6 +586,9 @@ This is non-nil during the first call of
 (defvar-local selectrum--virtual-default-file nil
   "If set used as a virtual file to prompt with.")
 
+(defvar-local selectrum--line-height nil
+  "The `line-pixel-height' of current session.")
+
 ;;;;; Minibuffer state utility functions
 
 (defun selectrum--normalize-collection (collection &optional predicate)
@@ -1300,7 +1303,7 @@ window is supposed to be shown vertically."
                          ;; Add one for prompt.
                          (1+ max)))
                 ;; Include possible line spacing.
-                (height (* lines (line-pixel-height))))
+                (height (* lines selectrum--line-height)))
            (selectrum--set-window-height window height)))
         (t
          (when-let ((expand (selectrum--expand-window-for-content-p window)))
@@ -1721,6 +1724,7 @@ overridden and BUF the buffer the session was started from."
   ;; is assigned.
   (setq selectrum--previous-input-string nil)
   (setq selectrum--count-overlay (make-overlay (point-min) (point-min)))
+  (setq-local selectrum--line-height (line-pixel-height))
   (add-hook
    'post-command-hook
    #'selectrum--minibuffer-post-command-hook
