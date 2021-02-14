@@ -2713,7 +2713,8 @@ shadows correctly."
   (unless selectrum--last-command
     (user-error "No Selectrum command has been run yet"))
   (let ((selectrum--repeat t))
-    (setq current-prefix-arg selectrum--last-prefix-arg)
+    (setq current-prefix-arg selectrum--last-prefix-arg
+          this-command selectrum--last-command)
     (call-interactively selectrum--last-command)))
 
 ;;;###autoload
