@@ -468,6 +468,9 @@ function and BODY opens the minibuffer."
 (defvar selectrum--candidates-overlay nil
   "Overlay used to display current candidates.")
 
+(defvar selectrum--count-overlay nil
+  "Overlay used to display count information before prompt.")
+
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
@@ -574,9 +577,6 @@ See `selectrum-refine-candidates-function'.")
 (defvar-local selectrum--read-args nil
   "List of arguments passed to `selectrum-read'.
 Passed to various hook functions.")
-
-(defvar-local selectrum--count-overlay nil
-  "Overlay used to display count information before prompt.")
 
 (defvar-local selectrum--last-command nil
   "Name of last interactive command that invoked Selectrum.")
@@ -1724,7 +1724,7 @@ defaults to `completion-extra-properties'."
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
   (when (overlayp selectrum--count-overlay)
     (delete-overlay selectrum--count-overlay))
-  (setq-local selectrum--count-overlay nil))
+  (setq selectrum--count-overlay nil))
 
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
@@ -1756,6 +1756,9 @@ overridden and BUF the buffer the session was started from."
   (unless selectrum--candidates-overlay
     (setq selectrum--candidates-overlay
           (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
+  (unless (or selectrum--count-overlay
+              (not selectrum-count-style))
+    (setq selectrum--count-overlay (make-overlay (point-min) (point-min))))
   ;; If metadata specifies a custom sort function use it as
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
@@ -1779,7 +1782,6 @@ overridden and BUF the buffer the session was started from."
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
   (setq-local selectrum--previous-input-string nil)
-  (setq-local selectrum--count-overlay (make-overlay (point-min) (point-min)))
   (setq-local selectrum--line-height (line-pixel-height))
   (add-hook
    'post-command-hook
