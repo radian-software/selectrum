@@ -551,6 +551,11 @@ Passed to various hook functions.")
 (defvar-local selectrum--last-prefix-arg nil
   "Prefix argument given to last interactive command that invoked Selectrum.")
 
+(defvar-local selectrum--last-input nil
+  "Input of last Selectrum session. This is different from
+`selectrum--previous-input-string' which also reflects the
+current input within a session.")
+
 (defvar-local selectrum--repeat nil
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
@@ -596,7 +601,8 @@ If PREDICATE is non-nil, then it filters the collection as in
   ;; Making the last buffer current avoids the cost of potential
   ;; buffer switching for each candidate within the predicate (see
   ;; `describe-variable').
-  (with-current-buffer (if (eq collection 'help--symbol-completion-table)
+  (with-current-buffer (if (and (eq collection 'help--symbol-completion-table)
+                                (buffer-live-p selectrum--last-buffer))
                            selectrum--last-buffer
                          (current-buffer))
     (let ((completion-regexp-list nil))
@@ -1046,8 +1052,12 @@ the update."
                                    (point-max)))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
-        ;; Always save globally, too.
-        (setq-default selectrum--previous-input-string input)
+        ;; Track current input globally and in last buffer for
+        ;; selectrum-repeat.
+        (setq-default selectrum--last-input input)
+        (when (buffer-live-p selectrum--last-buffer)
+          (with-current-buffer selectrum--last-buffer
+            (setq-local selectrum--last-input input)))
         (setq-local selectrum--previous-input-string input)
         ;; Reset the persistent input, so that it will be nil if
         ;; there's no special attention needed.
@@ -1135,7 +1145,7 @@ the update."
         (setq-local selectrum--actual-num-candidates-displayed nil)
         (if selectrum--repeat
             (progn
-              (setq-default
+              (setq-local
                selectrum--current-candidate-index
                (and (> (length selectrum--refined-candidates) 0)
                     (min (or selectrum--current-candidate-index 0)
@@ -1692,14 +1702,20 @@ overridden and BUF the buffer the session was started from."
   (setq-local selectrum--last-buffer buf)
   (cond (selectrum--repeat
          (delete-minibuffer-contents)
-         (insert selectrum--previous-input-string))
-        ((eq (minibuffer-depth) t)
-         (setq-default selectrum--last-command this-command)
-         (setq-default selectrum--last-prefix-arg current-prefix-arg))
+         (insert
+          (with-current-buffer
+              (or (and (buffer-live-p selectrum--last-buffer)
+                       selectrum--last-buffer)
+                  (current-buffer))
+            (or selectrum--last-input ""))))
         (t
-         (with-current-buffer selectrum--last-buffer
-           (setq-local selectrum--last-command this-command)
-           (setq-local selectrum--last-prefix-arg current-prefix-arg))))
+         ;; Track globally and in last buffer.
+         (setq-default selectrum--last-command this-command)
+         (setq-default selectrum--last-prefix-arg current-prefix-arg)
+         (when (buffer-live-p selectrum--last-buffer)
+           (with-current-buffer selectrum--last-buffer
+             (setq-local selectrum--last-command this-command)
+             (setq-local selectrum--last-prefix-arg current-prefix-arg)))))
   (setq-local auto-hscroll-mode nil)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
