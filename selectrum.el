@@ -553,8 +553,8 @@ Passed to various hook functions.")
 
 (defvar-local selectrum--last-input nil
   "Input of last Selectrum session. This is different from
-`selectrum--previous-input-string' which also reflects the
-current input within a session.")
+`selectrum--previous-input-string' which reflects the previous
+input within a session.")
 
 (defvar-local selectrum--repeat nil
   "Non-nil means try to restore the minibuffer state during setup.
@@ -1740,6 +1740,8 @@ overridden and BUF the buffer the session was started from."
               (if (and default (symbolp default))
                   (symbol-name default)
                 default))
+  (setq-default selectrum--default-candidate
+                selectrum--default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
   ;; candidate refinement happens in `post-command-hook' and an index
   ;; is assigned.
@@ -2137,11 +2139,13 @@ semantics of `cl-defun'."
            ;; text properties but leaves the default unchanged
            ;; when submitting the empty prompt to get it (see
            ;; #180, #107).
-           (if (and selectrum--previous-input-string
-                    (string-empty-p selectrum--previous-input-string)
-                    (equal res selectrum--default-candidate))
-               default-candidate
-             (substring-no-properties res)))
+           (let ((exit-string (default-value 'selectrum--last-input))
+                 (default (default-value 'selectrum--default-candidate)))
+             (if (and exit-string
+                      (string-empty-p exit-string)
+                      (equal res default))
+                 default-candidate
+               (substring-no-properties res))))
           (t res))))
 
 ;;;###autoload
