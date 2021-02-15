@@ -67,19 +67,6 @@ parts of the input."
   "Face used to display docsigs of completion tables."
   :group 'selectrum-faces)
 
-;;; Variables
-
-(defvar selectrum-should-sort-p t
-  "Non-nil if preprocessing and refinement functions should sort.
-This is let-bound to nil in some contexts, and should be
-respected by user functions for optimal results.")
-
-(defvar selectrum--minibuffer-default-in-prompt-regexps
-  (let ((minibuffer-eldef-shorten-default nil))
-    (minibuffer-default--in-prompt-regexps))
-  "Regexps for determining if the prompt message includes the default value.
-See `minibuffer-default-in-prompt-regexps', from which this is derived.")
-
 ;;; User options
 
 (defgroup selectrum nil
@@ -87,6 +74,12 @@ See `minibuffer-default-in-prompt-regexps', from which this is derived.")
   :group 'convenience
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
+
+(defcustom selectrum-should-sort-p t
+  "Non-nil if preprocessing and refinement functions should sort.
+This is let-bound to nil in some contexts, and should be
+respected by user functions for optimal results."
+  :type 'boolean)
 
 (defcustom selectrum-max-window-height 10
   "Maximal window height to expand to.
@@ -243,51 +236,6 @@ list of candidates (strings) that are going to be displayed.
 Return a list of propertized candidates. Do not modify the input
 list or strings."
   :type 'function)
-
-(defvar selectrum-minibuffer-map
-  (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map minibuffer-local-map)
-
-    (define-key map [remap keyboard-quit] #'abort-recursive-edit)
-    ;; This is bound in `minibuffer-local-map' by loading `delsel', so
-    ;; we have to account for it too.
-    (define-key map [remap minibuffer-keyboard-quit]
-      #'abort-recursive-edit)
-    ;; Override both the arrow keys and C-n/C-p.
-    (define-key map [remap previous-line]
-      #'selectrum-previous-candidate)
-    (define-key map [remap next-line]
-      #'selectrum-next-candidate)
-    (define-key map [remap previous-line-or-history-element]
-      #'selectrum-previous-candidate)
-    (define-key map [remap next-line-or-history-element]
-      #'selectrum-next-candidate)
-    (define-key map [remap exit-minibuffer]
-      #'selectrum-select-current-candidate)
-    (define-key map [remap scroll-down-command]
-      #'selectrum-previous-page)
-    (define-key map [remap scroll-up-command]
-      #'selectrum-next-page)
-    ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
-    ;; `beginning-of-buffer' for Emacs <=26.
-    (define-key map [remap minibuffer-beginning-of-buffer]
-      #'selectrum-goto-beginning)
-    (define-key map [remap beginning-of-buffer]
-      #'selectrum-goto-beginning)
-    (define-key map [remap end-of-buffer]
-      #'selectrum-goto-end)
-    (define-key map [remap kill-ring-save]
-      #'selectrum-kill-ring-save)
-    (define-key map [remap previous-matching-history-element]
-      #'selectrum-select-from-history)
-    (define-key map (kbd "C-M-DEL") #'backward-kill-sexp)
-    (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
-    (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
-    (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
-    (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
-    ;; Return the map.
-    map)
-  "Keymap used by Selectrum in the minibuffer.")
 
 (defcustom selectrum-candidate-selected-hook nil
   "Normal hook run when the user selects a candidate.
@@ -471,15 +419,101 @@ function and BODY opens the minibuffer."
              ,@body)
          (remove-hook 'minibuffer-setup-hook ,hook)))))
 
-;;; Minibuffer state
+;;; Variables
 
-(defvar-local selectrum--last-buffer nil
-  "The buffer that was current before the active session")
+(defvar selectrum-minibuffer-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map minibuffer-local-map)
+
+    (define-key map [remap keyboard-quit] #'abort-recursive-edit)
+    ;; This is bound in `minibuffer-local-map' by loading `delsel', so
+    ;; we have to account for it too.
+    (define-key map [remap minibuffer-keyboard-quit]
+      #'abort-recursive-edit)
+    ;; Override both the arrow keys and C-n/C-p.
+    (define-key map [remap previous-line]
+      #'selectrum-previous-candidate)
+    (define-key map [remap next-line]
+      #'selectrum-next-candidate)
+    (define-key map [remap previous-line-or-history-element]
+      #'selectrum-previous-candidate)
+    (define-key map [remap next-line-or-history-element]
+      #'selectrum-next-candidate)
+    (define-key map [remap exit-minibuffer]
+      #'selectrum-select-current-candidate)
+    (define-key map [remap scroll-down-command]
+      #'selectrum-previous-page)
+    (define-key map [remap scroll-up-command]
+      #'selectrum-next-page)
+    ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
+    ;; `beginning-of-buffer' for Emacs <=26.
+    (define-key map [remap minibuffer-beginning-of-buffer]
+      #'selectrum-goto-beginning)
+    (define-key map [remap beginning-of-buffer]
+      #'selectrum-goto-beginning)
+    (define-key map [remap end-of-buffer]
+      #'selectrum-goto-end)
+    (define-key map [remap kill-ring-save]
+      #'selectrum-kill-ring-save)
+    (define-key map [remap previous-matching-history-element]
+      #'selectrum-select-from-history)
+    (define-key map (kbd "C-M-DEL") #'backward-kill-sexp)
+    (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
+    (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
+    (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
+    (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
+    ;; Return the map.
+    map)
+  "Keymap used by Selectrum in the minibuffer.")
 
 (defvar selectrum--candidates-overlay nil
   "Overlay used to display current candidates.")
 
-(defvar selectrum--dynamic-candidates nil
+(defvar selectrum--candidates-buffer " *selectrum*"
+  "Buffer to display candidates using `selectrum-display-action'.")
+
+(defvar selectrum--crm-separator-alist
+  '((":\\|,\\|\\s-" . ",")
+    ("[ \t]*:[ \t]*" . ":")
+    ("[ \t]*,[ \t]*" . ",")
+    (" " . " "))
+  "Values of `crm-separator' mapped to separator strings.
+If current `crm-separator' has a mapping the separator gets
+inserted automatically when using
+`selectrum-insert-current-candidate'.")
+
+(defvar selectrum--minibuffer-default-in-prompt-regexps
+  (let ((minibuffer-eldef-shorten-default nil))
+    (minibuffer-default--in-prompt-regexps))
+  "Regexps for determining if the prompt message includes the default value.
+See `minibuffer-default-in-prompt-regexps', from which this is derived.")
+
+(defvar selectrum--minibuffer-local-filename-syntax
+  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
+    (modify-syntax-entry ?\s "_" table)
+    table)
+  "Syntax table for reading file names.
+Same as `minibuffer-local-filename-syntax' but considers spaces
+as symbol constituents.")
+
+(defvar selectrum--old-completing-read-function nil
+  "Previous value of `completing-read-function'.")
+
+(defvar selectrum--old-completion-in-region-function nil
+  "Previous value of `completion-in-region-function'.")
+
+(defvar selectrum--old-read-buffer-function nil
+  "Previous value of `read-buffer-function'.")
+
+(defvar selectrum--old-read-file-name-function nil
+  "Previous value of `read-file-name-function'.")
+
+;;; Session state
+
+(defvar-local selectrum--last-buffer nil
+  "The buffer that was current before the active session")
+
+(defvar-local selectrum--dynamic-candidates nil
   "The dynamic candidate function passed to `selectrum-read'.
 When set the dynamic candidate function is called on each input
 change. The results are subsequently preprocessed by
@@ -521,7 +555,7 @@ to be re-filtered.")
 Equivalently, nil if the user is allowed to submit their own
 input that does not match any of the displayed candidates.")
 
-(defvar selectrum--crm-p nil
+(defvar-local selectrum--crm-p nil
   "Non-nil for `selectrum-completing-read-multiple' sessions.")
 
 (defvar-local selectrum--move-default-candidate-p nil
@@ -560,7 +594,7 @@ input within a session.")
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
 
-(defvar selectrum-active-p nil
+(defvar-local selectrum-active-p nil
   "Non-nil means Selectrum is currently active.")
 
 (defvar-local selectrum--skip-updates-p nil
@@ -575,17 +609,17 @@ updates is skipped.")
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
 
-(defvar selectrum--total-num-candidates nil
+(defvar-local selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
-
-(defvar selectrum--candidates-buffer " *selectrum*"
-  "Buffer to display candidates using `selectrum-display-action'.")
 
 (defvar-local selectrum--virtual-default-file nil
   "If set used as a virtual file to prompt with.")
 
 (defvar-local selectrum--line-height nil
   "The `line-pixel-height' of current session.")
+
+(defvar-local selectrum--inserted-file-completion nil
+  "Non-nil when command should trigger refresh.")
 
 ;;;; Minibuffer state utility functions
 
@@ -1099,8 +1133,8 @@ the update."
                              (selectrum--normalize-collection
                               minibuffer-completion-table
                               minibuffer-completion-predicate)))))
-            (setq selectrum--total-num-candidates
-                  (length selectrum--preprocessed-candidates))))
+            (setq-local selectrum--total-num-candidates
+                        (length selectrum--preprocessed-candidates))))
         ;; Do refinement.
         (let* ((cands selectrum--preprocessed-candidates)
                (completion-styles-alist
@@ -1729,13 +1763,13 @@ overridden and BUF the buffer the session was started from."
     (setq-local selectrum-preprocess-candidates-function sortf))
   (cond ((functionp candidates)
          (setq-local selectrum--preprocessed-candidates nil)
-         (setq selectrum--total-num-candidates 0)
+         (setq-local selectrum--total-num-candidates 0)
          (setq-local selectrum--dynamic-candidates candidates))
         (t
          (setq-local selectrum--preprocessed-candidates
                      (funcall selectrum-preprocess-candidates-function
                               candidates))
-         (setq selectrum--total-num-candidates (length candidates))))
+         (setq-local selectrum--total-num-candidates (length candidates))))
   (setq-local selectrum--default-candidate
               (if (and default (symbolp default))
                   (symbol-name default)
@@ -1902,24 +1936,11 @@ ignores the currently selected candidate, if one exists."
   (let ((selectrum--current-candidate-index -1))
     (selectrum-select-current-candidate)))
 
-(defvar selectrum--crm-separator-alist
-  '((":\\|,\\|\\s-" . ",")
-    ("[ \t]*:[ \t]*" . ":")
-    ("[ \t]*,[ \t]*" . ",")
-    (" " . " "))
-  "Values of `crm-separator' mapped to separator strings.
-If current `crm-separator' has a mapping the separator gets
-inserted automatically when using
-`selectrum-insert-current-candidate'.")
-
 (defun selectrum--reset-minibuffer-history-state ()
   "Reset history for current prompt."
   (setq-local minibuffer-history-position 0)
   (setq-local minibuffer-text-before-history
               (minibuffer-contents-no-properties)))
-
-(defvar-local selectrum--inserted-file-completion nil
-  "Non-nil when command should trigger refresh.")
 
 (defun selectrum-insert-current-candidate (&optional arg)
   "Insert current candidate into user input area.
@@ -2026,14 +2047,6 @@ Only to be used from `selectrum-select-from-history'"
   (throw 'selectrum-insert-action
          (propertize (selectrum-get-current-candidate 'notfull)
                      'selectum--insert t)))
-
-(defvar selectrum--minibuffer-local-filename-syntax
-  (let ((table (copy-syntax-table minibuffer-local-filename-syntax)))
-    (modify-syntax-entry ?\s "_" table)
-    table)
-  "Syntax table for reading file names.
-Same as `minibuffer-local-filename-syntax' but considers spaces
-as symbol constituents.")
 
 ;;; Main entry points
 
@@ -2167,9 +2180,6 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    :minibuffer-completion-table collection
    :minibuffer-completion-predicate predicate))
 
-(defvar selectrum--old-completing-read-function nil
-  "Previous value of `completing-read-function'.")
-
 ;;;###autoload
 (defun selectrum-completing-read-multiple
     (prompt table &optional predicate require-match initial-input
@@ -2298,9 +2308,6 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
         (when exit-func
           (funcall exit-func result exit-status))))))
 
-(defvar selectrum--old-completion-in-region-function nil
-  "Previous value of `completion-in-region-function'.")
-
 ;;;###autoload
 (defun selectrum-read-buffer (prompt &optional def require-match predicate)
   "Read buffer using Selectrum. Can be used as `read-buffer-function'.
@@ -2314,8 +2321,7 @@ less appropriate. It also allows you to view hidden buffers,
 which is otherwise impossible due to tricky behavior of Emacs'
 completion machinery. For PROMPT, DEF, REQUIRE-MATCH, and
 PREDICATE, see `read-buffer'."
-  (let* ((selectrum-should-sort-p nil)
-         (buffalist (mapcar (lambda (buf)
+  (let* ((buffalist (mapcar (lambda (buf)
                               (cons (buffer-name buf) buf))
                             (buffer-list)))
          (buffers (mapcar #'car (if predicate
@@ -2339,18 +2345,18 @@ PREDICATE, see `read-buffer'."
                        candidates)))
               `((candidates . ,candidates)
                 (input . ,input))))))
-    (selectrum-read
-     prompt candidates
-     :default-candidate def
-     :require-match (eq require-match t)
-     :history 'buffer-name-history
-     :no-move-default-candidate t
-     :may-modify-candidates t
-     :minibuffer-completion-table #'internal-complete-buffer
-     :minibuffer-completion-predicate predicate)))
-
-(defvar selectrum--old-read-buffer-function nil
-  "Previous value of `read-buffer-function'.")
+    (selectrum--minibuffer-with-setup-hook
+        (lambda ()
+          (setq-local selectrum-should-sort-p nil))
+      (selectrum-read
+       prompt candidates
+       :default-candidate def
+       :require-match (eq require-match t)
+       :history 'buffer-name-history
+       :no-move-default-candidate t
+       :may-modify-candidates t
+       :minibuffer-completion-table #'internal-complete-buffer
+       :minibuffer-completion-predicate predicate))))
 
 (defun selectrum--partial-file-completions
     (path collection predicate &optional raw)
@@ -2610,9 +2616,6 @@ PREDICATE, see `read-file-name'."
            default-directory))
       initial)
      mustmatch initial predicate)))
-
-(defvar selectrum--old-read-file-name-function nil
-  "Previous value of `read-file-name-function'.")
 
 ;;;###autoload
 (defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
