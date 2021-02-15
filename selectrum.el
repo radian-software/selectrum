@@ -1315,10 +1315,11 @@ the update."
         (put-text-property 0 1 'cursor t minibuf-after-string)
         (overlay-put selectrum--candidates-overlay
                      'after-string minibuf-after-string)
-        (overlay-put selectrum--count-overlay
-                     'before-string count-info)
-        (overlay-put selectrum--count-overlay
-                     'priority 1)
+        (when selectrum--count-overlay
+          (overlay-put selectrum--count-overlay
+                       'before-string count-info)
+          (overlay-put selectrum--count-overlay
+                       'priority 1))
         (when window
           (selectrum--update-window-height
            window (not horizp)))
