@@ -465,6 +465,11 @@ function and BODY opens the minibuffer."
     map)
   "Keymap used by Selectrum in the minibuffer.")
 
+(defvar-local selectrum-move-default-candidate nil
+  "Non-nil means move default candidate to start of list.
+Nil means select the default candidate initially even if it's not
+at the start of the list.")
+
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
@@ -559,11 +564,6 @@ input that does not match any of the displayed candidates.")
 
 (defvar-local selectrum--crm-p nil
   "Non-nil for `selectrum-completing-read-multiple' sessions.")
-
-(defvar-local selectrum--move-default-candidate-p nil
-  "Non-nil means move default candidate to start of list.
-Nil means select the default candidate initially even if it's not
-at the start of the list.")
 
 (defvar-local selectrum--default-candidate nil
   "Default candidate, or nil if none given.")
@@ -1157,7 +1157,7 @@ the update."
                              'face 'shadow)
                             selectrum--refined-candidates))
           (setq-local selectrum--virtual-default-file nil))
-        (when (and selectrum--move-default-candidate-p
+        (when (and selectrum-move-default-candidate
                    selectrum--default-candidate)
           (setq-local selectrum--refined-candidates
                       (selectrum--move-to-front-destructive
@@ -1216,7 +1216,7 @@ the update."
                                  (or (not selectrum--match-required-p)
                                      (selectrum--at-existing-prompt-path-p))))
                         -1)
-                       (selectrum--move-default-candidate-p
+                       (selectrum-move-default-candidate
                         0)
                        (t
                         (or (cl-position selectrum--default-candidate
@@ -2138,7 +2138,7 @@ semantics of `cl-defun'."
                                        (cl-list* prompt candidates args))
                            (setq-local selectrum--match-required-p
                                        require-match)
-                           (setq-local selectrum--move-default-candidate-p
+                           (setq-local selectrum-move-default-candidate
                                        (not no-move-default-candidate))
                            (selectrum--minibuffer-setup-hook
                             candidates
