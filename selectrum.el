@@ -465,12 +465,6 @@ function and BODY opens the minibuffer."
     map)
   "Keymap used by Selectrum in the minibuffer.")
 
-(defvar selectrum--candidates-overlay nil
-  "Overlay used to display current candidates.")
-
-(defvar selectrum--count-overlay nil
-  "Overlay used to display count information before prompt.")
-
 (defvar selectrum--candidates-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
@@ -514,6 +508,12 @@ as symbol constituents.")
 
 (defvar-local selectrum--last-buffer nil
   "The buffer that was current before the active session")
+
+(defvar-local selectrum--candidates-overlay nil
+  "Overlay used to display current candidates.")
+
+(defvar-local selectrum--count-overlay nil
+  "Overlay used to display count information before prompt.")
 
 (defvar-local selectrum--dynamic-candidates nil
   "The dynamic candidate function passed to `selectrum-read'.
@@ -1311,7 +1311,7 @@ the update."
                         (with-current-buffer buffer
                           (buffer-string)))))
         (move-overlay selectrum--candidates-overlay
-                      (point-max) (point-max) (current-buffer))
+                      (point-max) (point-max))
         (put-text-property 0 1 'cursor t minibuf-after-string)
         (overlay-put selectrum--candidates-overlay
                      'after-string minibuf-after-string)
@@ -1725,7 +1725,7 @@ defaults to `completion-extra-properties'."
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
   (when (overlayp selectrum--count-overlay)
     (delete-overlay selectrum--count-overlay))
-  (setq selectrum--count-overlay nil))
+  (setq-local selectrum--count-overlay nil))
 
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
@@ -1754,12 +1754,12 @@ overridden and BUF the buffer the session was started from."
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--init-p t)
-  (unless selectrum--candidates-overlay
-    (setq selectrum--candidates-overlay
-          (make-overlay (point) (point) nil 'front-advance 'rear-advance)))
-  (unless (or selectrum--count-overlay
-              (not selectrum-count-style))
-    (setq selectrum--count-overlay (make-overlay (point-min) (point-min))))
+  (setq-local selectrum--candidates-overlay
+              (make-overlay (point) (point) nil
+                            'front-advance 'rear-advance))
+  (unless (not selectrum-count-style)
+    (setq-local selectrum--count-overlay
+                (make-overlay (point-min) (point-min))))
   ;; If metadata specifies a custom sort function use it as
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
