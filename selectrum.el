@@ -76,9 +76,8 @@ parts of the input."
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
 (defcustom selectrum-should-sort-p t
-  "Non-nil if preprocessing and refinement functions should sort.
-This is let-bound to nil in some contexts, and should be
-respected by user functions for optimal results."
+  "Non-nil if preprocessing function should sort.
+This should be respected by user functions for optimal results."
   :type 'boolean)
 
 (defcustom selectrum-max-window-height 10
