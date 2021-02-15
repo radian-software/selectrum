@@ -54,6 +54,8 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
+* The command `selectrum-repeat` can also repeat the last recursive
+  session now ([#322], [#440]).
 * The default value of `selectrum-extend-current-candidate-highlight`
   has been changed to `auto` which will automatically extend the
   highlighting if the session uses annotations ([#427], [#430]).
@@ -307,6 +309,7 @@ The format is based on [Keep a Changelog].
 [#318]: https://github.com/raxod502/selectrum/pull/318
 [#320]: https://github.com/raxod502/selectrum/issues/320
 [#321]: https://github.com/raxod502/selectrum/pull/321
+[#322]: https://github.com/raxod502/selectrum/issues/322
 [#323]: https://github.com/raxod502/selectrum/issues/323
 [#324]: https://github.com/raxod502/selectrum/pull/324
 [#327]: https://github.com/raxod502/selectrum/pull/327
@@ -374,6 +377,7 @@ The format is based on [Keep a Changelog].
 [#432]: https://github.com/raxod502/selectrum/pull/432
 [#438]: https://github.com/raxod502/selectrum/issues/438
 [#439]: https://github.com/raxod502/selectrum/pull/439
+[#440]: https://github.com/raxod502/selectrum/pull/440
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
