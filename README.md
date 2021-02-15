@@ -348,6 +348,8 @@ matching and case-insensitive matching.
 * You can configure the initial filtering of
   `selectrum-completion-in-region` using
   `selectrum-completion-in-region-styles`.
+* The option `selectrum-should-sort` controls whether preprocessing
+  functions should sort.
 
 As an example of customizing the faces, I use the
 [Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
@@ -569,6 +571,16 @@ are:
 
 * `selectrum-candidate-selected-hook`
 * `selectrum-candidate-inserted-hook`
+
+For more information, see their docstrings.
+
+### Variables
+
+You can adjust settings per session by adjusting the user option
+variables locally in `minibuffer-with-setup-hook`. Additionally the
+following variables can be used to adjust session behavior:
+
+* `selectrum-move-default-candidate`
 
 For more information, see their docstrings.
 
