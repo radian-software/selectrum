@@ -75,7 +75,12 @@ parts of the input."
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
-(defcustom selectrum-should-sort-p t
+(define-obsolete-variable-alias
+  'selectrum-should-sort-p
+  'selectrum-should-sort
+  "3.0")
+
+(defcustom selectrum-should-sort t
   "Non-nil if preprocessing function should sort.
 This should be respected by user functions for optimal results."
   :type 'boolean)
@@ -192,7 +197,7 @@ nothing to remove.)"
   "Default value of `selectrum-preprocess-candidates-function'.
 Sort first by length and then alphabetically. CANDIDATES is a
 list of strings."
-  (if selectrum-should-sort-p
+  (if selectrum-should-sort
       (sort candidates
             (lambda (c1 c2)
               (or (< (length c1)
@@ -2013,7 +2018,7 @@ history item and exit use `selectrum-select-current-candidate'."
            (result
             (selectrum--minibuffer-with-setup-hook
                 (lambda ()
-                  (setq-local selectrum-should-sort-p nil)
+                  (setq-local selectrum-should-sort nil)
                   (setq-local selectrum-candidate-inserted-hook nil)
                   (setq-local selectrum-candidate-selected-hook nil)
                   (use-local-map
@@ -2349,7 +2354,7 @@ PREDICATE, see `read-buffer'."
                 (input . ,input))))))
     (selectrum--minibuffer-with-setup-hook
         (lambda ()
-          (setq-local selectrum-should-sort-p nil))
+          (setq-local selectrum-should-sort nil))
       (selectrum-read
        prompt candidates
        :default-candidate def
