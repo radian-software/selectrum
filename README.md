@@ -577,11 +577,11 @@ For more information, see their docstrings.
 ### Variables
 
 You can use the variable `selectrum-is-active` to check if the current
-minibuffer session is a Selectrum one. To session settings you can set
-the user option variables locally in `minibuffer-with-setup-hook`.
+minibuffer session is a Selectrum one.
 
-Additionally the following variables can be used to adjust session
-behavior:
+To adjust session settings you can set the user option variables
+locally in `minibuffer-with-setup-hook`. Additionally the following
+variables can be used to adjust session behavior:
 
 * `selectrum-move-default-candidate`
 
