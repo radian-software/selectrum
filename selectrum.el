@@ -472,7 +472,7 @@ function and BODY opens the minibuffer."
     map)
   "Keymap used by Selectrum in the minibuffer.")
 
-(defvar-local selectrum-move-default-candidate nil
+(defvar-local selectrum-move-default-candidate t
   "Non-nil means move default candidate to start of list.
 Nil means select the default candidate initially even if it's not
 at the start of the list.")
@@ -2123,8 +2123,11 @@ semantics of `cl-defun'."
                 (:append (lambda ()
                            (setq-local selectrum--match-is-required
                                        require-match)
-                           (setq-local selectrum-move-default-candidate
-                                       (not no-move-default-candidate))
+                           ;; TODO the `:no-move-default-candidate' option of
+                           ;; `selectrum--read' should be removed together with
+                           ;; the obsolete `selectrum-read' alias.
+                           (when no-move-default-candidate
+                             (setq-local selectrum-move-default-candidate nil))
                            (selectrum--minibuffer-setup-hook
                             candidates
                             (or (car-safe minibuffer-default)
@@ -2336,13 +2339,13 @@ PREDICATE, see `read-buffer'."
                 (input . ,input))))))
     (selectrum--minibuffer-with-setup-hook
         (lambda ()
-          (setq-local selectrum-should-sort nil))
+          (setq-local selectrum-should-sort nil)
+          (setq-local selectrum-move-default-candidate nil))
       (selectrum--read
        prompt candidates
        :default-candidate def
        :require-match (eq require-match t)
        :history 'buffer-name-history
-       :no-move-default-candidate t
        :may-modify-candidates t
        :minibuffer-completion-table #'internal-complete-buffer
        :minibuffer-completion-predicate predicate))))
