@@ -484,22 +484,8 @@ Selectrum-specific functions. Simply use `completing-read` and
 friends, and Selectrum will automatically enhance the experience if
 `selectrum-mode` is enabled.**
 
-However, Selectrum does expose some internal functions as part of its
-public API. The main entry point is the function `selectrum-read`.
-This function is rather like `completing-read`, but with a cleaner
-API. See the docstring for details. The various functions and advice
-installed by Selectrum just call into `selectrum-read` with various
-arguments, after translating whatever Emacs API they implement into
-Selectrum's least common denominator.
-
-Unless you are extending Selectrum to support some very weird function
-which (ab)uses the `completing-read` framework in an interesting way,
-you shouldn't need to use `selectrum-read` directly, as all Emacs
-functions should call into it as appropriate when `selectrum-mode` is
-enabled.
-
-In addition to `selectrum-read`, Selectrum makes available as part of
-its public API some of the functions that wrap `selectrum-read`:
+Selectrum does expose some completion functions as part of its public
+API.
 
 * `selectrum-completing-read` (for `completing-read-function`)
 * `selectrum-completing-read-multiple` (to override
@@ -511,10 +497,10 @@ its public API some of the functions that wrap `selectrum-read`:
 * `selectrum-read-directory-name` (to override `read-directory-name`)
 * `selectrum-read-library-name` (to override `read-library-name`)
 
-You can use these functions in defining variants of Selectrum-based
-commands. If you need to do something more complicated than just
-calling one of these functions with special options, then define your
-own function and call `selectrum-read` directly.
+These functions are used as replacements for the standard completion
+functions when `selectrum-mode` is enabled. If you want to define your
+own commands using completion, it is recommended to use the standard
+`completing-read` API.
 
 ### Sorting, filtering, and highlighting
 
@@ -525,8 +511,7 @@ user option:
 * `selectrum-preprocess-candidates-function` takes the original list
   of candidates and sorts it (actually, it can do any sort of
   preprocessing it wants). Usually preprocessing only happens once.
-  However, if a function is passed to `selectrum-read` to generate the
-  candidate list dynamically based on the user input, then
+  Under special circumstances where the candidate set is dynamic,
   preprocessing happens instead after each input change.
 * `selectrum-refine-candidates-function` takes the preprocessed list
   and filters it using the user's input. This refinement happens every
@@ -820,7 +805,7 @@ seems to provide a similar vertical completion interface to Selectrum.
 
 One problem with Snails is that, like Ivy, it goes the route of
 wrapping every possible command with a "backend" rather than using
-existing Emacs interfaces to handle all possible commands. 
+existing Emacs interfaces to handle all possible commands.
 
 ### Sallet
 

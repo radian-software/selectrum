@@ -88,9 +88,9 @@ ONLY-ONE non-nil means don't add section headers."
                           sources)))
 
 (defun selectrum-helm--adapter (&rest plist)
-  "Receive arguments to `helm' and invoke `selectrum-read' instead.
+  "Receive arguments to `helm' and invoke `selectrum--read' instead.
 For PLIST, see `helm'. This is an `:override' advice for `helm'."
-  (let* ((result (selectrum-read
+  (let* ((result (selectrum--read
                   (or (plist-get plist :prompt) "pattern: ")
                   (selectrum-helm--normalize-sources
                    (plist-get plist :sources))

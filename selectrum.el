@@ -78,7 +78,7 @@ parts of the input."
 (define-obsolete-variable-alias
   'selectrum-should-sort-p
   'selectrum-should-sort
-  "3.0")
+  "4.0")
 
 (defcustom selectrum-default-value-format " [default: %s]"
   "Format string for the default value in the minibuffer."
@@ -247,15 +247,13 @@ list or strings."
 
 (defcustom selectrum-candidate-selected-hook nil
   "Normal hook run when the user selects a candidate.
-It gets the same arguments as `selectrum-read' got, prepended
-with the string the user selected."
+It gets the string the user selected as argument."
   :type 'hook)
 
 (defcustom selectrum-candidate-inserted-hook nil
   "Normal hook run when the user inserts a candidate.
 \(This happens by typing \\[selectrum-insert-current-candidate].)
-It gets the same arguments as `selectrum-read' got, prepended
-with the string the user inserted."
+It gets the string the user inserted as argument."
   :type 'hook)
 
 (defcustom selectrum-count-style 'matches
@@ -530,11 +528,11 @@ as symbol constituents.")
   "Overlay used to display count information before prompt.")
 
 (defvar-local selectrum--dynamic-candidates nil
-  "The dynamic candidate function passed to `selectrum-read'.
+  "The dynamic candidate function passed to `selectrum--read'.
 When set the dynamic candidate function is called on each input
 change. The results are subsequently preprocessed by
 `selectrum-preprocess-candidates-function' and saved as
-`selectrum--preprocessed-candidates'. See `selectrum-read' for
+`selectrum--preprocessed-candidates'. See `selectrum--read' for
 more details on function collections.")
 
 (defvar-local selectrum--preprocessed-candidates nil
@@ -583,10 +581,6 @@ input that does not match any of the displayed candidates.")
   "User input string as transformed by candidate refinement.
 See `selectrum-refine-candidates-function'.")
 
-(defvar-local selectrum--read-args nil
-  "List of arguments passed to `selectrum-read'.
-Passed to various hook functions.")
-
 (defvar-local selectrum--last-command nil
   "Name of last interactive command that invoked Selectrum.")
 
@@ -605,7 +599,7 @@ This is used to implement `selectrum-repeat'.")
 (define-obsolete-variable-alias
   'selectrum-active-p
   'selectrum-is-active
-  "3.0")
+  "4.0")
 
 (defvar-local selectrum-is-active nil
   "Non-nil means Selectrum is currently active.")
@@ -1736,9 +1730,9 @@ defaults to `completion-extra-properties'."
 
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
-CANDIDATES is the list of strings that was passed to
-`selectrum-read'. DEFAULT is the default value which can be
-overridden and BUF the buffer the session was started from."
+CANDIDATES is the list of candidate strings. DEFAULT is the default
+value which can be overridden and BUF the buffer the session was
+started from."
   (setq-local selectrum-is-active t)
   (setq-local selectrum--last-buffer buf)
   (cond (selectrum--repeat
@@ -1879,17 +1873,14 @@ plus CANDIDATE."
                                    (insert (selectrum--get-full candidate))
                                    (buffer-string)))))
                           (dolist (cand (split-string crm crm-separator t))
-                            (apply
-                             #'run-hook-with-args
+                            (run-hook-with-args
                              'selectrum-candidate-selected-hook
-                             (selectrum--get-full cand)
-                             selectrum--read-args))
+                             (selectrum--get-full cand)))
                           crm))
                        (t
-                        (apply
-                         #'run-hook-with-args
+                        (run-hook-with-args
                          'selectrum-candidate-selected-hook
-                         candidate selectrum--read-args)
+                         candidate)
                         (selectrum--get-full candidate))))
          (inhibit-read-only t))
     (erase-buffer)
@@ -1986,10 +1977,9 @@ refresh."
                                (assoc crm-separator
                                       selectrum--crm-separator-alist)))
                      (insert (cdr match)))))
-            (apply
-             #'run-hook-with-args
+            (run-hook-with-args
              'selectrum-candidate-inserted-hook
-             candidate selectrum--read-args))
+             candidate))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
@@ -2058,7 +2048,7 @@ Only to be used from `selectrum-select-from-history'"
 
 ;;; Main entry points
 
-(cl-defun selectrum-read
+(cl-defun selectrum--read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
             history no-move-default-candidate
@@ -2131,8 +2121,6 @@ semantics of `cl-defun'."
                 (setq-local selectrum-is-active t))
             (selectrum--minibuffer-with-setup-hook
                 (:append (lambda ()
-                           (setq-local selectrum--read-args
-                                       (cl-list* prompt candidates args))
                            (setq-local selectrum--match-is-required
                                        require-match)
                            (setq-local selectrum-move-default-candidate
@@ -2160,6 +2148,8 @@ semantics of `cl-defun'."
                (substring-no-properties res))))
           (t res))))
 
+(define-obsolete-function-alias 'selectrum-read 'selectrum--read "4.0")
+
 ;;;###autoload
 (defun selectrum-completing-read
     (prompt collection &optional
@@ -2169,7 +2159,7 @@ semantics of `cl-defun'."
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (ignore inherit-input-method)
-  (selectrum-read
+  (selectrum--read
    prompt nil
    :initial-input initial-input
    :default-candidate (or (car-safe def) def)
@@ -2233,7 +2223,7 @@ the prompt."
                                  ""
                                "and crm-separator"))
                      (text-properties-at (point)))))))))
-       (selectrum-read
+       (selectrum--read
         prompt
         candidates
         :require-match require-match
@@ -2295,7 +2285,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (setq result
                  (if (not (cdr cands))
                      (car cands)
-                   (selectrum-read
+                   (selectrum--read
                     "Completion: " cands
                     :minibuffer-completion-table collection
                     :minibuffer-completion-predicate predicate))
@@ -2347,7 +2337,7 @@ PREDICATE, see `read-buffer'."
     (selectrum--minibuffer-with-setup-hook
         (lambda ()
           (setq-local selectrum-should-sort nil))
-      (selectrum-read
+      (selectrum--read
        prompt candidates
        :default-candidate def
        :require-match (eq require-match t)
@@ -2530,7 +2520,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                    (setq-local minibuffer-completing-file-name t)
                    (set-syntax-table
                     selectrum--minibuffer-local-filename-syntax)))
-      (selectrum-read
+      (selectrum--read
        prompt coll
        :default-candidate (or (car-safe def) def)
        :initial-input (or (car-safe initial-input) initial-input)
@@ -2710,7 +2700,7 @@ shadows correctly."
      table)
     (get-text-property
      0 'selectrum--lib-path
-     (selectrum-read
+     (selectrum--read
       "Library name: " lst :require-match t :may-modify-candidates t))))
 
 (defun selectrum-repeat ()

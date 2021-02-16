@@ -21,6 +21,16 @@ The format is based on [Keep a Changelog].
   option now ([#305]).
 * The special text property `selectrum-candidate-full` to change the
   canonical representation of a candidate has been removed ([#403]).
+* The `selectrum-read` API has been deprecated and made private. The
+  intention of this change is to encourage users instead to rely on
+  the plain `completing-read` function, which is completion system
+  agnostic ([#446]).
+* The hooks `selectrum-candidate-inserted-hook` and
+  `selectrum-candidate-selected-hook` originally received the
+  arguments passed to `selectrum-read`. Since the `selectrum-read` API
+  has been made private, these additional arguments have been removed
+  from the hook calls. Note that the main user of these hooks is
+  Precient, which ignored the additional arguments up to now ([#446]).
 
 ### Features
 * Line spacing is taken into account when using a fixed window height
@@ -389,6 +399,7 @@ The format is based on [Keep a Changelog].
 [#440]: https://github.com/raxod502/selectrum/pull/440
 [#444]: https://github.com/raxod502/selectrum/pull/444
 [#445]: https://github.com/raxod502/selectrum/pull/445
+[#446]: https://github.com/raxod502/selectrum/pull/446
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
