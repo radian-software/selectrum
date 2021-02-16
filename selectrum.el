@@ -1720,14 +1720,6 @@ defaults to `completion-extra-properties'."
         (cl-incf index))
       (split-string (buffer-string) "\n" t))))
 
-(defun selectrum--minibuffer-exit-hook ()
-  "Clean up Selectrum from the minibuffer, and self-destruct this hook."
-  ;; State and overlays are automatically cleaned up by Emacs on next
-  ;; session.
-  (remove-hook
-   'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
-  (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
-
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of candidate strings. DEFAULT is the default
@@ -1752,8 +1744,6 @@ started from."
              (setq-local selectrum--last-command this-command)
              (setq-local selectrum--last-prefix-arg current-prefix-arg)))))
   (setq-local auto-hscroll-mode nil)
-  (add-hook
-   'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
   (setq-local selectrum--is-initializing t)
   (setq-local selectrum--candidates-overlay
               (make-overlay (point) (point) nil
