@@ -2058,15 +2058,6 @@ Only to be used from `selectrum-select-from-history'"
 
 ;;; Main entry points
 
-(defmacro selectrum--let-maybe (pred varlist &rest body)
-  "If PRED evaluates to non-nil, bind variables in VARLIST and eval BODY.
-Otherwise, just eval BODY."
-  (declare (indent 0))
-  `(if ,pred
-       (let ,varlist
-         ,@body)
-     ,@body))
-
 (cl-defun selectrum-read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
