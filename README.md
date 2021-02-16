@@ -576,13 +576,16 @@ For more information, see their docstrings.
 
 ### Variables
 
-You can adjust settings per session by adjusting the user option
-variables locally in `minibuffer-with-setup-hook`. Additionally the
-following variables can be used to adjust session behavior:
+You can use the variable `selectrum-is-active` to check if the current
+minibuffer session is a Selectrum one. To session settings you can set
+the user option variables locally in `minibuffer-with-setup-hook`.
+
+Additionally the following variables can be used to adjust session
+behavior:
 
 * `selectrum-move-default-candidate`
 
-For more information, see their docstrings.
+For more information, see the respective docstrings.
 
 ## Contributor guide
 
