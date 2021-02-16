@@ -22,11 +22,13 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Customization](#customization)
   * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
+  * [News](#news)
 - [Developer guide](#developer-guide)
   * [Usage of Selectrum](#usage-of-selectrum)
   * [Sorting, filtering, and highlighting](#sorting-filtering-and-highlighting)
   * [Text properties](#text-properties)
   * [Hooks](#hooks)
+  * [Variables](#variables)
 - [Contributor guide](#contributor-guide)
 - [Caveats](#caveats)
 - [Selectrum in comparison to other completion-systems](#selectrum-in-comparison-to-other-completion-systems)
@@ -459,6 +461,13 @@ The autoloads of Selectrum are set up so that you can enable
 `selectrum-mode` without actually loading Selectrum. It will only be
 loaded once you use some of its functionality in an interactive
 command.
+
+### News
+
+We document changes for users in the
+[CHANGELOG](https://github.com/raxod502/selectrum/blob/master/CHANGELOG.md).
+To keep up with latest changes and features you can subscribe to the
+[feed](https://github.com/raxod502/selectrum/commits/master/CHANGELOG.md.atom).
 
 ## Developer guide
 
