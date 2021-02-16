@@ -562,12 +562,12 @@ changes, and is subsequently passed to
 Used to check if the user input has changed and candidates need
 to be re-filtered.")
 
-(defvar-local selectrum--match-required-p nil
+(defvar-local selectrum--match-is-required nil
   "Non-nil if the user must select one of the candidates.
 Equivalently, nil if the user is allowed to submit their own
 input that does not match any of the displayed candidates.")
 
-(defvar-local selectrum--crm-p nil
+(defvar-local selectrum--is-crm-session nil
   "Non-nil for `selectrum-completing-read-multiple' sessions.")
 
 (defvar-local selectrum--default-candidate nil
@@ -598,17 +598,22 @@ input within a session.")
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
 
-(defvar-local selectrum-active-p nil
+(define-obsolete-variable-alias
+  'selectrum-active-p
+  'selectrum-is-active
+  "3.0")
+
+(defvar-local selectrum-is-active nil
   "Non-nil means Selectrum is currently active.")
 
-(defvar-local selectrum--skip-updates-p nil
+(defvar-local selectrum--should-skip-updates nil
   "If selectrum should skip updates.
 
 In normal operation Selectrum checks for updating its UI after
 each command. When this variable is non-nil the computation of
 updates is skipped.")
 
-(defvar-local selectrum--init-p nil
+(defvar-local selectrum--is-initializing nil
   "Non-nil means the current session is initializing.
 This is non-nil during the first call of
 `selectrum--minibuffer-post-command-hook'.")
@@ -665,7 +670,7 @@ making other methods redundant."
   "Return currently selected Selectrum candidate if there is one.
 If NOTFULL is non-nil don't use canonical representation of
 candidate and return the candidate as displayed."
-  (when (and selectrum-active-p
+  (when (and selectrum-is-active
              selectrum--current-candidate-index
              (or selectrum--refined-candidates
                  (< selectrum--current-candidate-index 0)))
@@ -680,7 +685,7 @@ candidate and return the candidate as displayed."
   "Get list of current Selectrum candidates.
 If NOTFULL is non-nil don't use canonical representation of
 candidate and return the candidate as displayed."
-  (when (and selectrum-active-p
+  (when (and selectrum-is-active
              selectrum--refined-candidates)
     (if notfull
         selectrum--refined-candidates
@@ -689,7 +694,7 @@ candidate and return the candidate as displayed."
 
 (defun selectrum-get-current-input ()
   "Get current Selectrum user input."
-  (when selectrum-active-p
+  (when selectrum-is-active
     (with-selected-window (active-minibuffer-window)
       (minibuffer-contents))))
 
@@ -701,14 +706,14 @@ a candidate in `minibuffer-setup-hook' and immediately exit with
 it afterwards. With default completion there is no computation
 triggered initially and this function can be used to mimic this
 behavior."
-  (when selectrum-active-p
+  (when selectrum-is-active
     (with-selected-window (active-minibuffer-window)
       (let ((string (or string (minibuffer-contents))))
         (setq-local selectrum--refined-candidates
                     (list string))
         (setq-local selectrum--current-candidate-index 0)
         ;; Skip updates.
-        (setq-local selectrum--skip-updates-p t)))))
+        (setq-local selectrum--should-skip-updates t)))))
 
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
@@ -1071,7 +1076,7 @@ defaults to the current one and MAX which defaults to
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
-  (unless selectrum--skip-updates-p
+  (unless selectrum--should-skip-updates
     ;; Stay within input area.
     (goto-char (max (point) (minibuffer-prompt-end)))
     ;; Scroll the minibuffer when current prompt exceeds window width.
@@ -1193,7 +1198,7 @@ the update."
                       (cond
                        ;; Check for candidates needs to be first!
                        ((null selectrum--refined-candidates)
-                        (when (or (not selectrum--match-required-p)
+                        (when (or (not selectrum--match-is-required)
                                   (selectrum--at-existing-prompt-path-p))
                           -1))
                        (keep-selected
@@ -1207,7 +1212,7 @@ the update."
                              (not (member selectrum--default-candidate
                                           selectrum--refined-candidates)))
                         -1)
-                       ((or (and selectrum--init-p
+                       ((or (and selectrum--is-initializing
                                  (equal selectrum--default-candidate
                                         (minibuffer-contents)))
                             (and (not (= (minibuffer-prompt-end) (point-max)))
@@ -1218,7 +1223,7 @@ the update."
                                      (memq this-command
                                            '(next-history-element
                                              previous-history-element)))
-                                 (or (not selectrum--match-required-p)
+                                 (or (not selectrum--match-is-required)
                                      (selectrum--at-existing-prompt-path-p))))
                         -1)
                        (selectrum-move-default-candidate
@@ -1254,7 +1259,7 @@ the update."
                           (or
                            (and selectrum--current-candidate-index
                                 (< selectrum--current-candidate-index 0))
-                           (and (not selectrum--match-required-p)
+                           (and (not selectrum--match-is-required)
                                 (not selectrum--refined-candidates))
                            (and selectrum--default-candidate
                                 (not minibuffer-completing-file-name)
@@ -1329,7 +1334,7 @@ the update."
            window (not horizp)))
         (when keep-mark-active
           (setq deactivate-mark nil))
-        (setq-local selectrum--init-p nil)))))
+        (setq-local selectrum--is-initializing nil)))))
 
 (defun selectrum--update-window-height (window vertical)
   "Update window height of WINDOW.
@@ -1735,7 +1740,7 @@ defaults to `completion-extra-properties'."
 CANDIDATES is the list of strings that was passed to
 `selectrum-read'. DEFAULT is the default value which can be
 overridden and BUF the buffer the session was started from."
-  (setq-local selectrum-active-p t)
+  (setq-local selectrum-is-active t)
   (setq-local selectrum--last-buffer buf)
   (cond (selectrum--repeat
          (delete-minibuffer-contents)
@@ -1756,7 +1761,7 @@ overridden and BUF the buffer the session was started from."
   (setq-local auto-hscroll-mode nil)
   (add-hook
    'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook nil 'local)
-  (setq-local selectrum--init-p t)
+  (setq-local selectrum--is-initializing t)
   (setq-local selectrum--candidates-overlay
               (make-overlay (point) (point) nil
                             'front-advance 'rear-advance))
@@ -1805,7 +1810,7 @@ overridden and BUF the buffer the session was started from."
     (setq selectrum--current-candidate-index
           (selectrum--clamp
            (+ selectrum--current-candidate-index (or arg 1))
-           (if (and selectrum--match-required-p
+           (if (and selectrum--match-is-required
                     (cond (minibuffer-completing-file-name
                            (not (selectrum--at-existing-prompt-path-p)))
                           (t
@@ -1856,9 +1861,9 @@ Or if there is an active region, save the region to kill ring."
 
 (defun selectrum--exit-with (candidate)
   "Exit minibuffer with given CANDIDATE.
-If `selectrum--crm-p' is non-nil exit with the choosen candidates
+If `selectrum--is-crm-session' is non-nil exit with the choosen candidates
 plus CANDIDATE."
-  (let* ((result (cond ((and selectrum--crm-p
+  (let* ((result (cond ((and selectrum--is-crm-session
                              (string-match crm-separator
                                            selectrum--previous-input-string))
                         (let ((crm
@@ -1915,11 +1920,11 @@ Zero means to select the current user input. See
 `selectrum-show-indices' which can be used to show candidate
 indices."
   (interactive "P")
-  (unless selectrum-active-p
+  (unless selectrum-is-active
     (user-error "Cannot select a candidate when Selectrum is not active"))
   (with-selected-window (active-minibuffer-window)
     (let ((index (selectrum--index-for-arg arg)))
-      (if (or (not selectrum--match-required-p)
+      (if (or (not selectrum--match-is-required)
               (string-empty-p
                (minibuffer-contents))
               (and index (>= index 0))
@@ -1966,7 +1971,7 @@ refresh."
                        selectrum--default-candidate)
                   (insert selectrum--default-candidate)
                 (goto-char (point-max)))
-            (cond ((not selectrum--crm-p)
+            (cond ((not selectrum--is-crm-session)
                    (delete-region (minibuffer-prompt-end)
                                   (point-max))
                    (insert full))
@@ -2039,7 +2044,7 @@ history item and exit use `selectrum-select-current-candidate'."
             (delete-minibuffer-contents)
             (insert result)
             (selectrum--reset-minibuffer-history-state))
-        (if (and selectrum--match-required-p
+        (if (and selectrum--match-is-required
                  (not (member result selectrum--refined-candidates)))
             (user-error "That history element is not one of the candidates")
           (selectrum--exit-with result))))))
@@ -2133,12 +2138,12 @@ semantics of `cl-defun'."
                 ;; Already set the active flag as early as possible
                 ;; so client setup hooks can use it to detect if
                 ;; they are running in a Selectrum session.
-                (setq-local selectrum-active-p t))
+                (setq-local selectrum-is-active t))
             (selectrum--minibuffer-with-setup-hook
                 (:append (lambda ()
                            (setq-local selectrum--read-args
                                        (cl-list* prompt candidates args))
-                           (setq-local selectrum--match-required-p
+                           (setq-local selectrum--match-is-required
                                        require-match)
                            (setq-local selectrum-move-default-candidate
                                        (not no-move-default-candidate))
@@ -2219,7 +2224,7 @@ the prompt."
      res
      (selectrum--minibuffer-with-setup-hook
          (lambda ()
-           (setq-local selectrum--crm-p t)
+           (setq-local selectrum--is-crm-session t)
            (when selectrum-completing-read-multiple-show-help
              (let ((inhibit-read-only t))
                (save-excursion
@@ -2745,7 +2750,7 @@ the candidate list and the cursor should stay at the front.
 
 This is an `:around' advice for `minibuffer-message'. FUNC and
 ARGS are standard as in all `:around' advice."
-  (if (bound-and-true-p selectrum-active-p)
+  (if (bound-and-true-p selectrum-is-active)
       (cl-letf* ((orig-put-text-property
                   (symbol-function #'put-text-property))
                  ((symbol-function #'put-text-property)
