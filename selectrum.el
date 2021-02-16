@@ -1320,11 +1320,10 @@ the update."
         (put-text-property 0 1 'cursor t minibuf-after-string)
         (overlay-put selectrum--candidates-overlay
                      'after-string minibuf-after-string)
-        (when selectrum--count-overlay
-          (overlay-put selectrum--count-overlay
-                       'before-string count-info)
-          (overlay-put selectrum--count-overlay
-                       'priority 1))
+        (overlay-put selectrum--count-overlay
+                     'before-string count-info)
+        (overlay-put selectrum--count-overlay
+                     'priority 1)
         (when window
           (selectrum--update-window-height
            window (not horizp)))
@@ -1727,10 +1726,7 @@ defaults to `completion-extra-properties'."
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
   (remove-hook
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
-  (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local)
-  (when (overlayp selectrum--count-overlay)
-    (delete-overlay selectrum--count-overlay))
-  (setq-local selectrum--count-overlay nil))
+  (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
 
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
@@ -1762,9 +1758,8 @@ overridden and BUF the buffer the session was started from."
   (setq-local selectrum--candidates-overlay
               (make-overlay (point) (point) nil
                             'front-advance 'rear-advance))
-  (unless (not selectrum-count-style)
-    (setq-local selectrum--count-overlay
-                (make-overlay (point-min) (point-min))))
+  (setq-local selectrum--count-overlay
+              (make-overlay (point-min) (point-min)))
   ;; If metadata specifies a custom sort function use it as
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
