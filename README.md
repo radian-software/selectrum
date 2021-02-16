@@ -591,11 +591,10 @@ projects](https://github.com/raxod502/contributor-guide).
 
 Technical points:
 
-* When adding a new state variable (like for example
-  `selectrum--current-candidate-index`), you should think if its value
-  needs to be preserved when entering a recursive Selectrum session.
-  If so, you should add it to the list in
-  `selectrum--save-global-state`.
+* When adding a new state variable, make sure it is declared as a
+  local variable (using `defvar-local`) so recursive sessions aren't
+  affected. By convention we also use `setq-local` each time such a
+  state variable is set.
 * By default, `debug-on-error` doesn't work for errors that happen on
   `post-command-hook`. You can work around the issue like so:
 
