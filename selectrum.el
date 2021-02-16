@@ -80,6 +80,10 @@ parts of the input."
   'selectrum-should-sort
   "3.0")
 
+(defcustom selectrum-default-value-format " [default: %s]"
+  "Format string for the default value in the minibuffer."
+  :type '(choice (const nil) string))
+
 (defcustom selectrum-should-sort t
   "Non-nil if preprocessing function should sort.
 This should be respected by user functions for optimal results."
@@ -1255,7 +1259,8 @@ the update."
                        (erase-buffer)
                        (current-buffer)))
              (default
-               (when (and (= (minibuffer-prompt-end) (point-max))
+               (when (and selectrum-default-value-format
+                          (= (minibuffer-prompt-end) (point-max))
                           (or
                            (and selectrum--current-candidate-index
                                 (< selectrum--current-candidate-index 0))
@@ -1265,22 +1270,16 @@ the update."
                                 (not minibuffer-completing-file-name)
                                 (not (member selectrum--default-candidate
                                              selectrum--refined-candidates)))))
-                 (format " %s %s%s"
+                 (format (propertize selectrum-default-value-format
+                                     'face 'minibuffer-prompt)
                          (propertize
-                          "[default value:"
-                          'face 'minibuffer-prompt)
-                         (propertize
-                          (or (and selectrum--default-candidate
-                                   (substring-no-properties
-                                    selectrum--default-candidate))
-                              "\"\"")
+                          (or selectrum--default-candidate "\"\"")
                           'face
                           (if (and selectrum--current-candidate-index
                                    (< selectrum--current-candidate-index
                                       0))
                               'selectrum-current-candidate
-                            'minibuffer-prompt))
-                         (propertize "]" 'face 'minibuffer-prompt))))
+                            'minibuffer-prompt)))))
              (minibuf-after-string (or default " "))
              (inserted-res
               (selectrum--insert-candidates
