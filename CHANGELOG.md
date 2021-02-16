@@ -385,6 +385,7 @@ The format is based on [Keep a Changelog].
 [#438]: https://github.com/raxod502/selectrum/issues/438
 [#439]: https://github.com/raxod502/selectrum/pull/439
 [#440]: https://github.com/raxod502/selectrum/pull/440
+[#444]: https://github.com/raxod502/selectrum/pull/444
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
