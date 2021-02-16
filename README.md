@@ -3,6 +3,8 @@
 
 # Selectrum
 
+[News feed](https://github.com/raxod502/selectrum/commits/master/CHANGELOG.md.atom)
+
 *Selectrum is a better solution for incremental narrowing in Emacs,
 replacing [Helm](https://github.com/emacs-helm/helm),
 [Ivy](https://github.com/abo-abo/swiper#ivy), and
