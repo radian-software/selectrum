@@ -1724,6 +1724,8 @@ defaults to `completion-extra-properties'."
 
 (defun selectrum--minibuffer-exit-hook ()
   "Clean up Selectrum from the minibuffer, and self-destruct this hook."
+  ;; State and overlays are automatically cleaned up by Emacs on next
+  ;; session.
   (remove-hook
    'post-command-hook #'selectrum--minibuffer-post-command-hook 'local)
   (remove-hook 'minibuffer-exit-hook #'selectrum--minibuffer-exit-hook 'local))
