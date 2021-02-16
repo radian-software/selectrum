@@ -52,6 +52,8 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-complete-in-buffer` can be used to
   control whether Selectrum should handle in buffer completion (the
   default is t) ([#261]).
+* The user option `selectrum-default-value-format` can be used
+  to specify the formatting of the default value indicator ([#445]).
 
 ### Enhancements
 * The variable `selectrum-should-sort-p` and `selectrum-active-p` have
@@ -386,6 +388,7 @@ The format is based on [Keep a Changelog].
 [#439]: https://github.com/raxod502/selectrum/pull/439
 [#440]: https://github.com/raxod502/selectrum/pull/440
 [#444]: https://github.com/raxod502/selectrum/pull/444
+[#445]: https://github.com/raxod502/selectrum/pull/445
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
