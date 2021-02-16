@@ -54,9 +54,11 @@ The format is based on [Keep a Changelog].
   default is t) ([#261]).
 
 ### Enhancements
-* The variable `selectrum-should-sort-p` has been marked deprecated.
-  You should use the new `selectrum-should-sort` which is also exposed
-  as a user option now ([#441]).
+* The variable `selectrum-should-sort-p` and `selectrum-active-p` have
+  been marked deprecated. You should use the new
+  `selectrum-should-sort` and `selectrum-is-active`.
+  `selectrum-should-sort` is also exposed as a user option now
+  ([#441]).
 * The variable `selectrum-move-default-candidate` can be used to
   configure how the UI handles the default value ([#441]).
 * The command `selectrum-repeat` can also repeat the last recursive
