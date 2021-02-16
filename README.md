@@ -638,6 +638,13 @@ Technical points:
   would be the development of a small third-party package which
   backports the improvement from Emacs 27. That way all
   minibuffer-based packages can benefit from the improvement.
+* With certain theme settings face attributes can conflict with
+  selection indication and faces used for match highlighting. This can
+  become apparent when candidates use the `:background` property for
+  example when matching org block lines using `consult-line`, see
+  [#425](https://github.com/raxod502/selectrum/issues/425). To work
+  around this specific case you can configure the consult option
+  `consult-fontify-preserve`.
 
 ## Selectrum in comparison to other completion-systems
 
