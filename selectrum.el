@@ -41,22 +41,60 @@
 (define-obsolete-variable-alias
   'selectrum-active-p
   'selectrum-is-active
-  "4.0")
+  "3.1")
 
 (define-obsolete-variable-alias
   'selectrum-should-sort-p
   'selectrum-should-sort
-  "4.0")
+  "3.1")
 
 (define-obsolete-variable-alias
   'selectrum-fix-minibuffer-height
   'selectrum-fix-vertical-window-height
-  "4.0")
+  "3.1")
 
 (define-obsolete-function-alias
   'selectrum-read
   'selectrum--read
-  "4.0")
+  "3.1")
+
+(define-obsolete-function-alias
+  'selectrum-default-candidate-refine-function
+  'selectrum--default-candidate-refine-function
+  "3.1")
+
+(defun selectrum--default-candidate-refine-function (input candidates)
+  "Default value of `selectrum-refine-candidates-function'.
+Return only candidates that contain the input as a substring.
+INPUT is a string, CANDIDATES is a list of strings."
+  (let ((regexp (regexp-quote input)))
+    (cl-delete-if-not
+     (lambda (candidate)
+       (string-match-p regexp candidate))
+     (copy-sequence candidates))))
+
+(define-obsolete-function-alias
+  'selectrum-default-candidate-highlight-function
+  'selectrum--default-candidate-highlight-function
+  "3.1")
+
+(defun selectrum--default-candidate-highlight-function (input candidates)
+  "Default value of `selectrum-highlight-candidates-function'.
+Highlight the substring match with
+`selectrum-primary-highlight'. INPUT is a string, CANDIDATES is a
+list of strings."
+  (let ((regexp (regexp-quote input)))
+    (save-match-data
+      (mapcar
+       (lambda (candidate)
+         (when (string-match regexp candidate)
+           (setq candidate (copy-sequence candidate))
+           (put-text-property
+            (match-beginning 0) (match-end 0)
+            'face 'selectrum-primary-highlight
+            candidate))
+         candidate)
+       candidates))))
 
 ;;; Faces
 
@@ -638,6 +676,11 @@ This is non-nil during the first call of
 (defvar-local selectrum--inserted-file-completion nil
   "Non-nil when command should trigger refresh.")
 
+(defvar-local selectrum--read-args nil
+  "List of arguments passed to `selectrum--read'.
+Passed to various hook functions, but the this usage of the hooks
+has been deprecated.")
+
 ;;;; Minibuffer state utility functions
 
 (defun selectrum--normalize-collection (collection &optional predicate)
@@ -726,6 +769,7 @@ behavior."
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum--candidate-full candidate)
+      (get-text-property 0 'selectrum-candidate-full candidate)
       (when minibuffer-completing-file-name
         (if (and selectrum--current-candidate-index
                  (< selectrum--current-candidate-index 0))
@@ -1873,14 +1917,16 @@ plus CANDIDATE."
                                    (insert (selectrum--get-full candidate))
                                    (buffer-string)))))
                           (dolist (cand (split-string crm crm-separator t))
-                            (run-hook-with-args
-                             'selectrum-candidate-selected-hook
-                             (selectrum--get-full cand)))
+                            (apply #'run-hook-with-args
+                                   'selectrum-candidate-selected-hook
+                                   (selectrum--get-full cand)
+                                   selectrum--read-args))
                           crm))
                        (t
-                        (run-hook-with-args
-                         'selectrum-candidate-selected-hook
-                         candidate)
+                        (apply #'run-hook-with-args
+                               'selectrum-candidate-selected-hook
+                               candidate
+                               selectrum--read-args)
                         (selectrum--get-full candidate))))
          (inhibit-read-only t))
     (erase-buffer)
@@ -1977,9 +2023,10 @@ refresh."
                                (assoc crm-separator
                                       selectrum--crm-separator-alist)))
                      (insert (cdr match)))))
-            (run-hook-with-args
-             'selectrum-candidate-inserted-hook
-             candidate))
+            (apply #'run-hook-with-args
+                   'selectrum-candidate-inserted-hook
+                   candidate
+                   selectrum--read-args))
           ;; Ensure refresh of UI. The input input string might be the
           ;; same when the prompt was reinserted. When the prompt was
           ;; selected this will switch selection to first candidate.
@@ -2121,6 +2168,8 @@ semantics of `cl-defun'."
                 (setq-local selectrum-is-active t))
             (selectrum--minibuffer-with-setup-hook
                 (:append (lambda ()
+                           (setq-local selectrum--read-args
+                                       (cl-list* prompt candidates args))
                            (setq-local selectrum--match-is-required
                                        require-match)
                            ;; TODO the `:no-move-default-candidate' option of

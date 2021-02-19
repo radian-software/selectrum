@@ -4,22 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
-### Breaking changes
-* `selectrum-default-candidate-refine-function` and
-  `selectrum-default-candidate-highlight-function` have been removed.
-  The new default functions used for
-  `selectrum-refine-candidates-function` and
-  `selectrum-highlight-candidates-function` filter and highlight
-  candidates according to `completion-styles` now.
-* The special text property `selectrum-candidate-full` to change the
-  canonical representation of a candidate has been removed ([#403]).
-* The hooks `selectrum-candidate-inserted-hook` and
-  `selectrum-candidate-selected-hook` originally received the
-  arguments passed to `selectrum-read`. Since the `selectrum-read` API
-  has been deprecated, these additional arguments have been removed
-  from the hook calls. Note that the main user of these hooks is
-  Precient, which ignored the additional arguments up to now ([#446]).
-
 ### Deprecated
 * The `selectrum-read` API has been deprecated and made private. The
   intention of this change is to encourage users instead to rely on
@@ -28,6 +12,20 @@ The format is based on [Keep a Changelog].
 * The user option `selectrum-fix-minibuffer-height` has been
   deprecated. The new variable `selectrum-fix-vertical-window-height`
   takes its place ([#305]).
+* The special text property `selectrum-candidate-full` to change the
+  canonical representation of a candidate has been deprecated
+  ([#403]).
+* The hooks `selectrum-candidate-inserted-hook` and
+  `selectrum-candidate-selected-hook` originally also received the
+  arguments passed to `selectrum-read` which has been deprecated.
+  These hooks are expected to be updated to only receive a single
+  argument now, the inserted/selected candidate ([#446]).
+* `selectrum-default-candidate-refine-function` and
+  `selectrum-default-candidate-highlight-function` have been
+  deprecated, see the new default values for
+  `selectrum-refine-candidates-function` and
+  `selectrum-highlight-candidates-function` which should be used
+  instead ([#330]).
 
 ### Changed defaults
 * The default value of `selectrum-num-candidates-displayed` has
@@ -36,6 +34,11 @@ The format is based on [Keep a Changelog].
   your configuration or also adjust it to `auto`. For configuring the
   window height you should use the new `selectrum-max-window-height`
   option now ([#305]).
+* The new default functions used for
+  `selectrum-refine-candidates-function` and
+  `selectrum-highlight-candidates-function` have been updated to
+  filter and highlight candidates according to `completion-styles` now
+  ([#330]).
 
 ### Features
 * Line spacing is taken into account when using a fixed window height
@@ -339,6 +342,7 @@ The format is based on [Keep a Changelog].
 [#327]: https://github.com/raxod502/selectrum/pull/327
 [#328]: https://github.com/raxod502/selectrum/pull/328
 [#329]: https://github.com/raxod502/selectrum/pull/329
+[#330]: https://github.com/raxod502/selectrum/pull/330
 [#331]: https://github.com/raxod502/selectrum/pull/331
 [#334]: https://github.com/raxod502/selectrum/issues/334
 [#335]: https://github.com/raxod502/selectrum/pull/335
