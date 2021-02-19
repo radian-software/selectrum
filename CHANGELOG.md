@@ -11,14 +11,6 @@ The format is based on [Keep a Changelog].
   `selectrum-refine-candidates-function` and
   `selectrum-highlight-candidates-function` filter and highlight
   candidates according to `completion-styles` now.
-* The user option `selectrum-fix-minibuffer-height` has been replaced
-  by `selectrum-fix-vertical-window-height` ([#305]).
-* The default value of `selectrum-num-candidates-displayed` has
-  changed to `auto`. If you have customized
-  `selectrum-num-candidates-displayed` you should remove that from
-  your configuration or also adjust it to `auto`. For configuring the
-  window height you should use the new `selectrum-max-window-height`
-  option now ([#305]).
 * The special text property `selectrum-candidate-full` to change the
   canonical representation of a candidate has been removed ([#403]).
 * The hooks `selectrum-candidate-inserted-hook` and
@@ -33,6 +25,17 @@ The format is based on [Keep a Changelog].
   intention of this change is to encourage users instead to rely on
   the plain `completing-read` function, which is completion system
   agnostic ([#446]).
+* The user option `selectrum-fix-minibuffer-height` has been
+  deprecated. The new variable `selectrum-fix-vertical-window-height`
+  takes its place ([#305]).
+
+### Changed defaults
+* The default value of `selectrum-num-candidates-displayed` has
+  changed to `auto`. If you have customized
+  `selectrum-num-candidates-displayed` you should remove that from
+  your configuration or also adjust it to `auto`. For configuring the
+  window height you should use the new `selectrum-max-window-height`
+  option now ([#305]).
 
 ### Features
 * Line spacing is taken into account when using a fixed window height

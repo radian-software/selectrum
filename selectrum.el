@@ -38,6 +38,26 @@
 (require 'seq)
 (require 'subr-x)
 
+(define-obsolete-variable-alias
+  'selectrum-active-p
+  'selectrum-is-active
+  "4.0")
+
+(define-obsolete-variable-alias
+  'selectrum-should-sort-p
+  'selectrum-should-sort
+  "4.0")
+
+(define-obsolete-variable-alias
+  'selectrum-fix-minibuffer-height
+  'selectrum-fix-vertical-window-height
+  "4.0")
+
+(define-obsolete-function-alias
+  'selectrum-read
+  'selectrum--read
+  "4.0")
+
 ;;; Faces
 
 (defface selectrum-current-candidate
@@ -74,11 +94,6 @@ parts of the input."
   :group 'convenience
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
-
-(define-obsolete-variable-alias
-  'selectrum-should-sort-p
-  'selectrum-should-sort
-  "4.0")
 
 (defcustom selectrum-default-value-format " [default: %s]"
   "Format string for the default value in the minibuffer."
@@ -595,11 +610,6 @@ input within a session.")
 (defvar-local selectrum--repeat nil
   "Non-nil means try to restore the minibuffer state during setup.
 This is used to implement `selectrum-repeat'.")
-
-(define-obsolete-variable-alias
-  'selectrum-active-p
-  'selectrum-is-active
-  "4.0")
 
 (defvar-local selectrum-is-active nil
   "Non-nil means Selectrum is currently active.")
@@ -2140,8 +2150,6 @@ semantics of `cl-defun'."
                  default-candidate
                (substring-no-properties res))))
           (t res))))
-
-(define-obsolete-function-alias 'selectrum-read 'selectrum--read "4.0")
 
 ;;;###autoload
 (defun selectrum-completing-read
