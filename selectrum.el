@@ -1779,7 +1779,8 @@ defaults to `completion-extra-properties'."
 CANDIDATES is the list of candidate strings. DEFAULT is the default
 value which can be overridden and BUF the buffer the session was
 started from."
-  (setq-local selectrum-is-active t)
+  ;; Disable mouse tooltips in Selectrum buffer
+  (setq-local show-help-function nil)
   (setq-local selectrum--last-buffer buf)
   (cond (selectrum--repeat
          (delete-minibuffer-contents)
