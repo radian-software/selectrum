@@ -74,6 +74,9 @@ The format is based on [Keep a Changelog].
   to specify the formatting of the default value indicator ([#445]).
 
 ### Enhancements
+* When hovering over candidates with the mouse there are no messages
+  shown anymore which avoids interference with candidates display
+  ([#452]).
 * The variable `selectrum-should-sort-p` and `selectrum-active-p` have
   been marked deprecated. You should use the new
   `selectrum-should-sort` and `selectrum-is-active`.
@@ -409,6 +412,7 @@ The format is based on [Keep a Changelog].
 [#444]: https://github.com/raxod502/selectrum/pull/444
 [#445]: https://github.com/raxod502/selectrum/pull/445
 [#446]: https://github.com/raxod502/selectrum/pull/446
+[#452]: https://github.com/raxod502/selectrum/pull/452
 
 ## 3.0 (released 2020-10-20)
 ### Breaking changes
