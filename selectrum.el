@@ -272,7 +272,7 @@ to the text around point. The initial filtering styles for
 completion in region might generally differ from the styles you
 want to use for usual completion. If this option is nil the
 candidates will be filtered by `all-completions'."
-  :type 'completion--styles-type)
+  :type completion--styles-type)
 
 (defcustom selectrum-preprocess-candidates-function
   #'selectrum-default-candidate-preprocess-function
