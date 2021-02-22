@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog].
 The faces `selectrum-primary-highlight` and
 `selectrum-secondary-highlight` have been deprecated. The match
 highlighting should be configured via the used filtering/highlighting
-packages.
+packages. Users of `selectrum-prescient` can update to configure
+`selectrum-prescient-primary-highlight` and
+`selectrum-prescient-secondary-highlight` ([#455]).
+
+[#455]: https://github.com/raxod502/selectrum/pull/455
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
