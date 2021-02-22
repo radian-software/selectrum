@@ -2296,6 +2296,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
   (let* ((enable-recursive-minibuffers t)
          (input (buffer-substring-no-properties start end))
          (meta (completion-metadata input collection predicate))
+         (threshold (completion--cycle-threshold meta))
          (category (completion-metadata-get meta 'category))
          (bound (pcase category
                   ('file start)
@@ -2316,38 +2317,54 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          ;; See doc of `completion-extra-properties'.
          (exit-status nil)
          (result nil))
-    (if (null cands)
-        (prog1 nil
-          (unless completion-fail-discreetly (ding))
-          (message "No match"))
-      (prog1 t
-        (pcase category
-          ('file
-           (let ((try nil))
-             (setq result
-                   (if (and (not (cdr cands))
-                            (stringp (setq try (try-completion
-                                                input collection predicate))))
-                       try
-                     (selectrum--completing-read-file-name
-                      "Completion: " collection predicate
-                      nil input))
-                   exit-status 'sole)))
-          (_
-           (setq result
-                 (if (not (cdr cands))
-                     (car cands)
-                   (selectrum--read
-                    "Completion: " cands
-                    :minibuffer-completion-table collection
-                    :minibuffer-completion-predicate predicate))
-                 exit-status (cond ((not (member result cands)) 'sole)
-                                   (t 'finished)))))
-        (delete-region bound end)
-        (push-mark (point) 'no-message)
-        (insert (substring-no-properties result))
-        (when exit-func
-          (funcall exit-func result exit-status))))))
+    (cond ((null cands)
+           (prog1 nil
+             (unless completion-fail-discreetly (ding))
+             (message "No match")))
+          ((or (eq t threshold)
+               (and (numberp threshold)
+                    (not (nthcdr threshold cands))))
+           (let ((minibuffer-completion-table collection)
+                 (minibuffer-completion-predicate predicate))
+             ;; Used default completion for cycling.
+             (setq completion-in-region-function
+                   (lambda (&rest args)
+                     (if (eq last-command #'completion-at-point)
+                         (apply #'completion--in-region args)
+                       (setq completion-in-region-function
+                             #'selectrum-completion-in-region)
+                       (apply #'selectrum-completion-in-region args))))
+             (completion--in-region start end cands)))
+          (t
+           (prog1 t
+             (pcase category
+               ('file
+                (let ((try nil))
+                  (setq result
+                        (if (and (not (cdr cands))
+                                 (stringp (setq try
+                                                (try-completion
+                                                 input collection predicate))))
+                            try
+                          (selectrum--completing-read-file-name
+                           "Completion: " collection predicate
+                           nil input))
+                        exit-status 'sole)))
+               (_
+                (setq result
+                      (if (not (cdr cands))
+                          (car cands)
+                        (selectrum--read
+                         "Completion: " cands
+                         :minibuffer-completion-table collection
+                         :minibuffer-completion-predicate predicate))
+                      exit-status (cond ((not (member result cands)) 'sole)
+                                        (t 'finished)))))
+             (delete-region bound end)
+             (push-mark (point) 'no-message)
+             (insert (substring-no-properties result))
+             (when exit-func
+               (funcall exit-func result exit-status)))))))
 
 ;;;###autoload
 (defun selectrum-read-buffer (prompt &optional def require-match predicate)
