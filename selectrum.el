@@ -2321,9 +2321,10 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (prog1 nil
              (unless completion-fail-discreetly (ding))
              (message "No match")))
-          ((or (eq t threshold)
-               (and (numberp threshold)
-                    (not (nthcdr threshold cands))))
+          ((and (not (eq category 'file))
+                (or (eq t threshold)
+                    (and (numberp threshold)
+                         (not (nthcdr threshold cands)))))
            (let ((minibuffer-completion-table collection)
                  (minibuffer-completion-predicate predicate))
              ;; Used default completion for cycling.
