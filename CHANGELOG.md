@@ -12,7 +12,13 @@ packages. Users of `selectrum-prescient` can update to configure
 `selectrum-prescient-primary-highlight` and
 `selectrum-prescient-secondary-highlight` ([#455]).
 
+### Enhancements
+`selectrum-completion-in-region` does support cycling (as configured
+per `completion-cycle-threshold`) now ([#419], [#456]).
+
+[#419]: https://github.com/raxod502/selectrum/issues/419
 [#455]: https://github.com/raxod502/selectrum/pull/455
+[#456]: https://github.com/raxod502/selectrum/pull/456
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
