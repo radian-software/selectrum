@@ -319,11 +319,6 @@ matching and case-insensitive matching.
   * By default, only the displayed text is highlighted. If you wish to
     extend the highlight until the margin, you can set
     `selectrum-extend-current-candidate-highlight` to `t`.
-* By default, the part of each candidate that matches your input is
-  highlighted with the face `selectrum-primary-highlight`. There is
-  also `selectrum-secondary-highlight`, which is not used by default
-  but is provided for other packages that may use more complex
-  highlighting schemes (such as `prescient.el`).
 * By default, the total number of matches are shown before the prompt.
   This behavior can be customized using `selectrum-count-style`.
 * You can show the indices of displayed candidates by customizing
@@ -354,28 +349,6 @@ matching and case-insensitive matching.
   `selectrum-completion-in-region-styles`.
 * The option `selectrum-should-sort` controls whether preprocessing
   functions should sort.
-
-As an example of customizing the faces, I use the
-[Zerodark](https://github.com/NicolasPetton/zerodark-theme) color
-theme, which includes colors for Ivy, but not for Selectrum. I
-inspected the theme source code to see what colors were being used for
-Ivy, and copied them to be used for Selectrum as well:
-
-```elisp
-(require 'zerodark-theme)
-
-(let ((class '((class color) (min-colors 89))))
-  (custom-theme-set-faces
-   'zerodark
-   `(selectrum-current-candidate
-     ((,class (:background "#48384c"
-                           :weight bold
-                           :foreground "#c678dd"))))
-   `(selectrum-primary-highlight ((,class (:foreground "#da8548"))))
-   `(selectrum-secondary-highlight ((,class (:foreground "#98be65"))))))
-
-(enable-theme 'zerodark)
-```
 
 ### Complementary extensions
 

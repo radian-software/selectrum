@@ -96,6 +96,9 @@ list of strings."
          candidate)
        candidates))))
 
+(put 'selectrum-primary-highlight 'obsolete-face t)
+(put 'selectrum-secondary-highlight 'obsolete-face t)
+
 ;;; Faces
 
 (defface selectrum-current-candidate
