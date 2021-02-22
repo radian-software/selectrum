@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Deprecated
+The faces `selectrum-primary-highlight` and
+`selectrum-secondary-highlight` have been deprecated. The match
+highlighting should be configured via the used filtering/highlighting
+packages.
+
 ## 3.1 (released 2021-02-21)
 ### Deprecated
 * The `selectrum-read` API has been deprecated and made private. The
