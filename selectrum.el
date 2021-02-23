@@ -2321,12 +2321,14 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (prog1 nil
              (unless completion-fail-discreetly (ding))
              (message "No match")))
-          ((and (not (eq category 'file))
-                (or (eq t threshold)
-                    (and (numberp threshold)
-                         (not (nthcdr threshold cands)))))
-           (let ((minibuffer-completion-table collection)
-                 (minibuffer-completion-predicate predicate))
+          ((or (eq t threshold)
+               (and (numberp threshold)
+                    (not (nthcdr threshold cands))))
+           (let ((cands (lambda (str pred action)
+                          (if (eq action t)
+                              cands
+                            (complete-with-action
+                             action collection str pred)))))
              ;; Used default completion for cycling.
              (setq completion-in-region-function
                    (lambda (&rest args)
@@ -2335,7 +2337,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                        (setq completion-in-region-function
                              #'selectrum-completion-in-region)
                        (apply #'selectrum-completion-in-region args))))
-             (completion--in-region start end cands)))
+             (completion--in-region start end cands predicate)))
           (t
            (prog1 t
              (pcase category
