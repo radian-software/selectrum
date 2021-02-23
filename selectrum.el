@@ -913,9 +913,11 @@ currently doesn't have any."
     (when (window-minibuffer-p win)
       (insert "\n"))
     (let ((n 0))
-      (dolist (cand displayed-candidates)
-        (cl-incf n)
-        (insert cand "\n"))
+      (while displayed-candidates
+        (insert (pop displayed-candidates))
+        (when displayed-candidates
+          (insert "\n"))
+        (cl-incf n))
       n)))
 
 (defun selectrum--horizontal-display-style
