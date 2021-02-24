@@ -16,15 +16,14 @@ packages. Users of `selectrum-prescient` can update to configure
 `selectrum-completion-in-region` does support cycling (as configured
 per `completion-cycle-threshold`) now ([#419], [#456]).
 
-[#419]: https://github.com/raxod502/selectrum/issues/419
-[#455]: https://github.com/raxod502/selectrum/pull/455
-[#456]: https://github.com/raxod502/selectrum/pull/456
-
 ### Bugs fixed
 When doing `completing-read-multiple`, selecting an additional
 candidate and exiting by pressing `RET` no longer fails when there are
 existing candidates already selected using `TAB` ([#460]).
 
+[#419]: https://github.com/raxod502/selectrum/issues/419
+[#455]: https://github.com/raxod502/selectrum/pull/455
+[#456]: https://github.com/raxod502/selectrum/pull/456
 [#460]: https://github.com/raxod502/selectrum/pull/460
 
 ## 3.1 (released 2021-02-21)
