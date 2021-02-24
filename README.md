@@ -253,10 +253,10 @@ filtering is selected:
   This means you can just press `RET` immediately to accept the
   default, like usual.
 
-Selectrum doesn't have any special handling of case-sensitivity,
-because Emacs includes a system for this by default. The command `M-x
-toggle-case-fold-search` toggles globally between case-sensitive
-matching and case-insensitive matching.
+Case-sensitivity and other filter options should be configured via the
+used refinement function. The built-in `completion-styles` support the
+`completion-ignore-case`, `read-file-name-completion-ignore-case` and
+`read-buffer-completion-ignore-case` options.
 
 ### Additional features
 
