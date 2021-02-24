@@ -13,7 +13,7 @@ packages. Users of `selectrum-prescient` can update to configure
 `selectrum-prescient-secondary-highlight` ([#455]).
 
 ### Enhancements
-* File names completions using `selectrum-completion-in-region` have
+* File name completions using `selectrum-completion-in-region` have
   been improved. When starting with an empty input the completion
   starts at `default-directory` and file names are quoted in modes
   deriving from `comint-mode` ([#459], [#462]).
