@@ -2355,11 +2355,14 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                                   input collection predicate)))
                        (comp (and (stringp try)
                                   try))
+                       (initial (if (string-empty-p input)
+                                    (abbreviate-file-name default-directory)
+                                  input))
                        (path
                         (or comp
                             (selectrum--completing-read-file-name
                              "Completion: " collection predicate
-                             nil input))))
+                             nil initial))))
                   (setq result (if (and (derived-mode-p 'comint-mode)
                                         (not comp)
                                         (fboundp 'comint-quote-filename))
