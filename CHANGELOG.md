@@ -13,18 +13,25 @@ packages. Users of `selectrum-prescient` can update to configure
 `selectrum-prescient-secondary-highlight` ([#455]).
 
 ### Enhancements
-`selectrum-completion-in-region` does support cycling (as configured
-per `completion-cycle-threshold`) now ([#419], [#456]).
+* File name completions using `selectrum-completion-in-region` have
+  been improved. When starting with an empty input the completion
+  starts at `default-directory` and file names are quoted in modes
+  deriving from `comint-mode` ([#459], [#462]).
+* `selectrum-completion-in-region` does support cycling (as configured
+  per `completion-cycle-threshold`) now ([#419], [#456]).
+
 
 ### Bugs fixed
-When doing `completing-read-multiple`, selecting an additional
-candidate and exiting by pressing `RET` no longer fails when there are
-existing candidates already selected using `TAB` ([#460]).
+* When doing `completing-read-multiple`, selecting an additional
+  candidate and exiting by pressing `RET` no longer fails when there
+  are existing candidates already selected using `TAB` ([#460]).
 
 [#419]: https://github.com/raxod502/selectrum/issues/419
 [#455]: https://github.com/raxod502/selectrum/pull/455
 [#456]: https://github.com/raxod502/selectrum/pull/456
+[#459]: https://github.com/raxod502/selectrum/issues/459
 [#460]: https://github.com/raxod502/selectrum/pull/460
+[#462]: https://github.com/raxod502/selectrum/pull/462
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated

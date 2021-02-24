@@ -2350,16 +2350,24 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
            (prog1 t
              (pcase category
                ('file
-                (let ((try nil))
-                  (setq result
-                        (if (and (not (cdr cands))
-                                 (stringp (setq try
-                                                (try-completion
-                                                 input collection predicate))))
-                            try
-                          (selectrum--completing-read-file-name
-                           "Completion: " collection predicate
-                           nil input))
+                (let* ((try (and (not (cdr cands))
+                                 (try-completion
+                                  input collection predicate)))
+                       (comp (and (stringp try)
+                                  try))
+                       (initial (if (string-empty-p input)
+                                    (abbreviate-file-name default-directory)
+                                  input))
+                       (path
+                        (or comp
+                            (selectrum--completing-read-file-name
+                             "Completion: " collection predicate
+                             nil initial))))
+                  (setq result (if (and (derived-mode-p 'comint-mode)
+                                        (not comp)
+                                        (fboundp 'comint-quote-filename))
+                                   (comint-quote-filename path)
+                                 path)
                         exit-status 'sole)))
                (_
                 (setq result
