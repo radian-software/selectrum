@@ -1909,6 +1909,10 @@ plus CANDIDATE."
                                            selectrum--previous-input-string))
                         (let* ((previous-input-string
                                 selectrum--previous-input-string)
+                               (separator
+                                crm-separator)
+                               (full-candidate
+                                (selectrum--get-full candidate))
                                (crm
                                 (if (and selectrum--current-candidate-index
                                          (< selectrum--current-candidate-index
@@ -1918,11 +1922,11 @@ plus CANDIDATE."
                                     (insert previous-input-string)
                                     (goto-char (point-min))
                                     (while (re-search-forward
-                                            crm-separator nil t))
+                                            separator nil t))
                                     (delete-region (point) (point-max))
-                                    (insert (selectrum--get-full candidate))
+                                    (insert full-candidate)
                                     (buffer-string)))))
-                          (dolist (cand (split-string crm crm-separator t))
+                          (dolist (cand (split-string crm separator t))
                             (apply #'run-hook-with-args
                                    'selectrum-candidate-selected-hook
                                    (selectrum--get-full cand)
