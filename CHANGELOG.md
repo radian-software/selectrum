@@ -20,6 +20,13 @@ per `completion-cycle-threshold`) now ([#419], [#456]).
 [#455]: https://github.com/raxod502/selectrum/pull/455
 [#456]: https://github.com/raxod502/selectrum/pull/456
 
+### Bugs fixed
+When doing `completing-read-multiple`, selecting an additional
+candidate and exiting by pressing `RET` no longer fails when there are
+existing candidates already selected using `TAB` ([#460]).
+
+[#460]: https://github.com/raxod502/selectrum/pull/460
+
 ## 3.1 (released 2021-02-21)
 ### Deprecated
 * The `selectrum-read` API has been deprecated and made private. The
