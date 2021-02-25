@@ -136,7 +136,8 @@ parts of the input."
   :prefix "selectrum-"
   :link '(url-link "https://github.com/raxod502/selectrum"))
 
-(defcustom selectrum-default-value-format " [default: %s]"
+(defcustom selectrum-default-value-format
+  (propertize " [default: %s]" 'face 'minibuffer-prompt)
   "Format string for the default value in the minibuffer."
   :type '(choice (const nil) string))
 
@@ -1323,8 +1324,7 @@ the update."
                                 (not minibuffer-completing-file-name)
                                 (not (member selectrum--default-candidate
                                              selectrum--refined-candidates)))))
-                 (format (propertize selectrum-default-value-format
-                                     'face 'minibuffer-prompt)
+                 (format selectrum-default-value-format
                          (propertize
                           (or selectrum--default-candidate "\"\"")
                           'face
@@ -1332,7 +1332,9 @@ the update."
                                    (< selectrum--current-candidate-index
                                       0))
                               'selectrum-current-candidate
-                            'minibuffer-prompt)))))
+                            (get-text-property
+                             0 'face
+                             selectrum-default-value-format))))))
              (minibuf-after-string (or default " "))
              (inserted-res
               (selectrum--insert-candidates
