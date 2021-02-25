@@ -1669,8 +1669,7 @@ suffix."
 (defun selectrum--candidates-display-strings (candidates
                                               highlighted-index
                                               annot-fun
-                                              horizontalp
-                                              &optional table pred props)
+                                              horizontalp)
   "Get display strings for CANDIDATES.
 HIGHLIGHTED-INDEX is the currently selected index. If ANNOT-FUN
 is non-nil don't add any annotations but call the function with
@@ -1680,12 +1679,11 @@ horizontally. TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'. PROPS
 defaults to `completion-extra-properties'."
   (let* ((index 0)
-         (props (or props completion-extra-properties))
-         (annotf (or (selectrum--get-meta 'annotation-function table pred)
-                     (plist-get props :annotation-function)))
-         (aff (or (selectrum--get-meta 'affixation-function table pred)
-                  (plist-get props :affixation-function)))
-         (docsigf (plist-get props :company-docsig))
+         (annotf (or (selectrum--get-meta 'annotation-function)
+                     (plist-get completion-extra-properties :annotation-function)))
+         (aff (or (selectrum--get-meta 'affixation-function)
+                  (plist-get completion-extra-properties :affixation-function)))
+         (docsigf (plist-get completion-extra-properties :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
                            ((or annotf docsigf)
