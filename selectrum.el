@@ -101,6 +101,16 @@ list of strings."
 
 ;;; Faces
 
+(defface selectrum-group-title
+  '((t :inherit shadow :slant italic))
+  "Face used for the title text of the candidate group headlines."
+  :group 'selectrum-faces)
+
+(defface selectrum-group-separator
+  '((t :inherit shadow :strike-through t))
+  "Face used for the separator lines of the candidate groups."
+  :group 'selectrum-faces)
+
 (defface selectrum-current-candidate
   '((t :inherit highlight))
   "Face used to highlight the currently selected candidate."
@@ -139,6 +149,14 @@ parts of the input."
 (defcustom selectrum-default-value-format
   (propertize " [default: %s]" 'face 'minibuffer-prompt)
   "Format string for the default value in the minibuffer."
+  :type '(choice (const nil) string))
+
+(defcustom selectrum-group-format
+  (concat
+   #("    " 0 4 (face selectrum-group-separator))
+   #(" %s " 0 4 (face selectrum-group-title))
+   #(" " 0 1 (face selectrum-group-separator display (space :align-to right))))
+  "Format string used for the group title."
   :type '(choice (const nil) string))
 
 (defcustom selectrum-should-sort t
@@ -1130,6 +1148,22 @@ defaults to the current one and MAX which defaults to
         (max (window-body-height window) n)
       n)))
 
+(defun selectrum--preprocess (candidates)
+  "Preprocess CANDIDATES list.
+The preprocessing applies the `selectrum-preprocess-candidates-function'
+and the `x-group-function'."
+  (setq-local selectrum--preprocessed-candidates
+              (funcall selectrum-preprocess-candidates-function
+                       candidates))
+  (when-let (groupf (or (selectrum--get-meta 'x-group-function)
+                        (plist-get completion-extra-properties :x-group-function)))
+    (setq-local
+     selectrum--preprocessed-candidates
+     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
+  (setq-local
+   selectrum--total-num-candidates
+   (length selectrum--preprocessed-candidates)))
+
 (defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
@@ -1168,40 +1202,32 @@ the update."
                                minibuffer-completion-table)))
           ;; Compute `selectrum--preprocessed-candidates' if necessary.
           (when (or dynamic init-table)
-            (setq-local
-             selectrum--preprocessed-candidates
-             (cond (dynamic
-                    (let* ((result
-                            ;; Ensure dynamic functions won't
-                            ;; break in post command hook.
-                            (condition-case-unless-debug err
-                                (funcall
-                                 selectrum--dynamic-candidates
-                                 input)
-                              (error (message (error-message-string err))
-                                     nil)))
-                           (cands
-                            ;; Avoid modifying the returned
-                            ;; candidates to let the function
-                            ;; reuse them.
-                            (copy-sequence
-                             (if (stringp (car result))
-                                 result
-                               (setq input (or (alist-get 'input result)
-                                               input))
-                               (setq-local selectrum--visual-input input)
-                               (alist-get 'candidates result)))))
-                      (funcall selectrum-preprocess-candidates-function
-                               cands)))
-                   (init-table
-                    ;; No candidates were passed, initialize them
-                    ;; from `minibuffer-completion-table'.
-                    (funcall selectrum-preprocess-candidates-function
-                             (selectrum--normalize-collection
-                              minibuffer-completion-table
-                              minibuffer-completion-predicate)))))
-            (setq-local selectrum--total-num-candidates
-                        (length selectrum--preprocessed-candidates))))
+            (selectrum--preprocess
+             (if dynamic
+                 (let ((result
+                        ;; Ensure dynamic functions won't
+                        ;; break in post command hook.
+                        (condition-case-unless-debug err
+                            (funcall
+                             selectrum--dynamic-candidates
+                             input)
+                          (error (message (error-message-string err))
+                                 nil))))
+                   ;; Avoid modifying the returned
+                   ;; candidates to let the function
+                   ;; reuse them.
+                   (copy-sequence
+                    (if (stringp (car result))
+                        result
+                      (setq input (or (alist-get 'input result)
+                                      input))
+                      (setq-local selectrum--visual-input input)
+                      (alist-get 'candidates result))))
+               ;; No candidates were passed, initialize them
+               ;; from `minibuffer-completion-table'.
+               (selectrum--normalize-collection
+                minibuffer-completion-table
+                minibuffer-completion-predicate)))))
         ;; Do refinement.
         (let* ((cands selectrum--preprocessed-candidates)
                (completion-styles-alist
@@ -1674,6 +1700,8 @@ defaults to `completion-extra-properties'."
                      (plist-get completion-extra-properties :annotation-function)))
          (aff (or (selectrum--get-meta 'affixation-function)
                   (plist-get completion-extra-properties :affixation-function)))
+         (groupf (or (selectrum--get-meta 'x-group-function)
+                     (plist-get completion-extra-properties :x-group-function)))
          (docsigf (plist-get completion-extra-properties :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
@@ -1687,10 +1715,16 @@ defaults to `completion-extra-properties'."
                               'auto)
                           (or aff annotf docsigf)
                         selectrum-extend-current-candidate-highlight)))
+         (groups (if (or horizontalp (not groupf))
+                     (list (cons nil candidates))
+                   (funcall groupf candidates)))
          (show-indices selectrum-show-indices)
          (margin-padding selectrum-right-margin-padding)
          (lines))
-      (dolist (candidate candidates)
+    (dolist (group groups)
+      (when-let (title (and selectrum-group-format (car group)))
+        (push (format selectrum-group-format title) lines))
+      (dolist (candidate (cdr group))
         (when (string-match-p "\n" candidate)
           (setq candidate (selectrum--ensure-single-line
                            candidate
@@ -1773,7 +1807,7 @@ defaults to `completion-extra-properties'."
                     `(space :align-to (- right-fringe
                                          ,margin-padding)))))))
           (push displayed-candidate lines)
-          (cl-incf index)))
+          (cl-incf index))))
     (nreverse lines)))
 
 (defun selectrum--minibuffer-setup-hook (candidates default buf)
@@ -1809,15 +1843,11 @@ started from."
   ;; `selectrum-preprocess-candidates-function' for this session.
   (when-let ((sortf (selectrum--get-meta 'display-sort-function)))
     (setq-local selectrum-preprocess-candidates-function sortf))
-  (cond ((functionp candidates)
-         (setq-local selectrum--preprocessed-candidates nil)
-         (setq-local selectrum--total-num-candidates 0)
-         (setq-local selectrum--dynamic-candidates candidates))
-        (t
-         (setq-local selectrum--preprocessed-candidates
-                     (funcall selectrum-preprocess-candidates-function
-                              candidates))
-         (setq-local selectrum--total-num-candidates (length candidates))))
+  (if (not (functionp candidates))
+      (selectrum--preprocess candidates)
+    (setq-local selectrum--preprocessed-candidates nil)
+    (setq-local selectrum--total-num-candidates 0)
+    (setq-local selectrum--dynamic-candidates candidates))
   (setq-local selectrum--default-candidate
               (if (and default (symbolp default))
                   (symbol-name default)
