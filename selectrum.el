@@ -1479,13 +1479,11 @@ SETTINGS, see `selectrum-multiline-display-settings'."
          (lines (split-string cand "\n"))
          (len (length lines))
          (input (minibuffer-contents))
-         (first-line (with-temp-buffer
-                       (insert cand)
-                       (goto-char (point-min))
-                       (skip-chars-forward " \t\n")
-                       (buffer-substring
-                        (line-beginning-position)
-                        (line-end-position))))
+         (first-line
+          (save-match-data
+            (if (string-match "\\`\\(?:[ \t]*\n\\)*\\([^\n]*\\)" cand)
+                (match-string 1 cand)
+              cand)))
          (matches (delete
                    first-line
                    (if (string-empty-p input)
