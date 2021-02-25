@@ -256,9 +256,7 @@ Uses `completion-styles'."
   (nconc
    (completion-all-completions
     input candidates nil (length input)
-    (completion-metadata input
-                         minibuffer-completion-table
-                         minibuffer-completion-predicate))
+    (selectrum--metadata input))
    nil))
 
 (defcustom selectrum-refine-candidates-function
@@ -812,17 +810,16 @@ behavior."
      (minibuffer-prompt-end)
      (point-max))))
 
-(defun selectrum--get-meta (setting &optional table pred input)
-  "Get metadata SETTING from TABLE.
-TABLE defaults to `minibuffer-completion-table'.
-PRED defaults to `minibuffer-completion-predicate'.
-INPUT defaults to current selectrum input string."
-  (let ((input (or input (minibuffer-contents)))
-        (pred (or pred minibuffer-completion-predicate))
-        (table (or table minibuffer-completion-table)))
-    (when table
-      (completion-metadata-get
-       (completion-metadata input table pred) setting))))
+(defun selectrum--metadata (&optional input)
+  "Get completion metadata.
+INPUT defaults to current input string."
+  (completion-metadata (or input (minibuffer-contents))
+                       minibuffer-completion-table
+                       minibuffer-completion-predicate))
+
+(defun selectrum--get-meta (setting)
+  "Get metadata SETTING from completion table."
+  (completion-metadata-get (selectrum--metadata) setting))
 
 (defun selectrum-exhibit (&optional keep-selection)
   "Trigger an update of Selectrum's completion UI.
@@ -1696,11 +1693,12 @@ horizontally. TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'. PROPS
 defaults to `completion-extra-properties'."
   (let* ((index 0)
-         (annotf (or (selectrum--get-meta 'annotation-function)
+         (metadata (selectrum--metadata))
+         (annotf (or (completion-metadata-get metadata 'annotation-function)
                      (plist-get completion-extra-properties :annotation-function)))
-         (aff (or (selectrum--get-meta 'affixation-function)
+         (aff (or (completion-metadata-get metadata 'affixation-function)
                   (plist-get completion-extra-properties :affixation-function)))
-         (groupf (or (selectrum--get-meta 'x-group-function)
+         (groupf (or (completion-metadata-get metadata 'x-group-function)
                      (plist-get completion-extra-properties :x-group-function)))
          (docsigf (plist-get completion-extra-properties :company-docsig))
          (candidates (cond (aff
