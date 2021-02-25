@@ -1438,8 +1438,8 @@ vertically."
     (window-resize
      window (- dheight wheight) nil nil 'pixelwise)))
 
-(defun selectrum--ensure-single-lines (candidates settings)
-  "Return list of single-line CANDIDATES.
+(defun selectrum--ensure-single-line (cand settings)
+  "Return single-line CAND string.
 
 Multi-line candidates are merged into a single line. The
 resulting single-line candidates are then shortened by replacing
@@ -1447,9 +1447,7 @@ repeated whitespace and maybe truncating the result.
 
 The specific details of the formatting are determined by
 SETTINGS, see `selectrum-multiline-display-settings'."
-  (let* ((single/lines ())
-
-         ;; The formatting settings are the same for all multi-line
+  (let* (;; The formatting settings are the same for all multi-line
          ;; candidates, and so only need to be gotten once from
          ;; `settings'.
          ;;
@@ -1477,74 +1475,67 @@ SETTINGS, see `selectrum-multiline-display-settings'."
          (nline/info
           (alist-get 'line-count settings))
          (nlines/display (car nline/info))
-         (nlines/face (cdr nline/info)))
-
-    (dolist (cand candidates (nreverse single/lines))
-      (let ((line
-             (if (not (string-match-p "\n" cand))
-                 cand
-               (let* ((lines (split-string cand "\n"))
-                      (len (length lines))
-                      (input (minibuffer-contents))
-                      (first-line (with-temp-buffer
-                                    (insert cand)
-                                    (goto-char (point-min))
-                                    (skip-chars-forward " \t\n")
-                                    (buffer-substring
-                                     (line-beginning-position)
-                                     (line-end-position))))
-                      (matches (delete
-                                first-line
-                                (if (string-empty-p input)
-                                    lines
-                                  (funcall
-                                   selectrum-highlight-candidates-function
-                                   input
-                                   (funcall
-                                    selectrum-refine-candidates-function
-                                    input
-                                    lines)))))
-                      (nlines (unless (string-empty-p nlines/display)
-                                (propertize (format nlines/display len)
-                                            'face nlines/face)))
-                      (truncated-first-line
-                       (replace-regexp-in-string
-                        "[ \t][ \t]+"
-                        (propertize whitespace/display
-                                    'face whitespace/face)
-                        first-line 'fixed-case 'literal))
-                      (shortened-line
-                       (if (< (length truncated-first-line) 78)
-                           truncated-first-line
-                         (substring truncated-first-line 0 78)))
-                      (concated-matches
-                       (mapconcat #'identity matches
-                                  (propertize newline/display
-                                              'face newline/face)))
-                      (truncated-matches
-                       (replace-regexp-in-string
-                        "[ \t][ \t]+"
-                        (propertize whitespace/display
-                                    'face whitespace/face)
-                        concated-matches
-                        'fixed-case 'literal))
-                      (shortened-matches
-                       (if (< (length truncated-matches) 1000)
-                           truncated-matches
-                         (concat
-                          (substring truncated-matches 0 1000)
-                          (propertize truncation/display
-                                      'face truncation/face))))
-                      (line (concat shortened-line
-                                    (propertize truncation/display
-                                                'face truncation/face)
-                                    nlines
-                                    (unless (string-empty-p shortened-matches)
-                                      (propertize match/display
-                                                  'face match/face))
-                                    shortened-matches)))
-                 line))))
-        (push line single/lines)))))
+         (nlines/face (cdr nline/info))
+         (lines (split-string cand "\n"))
+         (len (length lines))
+         (input (minibuffer-contents))
+         (first-line (with-temp-buffer
+                       (insert cand)
+                       (goto-char (point-min))
+                       (skip-chars-forward " \t\n")
+                       (buffer-substring
+                        (line-beginning-position)
+                        (line-end-position))))
+         (matches (delete
+                   first-line
+                   (if (string-empty-p input)
+                       lines
+                     (funcall
+                      selectrum-highlight-candidates-function
+                      input
+                      (funcall
+                       selectrum-refine-candidates-function
+                       input
+                       lines)))))
+         (nlines (unless (string-empty-p nlines/display)
+                   (propertize (format nlines/display len)
+                               'face nlines/face)))
+         (truncated-first-line
+          (replace-regexp-in-string
+           "[ \t][ \t]+"
+           (propertize whitespace/display
+                       'face whitespace/face)
+           first-line 'fixed-case 'literal))
+         (shortened-line
+          (if (< (length truncated-first-line) 78)
+              truncated-first-line
+            (substring truncated-first-line 0 78)))
+         (concated-matches
+          (mapconcat #'identity matches
+                     (propertize newline/display
+                                 'face newline/face)))
+         (truncated-matches
+          (replace-regexp-in-string
+           "[ \t][ \t]+"
+           (propertize whitespace/display
+                       'face whitespace/face)
+           concated-matches
+           'fixed-case 'literal))
+         (shortened-matches
+          (if (< (length truncated-matches) 1000)
+              truncated-matches
+            (concat
+             (substring truncated-matches 0 1000)
+             (propertize truncation/display
+                         'face truncation/face)))))
+    (concat shortened-line
+            (propertize truncation/display
+                        'face truncation/face)
+            nlines
+            (unless (string-empty-p shortened-matches)
+              (propertize match/display
+                          'face match/face))
+            shortened-matches)))
 
 (defun selectrum--annotation (fun cand face)
   "Return annotation for candidate.
@@ -1697,12 +1688,13 @@ defaults to `completion-extra-properties'."
                           (or aff annotf docsigf)
                         selectrum-extend-current-candidate-highlight)))
          (show-indices selectrum-show-indices)
-         (margin-padding selectrum-right-margin-padding)
-         (lines (selectrum--ensure-single-lines
-                 candidates
-                 selectrum-multiline-display-settings)))
+         (margin-padding selectrum-right-margin-padding))
     (with-temp-buffer
-      (dolist (candidate lines)
+      (dolist (candidate candidates)
+        (when (string-match-p "\n" candidate)
+          (setq candidate (selectrum--ensure-single-line
+                           candidate
+                           selectrum-multiline-display-settings)))
         (let* ((prefix (get-text-property
                         0 'selectrum-candidate-display-prefix
                         candidate))
