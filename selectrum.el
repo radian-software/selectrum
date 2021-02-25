@@ -1413,11 +1413,7 @@ window is supposed to be shown vertically."
            (cond (selectrum-display-action
                   (selectrum--fit-window-to-buffer window))
                  (t
-                  ;; With `truncate-lines' `resize-mini-windows'
-                  ;; doesn't work before Emacs 28:
-                  ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=46718
-                  (when (version< emacs-version "28")
-                    (selectrum--set-window-height window))))))))
+                  (selectrum--set-window-height window)))))))
 
 (defun selectrum--fit-window-to-buffer (window)
   "Fit window height to its buffer contents.
