@@ -1718,7 +1718,10 @@ defaults to `completion-extra-properties'."
          (groups (if (or horizontalp (not groupf))
                      (list (cons nil candidates))
                    (funcall groupf candidates)))
-         (show-indices selectrum-show-indices)
+         (show-indices
+          (cond
+           ((functionp selectrum-show-indices) selectrum-show-indices)
+           (selectrum-show-indices (lambda (i) (format "%2d " i)))))
          (margin-padding selectrum-right-margin-padding)
          (lines))
     (dolist (group groups)
@@ -1770,14 +1773,10 @@ defaults to `completion-extra-properties'."
             (when annot-fun
               (funcall annot-fun prefix suffix right-margin)))
           (when show-indices
-            (let* ((display-fn (if (functionp show-indices)
-                                   show-indices
-                                 (lambda (i) (format "%2d " i))))
-                   (curr-index (substring-no-properties
-                                (funcall display-fn (1+ index)))))
-              (setq displayed-candidate
-                    (concat (propertize curr-index 'face 'minibuffer-prompt)
-                            displayed-candidate))))
+            (setq displayed-candidate
+                  (concat (propertize (funcall show-indices (1+ index))
+                                      'face 'minibuffer-prompt)
+                          displayed-candidate)))
           (cond
            ((and right-margin (not annot-fun))
             (setq displayed-candidate
