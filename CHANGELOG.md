@@ -5,8 +5,8 @@ The format is based on [Keep a Changelog].
 
 ## Unreleased
 ### Breaking changes
-* Support for Emacs versions older than 26.1 has been removed
-  ([#465]).
+* Support for Emacs versions older than 26.1 has been removed ([#454],
+  [#465]).
 
 ### Features
 * Add support for `x-group-function` completion metadata. The group
@@ -37,6 +37,7 @@ packages. Users of `selectrum-prescient` can update to configure
   are existing candidates already selected using `TAB` ([#460]).
 
 [#419]: https://github.com/raxod502/selectrum/issues/419
+[#454]: https://github.com/raxod502/selectrum/issues/454
 [#455]: https://github.com/raxod502/selectrum/pull/455
 [#456]: https://github.com/raxod502/selectrum/pull/456
 [#458]: https://github.com/raxod502/selectrum/pull/458
