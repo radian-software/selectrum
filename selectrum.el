@@ -1153,7 +1153,8 @@ and the `x-group-function'."
               (funcall selectrum-preprocess-candidates-function
                        candidates))
   (when-let (groupf (or (selectrum--get-meta 'x-group-function)
-                        (plist-get completion-extra-properties :x-group-function)))
+                        (plist-get completion-extra-properties
+                                   :x-group-function)))
     (setq-local
      selectrum--preprocessed-candidates
      (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
@@ -1691,11 +1692,14 @@ defaults to `completion-extra-properties'."
   (let* ((index 0)
          (metadata (selectrum--metadata))
          (annotf (or (completion-metadata-get metadata 'annotation-function)
-                     (plist-get completion-extra-properties :annotation-function)))
+                     (plist-get completion-extra-properties
+                                :annotation-function)))
          (aff (or (completion-metadata-get metadata 'affixation-function)
-                  (plist-get completion-extra-properties :affixation-function)))
+                  (plist-get completion-extra-properties
+                             :affixation-function)))
          (groupf (or (completion-metadata-get metadata 'x-group-function)
-                     (plist-get completion-extra-properties :x-group-function)))
+                     (plist-get completion-extra-properties
+                                :x-group-function)))
          (docsigf (plist-get completion-extra-properties :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
