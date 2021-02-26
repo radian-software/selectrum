@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 ### Breaking changes
 * Support for Emacs versions older than 26.1 has been removed ([#454],
   [#465]).
+* The experimental `selectrum-helm.el` package has been removed
+  ([#313], [#466]).
 
 ### Features
 * Add support for `x-group-function` completion metadata. The group
@@ -36,6 +38,7 @@ packages. Users of `selectrum-prescient` can update to configure
   candidate and exiting by pressing `RET` no longer fails when there
   are existing candidates already selected using `TAB` ([#460]).
 
+[#313]: https://github.com/raxod502/selectrum/issues/313
 [#419]: https://github.com/raxod502/selectrum/issues/419
 [#454]: https://github.com/raxod502/selectrum/issues/454
 [#455]: https://github.com/raxod502/selectrum/pull/455
@@ -46,6 +49,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#462]: https://github.com/raxod502/selectrum/pull/462
 [#463]: https://github.com/raxod502/selectrum/pull/463
 [#465]: https://github.com/raxod502/selectrum/pull/465
+[#466]: https://github.com/raxod502/selectrum/pull/466
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated

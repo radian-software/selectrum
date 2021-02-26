@@ -271,19 +271,6 @@ used refinement function. The built-in `completion-styles` support the
   (global-set-key (kbd "C-x C-z") #'selectrum-repeat)
   ```
 
-* There is experimental support for running Helm commands via the
-  Selectrum interface. The idea is that we install some advices on
-  Helm which translate calls to the Helm API into calls to the
-  Selectrum API. Needless to say, this translation comes at a loss of
-  functionality, since Helm is a behemoth which supports every
-  conceivable kind of completion paradigm while Selectrum is designed
-  to have as few features as possible without seriously compromising
-  user experience. However, this support might allow you to make more
-  convenient use of the extensive Helm ecosystem.
-
-  To use the support, enable `selectrum-helm-mode` from the
-  `selectrum-helm` library.
-
 ### Customization
 
 * By default, ten candidates are shown in the minibuffer at any given
