@@ -128,7 +128,7 @@ packages. Users of `selectrum-prescient` can update to configure
   candidates wouldn't be completely visible, which has been fixed
   ([#303], [#414]).
 * The sorting of passed defaults for file completions has been
-  improved such that paths like "/home/user/default", "~/default" or a
+  improved such that paths like `/home/user/default`, `~/default` or a
   relative passed default get sorted first when they exist within the
   prompting directory ([#402], [#404]).
 * Tramp completions have been improved. You now get completion for
