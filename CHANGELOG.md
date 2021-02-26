@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Features
+* Add support for `x-group-function` completion metadata. The group
+  title formatting is controlled by the customization variable
+  `selectrum-group-format` and the faces `selectrum-group-separator`
+  and `selectrum-group-title` ([#458], [#463]).
+
 ### Deprecated
 The faces `selectrum-primary-highlight` and
 `selectrum-secondary-highlight` have been deprecated. The match
@@ -29,9 +35,11 @@ packages. Users of `selectrum-prescient` can update to configure
 [#419]: https://github.com/raxod502/selectrum/issues/419
 [#455]: https://github.com/raxod502/selectrum/pull/455
 [#456]: https://github.com/raxod502/selectrum/pull/456
+[#458]: https://github.com/raxod502/selectrum/pull/458
 [#459]: https://github.com/raxod502/selectrum/issues/459
 [#460]: https://github.com/raxod502/selectrum/pull/460
 [#462]: https://github.com/raxod502/selectrum/pull/462
+[#463]: https://github.com/raxod502/selectrum/pull/463
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
