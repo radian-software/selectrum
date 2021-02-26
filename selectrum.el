@@ -6,7 +6,7 @@
 ;; Created: 8 Dec 2019
 ;; Homepage: https://github.com/raxod502/selectrum
 ;; Keywords: extensions
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "26.1"))
 ;; SPDX-License-Identifier: MIT
 ;; Version: 3.1
 
@@ -1157,7 +1157,7 @@ and the `x-group-function'."
                                    :x-group-function)))
     (setq-local
      selectrum--preprocessed-candidates
-     (cl-mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
+     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
   (setq-local
    selectrum--total-num-candidates
    (length selectrum--preprocessed-candidates)))
