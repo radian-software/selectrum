@@ -9,18 +9,6 @@ shared: &shared
         make docker
         CMD="make -k lint"
 jobs:
-  emacs-25.1:
-    <<: *shared
-    environment:
-      VERSION: "25.1"
-  emacs-25.2:
-    <<: *shared
-    environment:
-      VERSION: "25.2"
-  emacs-25.3:
-    <<: *shared
-    environment:
-      VERSION: "25.3"
   emacs-26.1:
     <<: *shared
     environment:
@@ -29,6 +17,10 @@ jobs:
     <<: *shared
     environment:
       VERSION: "26.2"
+  emacs-27.1:
+    <<: *shared
+    environment:
+      VERSION: "27.1"
   emacs-git:
     <<: *shared
     environment:
@@ -37,9 +29,7 @@ workflows:
   version: 2
   ci:
     jobs:
-      - emacs-25.1
-      - emacs-25.2
-      - emacs-25.3
       - emacs-26.1
       - emacs-26.2
+      - emacs-27.1
       - emacs-git

@@ -584,12 +584,6 @@ Technical points:
 * There is no built-in support for alternate actions on minibuffer
   candidates but you can add those using
   [embark](https://github.com/oantolin/embark/).
-* In Emacs 25 and earlier, `M-x ffap` is basically completely broken.
-  This is because in old versions of Emacs, `ffap` worked by calling
-  `completing-read` directly with a special completion table function,
-  rather than just using `read-file-name` like would be reasonable.
-  Since Emacs 25 is going to die eventually, I'm not going to bother
-  fixing this, although pull requests would be accepted.
 * In Emacs 26 and earlier, the way that messages are displayed while
   the minibuffer is active is unworkably bad: they block out the
   entire minibuffer as long as they are displayed, and then mess up

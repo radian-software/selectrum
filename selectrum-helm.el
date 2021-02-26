@@ -6,7 +6,7 @@
 ;; Created: 15 Apr 2020
 ;; Homepage: https://github.com/raxod502/selectrum
 ;; Keywords: extensions
-;; Package-Requires: ((emacs "25.1") (helm "3.6.1") (selectrum "3.1"))
+;; Package-Requires: ((emacs "26.1") (helm "3.6.1") (selectrum "3.1"))
 ;; SPDX-License-Identifier: MIT
 ;; Version: 3.1
 
