@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Breaking changes
+* Support for Emacs versions older than 26.1 has been removed
+  ([#465]).
+
 ### Features
 * Add support for `x-group-function` completion metadata. The group
   title formatting is controlled by the customization variable
@@ -40,6 +44,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#460]: https://github.com/raxod502/selectrum/pull/460
 [#462]: https://github.com/raxod502/selectrum/pull/462
 [#463]: https://github.com/raxod502/selectrum/pull/463
+[#465]: https://github.com/raxod502/selectrum/pull/465
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
