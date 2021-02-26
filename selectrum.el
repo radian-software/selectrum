@@ -1157,7 +1157,7 @@ and the `x-group-function'."
                                    :x-group-function)))
     (setq-local
      selectrum--preprocessed-candidates
-     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
+     (cl-mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
   (setq-local
    selectrum--total-num-candidates
    (length selectrum--preprocessed-candidates)))
