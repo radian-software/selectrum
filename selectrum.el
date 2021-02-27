@@ -884,7 +884,7 @@ content height is greater than the window height."
 
 (defun selectrum--vertical-display-style
     (win input candidates nrows ncols index
-         &optional max-index first-index-displayed last-index-displayed
+         max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates vertically into current buffer.
@@ -941,7 +941,7 @@ currently doesn't have any."
 
 (defun selectrum--horizontal-display-style
     (win input candidates nrows ncols index
-         &optional max-index first-index-displayed last-index-displayed
+         max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates horizontally into buffer BUF.
