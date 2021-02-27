@@ -882,10 +882,10 @@ content height is greater than the window height."
    horizontalp))
 
 (defun selectrum--vertical-display-style
-    (win input candidates nrows ncols index
-         max-index first-index-displayed last-index-displayed
+    (win input candidates nrows _ncols index
+         max-index _first-index-displayed _last-index-displayed
          max-num
-         settings)
+         _settings)
   "Insert candidates vertically into current buffer.
 Used as insertion function for `vertical' display style, see
 `selectrum-display-style'. WIN is the window where buffer will
@@ -912,7 +912,6 @@ insertion function behaviour depends on the number of candidates
 that get displayed. SETTINGS are a plist of additional settings
 as specified in `selectrum-display-style', this function
 currently doesn't have any."
-  (ignore ncols first-index-displayed last-index-displayed settings)
   (let* ((rows (or max-num nrows))
          (first-index-displayed
           (if (not index)
@@ -934,16 +933,15 @@ currently doesn't have any."
                   (string-join displayed-candidates "\n")))))
 
 (defun selectrum--horizontal-display-style
-    (win input candidates nrows ncols index
+    (win input candidates _nrows ncols index
          max-index first-index-displayed last-index-displayed
-         max-num
+         _max-num
          settings)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
 see `selectrum--vertical-display-style'. For known keys see
 the `horizontal' description of `selectrum-display-style'."
-  (ignore nrows max-num)
   (let* ((before-cands (or (plist-get settings :before-candidates)
                            "{"))
          (prompt-sep (if (window-minibuffer-p win)
@@ -2212,11 +2210,10 @@ semantics of `cl-defun'."
 (defun selectrum-completing-read
     (prompt collection &optional
             predicate require-match initial-input
-            hist def inherit-input-method)
+            hist def _inherit-input-method)
   "Read choice using Selectrum. Can be used as `completing-read-function'.
 For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
-  (ignore inherit-input-method)
   (selectrum--read
    prompt nil
    :initial-input initial-input
