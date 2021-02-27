@@ -831,7 +831,6 @@ when possible (it is still a member of the candidate set)."
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
 
-(defvar display-line-numbers) ; Undefined in Emacs 25.
 (defun selectrum--get-display-window ()
   "Get candidate display window.
 
