@@ -1816,7 +1816,7 @@ defaults to `completion-extra-properties'."
           (cl-incf index))))
     (nreverse lines)))
 
-(defun selectrum--minibuffer-setup-hook (candidates default buf)
+(defun selectrum--setup (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
 CANDIDATES is the list of candidate strings. DEFAULT is the default
 value which can be overridden and BUF the buffer the session was
@@ -2220,7 +2220,7 @@ semantics of `cl-defun'."
                            ;; the obsolete `selectrum-read' alias.
                            (when no-move-default-candidate
                              (setq-local selectrum-move-default-candidate nil))
-                           (selectrum--minibuffer-setup-hook
+                           (selectrum--setup
                             candidates
                             (or (car-safe minibuffer-default)
                                 minibuffer-default
