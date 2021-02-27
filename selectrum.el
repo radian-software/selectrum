@@ -1152,17 +1152,8 @@ and the `x-group-function'."
    selectrum--total-num-candidates
    (length selectrum--preprocessed-candidates)))
 
-(defun selectrum--update-input-changed (input keep-selected)
-  "Update state when INPUT string has changed.
-KEEP-SELECTED can be a candidate which should stay selected after
-the update."
-  ;; Track current input globally and in last buffer for
-  ;; selectrum-repeat.
-  (setq-default selectrum--last-input input)
-  (when (buffer-live-p selectrum--last-buffer)
-    (with-current-buffer selectrum--last-buffer
-      (setq-local selectrum--last-input input)))
-  (setq-local selectrum--previous-input-string input)
+(defun selectrum--update-dynamic-candidates (input)
+  "Update dynamic candidates according to new INPUT."
   (let ((dynamic (functionp selectrum--dynamic-candidates))
         (init-table (and (not selectrum--preprocessed-candidates)
                          minibuffer-completion-table)))
@@ -1193,7 +1184,11 @@ the update."
          (selectrum--normalize-collection
           minibuffer-completion-table
           minibuffer-completion-predicate)))))
-  ;; Do refinement.
+  ;; Return input which may have been modified
+  input)
+
+(defun selectrum--update-refined-candidates (input)
+  "Update refined candidates according to current INPUT."
   (let* ((cands selectrum--preprocessed-candidates)
          (completion-styles-alist
           ;; Remap partial-style for file completions
@@ -1232,7 +1227,21 @@ the update."
                  input)
                selectrum--refined-candidates))
   (setq-local selectrum--refined-candidates
-              (delete "" selectrum--refined-candidates))
+              (delete "" selectrum--refined-candidates)))
+
+(defun selectrum--update-input-changed (input keep-selected)
+  "Update state when INPUT string has changed.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
+  ;; Track current input globally and in last buffer for
+  ;; selectrum-repeat.
+  (setq-default selectrum--last-input input)
+  (when (buffer-live-p selectrum--last-buffer)
+    (with-current-buffer selectrum--last-buffer
+      (setq-local selectrum--last-input input)))
+  (setq-local selectrum--previous-input-string input)
+  (setq input (selectrum--update-dynamic-candidates input))
+  (selectrum--update-refined-candidates input)
   (setq-local selectrum--first-index-displayed nil)
   (setq-local selectrum--actual-num-candidates-displayed nil)
   (if selectrum--repeat
