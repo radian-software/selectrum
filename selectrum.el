@@ -928,16 +928,11 @@ currently doesn't have any."
                   0))))
          (displayed-candidates
           (selectrum--helper input candidates index
-           first-index-displayed rows nil)))
-    (when (window-minibuffer-p win)
-      (insert "\n"))
-    (let ((n 0))
-      (while displayed-candidates
-        (insert (pop displayed-candidates))
-        (when displayed-candidates
-          (insert "\n"))
-        (cl-incf n))
-      (cons nil n))))
+                             first-index-displayed rows nil)))
+    (list nil
+          (length displayed-candidates)
+          (concat (and (window-minibuffer-p win) "\n")
+                  (string-join displayed-candidates "\n")))))
 
 (defun selectrum--horizontal-display-style
     (win input candidates nrows ncols index
@@ -1014,10 +1009,8 @@ the `horizontal' description of `selectrum-display-style'."
           (pop insert))
         (push more insert)
         (push end insert))
-      (setq insert (nreverse insert))
-      (while insert
-        (insert (pop insert))))
-    (cons t n)))
+      (setq insert (nreverse insert)))
+    (list t n (apply #'concat insert))))
 
 (defun selectrum-cycle-display-style ()
   "Change current `selectrum-display-style'.
@@ -1048,8 +1041,8 @@ Without that the global default value will be changed."
         (message "Switched to %s" selectrum-display-style)))))
 
 (defun selectrum--insert-candidates
-    (insert-settings candidates buf win input plen
-                     &optional index mindex findex num)
+    (insert-settings candidates win input plen
+                     index mindex findex num)
   "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. INPUT is the
 current user input. PLEN is the prompt prefix length. INDEX
@@ -1077,21 +1070,18 @@ and the cdr is the number of candidates that were inserted."
          (lindex (when (and findex num)
                    (+ findex
                       (max 0 (1- num)))))
-         (insert-res (with-current-buffer buf
-                       (funcall insert-fun win input candidates
-                                nlines ncols index mindex findex lindex
-                                ncands settings))))
+         (insert-res (funcall insert-fun win input candidates
+                              nlines ncols index mindex findex lindex
+                              ncands settings)))
     (if (or (not index) (not findex)
-            (>= (+ findex (cdr insert-res)) index))
+            (>= (+ findex (cadr insert-res)) index))
         insert-res
       ;; When the insertion function was switched the current index
       ;; might be out of sight in this case reinsert with the current
       ;; index displayed as the first one.
-      (with-current-buffer buf
-        (erase-buffer)
-        (funcall insert-fun win input candidates
-                 nlines ncols index mindex index lindex
-                 ncands settings)))))
+      (funcall insert-fun win input candidates
+               nlines ncols index mindex index lindex
+               ncands settings))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
@@ -1324,10 +1314,7 @@ the update."
                        (and selectrum--refined-candidates
                             (selectrum--get-display-window))
                      (active-minibuffer-window)))
-           (buffer (with-current-buffer
-                       (get-buffer-create selectrum--candidates-buffer)
-                     (erase-buffer)
-                     (current-buffer)))
+           (buffer (get-buffer-create selectrum--candidates-buffer))
            (default
              (when (and selectrum-default-value-format
                         (= (minibuffer-prompt-end) (point-max))
@@ -1356,7 +1343,6 @@ the update."
             (selectrum--insert-candidates
              selectrum-display-style
              selectrum--refined-candidates
-             buffer
              window
              input
              ;; FIXME: This only takes our count overlay into
@@ -1371,7 +1357,10 @@ the update."
              selectrum--first-index-displayed
              selectrum--actual-num-candidates-displayed))
            (horizp (car inserted-res))
-           (inserted-num (cdr inserted-res)))
+           (inserted-num (cadr inserted-res)))
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert (caddr inserted-res)))
       (setq-local selectrum--actual-num-candidates-displayed inserted-num)
       ;; Add padding for scrolled prompt.
       (when (and (window-minibuffer-p window)
