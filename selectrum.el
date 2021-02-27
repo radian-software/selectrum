@@ -682,7 +682,7 @@ updates is skipped.")
 (defvar-local selectrum--is-initializing nil
   "Non-nil means the current session is initializing.
 This is non-nil during the first call of
-`selectrum--minibuffer-post-command-hook'.")
+`selectrum--update'.")
 
 (defvar-local selectrum--total-num-candidates nil
   "Saved number of candidates, used for `selectrum-show-indices'.")
@@ -1116,10 +1116,6 @@ and the cdr is the number of candidates that were inserted."
   (and minibuffer-completing-file-name
        (file-exists-p
         (substitute-in-file-name (minibuffer-contents)))))
-
-(defun selectrum--minibuffer-post-command-hook ()
-  "Update minibuffer in response to user input."
-  (selectrum--update))
 
 (defun selectrum--max-window-height (&optional frame max)
   "Return maximal window height for frame.
@@ -1871,7 +1867,7 @@ started from."
   (setq-local selectrum--line-height (line-pixel-height))
   (add-hook
    'post-command-hook
-   #'selectrum--minibuffer-post-command-hook
+   #'selectrum--update
    nil 'local))
 
 ;;; Minibuffer commands
