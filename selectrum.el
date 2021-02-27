@@ -648,12 +648,6 @@ input that does not match any of the displayed candidates.")
 (defvar-local selectrum--default-candidate nil
   "Default candidate, or nil if none given.")
 
-;; The existence of this variable is a bit of a mess, but we'll run
-;; with it for now.
-(defvar-local selectrum--visual-input nil
-  "User input string as transformed by candidate refinement.
-See `selectrum-refine-candidates-function'.")
-
 (defvar-local selectrum--last-command nil
   "Name of last interactive command that invoked Selectrum.")
 
@@ -1169,9 +1163,6 @@ the update."
     (with-current-buffer selectrum--last-buffer
       (setq-local selectrum--last-input input)))
   (setq-local selectrum--previous-input-string input)
-  ;; Reset the persistent input, so that it will be nil if
-  ;; there's no special attention needed.
-  (setq-local selectrum--visual-input nil)
   (let ((dynamic (functionp selectrum--dynamic-candidates))
         (init-table (and (not selectrum--preprocessed-candidates)
                          minibuffer-completion-table)))
@@ -1196,7 +1187,6 @@ the update."
                   result
                 (setq input (or (alist-get 'input result)
                                 input))
-                (setq-local selectrum--visual-input input)
                 (alist-get 'candidates result))))
          ;; No candidates were passed, initialize them
          ;; from `minibuffer-completion-table'.
@@ -1254,7 +1244,9 @@ the update."
                    (1- (length selectrum--refined-candidates)))))
         (setq-local selectrum--repeat nil))
     (setq-local selectrum--current-candidate-index
-                (selectrum--compute-current-candidate-index keep-selected))))
+                (selectrum--compute-current-candidate-index keep-selected)))
+  ;; Return input string which may be transformed
+  input)
 
 (defun selectrum--compute-current-candidate-index (keep-selected)
   "Compute the index of the current candidate.
@@ -1324,9 +1316,7 @@ the update."
                                  (point-max)))
         (keep-mark-active (not deactivate-mark)))
     (unless (equal input selectrum--previous-input-string)
-      (selectrum--update-input-changed input keep-selected))
-    ;; Always keep the visual input if defined.
-    (setq input (or selectrum--visual-input input))
+      (setq input (selectrum--update-input-changed input keep-selected)))
     ;; Handle prompt selection.
     (if (and selectrum--current-candidate-index
              (< selectrum--current-candidate-index 0))
