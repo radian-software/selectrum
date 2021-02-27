@@ -1258,45 +1258,51 @@ the update."
                    (1- (length selectrum--refined-candidates)))))
         (setq-local selectrum--repeat nil))
     (setq-local selectrum--current-candidate-index
-                (cond
-                 ;; Check for candidates needs to be first!
-                 ((null selectrum--refined-candidates)
-                  (when (or (not selectrum--match-is-required)
-                            (selectrum--at-existing-prompt-path-p))
-                    -1))
-                 (keep-selected
-                  (or (cl-position keep-selected
-                                   selectrum--refined-candidates
-                                   :key #'selectrum--get-full
-                                   :test #'equal)
-                      0))
-                 ((and selectrum--default-candidate
-                       (string-empty-p (minibuffer-contents))
-                       (not (member selectrum--default-candidate
-                                    selectrum--refined-candidates)))
-                  -1)
-                 ((or (and selectrum--is-initializing
-                           (equal selectrum--default-candidate
-                                  (minibuffer-contents)))
-                      (and (not (= (minibuffer-prompt-end) (point-max)))
-                           (or (and minibuffer-history-position
-                                    (not (zerop
-                                          minibuffer-history-position))
-                                    isearch-mode)
-                               (memq this-command
-                                     '(next-history-element
-                                       previous-history-element)))
-                           (or (not selectrum--match-is-required)
-                               (selectrum--at-existing-prompt-path-p))))
-                  -1)
-                 (selectrum-move-default-candidate
-                  0)
-                 (t
-                  (or (cl-position selectrum--default-candidate
-                                   selectrum--refined-candidates
-                                   :key #'selectrum--get-full
-                                   :test #'equal)
-                      0))))))
+                (selectrum--compute-current-candidate-index keep-selected))))
+
+(defun selectrum--compute-current-candidate-index (keep-selected)
+  "Compute the index of the current candidate.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
+  (cond
+   ;; Check for candidates needs to be first!
+   ((null selectrum--refined-candidates)
+    (when (or (not selectrum--match-is-required)
+              (selectrum--at-existing-prompt-path-p))
+      -1))
+   (keep-selected
+    (or (cl-position keep-selected
+                     selectrum--refined-candidates
+                     :key #'selectrum--get-full
+                     :test #'equal)
+        0))
+   ((and selectrum--default-candidate
+         (string-empty-p (minibuffer-contents))
+         (not (member selectrum--default-candidate
+                      selectrum--refined-candidates)))
+    -1)
+   ((or (and selectrum--is-initializing
+             (equal selectrum--default-candidate
+                    (minibuffer-contents)))
+        (and (not (= (minibuffer-prompt-end) (point-max)))
+             (or (and minibuffer-history-position
+                      (not (zerop
+                            minibuffer-history-position))
+                      isearch-mode)
+                 (memq this-command
+                       '(next-history-element
+                         previous-history-element)))
+             (or (not selectrum--match-is-required)
+                 (selectrum--at-existing-prompt-path-p))))
+    -1)
+   (selectrum-move-default-candidate
+    0)
+   (t
+    (or (cl-position selectrum--default-candidate
+                     selectrum--refined-candidates
+                     :key #'selectrum--get-full
+                     :test #'equal)
+        0))))
 
 (defun selectrum--update (&optional keep-selected)
   "Update state.
