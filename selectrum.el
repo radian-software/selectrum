@@ -861,9 +861,30 @@ content height is greater than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
+(defun selectrum--helper (input candidates index first-index-displayed
+               ncands &optional annot-fun horizontalp)
+  (with-current-buffer (window-buffer (active-minibuffer-window))
+    (setq-local selectrum--first-index-displayed
+                first-index-displayed)
+    (selectrum--candidates-display-strings
+     (funcall
+      selectrum-highlight-candidates-function
+      input
+      (seq-take
+       (nthcdr
+        first-index-displayed
+        candidates)
+       ;; Never allow more candidates than configured.
+       (if (numberp selectrum-num-candidates-displayed)
+           selectrum-num-candidates-displayed
+         ncands)))
+     (when (and first-index-displayed index)
+       (- index first-index-displayed))
+     annot-fun horizontalp)))
+
 (defun selectrum--vertical-display-style
-    (win cb nrows ncols
-         &optional index max-index first-index-displayed last-index-displayed
+    (win input candidates nrows ncols index
+         &optional max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates vertically into current buffer.
@@ -906,7 +927,8 @@ currently doesn't have any."
              (max (- (1+ max-index) rows)
                   0))))
          (displayed-candidates
-          (funcall cb first-index-displayed rows)))
+          (selectrum--helper input candidates index
+           first-index-displayed rows)))
     (when (window-minibuffer-p win)
       (insert "\n"))
     (let ((n 0))
@@ -915,11 +937,11 @@ currently doesn't have any."
         (when displayed-candidates
           (insert "\n"))
         (cl-incf n))
-      n)))
+      (cons nil n))))
 
 (defun selectrum--horizontal-display-style
-    (win cb nrows ncols
-         &optional index max-index first-index-displayed last-index-displayed
+    (win input candidates nrows ncols index
+         &optional max-index first-index-displayed last-index-displayed
          max-num
          settings)
   "Insert candidates horizontally into buffer BUF.
@@ -955,9 +977,11 @@ the `horizontal' description of `selectrum-display-style'."
                 (t
                  first-index-displayed)))
          (cands
-          (funcall cb first-index-displayed
-                   (floor ncols (1+ (length separator)))
-                   #'ignore 'horizontal))
+          (selectrum--helper
+           input candidates index
+           first-index-displayed
+           (floor ncols (1+ (length separator)))
+           #'ignore 'horizontal))
          (n 0)
          (insert nil))
     (when cands
@@ -993,7 +1017,7 @@ the `horizontal' description of `selectrum-display-style'."
       (setq insert (nreverse insert))
       (while insert
         (insert (pop insert))))
-    n))
+    (cons t n)))
 
 (defun selectrum-cycle-display-style ()
   "Change current `selectrum-display-style'.
@@ -1034,8 +1058,7 @@ is the maximum and FINDEX the first index. NUM is the number of
 currently displayed candidates. Returns a cons: The car is
 non-nil if candidates are supposed to be displayed horizontally
 and the cdr is the number of candidates that were inserted."
-  (let* ((horizp  nil)
-         (nlines (selectrum--max-num-candidate-lines win))
+  (let* ((nlines (selectrum--max-num-candidate-lines win))
          (ncols (if (window-minibuffer-p win)
                     (- (window-body-width win)
                        (- (point-max)
@@ -1051,46 +1074,24 @@ and the cdr is the number of candidates that were inserted."
                             #'selectrum--vertical-display-style)))
          (settings
           (cdr insert-settings))
-         (cb (lambda (first-index-displayed
-                      ncands &optional annot-fun horizontalp)
-               (with-current-buffer (window-buffer (active-minibuffer-window))
-                 (setq-local selectrum--first-index-displayed
-                             first-index-displayed)
-                 (setq horizp horizontalp)
-                 (selectrum--candidates-display-strings
-                  (funcall
-                   selectrum-highlight-candidates-function
-                   input
-                   (seq-take
-                    (nthcdr
-                     first-index-displayed
-                     candidates)
-                    ;; Never allow more candidates than configured.
-                    (if (numberp selectrum-num-candidates-displayed)
-                        selectrum-num-candidates-displayed
-                      ncands)))
-                  (when (and first-index-displayed index)
-                    (- index first-index-displayed))
-                  annot-fun horizontalp))))
          (lindex (when (and findex num)
                    (+ findex
                       (max 0 (1- num)))))
-         (n (with-current-buffer buf
-              (funcall insert-fun win cb
-                       nlines ncols index mindex findex lindex
-                       ncands settings))))
-    (cons horizp
-          (if (or (not index) (not findex)
-                  (>= (+ findex n) index))
-              n
-            ;; When the insertion function was switched the current index
-            ;; might be out of sight in this case reinsert with the current
-            ;; index displayed as the first one.
-            (with-current-buffer buf
-              (erase-buffer)
-              (funcall insert-fun win cb
-                       nlines ncols index mindex index lindex
-                       ncands settings))))))
+         (insert-res (with-current-buffer buf
+                       (funcall insert-fun win input candidates
+                                nlines ncols index mindex findex lindex
+                                ncands settings))))
+    (if (or (not index) (not findex)
+            (>= (+ findex (cdr insert-res)) index))
+        insert-res
+      ;; When the insertion function was switched the current index
+      ;; might be out of sight in this case reinsert with the current
+      ;; index displayed as the first one.
+      (with-current-buffer buf
+        (erase-buffer)
+        (funcall insert-fun win input candidates
+                 nlines ncols index mindex index lindex
+                 ncands settings)))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
