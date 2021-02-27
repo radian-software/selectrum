@@ -862,7 +862,7 @@ content height is greater than the window height."
            (window-body-height window 'pixelwise))))
 
 (defun selectrum--helper (input candidates index first-index-displayed
-               ncands &optional annot-fun horizontalp)
+               ncands horizontalp)
   (with-current-buffer (window-buffer (active-minibuffer-window))
     (setq-local selectrum--first-index-displayed
                 first-index-displayed)
@@ -880,7 +880,7 @@ content height is greater than the window height."
          ncands)))
      (when (and first-index-displayed index)
        (- index first-index-displayed))
-     annot-fun horizontalp)))
+     horizontalp)))
 
 (defun selectrum--vertical-display-style
     (win input candidates nrows ncols index
@@ -928,7 +928,7 @@ currently doesn't have any."
                   0))))
          (displayed-candidates
           (selectrum--helper input candidates index
-           first-index-displayed rows)))
+           first-index-displayed rows nil)))
     (when (window-minibuffer-p win)
       (insert "\n"))
     (let ((n 0))
@@ -981,7 +981,7 @@ the `horizontal' description of `selectrum-display-style'."
            input candidates index
            first-index-displayed
            (floor ncols (1+ (length separator)))
-           #'ignore 'horizontal))
+           'horizontal))
          (n 0)
          (insert nil))
     (when cands
@@ -1671,12 +1671,9 @@ suffix."
 
 (defun selectrum--candidates-display-strings (candidates
                                               highlighted-index
-                                              annot-fun
                                               horizontalp)
   "Get display strings for CANDIDATES.
-HIGHLIGHTED-INDEX is the currently selected index. If ANNOT-FUN
-is non-nil don't add any annotations but call the function with
-the annotations of the currently highlighted candidate. If
+HIGHLIGHTED-INDEX is the currently selected index. If
 HORIZONTALP is non-nil candidates are supposed to be displayed
 horizontally. TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'. PROPS
@@ -1733,7 +1730,7 @@ defaults to `completion-extra-properties'."
                               candidate))
                (displayed-candidate
                 (selectrum--display-string
-                 (if annot-fun
+                 (if horizontalp
                      candidate
                    (concat prefix candidate suffix))))
                (formatting-current-candidate
@@ -1759,16 +1756,14 @@ defaults to `completion-extra-properties'."
            displayed-candidate)
           (when formatting-current-candidate
             (setq displayed-candidate
-                  (selectrum--selection-highlight displayed-candidate))
-            (when annot-fun
-              (funcall annot-fun prefix suffix right-margin)))
+                  (selectrum--selection-highlight displayed-candidate)))
           (when show-indices
             (setq displayed-candidate
                   (concat (propertize (funcall show-indices (1+ index))
                                       'face 'minibuffer-prompt)
                           displayed-candidate)))
           (cond
-           ((and right-margin (not annot-fun))
+           ((and right-margin (not horizontalp))
             (setq displayed-candidate
                   (concat
                    displayed-candidate
