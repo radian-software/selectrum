@@ -1153,37 +1153,36 @@ and the `x-group-function'."
    (length selectrum--preprocessed-candidates)))
 
 (defun selectrum--update-dynamic-candidates (input)
-  "Update dynamic candidates according to new INPUT."
-  (let ((dynamic (functionp selectrum--dynamic-candidates))
-        (init-table (and (not selectrum--preprocessed-candidates)
-                         minibuffer-completion-table)))
-    ;; Compute `selectrum--preprocessed-candidates' if necessary.
-    (when (or dynamic init-table)
+  "Update dynamic candidate set with new INPUT."
+  (cond
+   ((functionp selectrum--dynamic-candidates)
+    (let ((result
+           ;; Ensure dynamic functions won't
+           ;; break in post command hook.
+           (condition-case-unless-debug err
+               (funcall
+                selectrum--dynamic-candidates
+                input)
+             (error (message (error-message-string err))
+                    nil))))
+      ;; Avoid modifying the returned
+      ;; candidates to let the function
+      ;; reuse them.
       (selectrum--preprocess
-       (if dynamic
-           (let ((result
-                  ;; Ensure dynamic functions won't
-                  ;; break in post command hook.
-                  (condition-case-unless-debug err
-                      (funcall
-                       selectrum--dynamic-candidates
-                       input)
-                    (error (message (error-message-string err))
-                           nil))))
-             ;; Avoid modifying the returned
-             ;; candidates to let the function
-             ;; reuse them.
-             (copy-sequence
-              (if (stringp (car result))
-                  result
-                (setq input (or (alist-get 'input result)
-                                input))
-                (alist-get 'candidates result))))
-         ;; No candidates were passed, initialize them
-         ;; from `minibuffer-completion-table'.
-         (selectrum--normalize-collection
-          minibuffer-completion-table
-          minibuffer-completion-predicate)))))
+       (copy-sequence
+        (if (stringp (car result))
+            result
+          (setq input (or (alist-get 'input result)
+                          input))
+          (alist-get 'candidates result))))))
+    ;; No candidates were passed, initialize them
+    ;; from `minibuffer-completion-table'.
+   ((and (not selectrum--preprocessed-candidates)
+         minibuffer-completion-table)
+    (selectrum--preprocess
+     (selectrum--normalize-collection
+      minibuffer-completion-table
+      minibuffer-completion-predicate))))
   ;; Return input which may have been modified
   input)
 
