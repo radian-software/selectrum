@@ -863,24 +863,23 @@ content height is greater than the window height."
 
 (defun selectrum--helper (input candidates index first-index-displayed
                ncands horizontalp)
-  (with-current-buffer (window-buffer (active-minibuffer-window))
-    (setq-local selectrum--first-index-displayed
-                first-index-displayed)
-    (selectrum--candidates-display-strings
-     (funcall
-      selectrum-highlight-candidates-function
-      input
-      (seq-take
-       (nthcdr
-        first-index-displayed
-        candidates)
-       ;; Never allow more candidates than configured.
-       (if (numberp selectrum-num-candidates-displayed)
-           selectrum-num-candidates-displayed
-         ncands)))
-     (when (and first-index-displayed index)
-       (- index first-index-displayed))
-     horizontalp)))
+  (setq-local selectrum--first-index-displayed
+              first-index-displayed)
+  (selectrum--candidates-display-strings
+   (funcall
+    selectrum-highlight-candidates-function
+    input
+    (seq-take
+     (nthcdr
+      first-index-displayed
+      candidates)
+     ;; Never allow more candidates than configured.
+     (if (numberp selectrum-num-candidates-displayed)
+         selectrum-num-candidates-displayed
+       ncands)))
+   (when (and first-index-displayed index)
+     (- index first-index-displayed))
+   horizontalp))
 
 (defun selectrum--vertical-display-style
     (win input candidates nrows ncols index
