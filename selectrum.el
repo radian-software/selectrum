@@ -1304,127 +1304,128 @@ the update."
                      :test #'equal)
         0))))
 
-(defun selectrum--update (&optional keep-selected)
+(cl-defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
-  (unless selectrum--should-skip-updates
-    ;; Stay within input area.
-    (goto-char (max (point) (minibuffer-prompt-end)))
-    ;; Scroll the minibuffer when current prompt exceeds window width.
-    (let* ((width (window-width)))
-      (if (< (point) (- width (/ width 3)))
-          (set-window-hscroll nil 0)
-        (set-window-hscroll nil (- (point) (/ width 3)))))
-    ;; For some reason this resets and thus can't be set in setup hook.
-    (setq-local truncate-lines t)
-    (let ((inhibit-read-only t)
-          ;; Don't record undo information while messing with the
-          ;; minibuffer, as per
-          ;; <https://github.com/raxod502/selectrum/issues/31>.
-          (buffer-undo-list t)
-          (input (buffer-substring (minibuffer-prompt-end)
-                                   (point-max)))
-          (keep-mark-active (not deactivate-mark)))
-      (unless (equal input selectrum--previous-input-string)
-        (selectrum--update-input-changed input keep-selected))
-      ;; Always keep the visual input if defined.
-      (setq input (or selectrum--visual-input input))
-      ;; Handle prompt selection.
-      (if (and selectrum--current-candidate-index
-               (< selectrum--current-candidate-index 0))
-          (add-text-properties
-           (minibuffer-prompt-end) (point-max)
-           '(face selectrum-current-candidate))
-        (remove-text-properties
+  (when selectrum--should-skip-updates
+    (cl-return-from selectrum--update))
+  ;; Stay within input area.
+  (goto-char (max (point) (minibuffer-prompt-end)))
+  ;; Scroll the minibuffer when current prompt exceeds window width.
+  (let* ((width (window-width)))
+    (if (< (point) (- width (/ width 3)))
+        (set-window-hscroll nil 0)
+      (set-window-hscroll nil (- (point) (/ width 3)))))
+  ;; For some reason this resets and thus can't be set in setup hook.
+  (setq-local truncate-lines t)
+  (let ((inhibit-read-only t)
+        ;; Don't record undo information while messing with the
+        ;; minibuffer, as per
+        ;; <https://github.com/raxod502/selectrum/issues/31>.
+        (buffer-undo-list t)
+        (input (buffer-substring (minibuffer-prompt-end)
+                                 (point-max)))
+        (keep-mark-active (not deactivate-mark)))
+    (unless (equal input selectrum--previous-input-string)
+      (selectrum--update-input-changed input keep-selected))
+    ;; Always keep the visual input if defined.
+    (setq input (or selectrum--visual-input input))
+    ;; Handle prompt selection.
+    (if (and selectrum--current-candidate-index
+             (< selectrum--current-candidate-index 0))
+        (add-text-properties
          (minibuffer-prompt-end) (point-max)
-         '(face selectrum-current-candidate)))
-      (let* ((count-info (selectrum--count-info))
-             (window (if selectrum-display-action
-                         (and selectrum--refined-candidates
-                              (selectrum--get-display-window))
-                       (active-minibuffer-window)))
-             (buffer (with-current-buffer
-                         (get-buffer-create selectrum--candidates-buffer)
-                       (erase-buffer)
-                       (current-buffer)))
-             (default
-               (when (and selectrum-default-value-format
-                          (= (minibuffer-prompt-end) (point-max))
-                          (or
-                           (and selectrum--current-candidate-index
-                                (< selectrum--current-candidate-index 0))
-                           (and (not selectrum--match-is-required)
-                                (not selectrum--refined-candidates))
-                           (and selectrum--default-candidate
-                                (not minibuffer-completing-file-name)
-                                (not (member selectrum--default-candidate
-                                             selectrum--refined-candidates)))))
-                 (format selectrum-default-value-format
-                         (propertize
-                          (or selectrum--default-candidate "\"\"")
-                          'face
-                          (if (and selectrum--current-candidate-index
-                                   (< selectrum--current-candidate-index
-                                      0))
-                              'selectrum-current-candidate
-                            (get-text-property
-                             0 'face
-                             selectrum-default-value-format))))))
-             (minibuf-after-string (or default " "))
-             (inserted-res
-              (selectrum--insert-candidates
-               selectrum-display-style
-               selectrum--refined-candidates
-               buffer
-               window
-               input
-               ;; FIXME: This only takes our count overlay into
-               ;; account there might be other overlays prefixing the
-               ;; prompt.
-               (length count-info)
-               ;; Exclude selected prompt.
-               (when (and selectrum--current-candidate-index
-                          (not (< selectrum--current-candidate-index 0)))
-                 selectrum--current-candidate-index)
-               (1- (length selectrum--refined-candidates))
-               selectrum--first-index-displayed
-               selectrum--actual-num-candidates-displayed))
-             (horizp (car inserted-res))
-             (inserted-num (cdr inserted-res)))
-        (setq-local selectrum--actual-num-candidates-displayed inserted-num)
-        ;; Add padding for scrolled prompt.
-        (when (and (window-minibuffer-p window)
-                   (not horizp)
-                   (not (zerop (window-hscroll window))))
-          (let ((padding (make-string (window-hscroll window) ?\s)))
-            (with-current-buffer buffer
-              (goto-char (point-min))
-              (while (not (eobp))
-                (insert padding)
-                (forward-line 1)))))
-        (unless (or selectrum-display-action
-                    (zerop selectrum--actual-num-candidates-displayed)
-                    (not selectrum--refined-candidates))
-          (setq minibuf-after-string
-                (concat minibuf-after-string
-                        (with-current-buffer buffer
-                          (buffer-string)))))
-        (move-overlay selectrum--candidates-overlay
-                      (point-max) (point-max))
-        (put-text-property 0 1 'cursor t minibuf-after-string)
-        (overlay-put selectrum--candidates-overlay
-                     'after-string minibuf-after-string)
-        (overlay-put selectrum--count-overlay
-                     'before-string count-info)
-        (overlay-put selectrum--count-overlay
-                     'priority 1)
-        (when window
-          (selectrum--update-window-height
-           window (not horizp)))
-        (when keep-mark-active
-          (setq deactivate-mark nil))
-        (setq-local selectrum--is-initializing nil)))))
+         '(face selectrum-current-candidate))
+      (remove-text-properties
+       (minibuffer-prompt-end) (point-max)
+       '(face selectrum-current-candidate)))
+    (let* ((count-info (selectrum--count-info))
+           (window (if selectrum-display-action
+                       (and selectrum--refined-candidates
+                            (selectrum--get-display-window))
+                     (active-minibuffer-window)))
+           (buffer (with-current-buffer
+                       (get-buffer-create selectrum--candidates-buffer)
+                     (erase-buffer)
+                     (current-buffer)))
+           (default
+             (when (and selectrum-default-value-format
+                        (= (minibuffer-prompt-end) (point-max))
+                        (or
+                         (and selectrum--current-candidate-index
+                              (< selectrum--current-candidate-index 0))
+                         (and (not selectrum--match-is-required)
+                              (not selectrum--refined-candidates))
+                         (and selectrum--default-candidate
+                              (not minibuffer-completing-file-name)
+                              (not (member selectrum--default-candidate
+                                           selectrum--refined-candidates)))))
+               (format selectrum-default-value-format
+                       (propertize
+                        (or selectrum--default-candidate "\"\"")
+                        'face
+                        (if (and selectrum--current-candidate-index
+                                 (< selectrum--current-candidate-index
+                                    0))
+                            'selectrum-current-candidate
+                          (get-text-property
+                           0 'face
+                           selectrum-default-value-format))))))
+           (minibuf-after-string (or default " "))
+           (inserted-res
+            (selectrum--insert-candidates
+             selectrum-display-style
+             selectrum--refined-candidates
+             buffer
+             window
+             input
+             ;; FIXME: This only takes our count overlay into
+             ;; account there might be other overlays prefixing the
+             ;; prompt.
+             (length count-info)
+             ;; Exclude selected prompt.
+             (when (and selectrum--current-candidate-index
+                        (not (< selectrum--current-candidate-index 0)))
+               selectrum--current-candidate-index)
+             (1- (length selectrum--refined-candidates))
+             selectrum--first-index-displayed
+             selectrum--actual-num-candidates-displayed))
+           (horizp (car inserted-res))
+           (inserted-num (cdr inserted-res)))
+      (setq-local selectrum--actual-num-candidates-displayed inserted-num)
+      ;; Add padding for scrolled prompt.
+      (when (and (window-minibuffer-p window)
+                 (not horizp)
+                 (not (zerop (window-hscroll window))))
+        (let ((padding (make-string (window-hscroll window) ?\s)))
+          (with-current-buffer buffer
+            (goto-char (point-min))
+            (while (not (eobp))
+              (insert padding)
+              (forward-line 1)))))
+      (unless (or selectrum-display-action
+                  (zerop selectrum--actual-num-candidates-displayed)
+                  (not selectrum--refined-candidates))
+        (setq minibuf-after-string
+              (concat minibuf-after-string
+                      (with-current-buffer buffer
+                        (buffer-string)))))
+      (move-overlay selectrum--candidates-overlay
+                    (point-max) (point-max))
+      (put-text-property 0 1 'cursor t minibuf-after-string)
+      (overlay-put selectrum--candidates-overlay
+                   'after-string minibuf-after-string)
+      (overlay-put selectrum--count-overlay
+                   'before-string count-info)
+      (overlay-put selectrum--count-overlay
+                   'priority 1)
+      (when window
+        (selectrum--update-window-height
+         window (not horizp)))
+      (when keep-mark-active
+        (setq deactivate-mark nil))
+      (setq-local selectrum--is-initializing nil))))
 
 (defun selectrum--update-window-height (window vertical)
   "Update window height of WINDOW.
