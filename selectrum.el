@@ -1175,8 +1175,8 @@ and the `x-group-function'."
           (setq input (or (alist-get 'input result)
                           input))
           (alist-get 'candidates result))))))
-    ;; No candidates were passed, initialize them
-    ;; from `minibuffer-completion-table'.
+   ;; No candidates were passed, initialize them
+   ;; from `minibuffer-completion-table'.
    ((and (not selectrum--preprocessed-candidates)
          minibuffer-completion-table)
     (selectrum--preprocess
