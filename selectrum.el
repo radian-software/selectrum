@@ -1162,6 +1162,142 @@ and the `x-group-function'."
    selectrum--total-num-candidates
    (length selectrum--preprocessed-candidates)))
 
+(defun selectrum--update-input-changed (input keep-selected)
+  "Update state when INPUT string has changed.
+KEEP-SELECTED can be a candidate which should stay selected after
+the update."
+  ;; Track current input globally and in last buffer for
+  ;; selectrum-repeat.
+  (setq-default selectrum--last-input input)
+  (when (buffer-live-p selectrum--last-buffer)
+    (with-current-buffer selectrum--last-buffer
+      (setq-local selectrum--last-input input)))
+  (setq-local selectrum--previous-input-string input)
+  ;; Reset the persistent input, so that it will be nil if
+  ;; there's no special attention needed.
+  (setq-local selectrum--visual-input nil)
+  (let ((dynamic (functionp selectrum--dynamic-candidates))
+        (init-table (and (not selectrum--preprocessed-candidates)
+                         minibuffer-completion-table)))
+    ;; Compute `selectrum--preprocessed-candidates' if necessary.
+    (when (or dynamic init-table)
+      (selectrum--preprocess
+       (if dynamic
+           (let ((result
+                  ;; Ensure dynamic functions won't
+                  ;; break in post command hook.
+                  (condition-case-unless-debug err
+                      (funcall
+                       selectrum--dynamic-candidates
+                       input)
+                    (error (message (error-message-string err))
+                           nil))))
+             ;; Avoid modifying the returned
+             ;; candidates to let the function
+             ;; reuse them.
+             (copy-sequence
+              (if (stringp (car result))
+                  result
+                (setq input (or (alist-get 'input result)
+                                input))
+                (setq-local selectrum--visual-input input)
+                (alist-get 'candidates result))))
+         ;; No candidates were passed, initialize them
+         ;; from `minibuffer-completion-table'.
+         (selectrum--normalize-collection
+          minibuffer-completion-table
+          minibuffer-completion-predicate)))))
+  ;; Do refinement.
+  (let* ((cands selectrum--preprocessed-candidates)
+         (completion-styles-alist
+          ;; Remap partial-style for file completions
+          ;; computed from partial input.
+          (if (and cands
+                   (get-text-property
+                    0 'selectrum--partial (car cands)))
+              (cons '(partial-completion
+                      ignore
+                      selectrum--completion-pcm-all-completions "")
+                    completion-styles-alist)
+            completion-styles-alist)))
+    (setq-local selectrum--refined-candidates
+                (funcall selectrum-refine-candidates-function
+                         input cands)))
+  (when selectrum--virtual-default-file
+    (setq-local selectrum--refined-candidates
+                (cons (propertize
+                       selectrum--virtual-default-file
+                       'face 'shadow)
+                      selectrum--refined-candidates))
+    (setq-local selectrum--virtual-default-file nil))
+  (when (and selectrum-move-default-candidate
+             selectrum--default-candidate)
+    (setq-local selectrum--refined-candidates
+                (selectrum--move-to-front-destructive
+                 selectrum--default-candidate
+                 selectrum--refined-candidates)))
+  (setq-local selectrum--refined-candidates
+              (selectrum--move-to-front-destructive
+               ;; Make sure matching dirnames are sorted first.
+               (if (and minibuffer-completing-file-name
+                        (member (file-name-as-directory input)
+                                selectrum--refined-candidates))
+                   (file-name-as-directory input)
+                 input)
+               selectrum--refined-candidates))
+  (setq-local selectrum--refined-candidates
+              (delete "" selectrum--refined-candidates))
+  (setq-local selectrum--first-index-displayed nil)
+  (setq-local selectrum--actual-num-candidates-displayed nil)
+  (if selectrum--repeat
+      (progn
+        (setq-local
+         selectrum--current-candidate-index
+         (and (> (length selectrum--refined-candidates) 0)
+              (min (or selectrum--current-candidate-index 0)
+                   (1- (length selectrum--refined-candidates)))))
+        (setq-local selectrum--repeat nil))
+    (setq-local selectrum--current-candidate-index
+                (cond
+                 ;; Check for candidates needs to be first!
+                 ((null selectrum--refined-candidates)
+                  (when (or (not selectrum--match-is-required)
+                            (selectrum--at-existing-prompt-path-p))
+                    -1))
+                 (keep-selected
+                  (or (cl-position keep-selected
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))
+                 ((and selectrum--default-candidate
+                       (string-empty-p (minibuffer-contents))
+                       (not (member selectrum--default-candidate
+                                    selectrum--refined-candidates)))
+                  -1)
+                 ((or (and selectrum--is-initializing
+                           (equal selectrum--default-candidate
+                                  (minibuffer-contents)))
+                      (and (not (= (minibuffer-prompt-end) (point-max)))
+                           (or (and minibuffer-history-position
+                                    (not (zerop
+                                          minibuffer-history-position))
+                                    isearch-mode)
+                               (memq this-command
+                                     '(next-history-element
+                                       previous-history-element)))
+                           (or (not selectrum--match-is-required)
+                               (selectrum--at-existing-prompt-path-p))))
+                  -1)
+                 (selectrum-move-default-candidate
+                  0)
+                 (t
+                  (or (cl-position selectrum--default-candidate
+                                   selectrum--refined-candidates
+                                   :key #'selectrum--get-full
+                                   :test #'equal)
+                      0))))))
+
 (defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
@@ -1185,137 +1321,7 @@ the update."
                                    (point-max)))
           (keep-mark-active (not deactivate-mark)))
       (unless (equal input selectrum--previous-input-string)
-        ;; Track current input globally and in last buffer for
-        ;; selectrum-repeat.
-        (setq-default selectrum--last-input input)
-        (when (buffer-live-p selectrum--last-buffer)
-          (with-current-buffer selectrum--last-buffer
-            (setq-local selectrum--last-input input)))
-        (setq-local selectrum--previous-input-string input)
-        ;; Reset the persistent input, so that it will be nil if
-        ;; there's no special attention needed.
-        (setq-local selectrum--visual-input nil)
-        (let ((dynamic (functionp selectrum--dynamic-candidates))
-              (init-table (and (not selectrum--preprocessed-candidates)
-                               minibuffer-completion-table)))
-          ;; Compute `selectrum--preprocessed-candidates' if necessary.
-          (when (or dynamic init-table)
-            (selectrum--preprocess
-             (if dynamic
-                 (let ((result
-                        ;; Ensure dynamic functions won't
-                        ;; break in post command hook.
-                        (condition-case-unless-debug err
-                            (funcall
-                             selectrum--dynamic-candidates
-                             input)
-                          (error (message (error-message-string err))
-                                 nil))))
-                   ;; Avoid modifying the returned
-                   ;; candidates to let the function
-                   ;; reuse them.
-                   (copy-sequence
-                    (if (stringp (car result))
-                        result
-                      (setq input (or (alist-get 'input result)
-                                      input))
-                      (setq-local selectrum--visual-input input)
-                      (alist-get 'candidates result))))
-               ;; No candidates were passed, initialize them
-               ;; from `minibuffer-completion-table'.
-               (selectrum--normalize-collection
-                minibuffer-completion-table
-                minibuffer-completion-predicate)))))
-        ;; Do refinement.
-        (let* ((cands selectrum--preprocessed-candidates)
-               (completion-styles-alist
-                ;; Remap partial-style for file completions
-                ;; computed from partial input.
-                (if (and cands
-                         (get-text-property
-                          0 'selectrum--partial (car cands)))
-                    (cons '(partial-completion
-                            ignore
-                            selectrum--completion-pcm-all-completions "")
-                          completion-styles-alist)
-                  completion-styles-alist)))
-          (setq-local selectrum--refined-candidates
-                      (funcall selectrum-refine-candidates-function
-                               input cands)))
-        (when selectrum--virtual-default-file
-          (setq-local selectrum--refined-candidates
-                      (cons (propertize
-                             selectrum--virtual-default-file
-                             'face 'shadow)
-                            selectrum--refined-candidates))
-          (setq-local selectrum--virtual-default-file nil))
-        (when (and selectrum-move-default-candidate
-                   selectrum--default-candidate)
-          (setq-local selectrum--refined-candidates
-                      (selectrum--move-to-front-destructive
-                       selectrum--default-candidate
-                       selectrum--refined-candidates)))
-        (setq-local selectrum--refined-candidates
-                    (selectrum--move-to-front-destructive
-                     ;; Make sure matching dirnames are sorted first.
-                     (if (and minibuffer-completing-file-name
-                              (member (file-name-as-directory input)
-                                      selectrum--refined-candidates))
-                         (file-name-as-directory input)
-                       input)
-                     selectrum--refined-candidates))
-        (setq-local selectrum--refined-candidates
-                    (delete "" selectrum--refined-candidates))
-        (setq-local selectrum--first-index-displayed nil)
-        (setq-local selectrum--actual-num-candidates-displayed nil)
-        (if selectrum--repeat
-            (progn
-              (setq-local
-               selectrum--current-candidate-index
-               (and (> (length selectrum--refined-candidates) 0)
-                    (min (or selectrum--current-candidate-index 0)
-                         (1- (length selectrum--refined-candidates)))))
-              (setq-local selectrum--repeat nil))
-          (setq-local selectrum--current-candidate-index
-                      (cond
-                       ;; Check for candidates needs to be first!
-                       ((null selectrum--refined-candidates)
-                        (when (or (not selectrum--match-is-required)
-                                  (selectrum--at-existing-prompt-path-p))
-                          -1))
-                       (keep-selected
-                        (or (cl-position keep-selected
-                                         selectrum--refined-candidates
-                                         :key #'selectrum--get-full
-                                         :test #'equal)
-                            0))
-                       ((and selectrum--default-candidate
-                             (string-empty-p (minibuffer-contents))
-                             (not (member selectrum--default-candidate
-                                          selectrum--refined-candidates)))
-                        -1)
-                       ((or (and selectrum--is-initializing
-                                 (equal selectrum--default-candidate
-                                        (minibuffer-contents)))
-                            (and (not (= (minibuffer-prompt-end) (point-max)))
-                                 (or (and minibuffer-history-position
-                                          (not (zerop
-                                                minibuffer-history-position))
-                                          isearch-mode)
-                                     (memq this-command
-                                           '(next-history-element
-                                             previous-history-element)))
-                                 (or (not selectrum--match-is-required)
-                                     (selectrum--at-existing-prompt-path-p))))
-                        -1)
-                       (selectrum-move-default-candidate
-                        0)
-                       (t
-                        (or (cl-position selectrum--default-candidate
-                                         selectrum--refined-candidates
-                                         :key #'selectrum--get-full
-                                         :test #'equal)
-                            0))))))
+        (selectrum--update-input-changed input keep-selected))
       ;; Always keep the visual input if defined.
       (setq input (or selectrum--visual-input input))
       ;; Handle prompt selection.
