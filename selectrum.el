@@ -451,15 +451,6 @@ If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
 return X."
   (min (max x lower) upper))
 
-(defun selectrum--map-destructive (func lst)
-  "Apply FUNC to each element of LST, returning the new list.
-Modify the original list destructively, instead of allocating a
-new one."
-  (prog1 lst
-    (while lst
-      (setcar lst (funcall func (car lst)))
-      (setq lst (cdr lst)))))
-
 (defun selectrum--move-to-front-destructive (elt lst)
   "Move all instances of ELT to front of LST, if present.
 Make comparisons using `equal'. Modify the input list
