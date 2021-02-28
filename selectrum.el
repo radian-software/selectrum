@@ -866,30 +866,20 @@ content height is greater than the window height."
          max-index _first-index-displayed _last-index-displayed)
   "Insert candidates vertically into current buffer.
 Used as insertion function for `vertical' display style, see
-`selectrum-display-style'. WIN is the window where buffer will
-get displayed in. Callback CB returns the candidates to be
-inserted. The callback has four arguments, the index position and
-the number of candidates and optionally the third argument which
-allows passing and annotation function. If given the function
-receives three optional arguments: a prefix, suffix and a right
-margin annotation of the currently selected candidate and should
-take care of displaying them. The annotations display of others
-candidates than the current is disabled in this case. The
-optional forth argument of the callback should be non-nil if
-candidates are supposed to be displayed horizontally. NROWS is
-the number of lines available and NCOLS the number of available
-columns. If there are candidates INDEX is the index of the
-currently selected candidate and MAX-INDEX is the index of the
-maximal index of the collection. When candidates are already
-displayed FIRST-INDEX-DISPLAYED is the index of the candidate
-that is displayed first and LAST-INDEX-DISPLAYED the index of the
-last one and MAX-NUM if given specifies the maximal number of
-candidates to be displayed, the callback won't return more
-candidates than that anyway but the number can be useful if the
-insertion function behaviour depends on the number of candidates
-that get displayed. SETTINGS are a plist of additional settings
-as specified in `selectrum-display-style', this function
-currently doesn't have any."
+`selectrum-display-style'. WIN is the window where buffer will get
+displayed in. INPUT is the input string used to highlight the
+candidates. NROWS is the number of lines available and NCOLS the
+number of available columns. If there are candidates INDEX is the
+index of the currently selected candidate and MAX-INDEX is the index
+of the maximal index of the collection. When candidates are already
+displayed FIRST-INDEX-DISPLAYED is the index of the candidate that is
+displayed first and LAST-INDEX-DISPLAYED the index of the last one and
+MAX-NUM if given specifies the maximal number of candidates to be
+displayed, the callback won't return more candidates than that anyway
+but the number can be useful if the insertion function behaviour
+depends on the number of candidates that get displayed. SETTINGS are a
+plist of additional settings as specified in
+`selectrum-display-style', this function currently doesn't have any."
   (let* ((first-index-displayed
           (if (not index)
               0
@@ -914,8 +904,8 @@ currently doesn't have any."
 (defun selectrum--horizontal-display-style
     (win input _nrows ncols index
          max-index first-index-displayed last-index-displayed)
-  "Insert candidates horizontally into buffer BUF.
-For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
+  "Insert candidates horizontally.
+For WIN, INPUT, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
 see `selectrum--vertical-display-style'. For known keys see
 the `horizontal' description of `selectrum-display-style'."
@@ -1628,8 +1618,11 @@ suffix."
 (defun selectrum--candidates-display-strings
     (input current-index first-index-displayed ncands horizontalp)
   "Get display strings for CANDIDATES.
-HIGHLIGHTED-INDEX is the currently selected index. If
-HORIZONTALP is non-nil candidates are supposed to be displayed
+INPUT is the input string for highlighting.
+CURRENT-INDEX is the index of the current candidate.
+FIRST-INDEX-DISPLAYED is the first index which is displayed.
+NCANDS is the maximum number of candidates to display.
+If HORIZONTALP is non-nil candidates are supposed to be displayed
 horizontally. TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'. PROPS
 defaults to `completion-extra-properties'."
