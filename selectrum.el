@@ -861,7 +861,7 @@ content height is greater than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
-(defun selectrum--helper (input candidates index first-index-displayed
+(defun selectrum--helper (input index first-index-displayed
                ncands horizontalp)
   (setq-local selectrum--first-index-displayed
               first-index-displayed)
@@ -872,7 +872,7 @@ content height is greater than the window height."
     (seq-take
      (nthcdr
       first-index-displayed
-      candidates)
+      selectrum--refined-candidates)
      ;; Never allow more candidates than configured.
      (if (numberp selectrum-num-candidates-displayed)
          selectrum-num-candidates-displayed
@@ -882,7 +882,7 @@ content height is greater than the window height."
    horizontalp))
 
 (defun selectrum--vertical-display-style
-    (win input candidates nrows _ncols index
+    (win input nrows _ncols index
          max-index _first-index-displayed _last-index-displayed
          max-num)
   "Insert candidates vertically into current buffer.
@@ -924,7 +924,7 @@ currently doesn't have any."
              (max (- (1+ max-index) rows)
                   0))))
          (displayed-candidates
-          (selectrum--helper input candidates index
+          (selectrum--helper input index
                              first-index-displayed rows nil)))
     (cons
      (length displayed-candidates)
@@ -932,7 +932,7 @@ currently doesn't have any."
              (string-join displayed-candidates "\n")))))
 
 (defun selectrum--horizontal-display-style
-    (win input candidates _nrows ncols index
+    (win input _nrows ncols index
          max-index first-index-displayed last-index-displayed
          _max-num)
   "Insert candidates horizontally into buffer BUF.
@@ -969,7 +969,7 @@ the `horizontal' description of `selectrum-display-style'."
                  first-index-displayed)))
          (cands
           (selectrum--helper
-           input candidates index
+           input index
            first-index-displayed
            (floor ncols (1+ (length separator)))
            'horizontal))
@@ -1037,8 +1037,8 @@ Without that the global default value will be changed."
         (message "Switched to %s" selectrum-display-style)))))
 
 (defun selectrum--insert-candidates
-    (candidates win input plen
-                index mindex findex num)
+    (win input plen
+         index mindex findex num)
   "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. INPUT is the
 current user input. PLEN is the prompt prefix length. INDEX
@@ -1063,7 +1063,7 @@ and the cdr is the number of candidates that were inserted."
          (lindex (when (and findex num)
                    (+ findex
                       (max 0 (1- num)))))
-         (insert-res (funcall insert-fun win input candidates
+         (insert-res (funcall insert-fun win input
                               nlines ncols index mindex findex lindex
                               ncands)))
     (cons
@@ -1074,7 +1074,7 @@ and the cdr is the number of candidates that were inserted."
        ;; When the insertion function was switched the current index
        ;; might be out of sight in this case reinsert with the current
        ;; index displayed as the first one.
-       (funcall insert-fun win input candidates
+       (funcall insert-fun win input
                 nlines ncols index mindex index lindex
                 ncands)))))
 
@@ -1336,7 +1336,6 @@ the update."
            (minibuf-after-string (or default " "))
            (inserted-res
             (selectrum--insert-candidates
-             selectrum--refined-candidates
              window
              input
              ;; FIXME: This only takes our count overlay into
