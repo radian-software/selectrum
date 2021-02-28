@@ -68,10 +68,10 @@
 Return only candidates that contain the input as a substring.
 INPUT is a string, CANDIDATES is a list of strings."
   (let ((regexp (regexp-quote input)))
-    (cl-delete-if-not
+    (seq-filter
      (lambda (candidate)
        (string-match-p regexp candidate))
-     (copy-sequence candidates))))
+     candidates)))
 
 (define-obsolete-function-alias
   'selectrum-default-candidate-highlight-function
@@ -2210,10 +2210,10 @@ the prompt."
                 (push (substring input beg (match-beginning 0))
                       inputs)
                 (setq beg (match-end 0)))
-              (let ((coll (cl-delete-if
+              (let ((coll (seq-remove
                            (lambda (i)
                              (member i inputs))
-                           (copy-sequence coll)))
+                           coll))
                     (ninput (substring input beg)))
                 `((input . ,ninput)
                   (candidates . ,coll))))))
@@ -2364,22 +2364,16 @@ PREDICATE, see `read-buffer'."
                                   buffalist)))
          (candidates
           (lambda (input)
-            (let ((candidates (copy-sequence buffers)))
-              (if (string-prefix-p " " input)
-                  (progn
-                    (setq input (substring input 1))
-                    (setq candidates
-                          (cl-delete-if-not
-                           (lambda (name)
-                             (string-prefix-p " " name))
-                           candidates)))
-                (setq candidates
-                      (cl-delete-if
-                       (lambda (name)
-                         (string-prefix-p " " name))
-                       candidates)))
-              `((candidates . ,candidates)
-                (input . ,input))))))
+            (if (string-prefix-p " " input)
+                `((candidates . ,(seq-filter
+                                  (lambda (name)
+                                    (string-prefix-p " " name))
+                                  buffers))
+                  (input . ,(substring input 1)))
+              `((candidates . ,(seq-remove
+                                (lambda (name)
+                                  (string-prefix-p " " name))
+                                buffers)))))))
     (selectrum--minibuffer-with-setup-hook
         (lambda ()
           (setq-local selectrum-should-sort nil)
