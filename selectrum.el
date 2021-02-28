@@ -591,7 +591,7 @@ as symbol constituents.")
 (defvar-local selectrum--count-overlay nil
   "Overlay used to display count information before prompt.")
 
-(defvar-local selectrum--dynamic-candidates nil
+(defvar-local selectrum--dynamic-candidates-function nil
   "The dynamic candidate function passed to `selectrum--read'.
 When set the dynamic candidate function is called on each input
 change. The results are subsequently preprocessed by
@@ -810,7 +810,7 @@ when possible (it is still a member of the candidate set)."
   (when-let ((mini (active-minibuffer-window)))
     (with-selected-window mini
       (when (and minibuffer-completion-table
-                 (not selectrum--dynamic-candidates))
+                 (not selectrum--dynamic-candidates-function))
         (setq-local selectrum--preprocessed-candidates nil))
       (setq-local selectrum--previous-input-string nil)
       (selectrum--update
@@ -1096,13 +1096,13 @@ and the `x-group-function'."
 (defun selectrum--update-dynamic-candidates (input)
   "Update dynamic candidate set with new INPUT."
   (cond
-   ((functionp selectrum--dynamic-candidates)
+   ((functionp selectrum--dynamic-candidates-function)
     (let ((result
            ;; Ensure dynamic functions won't
            ;; break in post command hook.
            (condition-case-unless-debug err
                (funcall
-                selectrum--dynamic-candidates
+                selectrum--dynamic-candidates-function
                 input)
              (error (message (error-message-string err))
                     nil))))
@@ -1791,7 +1791,7 @@ started from."
   (if (not (functionp candidates))
       (selectrum--preprocess candidates)
     (setq-local selectrum--preprocessed-candidates nil)
-    (setq-local selectrum--dynamic-candidates candidates))
+    (setq-local selectrum--dynamic-candidates-function candidates))
   (setq-local selectrum--default-candidate
               (if (and default (symbolp default))
                   (symbol-name default)
