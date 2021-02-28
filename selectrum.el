@@ -451,21 +451,12 @@ return X."
   (min (max x lower) upper))
 
 (defun selectrum--move-to-front-destructive (elt lst)
-  "Move all instances of ELT to front of LST, if present.
+  "Move ELT to front of LST, if present.
 Make comparisons using `equal'. Modify the input list
 destructively and return the modified list."
-  (let* ((elts nil)
-         ;; All problems in computer science are solved by an
-         ;; additional layer of indirection.
-         (lst (cons (make-symbol "dummy") lst))
-         (link lst))
-    (while (cdr link)
-      (if (equal elt (cadr link))
-          (progn
-            (push (cadr link) elts)
-            (setcdr link (cddr link)))
-        (setq link (cdr link))))
-    (nconc (nreverse elts) (cdr lst))))
+  (if (member elt lst)
+      (nconc (list elt) (delete elt lst))
+    lst))
 
 (defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
   "Variant of `minibuffer-with-setup-hook' using a symbol and `fset'.
