@@ -541,7 +541,7 @@ function and BODY opens the minibuffer."
 Nil means select the default candidate initially even if it's not
 at the start of the list.")
 
-(defvar selectrum--candidates-buffer " *selectrum*"
+(defvar selectrum--display-action-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
 
 (defvar selectrum--crm-separator-alist
@@ -832,9 +832,9 @@ when possible (it is still a member of the candidate set)."
   "Get candidate display window.
 
 Window will be created by `selectrum-display-action'."
-  (let ((buf (or (get-buffer selectrum--candidates-buffer)
+  (let ((buf (or (get-buffer selectrum--display-action-buffer)
                  (with-current-buffer
-                     (get-buffer-create selectrum--candidates-buffer)
+                     (get-buffer-create selectrum--display-action-buffer)
                    (setq cursor-type nil)
                    (setq-local cursor-in-non-selected-windows nil)
                    (setq display-line-numbers nil)
@@ -1280,7 +1280,6 @@ the update."
                        (and selectrum--refined-candidates
                             (selectrum--get-display-window))
                      (active-minibuffer-window)))
-           (buffer (get-buffer-create selectrum--candidates-buffer))
            (default
              (when (and selectrum-default-value-format
                         (= (minibuffer-prompt-end) (point-max))
@@ -1313,29 +1312,28 @@ the update."
              ;; account there might be other overlays prefixing the
              ;; prompt.
              (length count-info)))
-           (horizp (car inserted-res)))
+           (horizp (car inserted-res))
+           (inserted-string (cadddr inserted-res)))
       (setq-local selectrum--actual-num-candidates-displayed (cadr inserted-res))
       (setq-local selectrum--first-index-displayed (caddr inserted-res))
-      (with-current-buffer buffer
-        (erase-buffer)
-        (insert (cadddr inserted-res)))
-      ;; Add padding for scrolled prompt.
-      (when (and (window-minibuffer-p window)
-                 (not horizp)
-                 (not (zerop (window-hscroll window))))
-        (let ((padding (make-string (window-hscroll window) ?\s)))
-          (with-current-buffer buffer
-            (goto-char (point-min))
-            (while (not (eobp))
-              (insert padding)
-              (forward-line 1)))))
-      (unless (or selectrum-display-action
-                  (zerop selectrum--actual-num-candidates-displayed)
-                  (not selectrum--refined-candidates))
-        (setq minibuf-after-string
-              (concat minibuf-after-string
-                      (with-current-buffer buffer
-                        (buffer-string)))))
+      (if selectrum-display-action
+          ;; Insert candidates into window buffer
+          (when window
+            (with-current-buffer (window-buffer window)
+              (erase-buffer)
+              (insert inserted-string)))
+        ;; Candidates are shown in minibuffer, act accordingly.
+        ;; Add padding for scrolled prompt.
+        (unless (or horizp (zerop (window-hscroll window)))
+          (setq inserted-string
+                (replace-regexp-in-string
+                 inserted-string "^"
+                 (make-string (window-hscroll window) ?\s))))
+        ;; Add candidates to minibuffer string.
+        (unless (or (zerop selectrum--actual-num-candidates-displayed)
+                    (not selectrum--refined-candidates))
+          (setq minibuf-after-string
+                (concat minibuf-after-string inserted-string))))
       (move-overlay selectrum--candidates-overlay
                     (point-max) (point-max))
       (put-text-property 0 1 'cursor t minibuf-after-string)
