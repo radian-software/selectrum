@@ -927,10 +927,10 @@ currently doesn't have any."
          (displayed-candidates
           (selectrum--helper input candidates index
                              first-index-displayed rows nil)))
-    (list nil
-          (length displayed-candidates)
-          (concat (and (window-minibuffer-p win) "\n")
-                  (string-join displayed-candidates "\n")))))
+    (cons
+     (length displayed-candidates)
+     (concat (and (window-minibuffer-p win) "\n")
+             (string-join displayed-candidates "\n")))))
 
 (defun selectrum--horizontal-display-style
     (win input candidates _nrows ncols index
@@ -1007,7 +1007,7 @@ the `horizontal' description of `selectrum-display-style'."
         (push more insert)
         (push end insert))
       (setq insert (nreverse insert)))
-    (list t n (apply #'concat insert))))
+    (cons n (apply #'concat insert))))
 
 (defun selectrum-cycle-display-style ()
   "Change current `selectrum-display-style'.
@@ -1057,11 +1057,10 @@ and the cdr is the number of candidates that were inserted."
                   (window-body-width win)))
          (ncands (when (numberp selectrum-num-candidates-displayed)
                    selectrum-num-candidates-displayed))
-         (insert-variant (car insert-settings))
-         (insert-fun (cond ((eq insert-variant 'horizontal)
-                            #'selectrum--horizontal-display-style)
-                           (t
-                            #'selectrum--vertical-display-style)))
+         (horizp (eq (car insert-settings) 'horizontal))
+         (insert-fun (if horizp
+                         #'selectrum--horizontal-display-style
+                       #'selectrum--vertical-display-style))
          (settings
           (cdr insert-settings))
          (lindex (when (and findex num)
@@ -1070,15 +1069,17 @@ and the cdr is the number of candidates that were inserted."
          (insert-res (funcall insert-fun win input candidates
                               nlines ncols index mindex findex lindex
                               ncands settings)))
-    (if (or (not index) (not findex)
-            (>= (+ findex (cadr insert-res)) index))
-        insert-res
-      ;; When the insertion function was switched the current index
-      ;; might be out of sight in this case reinsert with the current
-      ;; index displayed as the first one.
-      (funcall insert-fun win input candidates
-               nlines ncols index mindex index lindex
-               ncands settings))))
+    (cons
+     horizp
+     (if (or (not index) (not findex)
+             (>= (+ findex (car insert-res)) index))
+         insert-res
+       ;; When the insertion function was switched the current index
+       ;; might be out of sight in this case reinsert with the current
+       ;; index displayed as the first one.
+       (funcall insert-fun win input candidates
+                nlines ncols index mindex index lindex
+                ncands settings)))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
@@ -1357,7 +1358,7 @@ the update."
            (inserted-num (cadr inserted-res)))
       (with-current-buffer buffer
         (erase-buffer)
-        (insert (caddr inserted-res)))
+        (insert (cddr inserted-res)))
       (setq-local selectrum--actual-num-candidates-displayed inserted-num)
       ;; Add padding for scrolled prompt.
       (when (and (window-minibuffer-p window)
