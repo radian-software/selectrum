@@ -735,8 +735,7 @@ candidate and return the candidate as displayed."
              selectrum--refined-candidates)
     (if notfull
         selectrum--refined-candidates
-      (cl-loop for cand in selectrum--refined-candidates
-               collect (selectrum--get-full cand)))))
+      (mapcar #'selectrum--get-full selectrum--refined-candidates))))
 
 (defun selectrum-get-current-input ()
   "Get current Selectrum user input."
