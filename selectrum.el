@@ -669,9 +669,6 @@ updates is skipped.")
 This is non-nil during the first call of
 `selectrum--update'.")
 
-(defvar-local selectrum--total-num-candidates nil
-  "Saved number of candidates, used for `selectrum-show-indices'.")
-
 (defvar-local selectrum--virtual-default-file nil
   "If set used as a virtual file to prompt with.")
 
@@ -1137,10 +1134,7 @@ and the `x-group-function'."
                                    :x-group-function)))
     (setq-local
      selectrum--preprocessed-candidates
-     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates))))
-  (setq-local
-   selectrum--total-num-candidates
-   (length selectrum--preprocessed-candidates)))
+     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates)))))
 
 (defun selectrum--update-dynamic-candidates (input)
   "Update dynamic candidate set with new INPUT."
@@ -1840,7 +1834,6 @@ started from."
   (if (not (functionp candidates))
       (selectrum--preprocess candidates)
     (setq-local selectrum--preprocessed-candidates nil)
-    (setq-local selectrum--total-num-candidates 0)
     (setq-local selectrum--dynamic-candidates candidates))
   (setq-local selectrum--default-candidate
               (if (and default (symbolp default))
