@@ -883,8 +883,7 @@ content height is greater than the window height."
 
 (defun selectrum--vertical-display-style
     (win input nrows _ncols index
-         max-index _first-index-displayed _last-index-displayed
-         max-num)
+         max-index _first-index-displayed _last-index-displayed)
   "Insert candidates vertically into current buffer.
 Used as insertion function for `vertical' display style, see
 `selectrum-display-style'. WIN is the window where buffer will
@@ -911,21 +910,20 @@ insertion function behaviour depends on the number of candidates
 that get displayed. SETTINGS are a plist of additional settings
 as specified in `selectrum-display-style', this function
 currently doesn't have any."
-  (let* ((rows (or max-num nrows))
-         (first-index-displayed
+  (let* ((first-index-displayed
           (if (not index)
               0
             (selectrum--clamp
              ;; Adding one here makes it look slightly better, as
              ;; there are guaranteed to be more candidates shown
              ;; below the selection than above.
-             (1+ (- index (max 1 (/ rows 2))))
+             (1+ (- index (max 1 (/ nrows 2))))
              0
-             (max (- (1+ max-index) rows)
+             (max (- (1+ max-index) nrows)
                   0))))
          (displayed-candidates
           (selectrum--helper input index
-                             first-index-displayed rows nil)))
+                             first-index-displayed nrows nil)))
     (cons
      (length displayed-candidates)
      (concat (and (window-minibuffer-p win) "\n")
@@ -933,8 +931,7 @@ currently doesn't have any."
 
 (defun selectrum--horizontal-display-style
     (win input _nrows ncols index
-         max-index first-index-displayed last-index-displayed
-         _max-num)
+         max-index first-index-displayed last-index-displayed)
   "Insert candidates horizontally into buffer BUF.
 For BUF, WIN, CB, NROWS, NCOLS, INDEX, MAX-INDEX,
 FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
@@ -1054,8 +1051,6 @@ and the cdr is the number of candidates that were inserted."
                           (window-hscroll win))
                        plen)
                   (window-body-width win)))
-         (ncands (when (numberp selectrum-num-candidates-displayed)
-                   selectrum-num-candidates-displayed))
          (horizp (eq (car selectrum-display-style) 'horizontal))
          (insert-fun (if horizp
                          #'selectrum--horizontal-display-style
@@ -1064,8 +1059,7 @@ and the cdr is the number of candidates that were inserted."
                    (+ findex
                       (max 0 (1- num)))))
          (insert-res (funcall insert-fun win input
-                              nlines ncols index mindex findex lindex
-                              ncands)))
+                              nlines ncols index mindex findex lindex)))
     (cons
      horizp
      (if (or (not index) (not findex)
@@ -1075,8 +1069,7 @@ and the cdr is the number of candidates that were inserted."
        ;; might be out of sight in this case reinsert with the current
        ;; index displayed as the first one.
        (funcall insert-fun win input
-                nlines ncols index mindex index lindex
-                ncands)))))
+                nlines ncols index mindex index lindex)))))
 
 (defun selectrum--at-existing-prompt-path-p ()
   "Return non-nil when current file prompt exists."
