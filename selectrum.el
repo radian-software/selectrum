@@ -32,7 +32,6 @@
 
 (require 'cl-lib)
 (require 'crm)
-(require 'map)
 (require 'minibuf-eldef)
 (require 'regexp-opt)
 (require 'seq)
