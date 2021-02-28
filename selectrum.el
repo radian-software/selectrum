@@ -1221,6 +1221,33 @@ the update."
                      :test #'equal)
         0))))
 
+(defun selectrum--format-default ()
+  "Format default value using `selectrum-default-value-format'.
+The default value is shown in the minibuffer if it is not
+part of the candidate set."
+  (when (and selectrum-default-value-format
+             (= (minibuffer-prompt-end) (point-max))
+             (or
+              (and selectrum--current-candidate-index
+                   (< selectrum--current-candidate-index 0))
+              (and (not selectrum--match-is-required)
+                   (not selectrum--refined-candidates))
+              (and selectrum--default-candidate
+                   (not minibuffer-completing-file-name)
+                   (not (member selectrum--default-candidate
+                                selectrum--refined-candidates)))))
+    (format selectrum-default-value-format
+            (propertize
+             (or selectrum--default-candidate "\"\"")
+             'face
+             (if (and selectrum--current-candidate-index
+                      (< selectrum--current-candidate-index
+                         0))
+                 'selectrum-current-candidate
+               (get-text-property
+                0 'face
+                selectrum-default-value-format))))))
+
 (defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
@@ -1258,30 +1285,7 @@ the update."
                        (and selectrum--refined-candidates
                             (selectrum--get-display-window))
                      (active-minibuffer-window)))
-           (default
-             (when (and selectrum-default-value-format
-                        (= (minibuffer-prompt-end) (point-max))
-                        (or
-                         (and selectrum--current-candidate-index
-                              (< selectrum--current-candidate-index 0))
-                         (and (not selectrum--match-is-required)
-                              (not selectrum--refined-candidates))
-                         (and selectrum--default-candidate
-                              (not minibuffer-completing-file-name)
-                              (not (member selectrum--default-candidate
-                                           selectrum--refined-candidates)))))
-               (format selectrum-default-value-format
-                       (propertize
-                        (or selectrum--default-candidate "\"\"")
-                        'face
-                        (if (and selectrum--current-candidate-index
-                                 (< selectrum--current-candidate-index
-                                    0))
-                            'selectrum-current-candidate
-                          (get-text-property
-                           0 'face
-                           selectrum-default-value-format))))))
-           (minibuf-after-string (or default " "))
+           (minibuf-after-string (or (selectrum--format-default) " "))
            (inserted-res
             (selectrum--insert-candidates
              window
