@@ -1033,9 +1033,7 @@ Without that the global default value will be changed."
       (unless miniw
         (message "Switched to %s" selectrum-display-style)))))
 
-(defun selectrum--insert-candidates
-    (win input plen
-         index mindex findex num)
+(defun selectrum--insert-candidates (win input plen)
   "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
 BUF is supposed to be displayed in window WIN. INPUT is the
 current user input. PLEN is the prompt prefix length. INDEX
@@ -1044,7 +1042,13 @@ is the maximum and FINDEX the first index. NUM is the number of
 currently displayed candidates. Returns a cons: The car is
 non-nil if candidates are supposed to be displayed horizontally
 and the cdr is the number of candidates that were inserted."
-  (let* ((nlines (selectrum--max-num-candidate-lines win))
+  (let* ((index (when (and selectrum--current-candidate-index
+                           (not (< selectrum--current-candidate-index 0)))
+                  selectrum--current-candidate-index))
+         (nlines (selectrum--max-num-candidate-lines win))
+         (mindex (1- (length selectrum--refined-candidates)))
+         (findex selectrum--first-index-displayed)
+         (num selectrum--actual-num-candidates-displayed)
          (ncols (if (window-minibuffer-p win)
                     (- (window-body-width win)
                        (- (point-max)
@@ -1334,14 +1338,7 @@ the update."
              ;; FIXME: This only takes our count overlay into
              ;; account there might be other overlays prefixing the
              ;; prompt.
-             (length count-info)
-             ;; Exclude selected prompt.
-             (when (and selectrum--current-candidate-index
-                        (not (< selectrum--current-candidate-index 0)))
-               selectrum--current-candidate-index)
-             (1- (length selectrum--refined-candidates))
-             selectrum--first-index-displayed
-             selectrum--actual-num-candidates-displayed))
+             (length count-info)))
            (horizp (car inserted-res))
            (inserted-num (cadr inserted-res)))
       (with-current-buffer buffer
