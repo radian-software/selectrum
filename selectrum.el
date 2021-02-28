@@ -657,13 +657,6 @@ This is used to implement `selectrum-repeat'.")
 (defvar-local selectrum-is-active nil
   "Non-nil means Selectrum is currently active.")
 
-(defvar-local selectrum--should-skip-updates nil
-  "If selectrum should skip updates.
-
-In normal operation Selectrum checks for updating its UI after
-each command. When this variable is non-nil the computation of
-updates is skipped.")
-
 (defvar-local selectrum--is-initializing nil
   "Non-nil means the current session is initializing.
 This is non-nil during the first call of
@@ -766,7 +759,7 @@ behavior."
                     (list string))
         (setq-local selectrum--current-candidate-index 0)
         ;; Skip updates.
-        (setq-local selectrum--should-skip-updates t)))))
+        (remove-hook 'post-command-hook #'selectrum--update 'local)))))
 
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
@@ -1241,12 +1234,10 @@ the update."
                      :test #'equal)
         0))))
 
-(cl-defun selectrum--update (&optional keep-selected)
+(defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
-  (when selectrum--should-skip-updates
-    (cl-return-from selectrum--update))
   ;; Stay within input area.
   (goto-char (max (point) (minibuffer-prompt-end)))
   ;; Scroll the minibuffer when current prompt exceeds window width.
@@ -1803,10 +1794,7 @@ started from."
   ;; is assigned.
   (setq-local selectrum--previous-input-string nil)
   (setq-local selectrum--line-height (line-pixel-height))
-  (add-hook
-   'post-command-hook
-   #'selectrum--update
-   nil 'local))
+  (add-hook 'post-command-hook #'selectrum--update nil 'local))
 
 ;;; Minibuffer commands
 
