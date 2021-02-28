@@ -863,8 +863,6 @@ content height is greater than the window height."
 
 (defun selectrum--helper (input index first-index-displayed
                ncands horizontalp)
-  (setq-local selectrum--first-index-displayed
-              first-index-displayed)
   (selectrum--candidates-display-strings
    (funcall
     selectrum-highlight-candidates-function
@@ -924,8 +922,9 @@ currently doesn't have any."
          (displayed-candidates
           (selectrum--helper input index
                              first-index-displayed nrows nil)))
-    (cons
+    (list
      (length displayed-candidates)
+     first-index-displayed
      (concat (and (window-minibuffer-p win) "\n")
              (string-join displayed-candidates "\n")))))
 
@@ -1003,7 +1002,9 @@ the `horizontal' description of `selectrum-display-style'."
         (push more insert)
         (push end insert))
       (setq insert (nreverse insert)))
-    (cons n (apply #'concat insert))))
+    (list n
+          first-index-displayed
+          (apply #'concat insert))))
 
 (defun selectrum-cycle-display-style ()
   "Change current `selectrum-display-style'.
@@ -1339,12 +1340,12 @@ the update."
              ;; account there might be other overlays prefixing the
              ;; prompt.
              (length count-info)))
-           (horizp (car inserted-res))
-           (inserted-num (cadr inserted-res)))
+           (horizp (car inserted-res)))
+      (setq-local selectrum--actual-num-candidates-displayed (cadr inserted-res))
+      (setq-local selectrum--first-index-displayed (caddr inserted-res))
       (with-current-buffer buffer
         (erase-buffer)
-        (insert (cddr inserted-res)))
-      (setq-local selectrum--actual-num-candidates-displayed inserted-num)
+        (insert (cadddr inserted-res)))
       ;; Add padding for scrolled prompt.
       (when (and (window-minibuffer-p window)
                  (not horizp)
