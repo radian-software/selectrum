@@ -865,13 +865,7 @@ number of available columns. If there are candidates INDEX is the
 index of the currently selected candidate and MAX-INDEX is the index
 of the maximal index of the collection. When candidates are already
 displayed FIRST-INDEX-DISPLAYED is the index of the candidate that is
-displayed first and LAST-INDEX-DISPLAYED the index of the last one and
-MAX-NUM if given specifies the maximal number of candidates to be
-displayed, the callback won't return more candidates than that anyway
-but the number can be useful if the insertion function behaviour
-depends on the number of candidates that get displayed. SETTINGS are a
-plist of additional settings as specified in
-`selectrum-display-style', this function currently doesn't have any."
+displayed first and LAST-INDEX-DISPLAYED the index of the last one."
   (let* ((first-index-displayed
           (if (not index)
               0
@@ -898,7 +892,7 @@ plist of additional settings as specified in
          max-index first-index-displayed last-index-displayed)
   "Insert candidates horizontally.
 For WIN, INPUT, NROWS, NCOLS, INDEX, MAX-INDEX,
-FIRST-INDEX-DISPLAYED, LAST-INDEX-DISPLAYED, MAX-NUM and SETTINGS
+FIRST-INDEX-DISPLAYED and LAST-INDEX-DISPLAYED
 see `selectrum--vertical-display-style'. For known keys see
 the `horizontal' description of `selectrum-display-style'."
   (let* ((settings (cdr selectrum-display-style))
@@ -1000,14 +994,10 @@ Without that the global default value will be changed."
         (message "Switched to %s" selectrum-display-style)))))
 
 (defun selectrum--insert-candidates (win input plen)
-  "Use INSERT-SETTINGS to insert CANDIDATES into BUF for display.
-BUF is supposed to be displayed in window WIN. INPUT is the
-current user input. PLEN is the prompt prefix length. INDEX
-is the index of the currently selected candidate if any. MINDEX
-is the maximum and FINDEX the first index. NUM is the number of
-currently displayed candidates. Returns a cons: The car is
-non-nil if candidates are supposed to be displayed horizontally
-and the cdr is the number of candidates that were inserted."
+  "Return rendered candidates to be displayed in WIN.
+INPUT is the current user input. PLEN is the prompt prefix length.
+Returns a list with three elements, number of displayed candidates,
+the index of the first displayed candidate and the string to display."
   (let* ((index (when (and selectrum--current-candidate-index
                            (not (< selectrum--current-candidate-index 0)))
                   selectrum--current-candidate-index))
@@ -1613,9 +1603,7 @@ CURRENT-INDEX is the index of the current candidate.
 FIRST-INDEX-DISPLAYED is the first index which is displayed.
 NCANDS is the maximum number of candidates to display.
 If HORIZONTALP is non-nil candidates are supposed to be displayed
-horizontally. TABLE defaults to `minibuffer-completion-table'.
-PRED defaults to `minibuffer-completion-predicate'. PROPS
-defaults to `completion-extra-properties'."
+horizontally."
   (let* ((candidates
           (funcall
            selectrum-highlight-candidates-function
