@@ -671,6 +671,7 @@ This is non-nil during the first call of
 (defvar-local selectrum--inserted-file-completion nil
   "Non-nil when command should trigger refresh.")
 
+;; TODO: Remove together with deprecated selectrum-read
 (defvar-local selectrum--read-args nil
   "List of arguments passed to `selectrum--read'.
 Passed to various hook functions, but the this usage of the hooks
@@ -2116,6 +2117,8 @@ and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. By passing
 these as keyword arguments they will be dynamically bound as per
 semantics of `cl-defun'."
+  ;; TODO: Make may-modify-candidates the default behavior,
+  ;; as soon as `selectrum-read' is removed.
   (unless (or may-modify-candidates
               (functionp candidates))
     (setq candidates (copy-sequence candidates)))
