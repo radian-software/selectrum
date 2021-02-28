@@ -1492,7 +1492,7 @@ CAND does not have any face property defined."
         str
       (propertize str 'face face))))
 
-(cl-defun selectrum--annotate (cands &key annotf docsigf)
+(defun selectrum--annotate (cands annotf docsigf)
   "Transform CANDS using ANNOTF and DOCSIGF.
 ANNOTF results will annotate a candidate with a suffix using
 `selectrum-candidate-display-suffix' and
@@ -1644,9 +1644,7 @@ defaults to `completion-extra-properties'."
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
                            ((or annotf docsigf)
-                            (selectrum--annotate candidates
-                                                 :annotf annotf
-                                                 :docsigf docsigf))
+                            (selectrum--annotate candidates annotf docsigf))
                            (t candidates)))
          (extend (and (not horizontalp)
                       (if (eq selectrum-extend-current-candidate-highlight
