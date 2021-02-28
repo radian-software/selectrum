@@ -1304,8 +1304,10 @@ the update."
              (length count-info)))
            (horizp (car inserted-res))
            (inserted-string (cadddr inserted-res)))
-      (setq-local selectrum--actual-num-candidates-displayed (cadr inserted-res))
-      (setq-local selectrum--first-index-displayed (caddr inserted-res))
+      (setq-local selectrum--actual-num-candidates-displayed
+                  (cadr inserted-res))
+      (setq-local selectrum--first-index-displayed
+                  (caddr inserted-res))
       (if selectrum-display-action
           ;; Insert candidates into window buffer
           (when window
