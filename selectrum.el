@@ -861,24 +861,6 @@ content height is greater than the window height."
        (>= (cdr (window-text-pixel-size window))
            (window-body-height window 'pixelwise))))
 
-(defun selectrum--helper (input index first-index-displayed
-               ncands horizontalp)
-  (selectrum--candidates-display-strings
-   (funcall
-    selectrum-highlight-candidates-function
-    input
-    (seq-take
-     (nthcdr
-      first-index-displayed
-      selectrum--refined-candidates)
-     ;; Never allow more candidates than configured.
-     (if (numberp selectrum-num-candidates-displayed)
-         selectrum-num-candidates-displayed
-       ncands)))
-   (when (and first-index-displayed index)
-     (- index first-index-displayed))
-   horizontalp))
-
 (defun selectrum--vertical-display-style
     (win input nrows _ncols index
          max-index _first-index-displayed _last-index-displayed)
@@ -920,8 +902,9 @@ currently doesn't have any."
              (max (- (1+ max-index) nrows)
                   0))))
          (displayed-candidates
-          (selectrum--helper input index
-                             first-index-displayed nrows nil)))
+          (selectrum--candidates-display-strings
+           input index
+           first-index-displayed nrows nil)))
     (list
      (length displayed-candidates)
      first-index-displayed
@@ -964,7 +947,7 @@ the `horizontal' description of `selectrum-display-style'."
                 (t
                  first-index-displayed)))
          (cands
-          (selectrum--helper
+          (selectrum--candidates-display-strings
            input index
            first-index-displayed
            (floor ncols (1+ (length separator)))
@@ -1642,16 +1625,30 @@ suffix."
                                    suffix))))))
             res))))
 
-(defun selectrum--candidates-display-strings (candidates
-                                              highlighted-index
-                                              horizontalp)
+(defun selectrum--candidates-display-strings
+    (input current-index first-index-displayed ncands horizontalp)
   "Get display strings for CANDIDATES.
 HIGHLIGHTED-INDEX is the currently selected index. If
 HORIZONTALP is non-nil candidates are supposed to be displayed
 horizontally. TABLE defaults to `minibuffer-completion-table'.
 PRED defaults to `minibuffer-completion-predicate'. PROPS
 defaults to `completion-extra-properties'."
-  (let* ((index 0)
+  (let* ((candidates
+          (funcall
+           selectrum-highlight-candidates-function
+           input
+           (seq-take
+            (nthcdr
+             first-index-displayed
+             selectrum--refined-candidates)
+            ;; Never allow more candidates than configured.
+            (if (numberp selectrum-num-candidates-displayed)
+                selectrum-num-candidates-displayed
+              ncands))))
+         (highlighted-index
+          (when (and first-index-displayed current-index)
+            (- current-index first-index-displayed)))
+         (index 0)
          (metadata (selectrum--metadata))
          (annotf (or (completion-metadata-get metadata 'annotation-function)
                      (plist-get completion-extra-properties
