@@ -1629,9 +1629,11 @@ horizontally."
          (aff (or (completion-metadata-get metadata 'affixation-function)
                   (plist-get completion-extra-properties
                              :affixation-function)))
-         (groupf (or (completion-metadata-get metadata 'x-group-function)
-                     (plist-get completion-extra-properties
-                                :x-group-function)))
+         (groupf (and (not horizontalp)
+                      selectrum-group-format
+                      (or (completion-metadata-get metadata 'x-group-function)
+                          (plist-get completion-extra-properties
+                                     :x-group-function))))
          (docsigf (plist-get completion-extra-properties :company-docsig))
          (candidates (cond (aff
                             (selectrum--affixate aff candidates))
@@ -1643,19 +1645,19 @@ horizontally."
                               'auto)
                           (or aff annotf docsigf)
                         selectrum-extend-current-candidate-highlight)))
-         (groups (if (or horizontalp (not groupf))
-                     (list (cons nil candidates))
-                   (funcall groupf candidates)))
          (show-indices
           (cond
            ((functionp selectrum-show-indices) selectrum-show-indices)
            (selectrum-show-indices (lambda (i) (format "%2d " i)))))
          (margin-padding selectrum-right-margin-padding)
-         (lines))
-    (dolist (group groups)
-      (when-let (title (and selectrum-group-format (car group)))
-        (push (format selectrum-group-format title) lines))
-      (dolist (candidate (cdr group))
+         (lines)
+         (last-title))
+    (dolist (candidate candidates)
+        (when groupf
+          (let ((title (caar (funcall groupf (list candidate)))))
+            (unless (equal title last-title)
+              (setq last-title title)
+              (push (format selectrum-group-format title) lines))))
         (when (string-match-p "\n" candidate)
           (setq candidate (selectrum--ensure-single-line
                            candidate
@@ -1732,7 +1734,7 @@ horizontally."
                     `(space :align-to (- right-fringe
                                          ,margin-padding)))))))
           (push displayed-candidate lines)
-          (cl-incf index))))
+          (cl-incf index)))
     (nreverse lines)))
 
 (defun selectrum--setup (candidates default buf)
