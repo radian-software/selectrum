@@ -106,7 +106,9 @@ Now all completion commands will automatically use Selectrum. The
 default filtering function uses `completion-styles` which only provide
 a few simple filtering methods. You can make use of the built-in
 `substring` and `flex` style which are more advanced but it is
-recommended to use packages which improve this further.
+recommended to [use
+packages](https://github.com/raxod502/selectrum#complementary-extensions)
+which improve this further.
 
 Generally Selectrum doesn't integrate features you might be used to
 from bigger completion frameworks. Instead the focus is on providing
