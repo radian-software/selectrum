@@ -22,7 +22,6 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Sorting and filtering](#sorting-and-filtering)
   * [Additional features](#additional-features)
   * [Customization](#customization)
-  * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
   * [News](#news)
 - [Developer guide](#developer-guide)
@@ -337,74 +336,6 @@ used refinement function. The built-in `completion-styles` support the
   `selectrum-completion-in-region-styles`.
 * The option `selectrum-should-sort` controls whether preprocessing
   functions should sort.
-
-### Complementary extensions
-
-Selectrum has a
-[wiki](https://github.com/raxod502/selectrum/wiki/Useful-Commands), on
-which people have contributed handy commands for doing things like
-finding buffers and recent files at the same time. Many of the
-commands from the wiki are now maintained in the
-[Consult](https://github.com/minad/consult) package. If you write your
-own commands which are useful for a greater audience, we encourage you
-to either open a PR on the Consult package or add the command to the
-wiki. The wiki also contains
-[configuration tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
-for external packages.
-
-External packages that work well with Selectrum:
-
-* Useful commands based on `completing-read` are provided by
-  [consult](https://github.com/minad/consult). Consult is designed as
-  the [counsel](https://github.com/abo-abo/swiper#counsel) equivalent
-  for Selectrum and Icomplete or more generally any completion system
-  based on `completing-read`.
-
-* As an alternative filtering method to `prescient.el`, there is
-  [orderless](https://github.com/oantolin/orderless). It supports many
-  different matching styles and integrates with `completion-styles`.
-
-* For minibuffer actions and occur/export features there is
-  [embark](https://github.com/oantolin/embark/). Embark provides
-  features like ivy-actions/ivy-occur in a framework agnostic way.
-
-* Helpful minibuffer annotations for `M-x`, `describe-*` functions and
-  completions in general are provided by
-  [marginalia](https://github.com/minad/marginalia) which is similar
-  to ivy-rich but works with any framework implementing the default
-  API for completion annotations.
-
-* You can display completions in a child frame using
-  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
-
-* If you are not using Consult and `consult-imenu`, Imenu completion
-  can be improved by using
-  [flimenu](https://github.com/IvanMalison/flimenu).
-  Both flimenu and `consult-imenu` turn the tree based item navigation
-  into a flat completion menu. Note that `consult-imenu` is more
-  powerful, since it additionally offers preview and narrowing.
-
-* For searching and manipulating the `kill-ring` there is
-  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring).
-  Multi-line candidates aren't well suited for minibuffer completion,
-  thus you might prefer a dedicated buffer for this. Alternatively,
-  Consult provides the `consult-yank` command which uses minibuffer
-  completion and previews the text in the buffer at the same time,
-  mitigating the problem with multi-line candidates this way.
-  Note that there is also Embark with its live occur which fits
-  well together with `consult-yank`. For these reasons it is more
-  recommended to use Consult and Embark instead of browse-kill-ring.
-
-* In case you are not using `prescient.el`, an improved `M-x` is
-  provided by [Amx](https://github.com/DarwinAwardWinner/amx). Like
-  `prescient.el` and `orderless.el` it provides as an alternative
-  sorting method. Furthermore it has some extra features specific to
-  `M-x`, like displaying keybindings, ignoring uninteresting commands,
-  and performing alternate actions (such as `C-h f` instead of `RET`
-  to look up docs for a command instead of calling it). Note that
-  Marginalia also provides the keybinding annotation feature and more
-  annotations, and Embark provides more general actions. Therefore it
-  is recommended to use Prescient, Embark and Marginalia instead of Amx.
 
 ### But what is it doing to my Emacs??
 
