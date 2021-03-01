@@ -214,7 +214,8 @@ and highlighted using `completion-styles`. This default behavior is
 intended as a lowest common denominator that will definitely work.
 
 However, it is strongly recommended that you customize
-`completion-styles` or set up
+`completion-styles` using
+[orderless](https://github.com/oantolin/orderless) or set up
 [`prescient.el`](https://github.com/raxod502/prescient.el) in order to
 get more intelligent sorting and filtering. (See the "getting started"
 section for how to do this.) With `prescient.el`:
