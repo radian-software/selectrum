@@ -254,8 +254,7 @@ Use `selectrum-cycle-display-style' to cycle through these."
 Uses `completion-styles'."
   (nconc
    (completion-all-completions
-    input candidates nil (length input)
-    (selectrum--metadata input))
+    input candidates nil (length input))
    nil))
 
 (defcustom selectrum-refine-candidates-function
@@ -775,10 +774,9 @@ behavior."
      (minibuffer-prompt-end)
      (point-max))))
 
-(defun selectrum--metadata (&optional input)
-  "Get completion metadata.
-INPUT defaults to current input string."
-  (completion-metadata (or input (minibuffer-contents))
+(defun selectrum--metadata ()
+  "Get completion metadata."
+  (completion-metadata (minibuffer-contents)
                        minibuffer-completion-table
                        minibuffer-completion-predicate))
 
