@@ -126,8 +126,6 @@ add the following to your init-file:
 (prescient-persist-mode +1)
 ```
 
-For more sample setups see selectrum/test/TODO.
-
 ## User guide
 
 The design philosophy of Selectrum is to be as simple as possible,
