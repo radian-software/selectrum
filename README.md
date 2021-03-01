@@ -104,7 +104,9 @@ To enable Selectrum, simply add to your init-file:
 
 Now all completion commands will automatically use Selectrum. The
 default filtering function uses `completion-styles` which only provide
-a few simple filtering methods. You can additionally make use of the
+a few simple filtering methods. 
+
+You can additionally make use of the
 built-in `substring` and `flex` style which are more advanced but it
 is recommended to use packages which improve this further.
 
