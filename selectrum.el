@@ -1133,11 +1133,12 @@ and the `x-group-function'."
                 (funcall selectrum-refine-candidates-function
                          input cands)))
   (when selectrum--virtual-default-file
-    (setq-local selectrum--refined-candidates
-                (cons (propertize
-                       selectrum--virtual-default-file
-                       'face 'shadow)
-                      selectrum--refined-candidates))
+    (unless (equal selectrum--virtual-default-file "")
+      (setq-local selectrum--refined-candidates
+                  (cons (propertize
+                         selectrum--virtual-default-file
+                         'face 'shadow)
+                        selectrum--refined-candidates)))
     (setq-local selectrum--virtual-default-file nil))
   ;; Ensure that default candidate appears at the top if
   ;; `selectrum-move-default-candidate' is set. We have to do this
