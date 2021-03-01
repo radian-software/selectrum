@@ -1066,6 +1066,17 @@ and the `x-group-function'."
   (when-let (groupf (or (selectrum--get-meta 'x-group-function)
                         (plist-get completion-extra-properties
                                    :x-group-function)))
+    ;; Ensure that default candidate appears at the top if
+    ;; `selectrum-move-default-candidate' is set. It is redundant to
+    ;; do this here, since we move the candidate also during
+    ;; refinement. However this way the grouping function is informed
+    ;; of the desired candidate order.
+    (when (and selectrum-move-default-candidate
+               selectrum--default-candidate)
+      (setq-local selectrum--preprocessed-candidates
+                  (selectrum--move-to-front-destructive
+                   selectrum--default-candidate
+                   selectrum--preprocessed-candidates)))
     (setq-local
      selectrum--preprocessed-candidates
      (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates)))))
@@ -1128,12 +1139,17 @@ and the `x-group-function'."
                        'face 'shadow)
                       selectrum--refined-candidates))
     (setq-local selectrum--virtual-default-file nil))
+  ;; Ensure that default candidate appears at the top if
+  ;; `selectrum-move-default-candidate' is set. We have to do this
+  ;; here since the refined candidates could have been reordered by
+  ;; the refinement function.
   (when (and selectrum-move-default-candidate
              selectrum--default-candidate)
     (setq-local selectrum--refined-candidates
                 (selectrum--move-to-front-destructive
                  selectrum--default-candidate
                  selectrum--refined-candidates)))
+  ;; Ensure that exactly matching input appears at the top.
   (setq-local selectrum--refined-candidates
               (selectrum--move-to-front-destructive
                ;; Make sure matching dirnames are sorted first.
