@@ -1062,24 +1062,7 @@ and the `x-group-function'."
   ;; TODO: Why is it necessary to remove empty candidates?
   ;; Where do empty candidates actually come from?
   (setq-local selectrum--preprocessed-candidates
-              (delete "" selectrum--preprocessed-candidates))
-  (when-let (groupf (or (selectrum--get-meta 'x-group-function)
-                        (plist-get completion-extra-properties
-                                   :x-group-function)))
-    ;; Ensure that default candidate appears at the top if
-    ;; `selectrum-move-default-candidate' is set. It is redundant to
-    ;; do this here, since we move the candidate also during
-    ;; refinement. However this way the grouping function is informed
-    ;; of the desired candidate order.
-    (when (and selectrum-move-default-candidate
-               selectrum--default-candidate)
-      (setq-local selectrum--preprocessed-candidates
-                  (selectrum--move-to-front-destructive
-                   selectrum--default-candidate
-                   selectrum--preprocessed-candidates)))
-    (setq-local
-     selectrum--preprocessed-candidates
-     (mapcan #'cdr (funcall groupf selectrum--preprocessed-candidates)))))
+              (delete "" selectrum--preprocessed-candidates)))
 
 (defun selectrum--update-dynamic-candidates (input)
   "Update dynamic candidate set with new INPUT."
@@ -1132,6 +1115,25 @@ and the `x-group-function'."
     (setq-local selectrum--refined-candidates
                 (funcall selectrum-refine-candidates-function
                          input cands)))
+  ;; Group candidates. This has to be done after refinement, since
+  ;; refinement can reorder the candidates.
+  (when-let (groupf (or (selectrum--get-meta 'x-group-function)
+                        (plist-get completion-extra-properties
+                                   :x-group-function)))
+    ;; Ensure that default candidate appears at the top if
+    ;; `selectrum-move-default-candidate' is set. It is redundant to
+    ;; do this here, since we move the default candidate also
+    ;; afterwards. However this way the grouping function is informed
+    ;; of the desired candidate order.
+    (when (and selectrum-move-default-candidate
+               selectrum--default-candidate)
+      (setq-local selectrum--refined-candidates
+                  (selectrum--move-to-front-destructive
+                   selectrum--default-candidate
+                   selectrum--refined-candidates)))
+    (setq-local
+     selectrum--refined-candidates
+     (mapcan #'cdr (funcall groupf selectrum--refined-candidates))))
   (when selectrum--virtual-default-file
     (unless (equal selectrum--virtual-default-file "")
       (setq-local selectrum--refined-candidates
