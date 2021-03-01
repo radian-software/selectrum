@@ -106,18 +106,18 @@ Now all completion commands will automatically use Selectrum. The
 default filtering function uses `completion-styles` which only provide
 a few simple filtering methods. You can make use of the built-in
 `substring` and `flex` style which are more advanced but it is
-recommended to [use
-packages](https://github.com/raxod502/selectrum#complementary-extensions)
-which improve this further.
+recommended to use packages which improve this further.
 
 Generally Selectrum doesn't integrate features you might be used to
 from bigger completion frameworks. Instead the focus is on providing
-an enhanced completion UI and compose with other packages which also
-stay within the constraints of the standard Emacs API.
+an enhanced completion UI and compose with [other
+packages](https://github.com/raxod502/selectrum#complementary-extensions)
+which also stay within the constraints of the standard Emacs API.
 
-If you mainly care about better sorting and filtering you can make use
-of the `selectrum-prescient` package by installing it from MELPA and
-add the following to your init-file:
+Because of the composable and modular approach there are several
+possible package combinations. If you mainly care about better sorting
+and filtering you can make use of the `selectrum-prescient` package by
+installing it from MELPA and add the following to your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -127,6 +127,8 @@ add the following to your init-file:
 ;; intelligent over time
 (prescient-persist-mode +1)
 ```
+
+For a more advanced setup see our Selectrum/tests/scriptsTODO.
 
 ## User guide
 
