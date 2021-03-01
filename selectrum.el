@@ -1068,6 +1068,10 @@ and the `x-group-function'."
   (setq-local selectrum--preprocessed-candidates
               (funcall selectrum-preprocess-candidates-function
                        candidates))
+  ;; TODO: Why is it necessary to remove empty candidates?
+  ;; Where do empty candidates actually come from?
+  (setq-local selectrum--preprocessed-candidates
+              (delete "" selectrum--preprocessed-candidates))
   (when-let (groupf (or (selectrum--get-meta 'x-group-function)
                         (plist-get completion-extra-properties
                                    :x-group-function)))
@@ -1147,9 +1151,7 @@ and the `x-group-function'."
                                 selectrum--refined-candidates))
                    (file-name-as-directory input)
                  input)
-               selectrum--refined-candidates))
-  (setq-local selectrum--refined-candidates
-              (delete "" selectrum--refined-candidates)))
+               selectrum--refined-candidates)))
 
 (defun selectrum--update-input-changed (input keep-selected)
   "Update state when INPUT string has changed.
