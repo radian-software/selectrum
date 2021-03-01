@@ -1660,88 +1660,88 @@ horizontally."
          (lines)
          (last-title))
     (dolist (candidate candidates)
-        (when groupf
-          (let ((title (caar (funcall groupf (list candidate)))))
-            (unless (equal title last-title)
-              (setq last-title title)
-              (push (format selectrum-group-format title) lines))))
-        (when (string-match-p "\n" candidate)
-          (setq candidate (selectrum--ensure-single-line
-                           candidate
-                           selectrum-multiline-display-settings)))
-        (let* ((prefix (get-text-property
-                        0 'selectrum-candidate-display-prefix
-                        candidate))
-               (suffix (get-text-property
-                        0 'selectrum-candidate-display-suffix
-                        candidate))
-               (right-margin (get-text-property
-                              0 'selectrum-candidate-display-right-margin
-                              candidate))
-               (displayed-candidate
-                (selectrum--display-string
-                 (if horizontalp
-                     candidate
-                   (concat prefix candidate suffix))))
-               (formatting-current-candidate
-                (equal index highlighted-index)))
-          ;; Add the ability to interact with candidates via the mouse.
-          (add-text-properties
-           0 (length displayed-candidate)
-           (list
-            'mouse-face 'highlight
-            ;; 'help-echo
-            ;; "mouse-1: select candidate\nmouse-3: insert candidate"
-            'keymap
-            (let ((keymap (make-sparse-keymap)))
-              (define-key keymap [mouse-1]
-                `(lambda ()
-                   (interactive)
-                   (selectrum-select-current-candidate ,(1+ index))))
-              (define-key keymap [mouse-3]
-                `(lambda ()
-                   (interactive)
-                   (selectrum-insert-current-candidate ,(1+ index))))
-              keymap))
-           displayed-candidate)
-          (when formatting-current-candidate
-            (setq displayed-candidate
-                  (selectrum--selection-highlight displayed-candidate)))
-          (when show-indices
-            (setq displayed-candidate
-                  (concat (propertize (funcall show-indices (1+ index))
-                                      'face 'minibuffer-prompt)
-                          displayed-candidate)))
-          (cond
-           ((and right-margin (not horizontalp))
-            (setq displayed-candidate
-                  (concat
-                   displayed-candidate
-                   (propertize
-                    " "
-                    'face
-                    (when formatting-current-candidate
-                      'selectrum-current-candidate)
-                    'display
-                    `(space :align-to (- right-fringe
-                                         ,(string-width right-margin)
-                                         ,margin-padding)))
-                   (if formatting-current-candidate
-                       (selectrum--selection-highlight right-margin)
-                     right-margin))))
-           ((and extend
-                 formatting-current-candidate)
-            (setq displayed-candidate
-                  (concat
-                   displayed-candidate
-                   (propertize
-                    " "
-                    'face 'selectrum-current-candidate
-                    'display
-                    `(space :align-to (- right-fringe
-                                         ,margin-padding)))))))
-          (push displayed-candidate lines)
-          (cl-incf index)))
+      (when groupf
+        (let ((title (caar (funcall groupf (list candidate)))))
+          (unless (equal title last-title)
+            (setq last-title title)
+            (push (format selectrum-group-format title) lines))))
+      (when (string-match-p "\n" candidate)
+        (setq candidate (selectrum--ensure-single-line
+                         candidate
+                         selectrum-multiline-display-settings)))
+      (let* ((prefix (get-text-property
+                      0 'selectrum-candidate-display-prefix
+                      candidate))
+             (suffix (get-text-property
+                      0 'selectrum-candidate-display-suffix
+                      candidate))
+             (right-margin (get-text-property
+                            0 'selectrum-candidate-display-right-margin
+                            candidate))
+             (displayed-candidate
+              (selectrum--display-string
+               (if horizontalp
+                   candidate
+                 (concat prefix candidate suffix))))
+             (formatting-current-candidate
+              (equal index highlighted-index)))
+        ;; Add the ability to interact with candidates via the mouse.
+        (add-text-properties
+         0 (length displayed-candidate)
+         (list
+          'mouse-face 'highlight
+          ;; 'help-echo
+          ;; "mouse-1: select candidate\nmouse-3: insert candidate"
+          'keymap
+          (let ((keymap (make-sparse-keymap)))
+            (define-key keymap [mouse-1]
+              `(lambda ()
+                 (interactive)
+                 (selectrum-select-current-candidate ,(1+ index))))
+            (define-key keymap [mouse-3]
+              `(lambda ()
+                 (interactive)
+                 (selectrum-insert-current-candidate ,(1+ index))))
+            keymap))
+         displayed-candidate)
+        (when formatting-current-candidate
+          (setq displayed-candidate
+                (selectrum--selection-highlight displayed-candidate)))
+        (when show-indices
+          (setq displayed-candidate
+                (concat (propertize (funcall show-indices (1+ index))
+                                    'face 'minibuffer-prompt)
+                        displayed-candidate)))
+        (cond
+         ((and right-margin (not horizontalp))
+          (setq displayed-candidate
+                (concat
+                 displayed-candidate
+                 (propertize
+                  " "
+                  'face
+                  (when formatting-current-candidate
+                    'selectrum-current-candidate)
+                  'display
+                  `(space :align-to (- right-fringe
+                                       ,(string-width right-margin)
+                                       ,margin-padding)))
+                 (if formatting-current-candidate
+                     (selectrum--selection-highlight right-margin)
+                   right-margin))))
+         ((and extend
+               formatting-current-candidate)
+          (setq displayed-candidate
+                (concat
+                 displayed-candidate
+                 (propertize
+                  " "
+                  'face 'selectrum-current-candidate
+                  'display
+                  `(space :align-to (- right-fringe
+                                       ,margin-padding)))))))
+        (push displayed-candidate lines)
+        (cl-incf index)))
     (nreverse lines)))
 
 (defun selectrum--setup (candidates default buf)
