@@ -50,8 +50,10 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 
 ## What is it?
 
-Selectrum provides an interface for selecting items from a list. You
-can use it to run a command with `M-x`:
+Selectrum aims to provide a better completion UI using standard Emacs
+APIs. In essence it is an interface for selecting items from a list.
+
+You can use it to run a command with `M-x`:
 
 <p align="center"> <img src="images/commands.png" alt="Picking from a
 list of commands" height="200"/> </p>
@@ -100,17 +102,19 @@ To enable Selectrum, simply add to your init-file:
 (selectrum-mode +1)
 ```
 
-Now all of your favorite Emacs commands will automatically use
-Selectrum. However, the default sorting and filtering is very basic.
-The standard filtering function uses `completion-styles`. You can make
-use of the built-in `substring` and `flex` style to enhance these a
-bit but it is recommended to use packages which improve this further.
-There is [`prescient.el`](https://github.com/raxod502/prescient.el)
-which provides functions for more intelligent sorting and filtering
-and [`orderless`](https://github.com/oantolin/orderless) which
-provides an enhanced and flexible style for `completion-styles`. To
-setup `prescient` simply install `selectrum-prescient` package from
-MELPA and add the following to your init-file:
+Now all completion commands will automatically use Selectrum. The
+default filtering function uses `completion-styles` which only provide
+a few simple filtering methods. You can additionally make use of the
+built-in `substring` and `flex` style which are more advanced but it
+is recommended to use packages which improve this further.
+
+Generally Selectrum doesn't integrate features you might be used to
+from bigger completion frameworks. Instead the focus is on providing
+an enhanced completion UI and compose with other packages which also
+stay within the constraints of the standard Emacs API. If you mainly
+care about better sorting and filtering you can make use of the
+`selectrum-prescient` package by installing it from MELPA and add the
+following to your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -121,14 +125,10 @@ MELPA and add the following to your init-file:
 (prescient-persist-mode +1)
 ```
 
-If you don't want to install additional packages you can setup the
-built-in `completion-styles` to improve things a bit:
-
-```elisp
-;; In Emacs 27 there is also a flex style which you might like.
-(setq completion-styles '(substring partial-completion))
-```
-
+A more fully fledged setup enabling additional features you also find
+in [Helm](https://github.com/emacs-helm/helm) or
+[Ivy](https://github.com/abo-abo/swiper#ivy) can be found on the
+[wiki](TODO).
 
 ## User guide
 
