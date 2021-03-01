@@ -1166,16 +1166,8 @@ the update."
   (selectrum--update-refined-candidates input)
   (setq-local selectrum--first-index-displayed nil)
   (setq-local selectrum--actual-num-candidates-displayed nil)
-  (if selectrum--repeat
-      (progn
-        (setq-local
-         selectrum--current-candidate-index
-         (and (> (length selectrum--refined-candidates) 0)
-              (min (or selectrum--current-candidate-index 0)
-                   (1- (length selectrum--refined-candidates)))))
-        (setq-local selectrum--repeat nil))
-    (setq-local selectrum--current-candidate-index
-                (selectrum--compute-current-candidate-index keep-selected)))
+  (setq-local selectrum--current-candidate-index
+              (selectrum--compute-current-candidate-index keep-selected))
   ;; Return input string which may be transformed
   input)
 
@@ -1184,6 +1176,12 @@ the update."
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
   (cond
+   ;; Restore the old index when repeating
+   (selectrum--repeat
+    (setq-local selectrum--repeat nil)
+    (and (> (length selectrum--refined-candidates) 0)
+         (min (or selectrum--current-candidate-index 0)
+              (1- (length selectrum--refined-candidates)))))
    ;; Check for candidates needs to be first!
    ((null selectrum--refined-candidates)
     (when (or (not selectrum--match-is-required)
