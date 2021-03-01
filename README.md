@@ -22,6 +22,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Sorting and filtering](#sorting-and-filtering)
   * [Additional features](#additional-features)
   * [Customization](#customization)
+  * [Complementary extensions](#complementary-extensions)
   * [But what is it doing to my Emacs??](#but-what-is-it-doing-to-my-emacs)
   * [News](#news)
 - [Developer guide](#developer-guide)
@@ -125,10 +126,7 @@ add the following to your init-file:
 (prescient-persist-mode +1)
 ```
 
-A more fully fledged setup enabling additional features you also find
-in [Helm](https://github.com/emacs-helm/helm) or
-[Ivy](https://github.com/abo-abo/swiper#ivy) can be found on the
-[wiki](TODO).
+For more sample setups see selectrum/test/TODO.
 
 ## User guide
 
@@ -336,6 +334,42 @@ used refinement function. The built-in `completion-styles` support the
   `selectrum-completion-in-region-styles`.
 * The option `selectrum-should-sort` controls whether preprocessing
   functions should sort.
+
+### Complementary extensions
+
+For a fully fledged setup enabling additional features similar to
+those you find in [Helm](https://github.com/emacs-helm/helm) or
+[Ivy](https://github.com/abo-abo/swiper#ivy) we recommend the
+following additional packages:
+
+* Useful commands based on `completing-read` are provided by
+  [consult](https://github.com/minad/consult). Consult is designed as
+  the [counsel](https://github.com/abo-abo/swiper#counsel) equivalent
+  for Selectrum and Icomplete or more generally any completion system
+  based on `completing-read`.
+
+* As an alternative filtering method to `prescient.el`, there is
+  [orderless](https://github.com/oantolin/orderless). It supports many
+  different matching styles and integrates with `completion-styles`.
+
+* For minibuffer actions and occur/export features there is
+  [embark](https://github.com/oantolin/embark/). Embark provides
+  features like ivy-actions/ivy-occur in a framework agnostic way.
+
+* Helpful minibuffer annotations for `M-x`, `describe-*` functions and
+  completions in general are provided by
+  [marginalia](https://github.com/minad/marginalia) which is similar
+  to ivy-rich but works with any framework implementing the default
+  API for completion annotations.
+
+* You can display completions in a child frame using
+  [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
+
+For other possibly interesting packages see our
+[wiki](https://github.com/raxod502/selectrum/wiki/) which also
+contains [configuration
+tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
+for many of these.
 
 ### But what is it doing to my Emacs??
 
