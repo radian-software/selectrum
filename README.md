@@ -104,21 +104,18 @@ To enable Selectrum, simply add to your init-file:
 
 Now all completion commands will automatically use Selectrum. The
 default filtering function uses `completion-styles` which only provide
-a few simple filtering methods. 
-
-You can additionally make use of the
-built-in `substring` and `flex` style which are more advanced but it
-is recommended to use packages which improve this further.
+a few simple filtering methods. You can make use of the built-in
+`substring` and `flex` style which are more advanced but it is
+recommended to use packages which improve this further.
 
 Generally Selectrum doesn't integrate features you might be used to
 from bigger completion frameworks. Instead the focus is on providing
 an enhanced completion UI and compose with other packages which also
-stay within the constraints of the standard Emacs API. 
+stay within the constraints of the standard Emacs API.
 
-If you mainly
-care about better sorting and filtering you can make use of the
-`selectrum-prescient` package by installing it from MELPA and add the
-following to your init-file:
+If you mainly care about better sorting and filtering you can make use
+of the `selectrum-prescient` package by installing it from MELPA and
+add the following to your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
