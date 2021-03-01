@@ -113,7 +113,9 @@ is recommended to use packages which improve this further.
 Generally Selectrum doesn't integrate features you might be used to
 from bigger completion frameworks. Instead the focus is on providing
 an enhanced completion UI and compose with other packages which also
-stay within the constraints of the standard Emacs API. If you mainly
+stay within the constraints of the standard Emacs API. 
+
+If you mainly
 care about better sorting and filtering you can make use of the
 `selectrum-prescient` package by installing it from MELPA and add the
 following to your init-file:
