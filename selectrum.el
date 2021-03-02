@@ -542,7 +542,9 @@ at the start of the list.")
 
 (defvar selectrum--quick-fun nil
   "Function for quick selection.
-Used by `selectrum-quick-select' and `selectrum-quick-insert'.")
+Used by `selectrum-quick-select' and `selectrum-quick-insert'.
+Receives the display index and candidate and should return the
+new candidate string used for display.")
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -2112,10 +2114,8 @@ KEYS is a list of key strings to combine."
               (when (and input (string-match (concat "\\`" input) str))
                 (setq str (copy-sequence str))
                 (add-face-text-property 0 (match-end 0) 'match t str))
-              (setq cand (concat str (substring cand
-                                                (min (length cand)
-                                                     (length str)))))
-              cand))))
+              (concat str (substring cand (min (length cand)
+                                               (length str))))))))
     (when-let* ((input
                  (cl-loop with pressed = 0
                           while (< pressed len)
