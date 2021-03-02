@@ -151,8 +151,8 @@ parts of the input."
   :type '(choice (const nil) string))
 
 (defcustom selectrum-quick-keys '(?a ?s ?d ?f ?j ?k ?l ?i ?g ?h)
-  "Keys for quick selection, used by `selectrum-quick-select' and
-`selectrum-quick-insert'."
+  "Keys for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'."
   :type 'character)
 
 (defcustom selectrum-group-format
@@ -2107,7 +2107,8 @@ KEYS is a list of key strings to combine."
                          (selectrum--update)))))
          (selectrum--quick-fun
           (lambda (i cand)
-            (let ((str (propertize (or (nth i keys) "") 'face 'minibuffer-prompt)))
+            (let ((str (propertize (or (nth i keys) "")
+                                   'face 'minibuffer-prompt)))
               (when (and input (string-match (concat "\\`" input) str))
                 (setq str (copy-sequence str))
                 (add-face-text-property 0 (match-end 0) 'match t str))
