@@ -150,6 +150,11 @@ parts of the input."
   "Format string for the default value in the minibuffer."
   :type '(choice (const nil) string))
 
+(defcustom selectrum-quick-keys '(?a ?s ?d ?f ?j ?k ?l ?i ?g ?h)
+  "Keys for quick selection, used by `selectrum-quick-select' and
+`selectrum-quick-insert'."
+  :type 'character)
+
 (defcustom selectrum-group-format
   (concat
    #("    " 0 4 (face selectrum-group-separator))
@@ -532,6 +537,10 @@ at the start of the list.")
 
 (defvar selectrum--display-action-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
+
+(defvar selectrum--quick-fun nil
+  "Function for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'.")
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -1710,6 +1719,10 @@ horizontally."
         (when formatting-current-candidate
           (setq displayed-candidate
                 (selectrum--selection-highlight displayed-candidate)))
+        (when (and selectrum--quick-fun
+                   (not formatting-current-candidate))
+          (setq displayed-candidate
+                (funcall selectrum--quick-fun index displayed-candidate)))
         (when show-indices
           (setq displayed-candidate
                 (concat (propertize (funcall show-indices (1+ index))
@@ -2062,6 +2075,71 @@ Only to be used from `selectrum-select-from-history'"
   (throw 'selectrum-insert-action
          (propertize (selectrum-get-current-candidate 'notfull)
                      'selectum--insert t)))
+
+(defun selectrum--quick-keys (len keys)
+  "Get list of key combinations up to key length LEN.
+KEYS is a list of key strings to combine."
+  (unless (zerop len)
+    (cl-loop with list = keys
+             with olist = keys
+             repeat (1- len)
+             do (setq olist
+                      (cl-loop
+                       for char in list
+                       nconc (cl-loop for ochar in olist
+                                      collect (concat char ochar))))
+             finally return olist)))
+
+(defun selectrum--quick-read ()
+  "Read an index using `selectrum-quick-keys'."
+  (let* ((akeys (mapcar #'char-to-string selectrum-quick-keys))
+         (nkeys (length selectrum-quick-keys))
+         (needed selectrum--actual-num-candidates-displayed)
+         (len (ceiling (log needed nkeys)))
+         (keys (seq-take (selectrum--quick-keys len akeys) needed))
+         (input nil)
+         (read-key (lambda ()
+                     (unwind-protect (char-to-string (read-char))
+                       (let ((selectrum--quick-fun nil))
+                         (selectrum--update)))))
+         (selectrum--quick-fun
+          (lambda (i cand)
+            (let ((str (propertize (or (nth i keys) "") 'face 'minibuffer-prompt)))
+              (when (and input (string-match (concat "\\`" input) str))
+                (setq str (copy-sequence str))
+                (add-face-text-property 0 (match-end 0) 'match t str))
+              (setq cand (concat str (substring cand
+                                                (min (length cand)
+                                                     (length str)))))
+              cand))))
+    (when-let* ((input
+                 (cl-loop with pressed = 0
+                          while (< pressed len)
+                          do (selectrum--update)
+                          for key = (funcall read-key)
+                          if (not (member key akeys))
+                          return nil
+                          do (cl-incf pressed)
+                          do (setq input (concat input key))
+                          finally return input))
+                (pos (cl-position input keys :test #'string=)))
+      (+ selectrum--first-index-displayed pos))))
+
+(defun selectrum-quick-select ()
+  "Select a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (if-let ((index (selectrum--quick-read)))
+      (let ((selectrum--current-candidate-index index))
+        (selectrum-select-current-candidate))
+    (message "No matching key")))
+
+(defun selectrum-quick-insert ()
+  "Insert a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (if-let ((index (selectrum--quick-read)))
+      (let ((selectrum--current-candidate-index index))
+        (selectrum-insert-current-candidate))
+    (message "No matching key")))
 
 ;;; Main entry points
 
