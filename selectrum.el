@@ -526,6 +526,8 @@ function and BODY opens the minibuffer."
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
     (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
+    (define-key map (kbd "M-i") 'selectrum-quick-insert)
+    (define-key map (kbd "M-s") 'selectrum-quick-select)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
