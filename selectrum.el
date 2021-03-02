@@ -1059,8 +1059,7 @@ and the `x-group-function'."
   (setq-local selectrum--preprocessed-candidates
               (funcall selectrum-preprocess-candidates-function
                        candidates))
-  ;; TODO: Why is it necessary to remove empty candidates?
-  ;; Where do empty candidates actually come from?
+  ;; Empty candidates are removed in default completion, as well.
   (setq-local selectrum--preprocessed-candidates
               (delete "" selectrum--preprocessed-candidates))
   (when-let (groupf (or (selectrum--get-meta 'x-group-function)
