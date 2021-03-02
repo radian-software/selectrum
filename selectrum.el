@@ -873,8 +873,10 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
     (list
      (length displayed-candidates)
      first-index-displayed
-     (concat (and (window-minibuffer-p win) "\n")
-             (string-join displayed-candidates "\n")))))
+     (if displayed-candidates
+         (concat (and (window-minibuffer-p win) "\n")
+                 (string-join displayed-candidates "\n"))
+       ""))))
 
 (defun selectrum--horizontal-display-style
     (win input _nrows ncols index
