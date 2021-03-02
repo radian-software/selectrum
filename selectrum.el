@@ -1352,7 +1352,10 @@ window is supposed to be shown vertically."
                    (and (window-at-side-p window 'bottom)
                         (not (window-at-side-p window 'top))))
            (set-window-text-height window 1)))
-        ((and vertical selectrum-fix-vertical-window-height)
+        ((and vertical
+              (or selectrum-fix-vertical-window-height
+                  ;; Workaround for #435.
+                  (version<= "28" emacs-version)))
          (let* ((max (selectrum--max-window-height))
                 (lines (if selectrum-display-action
                            max
