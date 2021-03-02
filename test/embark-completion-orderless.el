@@ -4,7 +4,8 @@
 (setq completion-styles '(orderless))
 
 ;; Enable Embark-Completions and Marginalia
-(define-key minibuffer-local-completion-map (kbd "TAB") #'embark-collect-completions)
+(define-key minibuffer-local-completion-map (kbd "TAB")
+  #'embark-collect-completions)
 (add-hook 'minibuffer-setup-hook #'embark-collect-completions-after-input)
 (marginalia-mode)
 
