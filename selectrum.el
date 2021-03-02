@@ -454,8 +454,8 @@ return X."
   "Move ELT to front of LST, if present.
 Make comparisons using `equal'. Modify the input list
 destructively and return the modified list."
-  (if (member elt lst)
-      (nconc (list elt) (delete elt lst))
+  (if-let ((rest (member elt lst)))
+      (nconc (list (car rest)) (delete elt lst))
     lst))
 
 (defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
