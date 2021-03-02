@@ -1310,11 +1310,10 @@ the update."
       (setq-local selectrum--first-index-displayed
                   (caddr inserted-res))
       (if selectrum-display-action
-          ;; Insert candidates into window buffer
-          (when window
-            (with-current-buffer (window-buffer window)
-              (erase-buffer)
-              (insert inserted-string)))
+          ;; Insert candidates into action buffer.
+          (with-current-buffer selectrum--display-action-buffer
+            (erase-buffer)
+            (insert inserted-string))
         ;; Candidates are shown in minibuffer, act accordingly.
         ;; Add padding for scrolled prompt.
         (unless (or horizp (zerop (window-hscroll window)))
