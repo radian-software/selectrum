@@ -16,6 +16,10 @@
   #'icomplete-forward-completions)
 (define-key icomplete-minibuffer-map (kbd "<up>")
   #'icomplete-backward-completions)
+(define-key icomplete-minibuffer-map (kbd "C-n")
+  #'icomplete-forward-completions)
+(define-key icomplete-minibuffer-map (kbd "C-p")
+  #'icomplete-backward-completions)
 (define-key icomplete-minibuffer-map (kbd "RET")
   #'minibuffer-force-complete-and-exit)
 
