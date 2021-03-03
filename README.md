@@ -115,9 +115,10 @@ packages](https://github.com/raxod502/selectrum#complementary-extensions)
 which also stay within the constraints of the standard Emacs API.
 
 Because of the composable and modular approach there are several
-possible package combinations. If you mainly care about better sorting
-and filtering you can make use of the `selectrum-prescient` package by
-installing it from MELPA and add the following to your init-file:
+possible package combinations. Most important for completions are
+filtering and sorting which can both be improved by installing the
+`selectrum-prescient` package from MELPA and adding the following to
+your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -128,7 +129,22 @@ installing it from MELPA and add the following to your init-file:
 (prescient-persist-mode +1)
 ```
 
-For a more advanced setup see our Selectrum/tests/scriptsTODO.
+You can also combine the sorting abilities of
+[`prescient.el`](https://github.com/raxod502/prescient.el) with the
+filtering of [`orderless`](https://github.com/oantolin/orderless):
+
+```elisp
+(setq selectrum-prescient-enable-filtering nil)
+(selectrum-prescient-mode +1)
+
+(setq completion-styles '(orderless))
+(setq orderless-skip-highlighting (lambda () selectrum-is-active))
+(setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
+```
+
+For more tips and setup help for integration with other packages see
+our
+[wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
 
 ## User guide
 
