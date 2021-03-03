@@ -867,7 +867,7 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
              (max (- (1+ max-index) nrows)
                   0))))
          (displayed-candidates
-          (selectrum--candidates-display-strings
+          (selectrum--format-candidates
            input index
            first-index-displayed nrows nil)))
     (list
@@ -914,7 +914,7 @@ the `horizontal' description of `selectrum-display-style'."
                 (t
                  first-index-displayed)))
          (cands
-          (selectrum--candidates-display-strings
+          (selectrum--format-candidates
            input index
            first-index-displayed
            (floor ncols (1+ (length separator)))
@@ -1608,7 +1608,7 @@ suffix."
                                    suffix))))))
             res))))
 
-(defun selectrum--candidates-display-strings
+(defun selectrum--format-candidates
     (input current-index first-index-displayed ncands horizontalp)
   "Get display strings for CANDIDATES.
 INPUT is the input string for highlighting.
