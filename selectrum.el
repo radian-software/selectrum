@@ -934,6 +934,8 @@ the `horizontal' description of `selectrum-display-style'."
       (let ((ncols ncols))
         (while (and cands (> ncols 0))
           (let ((cand (pop cands)))
+            (setq cand (string-trim (replace-regexp-in-string
+                                     "[ \t][ \t]+" " " cand)))
             (when (zerop n)
               (setq ncols (- ncols (length start)))
               (push start insert))
