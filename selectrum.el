@@ -867,16 +867,23 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
              (max (- (1+ max-index) nrows)
                   0))))
          (displayed-candidates
-          (mapcar #'car
-                  (selectrum--format-candidates
-                   input index
-                   first-index-displayed nrows 'should-annotate))))
+          (selectrum--format-candidates
+           input index
+           first-index-displayed nrows 'should-annotate))
+         (last-title)
+         (lines))
+    (dolist (cand displayed-candidates)
+      (when-let (title (and selectrum-group-format (cdr cand)))
+        (unless (equal title last-title)
+          (setq last-title title)
+          (push (format selectrum-group-format title) lines)))
+      (push (car cand) lines))
     (list
      (length displayed-candidates)
      first-index-displayed
      (if displayed-candidates
          (concat (and (window-minibuffer-p win) "\n")
-                 (string-join displayed-candidates "\n"))
+                 (string-join (nreverse lines) "\n"))
        ""))))
 
 (defun selectrum--horizontal-display-style
