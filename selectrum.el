@@ -869,7 +869,7 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
          (displayed-candidates
           (selectrum--format-candidates
            input index
-           first-index-displayed nrows nil)))
+           first-index-displayed nrows 'should-annotate)))
     (list
      (length displayed-candidates)
      first-index-displayed
@@ -918,7 +918,7 @@ the `horizontal' description of `selectrum-display-style'."
            input index
            first-index-displayed
            (floor ncols (1+ (length separator)))
-           'horizontal))
+           nil))
          (n 0)
          (insert nil))
     (when cands
@@ -1609,14 +1609,13 @@ suffix."
             res))))
 
 (defun selectrum--format-candidates
-    (input current-index first-index-displayed ncands horizontalp)
+    (input current-index first-index-displayed ncands should-annotate)
   "Get display strings for CANDIDATES.
 INPUT is the input string for highlighting.
 CURRENT-INDEX is the index of the current candidate.
 FIRST-INDEX-DISPLAYED is the first index which is displayed.
 NCANDS is the maximum number of candidates to display.
-If HORIZONTALP is non-nil candidates are supposed to be displayed
-horizontally."
+If SHOULD-ANNOTATE is non-nil candidate annotations are added."
   (let* ((candidates
           (funcall
            selectrum-highlight-candidates-function
@@ -1634,13 +1633,15 @@ horizontally."
             (- current-index first-index-displayed)))
          (index 0)
          (metadata (selectrum--metadata))
-         (annotf (or (completion-metadata-get metadata 'annotation-function)
-                     (plist-get completion-extra-properties
-                                :annotation-function)))
-         (aff (or (completion-metadata-get metadata 'affixation-function)
-                  (plist-get completion-extra-properties
-                             :affixation-function)))
-         (groupf (and (not horizontalp)
+         (annotf (and should-annotate
+                      (or (completion-metadata-get metadata 'annotation-function)
+                          (plist-get completion-extra-properties
+                                     :annotation-function))))
+         (aff (and should-annotate
+                   (or (completion-metadata-get metadata 'affixation-function)
+                       (plist-get completion-extra-properties
+                                  :affixation-function))))
+         (groupf (and should-annotate ;; TODO
                       selectrum-group-format
                       (or (completion-metadata-get metadata 'x-group-function)
                           (plist-get completion-extra-properties
@@ -1651,16 +1652,10 @@ horizontally."
                            ((or annotf docsigf)
                             (selectrum--annotate candidates annotf docsigf))
                            (t candidates)))
-         (extend (and (not horizontalp)
-                      (if (eq selectrum-extend-current-candidate-highlight
-                              'auto)
-                          (or aff annotf docsigf)
-                        selectrum-extend-current-candidate-highlight)))
          (show-indices
           (cond
            ((functionp selectrum-show-indices) selectrum-show-indices)
            (selectrum-show-indices (lambda (i) (format "%2d " i)))))
-         (margin-padding selectrum-right-margin-padding)
          (lines)
          (last-title))
     (dolist (candidate candidates)
@@ -1669,25 +1664,24 @@ horizontally."
           (unless (equal title last-title)
             (setq last-title title)
             (push (format selectrum-group-format title) lines))))
-      (when (string-match-p "\n" candidate)
-        (setq candidate (selectrum--ensure-single-line
-                         candidate
-                         selectrum-multiline-display-settings)))
-      (let* ((prefix (get-text-property
-                      0 'selectrum-candidate-display-prefix
-                      candidate))
-             (suffix (get-text-property
-                      0 'selectrum-candidate-display-suffix
-                      candidate))
-             (right-margin (get-text-property
-                            0 'selectrum-candidate-display-right-margin
-                            candidate))
+      (let* ((single-line-candidate (if (string-match-p "\n" candidate)
+                                        (selectrum--ensure-single-line
+                                         candidate
+                                         selectrum-multiline-display-settings)
+                                      candidate))
              (displayed-candidate
               (selectrum--display-string
-               (if horizontalp
-                   candidate
-                 (concat prefix candidate suffix))))
-             (formatting-current-candidate
+               (if should-annotate
+                   (concat
+                    (get-text-property
+                     0 'selectrum-candidate-display-prefix
+                     candidate)
+                    single-line-candidate
+                    (get-text-property
+                     0 'selectrum-candidate-display-suffix
+                     candidate))
+                 single-line-candidate)))
+            (formatting-current-candidate
               (equal index highlighted-index)))
         ;; Add the ability to interact with candidates via the mouse.
         (add-text-properties
@@ -1716,34 +1710,42 @@ horizontally."
                 (concat (propertize (funcall show-indices (1+ index))
                                     'face 'minibuffer-prompt)
                         displayed-candidate)))
-        (cond
-         ((and right-margin (not horizontalp))
-          (setq displayed-candidate
-                (concat
-                 displayed-candidate
-                 (propertize
-                  " "
-                  'face
-                  (when formatting-current-candidate
-                    'selectrum-current-candidate)
-                  'display
-                  `(space :align-to (- right-fringe
-                                       ,(string-width right-margin)
-                                       ,margin-padding)))
-                 (if formatting-current-candidate
-                     (selectrum--selection-highlight right-margin)
-                   right-margin))))
-         ((and extend
-               formatting-current-candidate)
-          (setq displayed-candidate
-                (concat
-                 displayed-candidate
-                 (propertize
-                  " "
-                  'face 'selectrum-current-candidate
-                  'display
-                  `(space :align-to (- right-fringe
-                                       ,margin-padding)))))))
+        (when should-annotate
+          (let ((right-margin
+                 (get-text-property
+                  0 'selectrum-candidate-display-right-margin
+                  candidate)))
+            (cond
+             (right-margin
+              (setq displayed-candidate
+                    (concat
+                     displayed-candidate
+                     (propertize
+                      " "
+                      'face
+                      (when formatting-current-candidate
+                        'selectrum-current-candidate)
+                      'display
+                      `(space :align-to (- right-fringe
+                                           ,(string-width right-margin)
+                                           ,selectrum-right-margin-padding)))
+                     (if formatting-current-candidate
+                         (selectrum--selection-highlight right-margin)
+                       right-margin))))
+             ((and formatting-current-candidate
+                   (if (eq selectrum-extend-current-candidate-highlight
+                           'auto)
+                       (or aff annotf docsigf)
+                     selectrum-extend-current-candidate-highlight))
+              (setq displayed-candidate
+                    (concat
+                     displayed-candidate
+                     (propertize
+                      " "
+                      'face 'selectrum-current-candidate
+                      'display
+                      `(space :align-to (- right-fringe
+                                           ,selectrum-right-margin-padding)))))))))
         (push displayed-candidate lines)
         (cl-incf index)))
     (nreverse lines)))
