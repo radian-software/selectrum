@@ -101,7 +101,7 @@ list of strings."
 ;;; Faces
 
 (defface selectrum-quick-keys-highlight
-  '((t :inherit highlight))
+  '((t :bold t))
   "Face used for `selectrum-quick-keys'."
   :group 'selectrum-faces)
 
