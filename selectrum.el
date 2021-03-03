@@ -2130,8 +2130,12 @@ KEYS is a list of key strings to combine."
               (when (and input (string-match (concat "\\`" input) str))
                 (setq str (copy-sequence str))
                 (add-face-text-property 0 (match-end 0) 'match t str))
-              (concat str (substring cand (min (length cand)
-                                               (length str))))))))
+              (let ((start (min (length cand)
+                                (+ (length str)
+                                   (or (next-single-property-change
+                                        0 'invisible cand)
+                                       0)))))
+                (concat str (substring cand start)))))))
     (when-let* ((input
                  (cl-loop with pressed = 0
                           while (< pressed len)
