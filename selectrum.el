@@ -1687,7 +1687,7 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
                      0 'selectrum-candidate-display-suffix
                      candidate))
                  single-line-candidate)))
-            (formatting-current-candidate
+             (formatting-current-candidate
               (equal index highlighted-index)))
         ;; Add the ability to interact with candidates via the mouse.
         (add-text-properties
