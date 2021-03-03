@@ -100,6 +100,11 @@ list of strings."
 
 ;;; Faces
 
+(defface selectrum-quick-chars
+  '((t :inherit warning))
+  "Face used for `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
 (defface selectrum-group-title
   '((t :inherit shadow :slant italic))
   "Face used for the title text of the candidate group headlines."
@@ -2110,7 +2115,7 @@ KEYS is a list of key strings to combine."
          (selectrum--quick-fun
           (lambda (i cand)
             (let ((str (propertize (or (nth i keys) "")
-                                   'face 'minibuffer-prompt)))
+                                   'face 'selectrum-quick-chars)))
               (when (and input (string-match (concat "\\`" input) str))
                 (setq str (copy-sequence str))
                 (add-face-text-property 0 (match-end 0) 'match t str))
