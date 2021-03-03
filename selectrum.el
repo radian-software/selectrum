@@ -1643,14 +1643,17 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
          (index 0)
          (metadata (selectrum--metadata))
          (annotf (and should-annotate
-                      (or (completion-metadata-get metadata 'annotation-function)
+                      (or (completion-metadata-get metadata
+                                                   'annotation-function)
                           (plist-get completion-extra-properties
                                      :annotation-function))))
          (aff (and should-annotate
-                   (or (completion-metadata-get metadata 'affixation-function)
+                   (or (completion-metadata-get metadata
+                                                'affixation-function)
                        (plist-get completion-extra-properties
                                   :affixation-function))))
-         (groupf (or (completion-metadata-get metadata 'x-group-function)
+         (groupf (or (completion-metadata-get metadata
+                                              'x-group-function)
                      (plist-get completion-extra-properties
                                 :x-group-function)))
          (docsigf (plist-get completion-extra-properties :company-docsig))
@@ -1738,15 +1741,16 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
                            'auto)
                        (or aff annotf docsigf)
                      selectrum-extend-current-candidate-highlight))
-              (setq displayed-candidate
-                    (concat
-                     displayed-candidate
-                     (propertize
-                      " "
-                      'face 'selectrum-current-candidate
-                      'display
-                      `(space :align-to (- right-fringe
-                                           ,selectrum-right-margin-padding)))))))))
+              (setq
+               displayed-candidate
+               (concat
+                displayed-candidate
+                (propertize
+                 " "
+                 'face 'selectrum-current-candidate
+                 'display
+                 `(space :align-to (- right-fringe
+                                      ,selectrum-right-margin-padding)))))))))
         (push (cons
                displayed-candidate
                (and groupf (caar (funcall groupf (list candidate)))))
