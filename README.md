@@ -368,6 +368,11 @@ following additional packages:
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
 
+The above packages work well in combination and we are collaborating
+with each other to ensure an optimal experience while not introducing
+any hard dependencies. Our common denominator is the standard Emacs
+API.
+
 For other possibly interesting packages see our
 [wiki](https://github.com/raxod502/selectrum/wiki/) which also
 contains [configuration
