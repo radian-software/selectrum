@@ -2126,7 +2126,7 @@ KEYS is a list of key strings to combine."
              finally return olist)))
 
 (defun selectrum--quick-read ()
-  "Read an index using `selectrum-quick-keys'."
+  "Read index interactively using `selectrum-quick-keys'."
   (unless (cdr selectrum-quick-keys)
     (user-error "`selectrum-quick-keys' needs at least two keys"))
   (let* ((qkeys (mapcar #'char-to-string selectrum-quick-keys))
