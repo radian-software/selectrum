@@ -1569,8 +1569,8 @@ has a face property."
 
 (defun selectrum--replace-prop (str prop handler)
   "Replace STR parts with PROP using HANDLER.
-HANDLER function should return the replacement for the property
-value it receives as argument."
+HANDLER function can return a replacement for the part of string
+which has the property value it receives as argument."
   (let ((len (length str))
         (pos 0)
         (chunks ()))
