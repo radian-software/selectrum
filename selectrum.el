@@ -1404,8 +1404,8 @@ vertically."
     (window-resize
      window (- dheight wheight) nil nil 'pixelwise)))
 
-(defun selectrum--ensure-single-line (cand settings)
-  "Return single-line CAND string.
+(defun selectrum--ensure-single-line (cand input settings)
+  "Return single-line CAND string for INPUT.
 
 Multi-line candidates are merged into a single line. The
 resulting single-line candidates are then shortened by replacing
@@ -1444,7 +1444,6 @@ SETTINGS, see `selectrum-multiline-display-settings'."
          (nlines/face (cdr nline/info))
          (lines (split-string cand "\n"))
          (len (length lines))
-         (input (minibuffer-contents))
          (first-line
           (save-match-data
             (if (string-match "\\`\\(?:[ \t]*\n\\)*\\([^\n]*\\)" cand)
@@ -1675,6 +1674,7 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
       (let* ((single-line-candidate (if (string-match-p "\n" candidate)
                                         (selectrum--ensure-single-line
                                          candidate
+                                         input
                                          selectrum-multiline-display-settings)
                                       candidate))
              (displayed-candidate
