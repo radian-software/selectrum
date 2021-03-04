@@ -617,6 +617,9 @@ changes, and is subsequently passed to
 Used to check if the user input has changed and candidates need
 to be re-filtered.")
 
+(defvar-local selectrum--current-input nil
+  "Current user input (possibly transformed).")
+
 (defvar-local selectrum--match-is-required nil
   "Non-nil if the user must select one of the candidates.
 Equivalently, nil if the user is allowed to submit their own
@@ -1184,14 +1187,13 @@ the update."
     (with-current-buffer selectrum--last-buffer
       (setq-local selectrum--last-input input)))
   (setq-local selectrum--previous-input-string input)
-  (setq input (selectrum--update-dynamic-candidates input))
-  (selectrum--update-refined-candidates input)
+  (setq-local selectrum--current-input
+              (selectrum--update-dynamic-candidates input))
+  (selectrum--update-refined-candidates selectrum--current-input)
   (setq-local selectrum--first-index-displayed nil)
   (setq-local selectrum--actual-num-candidates-displayed nil)
   (setq-local selectrum--current-candidate-index
-              (selectrum--compute-current-candidate-index keep-selected))
-  ;; Return input string which may be transformed
-  input)
+              (selectrum--compute-current-candidate-index keep-selected)))
 
 (defun selectrum--compute-current-candidate-index (keep-selected)
   "Compute the index of the current candidate.
@@ -1290,7 +1292,7 @@ the update."
                                  (point-max)))
         (keep-mark-active (not deactivate-mark)))
     (unless (equal input selectrum--previous-input-string)
-      (setq input (selectrum--update-input-changed input keep-selected)))
+      (selectrum--update-input-changed input keep-selected))
     ;; Handle prompt selection.
     (if (and selectrum--current-candidate-index
              (< selectrum--current-candidate-index 0))
@@ -1309,7 +1311,7 @@ the update."
            (inserted-res
             (selectrum--insert-candidates
              window
-             input
+             selectrum--current-input
              ;; FIXME: This only takes our count overlay into
              ;; account there might be other overlays prefixing the
              ;; prompt.
