@@ -1332,8 +1332,8 @@ the update."
         (unless (or horizp (zerop (window-hscroll window)))
           (setq inserted-string
                 (replace-regexp-in-string
-                 inserted-string "^"
-                 (make-string (window-hscroll window) ?\s))))
+                 "^" (make-string (window-hscroll window) ?\s)
+                 inserted-string)))
         ;; Add candidates to minibuffer string.
         (unless (or (zerop selectrum--actual-num-candidates-displayed)
                     (not selectrum--refined-candidates))
