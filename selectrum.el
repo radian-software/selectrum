@@ -617,8 +617,10 @@ changes, and is subsequently passed to
 Used to check if the user input has changed and candidates need
 to be re-filtered.")
 
-(defvar-local selectrum--current-input nil
-  "Current user input (possibly transformed).")
+(defvar-local selectrum--virtual-input nil
+  "Input used for refinement and highlighting.
+What is considered the current input can be changed by
+`selectrum--dynamic-candidates-function'.")
 
 (defvar-local selectrum--match-is-required nil
   "Non-nil if the user must select one of the candidates.
@@ -1187,9 +1189,9 @@ the update."
     (with-current-buffer selectrum--last-buffer
       (setq-local selectrum--last-input input)))
   (setq-local selectrum--previous-input-string input)
-  (setq-local selectrum--current-input
+  (setq-local selectrum--virtual-input
               (selectrum--update-dynamic-candidates input))
-  (selectrum--update-refined-candidates selectrum--current-input)
+  (selectrum--update-refined-candidates selectrum--virtual-input)
   (setq-local selectrum--first-index-displayed nil)
   (setq-local selectrum--actual-num-candidates-displayed nil)
   (setq-local selectrum--current-candidate-index
@@ -1311,7 +1313,7 @@ the update."
            (inserted-res
             (selectrum--insert-candidates
              window
-             selectrum--current-input
+             selectrum--virtual-input
              ;; FIXME: This only takes our count overlay into
              ;; account there might be other overlays prefixing the
              ;; prompt.
