@@ -2127,11 +2127,13 @@ KEYS is a list of key strings to combine."
 
 (defun selectrum--quick-read ()
   "Read an index using `selectrum-quick-keys'."
-  (let* ((akeys (mapcar #'char-to-string selectrum-quick-keys))
-         (nkeys (length selectrum-quick-keys))
+  (unless (cdr selectrum-quick-keys)
+    (user-error "`selectrum-quick-keys' needs at least two keys"))
+  (let* ((qkeys (mapcar #'char-to-string selectrum-quick-keys))
+         (nkeys (length qkeys))
          (needed selectrum--actual-num-candidates-displayed)
          (len (ceiling (log needed nkeys)))
-         (keys (seq-take (selectrum--quick-keys len akeys) needed))
+         (keys (seq-take (selectrum--quick-keys len qkeys) needed))
          (input nil)
          (read-key (lambda ()
                      (unwind-protect (char-to-string (read-char))
@@ -2152,7 +2154,7 @@ KEYS is a list of key strings to combine."
                           while (< pressed len)
                           do (selectrum--update)
                           for key = (funcall read-key)
-                          if (not (member key akeys))
+                          if (not (member key qkeys))
                           return nil
                           do (cl-incf pressed)
                           do (setq input (concat input key))
