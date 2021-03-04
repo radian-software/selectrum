@@ -463,7 +463,7 @@ This macro is only needed to prevent memory leaking issues with
 the upstream `minibuffer-with-setup-hook' macro. FUN is the hook
 function and BODY opens the minibuffer."
   ;; Copied from https://github.com/minad/consult/commit/27e055e.
-  (declare (indent 1) (debug t))
+  (declare (indent 1) (debug ([&or (":append" form) [&or symbolp form]] body)))
   (let ((hook (make-symbol "hook"))
         (append))
     (when (eq (car-safe fun) :append)
