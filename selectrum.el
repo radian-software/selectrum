@@ -105,6 +105,11 @@ list of strings."
   "Face used for `selectrum-quick-keys'."
   :group 'selectrum-faces)
 
+(defface selectrum-quick-keys-match
+  '((t :inherit match))
+  "Face used for matches of `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
 (defface selectrum-group-title
   '((t :inherit shadow :slant italic))
   "Face used for the title text of the candidate group headlines."
@@ -2138,7 +2143,8 @@ KEYS is a list of key strings to combine."
                                    'face 'selectrum-quick-keys-highlight)))
               (when (and input (string-match (concat "\\`" input) str))
                 (setq str (copy-sequence str))
-                (add-face-text-property 0 (match-end 0) 'match t str))
+                (add-face-text-property 0 (match-end 0)
+                                        'selectrum-quick-keys-match t str))
               (concat str (substring cand (min (length cand)
                                                (length str))))))))
     (when-let* ((input
