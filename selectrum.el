@@ -893,8 +893,8 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                             (selectrum--annotate
                              displayed-candidates annotf docsigf))
                            (t displayed-candidates)))
-         (last-title)
-         (lines))
+         (last-title nil)
+         (lines ()))
     (dolist (cand candidates)
       (when groupf
         (when-let (title (and selectrum-group-format
@@ -903,7 +903,27 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
             (setq last-title title)
             (push (format selectrum-group-format title) lines)
             (push "\n" lines))))
-      (let* ((formatting-current-candidate
+      (let* ((right-margin
+              (when-let (right-margin
+                         (get-text-property
+                          0 'selectrum-candidate-display-right-margin
+                          cand))
+                (concat (propertize
+                         " "
+                         'display
+                         `(space
+                           :align-to
+                           (- right-fringe
+                              ,(string-width right-margin)
+                              ,selectrum-right-margin-padding)))
+                        right-margin)))
+             (prefix (get-text-property
+                      0 'selectrum-candidate-display-prefix
+                      cand))
+             (suffix (get-text-property
+                      0 'selectrum-candidate-display-suffix
+                      cand))
+             (formatting-current-candidate
               (eq i index))
              (newline
               (if (and formatting-current-candidate
@@ -913,39 +933,11 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                          selectrum-extend-current-candidate-highlight))
                   (selectrum--selection-highlight "\n")
                 "\n"))
-             (right-margin
-              (when-let (right-margin
-                         (get-text-property
-                          0 'selectrum-candidate-display-right-margin
-                          cand))
-                (concat (propertize
-                         " "
-                         'face
-                         (when formatting-current-candidate
-                           'selectrum-current-candidate)
-                         'display
-                         `(space
-                           :align-to
-                           (- right-fringe
-                              ,(string-width right-margin)
-                              ,selectrum-right-margin-padding)))
-                        (if formatting-current-candidate
-                            (selectrum--selection-highlight right-margin)
-                          right-margin))))
-             (prefix (when-let (prefix (get-text-property
-                                        0 'selectrum-candidate-display-prefix
-                                        cand))
-                       (if formatting-current-candidate
-                           (selectrum--selection-highlight prefix)
-                         prefix)))
-             (suffix (when-let (suffix (get-text-property
-                                        0 'selectrum-candidate-display-suffix
-                                        cand))
-                       (if formatting-current-candidate
-                           (selectrum--selection-highlight suffix)
-                         suffix)))
-             (cand (concat prefix cand suffix right-margin)))
-        (push cand lines)
+             (full-cand (concat prefix cand suffix right-margin))
+             (hl-cand (if formatting-current-candidate
+                          (selectrum--selection-highlight full-cand)
+                        full-cand)))
+        (push hl-cand lines)
         (push newline lines)
         (cl-incf i)))
     (list
