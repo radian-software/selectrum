@@ -121,7 +121,7 @@ list of strings."
   :group 'selectrum-faces)
 
 (defface selectrum-current-candidate
-  '((t :inherit highlight))
+  '((t :inherit highlight :extend t))
   "Face used to highlight the currently selected candidate."
   :group 'selectrum-faces)
 
@@ -894,24 +894,82 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
              0
              (max (- (1+ max-index) nrows)
                   0))))
+         (i first-index-displayed)
          (displayed-candidates
           (selectrum--format-candidates
            input index
-           first-index-displayed nrows 'should-annotate))
-         (last-title)
-         (lines))
-    (dolist (cand displayed-candidates)
-      (when-let (title (and selectrum-group-format (cdr cand)))
-        (unless (equal title last-title)
-          (setq last-title title)
-          (push (format selectrum-group-format title) lines)))
-      (push (car cand) lines))
+           first-index-displayed nrows))
+         (metadata (selectrum--metadata))
+         (annotf (or (completion-metadata-get metadata 'annotation-function)
+                     (plist-get completion-extra-properties
+                                :annotation-function)))
+         (aff (or (completion-metadata-get metadata 'affixation-function)
+                  (plist-get completion-extra-properties
+                             :affixation-function)))
+         (docsigf (plist-get completion-extra-properties :company-docsig))
+         (groupf (or (completion-metadata-get metadata 'x-group-function)
+                     (plist-get completion-extra-properties
+                                :x-group-function)))
+         (candidates (cond (aff
+                            (selectrum--affixate aff displayed-candidates))
+                           ((or annotf docsigf)
+                            (selectrum--annotate
+                             displayed-candidates annotf docsigf))
+                           (t displayed-candidates)))
+         (last-title nil)
+         (lines ()))
+    (dolist (cand candidates)
+      (when groupf
+        (when-let (title (and selectrum-group-format
+                              (caar (funcall groupf (list cand)))))
+          (unless (equal title last-title)
+            (setq last-title title)
+            (push (format selectrum-group-format title) lines)
+            (push "\n" lines))))
+      (let* ((right-margin
+              (when-let (right-margin
+                         (get-text-property
+                          0 'selectrum-candidate-display-right-margin
+                          cand))
+                (concat (propertize
+                         " "
+                         'display
+                         `(space
+                           :align-to
+                           (- right-fringe
+                              ,(string-width right-margin)
+                              ,selectrum-right-margin-padding)))
+                        right-margin)))
+             (prefix (get-text-property
+                      0 'selectrum-candidate-display-prefix
+                      cand))
+             (suffix (get-text-property
+                      0 'selectrum-candidate-display-suffix
+                      cand))
+             (formatting-current-candidate
+              (eq i index))
+             (newline
+              (if (and formatting-current-candidate
+                       (if (eq selectrum-extend-current-candidate-highlight
+                               'auto)
+                           (or aff annotf docsigf)
+                         selectrum-extend-current-candidate-highlight))
+                  (selectrum--selection-highlight "\n")
+                "\n"))
+             (full-cand (concat prefix cand suffix right-margin))
+             (hl-cand (if formatting-current-candidate
+                          (selectrum--selection-highlight full-cand)
+                        full-cand)))
+        (push hl-cand lines)
+        (push newline lines)
+        (cl-incf i)))
     (list
      (length displayed-candidates)
      first-index-displayed
      (if displayed-candidates
-         (concat (and (window-minibuffer-p win) "\n")
-                 (string-join (nreverse lines) "\n"))
+         (apply #'concat
+                (and (window-minibuffer-p win) "\n")
+                (nreverse lines))
        ""))))
 
 (defun selectrum--horizontal-display-style
@@ -950,12 +1008,10 @@ the `horizontal' description of `selectrum-display-style'."
                 (t
                  first-index-displayed)))
          (cands
-          (mapcar #'car
-                  (selectrum--format-candidates
-                   input index
-                   first-index-displayed
-                   (floor ncols (1+ (length separator)))
-                   nil)))
+          (selectrum--format-candidates
+           input index
+           first-index-displayed
+           (floor ncols (1+ (length separator)))))
          (n 0)
          (insert nil))
     (when cands
@@ -1655,13 +1711,12 @@ suffix."
             res))))
 
 (defun selectrum--format-candidates
-    (input current-index first-index-displayed ncands should-annotate)
+    (input current-index first-index-displayed ncands)
   "Get display strings for CANDIDATES.
 INPUT is the input string for highlighting.
 CURRENT-INDEX is the index of the current candidate.
 FIRST-INDEX-DISPLAYED is the first index which is displayed.
-NCANDS is the maximum number of candidates to display.
-If SHOULD-ANNOTATE is non-nil candidate annotations are added."
+NCANDS is the maximum number of candidates to display."
   (let* ((candidates
           (funcall
            selectrum-highlight-candidates-function
@@ -1678,27 +1733,6 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
           (when (and first-index-displayed current-index)
             (- current-index first-index-displayed)))
          (index 0)
-         (metadata (selectrum--metadata))
-         (annotf (and should-annotate
-                      (or (completion-metadata-get metadata
-                                                   'annotation-function)
-                          (plist-get completion-extra-properties
-                                     :annotation-function))))
-         (aff (and should-annotate
-                   (or (completion-metadata-get metadata
-                                                'affixation-function)
-                       (plist-get completion-extra-properties
-                                  :affixation-function))))
-         (groupf (or (completion-metadata-get metadata
-                                              'x-group-function)
-                     (plist-get completion-extra-properties
-                                :x-group-function)))
-         (docsigf (plist-get completion-extra-properties :company-docsig))
-         (candidates (cond (aff
-                            (selectrum--affixate aff candidates))
-                           ((or annotf docsigf)
-                            (selectrum--annotate candidates annotf docsigf))
-                           (t candidates)))
          (show-indices
           (cond
            ((functionp selectrum-show-indices) selectrum-show-indices)
@@ -1713,16 +1747,7 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
                                       candidate))
              (displayed-candidate
               (selectrum--display-string
-               (if should-annotate
-                   (concat
-                    (get-text-property
-                     0 'selectrum-candidate-display-prefix
-                     candidate)
-                    single-line-candidate
-                    (get-text-property
-                     0 'selectrum-candidate-display-suffix
-                     candidate))
-                 single-line-candidate)))
+               single-line-candidate))
              (formatting-current-candidate
               (equal index highlighted-index)))
         ;; Add the ability to interact with candidates via the mouse.
@@ -1756,47 +1781,7 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
                 (concat (propertize (funcall show-indices (1+ index))
                                     'face 'minibuffer-prompt)
                         displayed-candidate)))
-        (when should-annotate
-          (let ((right-margin
-                 (get-text-property
-                  0 'selectrum-candidate-display-right-margin
-                  candidate)))
-            (cond
-             (right-margin
-              (setq displayed-candidate
-                    (concat
-                     displayed-candidate
-                     (propertize
-                      " "
-                      'face
-                      (when formatting-current-candidate
-                        'selectrum-current-candidate)
-                      'display
-                      `(space :align-to (- right-fringe
-                                           ,(string-width right-margin)
-                                           ,selectrum-right-margin-padding)))
-                     (if formatting-current-candidate
-                         (selectrum--selection-highlight right-margin)
-                       right-margin))))
-             ((and formatting-current-candidate
-                   (if (eq selectrum-extend-current-candidate-highlight
-                           'auto)
-                       (or aff annotf docsigf)
-                     selectrum-extend-current-candidate-highlight))
-              (setq
-               displayed-candidate
-               (concat
-                displayed-candidate
-                (propertize
-                 " "
-                 'face 'selectrum-current-candidate
-                 'display
-                 `(space :align-to (- right-fringe
-                                      ,selectrum-right-margin-padding)))))))))
-        (push (cons
-               displayed-candidate
-               (and groupf (caar (funcall groupf (list candidate)))))
-              result)
+        (push displayed-candidate result)
         (cl-incf index)))))
 
 (defun selectrum--setup (candidates default buf)
