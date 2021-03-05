@@ -100,6 +100,16 @@ list of strings."
 
 ;;; Faces
 
+(defface selectrum-quick-keys-highlight
+  '((t :inherit lazy-highlight))
+  "Face used for `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
+(defface selectrum-quick-keys-match
+  '((t :inherit isearch))
+  "Face used for matches of `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
 (defface selectrum-group-title
   '((t :inherit shadow :slant italic))
   "Face used for the title text of the candidate group headlines."
@@ -149,6 +159,11 @@ parts of the input."
   (propertize " [default: %s]" 'face 'minibuffer-prompt)
   "Format string for the default value in the minibuffer."
   :type '(choice (const nil) string))
+
+(defcustom selectrum-quick-keys '(?a ?s ?d ?f ?j ?k ?l ?i ?g ?h)
+  "Keys for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'."
+  :type 'character)
 
 (defcustom selectrum-group-format
   (concat
@@ -521,6 +536,8 @@ function and BODY opens the minibuffer."
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
     (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
+    (define-key map (kbd "M-i") 'selectrum-quick-insert)
+    (define-key map (kbd "M-m") 'selectrum-quick-select)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -532,6 +549,12 @@ at the start of the list.")
 
 (defvar selectrum--display-action-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
+
+(defvar selectrum--quick-fun nil
+  "Function for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'.
+Receives the display index and candidate and should return the
+new candidate string used for display.")
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -1547,23 +1570,32 @@ has a face property."
                     cand)))
         (push new res)))))
 
-(defun selectrum--display-string (str)
-  "Return display string of STR.
-Any string display specs in STR are replaced with the string they
-will display as. This avoids prompt bleeding issues that occur
-with display specs used within the after-string overlay."
+(defun selectrum--replace-prop (str prop handler)
+  "Replace STR parts with PROP using HANDLER.
+HANDLER function can return a replacement for the part of string
+which has the property value it receives as argument."
   (let ((len (length str))
         (pos 0)
         (chunks ()))
     (while (not (eq pos len))
-      (let* ((end (next-single-property-change pos 'display str len))
-             (display (get-text-property pos 'display str))
-             (chunk (if (stringp display)
-                        display
+      (let* ((end (next-single-property-change pos prop str len))
+             (val (get-text-property pos prop str))
+             (chunk (if-let ((rep (and val (funcall handler val))))
+                        rep
                       (substring str pos end))))
         (push chunk chunks)
         (setq pos end)))
     (apply #'concat (nreverse chunks))))
+
+(defun selectrum--display-string (str)
+  "Return display string of STR.
+Any string display specs in STR are replaced with the string they
+will display as. This avoids prompt bleeding issues that occur
+with display specs used within the after-string overlay.
+Invisible parts of the display string are removed."
+  (let ((str (selectrum--replace-prop
+              str 'display (lambda (val) (when (stringp val) val)))))
+    (selectrum--replace-prop str 'invisible (lambda (val) (when val "")))))
 
 (defun selectrum--selection-highlight (str)
   "Return copy of STR with selection highlight."
@@ -1715,6 +1747,10 @@ If SHOULD-ANNOTATE is non-nil candidate annotations are added."
         (when formatting-current-candidate
           (setq displayed-candidate
                 (selectrum--selection-highlight displayed-candidate)))
+        (when (and selectrum--quick-fun
+                   (not formatting-current-candidate))
+          (setq displayed-candidate
+                (funcall selectrum--quick-fun index displayed-candidate)))
         (when show-indices
           (setq displayed-candidate
                 (concat (propertize (funcall show-indices (1+ index))
@@ -2078,6 +2114,73 @@ Only to be used from `selectrum-select-from-history'"
   (throw 'selectrum-insert-action
          (propertize (selectrum-get-current-candidate 'notfull)
                      'selectum--insert t)))
+
+(defun selectrum--quick-keys (len keys)
+  "Get list of key combinations up to key length LEN.
+KEYS is a list of key strings to combine."
+  (unless (zerop len)
+    (cl-loop with list = keys
+             with olist = keys
+             repeat (1- len)
+             do (setq olist
+                      (cl-loop
+                       for char in list
+                       nconc (cl-loop for ochar in olist
+                                      collect (concat char ochar))))
+             finally return olist)))
+
+(defun selectrum--quick-read ()
+  "Read index interactively using `selectrum-quick-keys'."
+  (unless (cdr selectrum-quick-keys)
+    (user-error "`selectrum-quick-keys' needs at least two keys"))
+  (let* ((qkeys (mapcar #'char-to-string selectrum-quick-keys))
+         (nkeys (length qkeys))
+         (needed selectrum--actual-num-candidates-displayed)
+         (len (ceiling (log needed nkeys)))
+         (keys (seq-take (selectrum--quick-keys len qkeys) needed))
+         (input nil)
+         (read-key (lambda ()
+                     (unwind-protect (char-to-string (read-char))
+                       (let ((selectrum--quick-fun nil))
+                         (selectrum--update)))))
+         (selectrum--quick-fun
+          (lambda (i cand)
+            (let ((str (propertize (or (nth i keys) "")
+                                   'face 'selectrum-quick-keys-highlight)))
+              (when (and input (string-match (concat "\\`" input) str))
+                (setq str (copy-sequence str))
+                (add-face-text-property 0 (match-end 0)
+                                        'selectrum-quick-keys-match nil str))
+              (concat str (substring cand (min (length cand)
+                                               (length str))))))))
+    (when-let* ((input
+                 (cl-loop with pressed = 0
+                          while (< pressed len)
+                          do (selectrum--update)
+                          for key = (funcall read-key)
+                          if (not (member key qkeys))
+                          return nil
+                          do (cl-incf pressed)
+                          do (setq input (concat input key))
+                          finally return input))
+                (pos (cl-position input keys :test #'string=)))
+      (+ selectrum--first-index-displayed pos))))
+
+(defun selectrum-quick-select ()
+  "Select a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (if-let ((index (selectrum--quick-read)))
+      (let ((selectrum--current-candidate-index index))
+        (selectrum-select-current-candidate))
+    (message "No matching key")))
+
+(defun selectrum-quick-insert ()
+  "Insert a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (if-let ((index (selectrum--quick-read)))
+      (let ((selectrum--current-candidate-index index))
+        (selectrum-insert-current-candidate))
+    (message "No matching key")))
 
 ;;; Main entry points
 
