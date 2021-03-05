@@ -893,6 +893,10 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                             (selectrum--annotate
                              displayed-candidates annotf docsigf))
                            (t displayed-candidates)))
+         (show-indices
+          (cond
+           ((functionp selectrum-show-indices) selectrum-show-indices)
+           (selectrum-show-indices (lambda (i) (format "%2d " i)))))
          (last-title nil)
          (lines ()))
     (dolist (cand candidates)
@@ -933,6 +937,15 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                          selectrum-extend-current-candidate-highlight))
                   (selectrum--selection-highlight "\n")
                 "\n"))
+             ;; FIXME: Also for horizontal? Refactor for common post
+             ;; formatting.
+             (cand (if show-indices
+                       (concat (propertize
+                                (funcall show-indices
+                                         (1+ (- i first-index-displayed)))
+                                'face 'minibuffer-prompt)
+                               cand)
+                     cand))
              (full-cand
               (if formatting-current-candidate
                   (concat (selectrum--selection-highlight prefix)
@@ -1704,10 +1717,6 @@ NCANDS is the maximum number of candidates to display."
           (when (and first-index-displayed current-index)
             (- current-index first-index-displayed)))
          (index 0)
-         (show-indices
-          (cond
-           ((functionp selectrum-show-indices) selectrum-show-indices)
-           (selectrum-show-indices (lambda (i) (format "%2d " i)))))
          (result))
     (dolist (candidate candidates (nreverse result))
       (let* ((single-line-candidate (if (string-match-p "\n" candidate)
@@ -1743,11 +1752,6 @@ NCANDS is the maximum number of candidates to display."
         (when formatting-current-candidate
           (setq displayed-candidate
                 (selectrum--selection-highlight displayed-candidate)))
-        (when show-indices
-          (setq displayed-candidate
-                (concat (propertize (funcall show-indices (1+ index))
-                                    'face 'minibuffer-prompt)
-                        displayed-candidate)))
         (push displayed-candidate result)
         (cl-incf index)))))
 
