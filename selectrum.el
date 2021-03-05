@@ -1289,6 +1289,8 @@ the update."
              (or (not selectrum--match-is-required)
                  (selectrum--at-existing-prompt-path-p))))
     -1)
+   (selectrum-move-default-candidate
+    0)
    (t
     (or (cl-position selectrum--default-candidate
                      selectrum--refined-candidates
