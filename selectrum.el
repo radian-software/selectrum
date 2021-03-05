@@ -939,20 +939,19 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                 "\n"))
              ;; FIXME: Also for horizontal? Refactor for common post
              ;; formatting.
-             (cand (if show-indices
-                       (concat (propertize
-                                (funcall show-indices
-                                         (1+ (- i first-index-displayed)))
-                                'face 'minibuffer-prompt)
-                               cand)
-                     cand))
+             (ind (when show-indices
+                    (propertize
+                     (funcall show-indices
+                              (1+ (- i first-index-displayed)))
+                     'face 'minibuffer-prompt)))
              (full-cand
               (if formatting-current-candidate
-                  (concat (selectrum--selection-highlight prefix)
+                  (concat ind
+                          (selectrum--selection-highlight prefix)
                           cand
                           (selectrum--selection-highlight suffix)
                           (selectrum--selection-highlight right-margin))
-                (concat prefix cand suffix right-margin))))
+                (concat ind prefix cand suffix right-margin))))
         (push full-cand lines)
         (push newline lines)
         (cl-incf i)))
