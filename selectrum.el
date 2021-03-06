@@ -604,7 +604,8 @@ changes, and is subsequently passed to
 `selectrum-highlight-candidates-function'.")
 
 (defvar-local selectrum--current-candidate-index nil
-  "Index of currently selected candidate, or nil if no candidates.")
+  "Index of currently selected candidate, or nil if no candidates.
+The value -1 means prompt selection.")
 
 (defvar-local selectrum--first-index-displayed nil
   "Index of the first displayed candidate.")
