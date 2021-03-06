@@ -1739,11 +1739,11 @@ NCANDS the maximal number of candidates to get."
 (defun selectrum--format-candidate
     (input candidate candidate-index current-index first-index
            &optional should-annotate)
-  "Get display strings for CANDIDATE.
-INPUT is the input string, CANDIDATE-INDEX the display-index of the
-CANDIDATE, CURRENT-INDEX the display-index of the selected candidate in
-the UI and FIRST-INDEX is the first display-index which is displayed in
-the UI."
+  "Get display string of CANDIDATE.
+INPUT is the input string, CANDIDATE-INDEX the display-index of
+the CANDIDATE, CURRENT-INDEX the display-index of the selected
+candidate in the UI and FIRST-INDEX is the first display-index
+which is displayed in the UI."
   (let* ((hl (eq candidate-index current-index))
          (display-index (- candidate-index first-index))
          (single-line-candidate (if (string-match-p "\n" candidate)
