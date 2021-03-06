@@ -755,6 +755,9 @@ behavior."
         ;; Skip updates.
         (remove-hook 'post-command-hook #'selectrum--update 'local)))))
 
+(defvar selectrum--get-full-prompt-prefix nil
+  "Cons of prompt and cached prompt prefix.")
+
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum--candidate-full candidate)
@@ -763,12 +766,18 @@ behavior."
         (if (and selectrum--current-candidate-index
                  (< selectrum--current-candidate-index 0))
             candidate
-          (let* ((input (minibuffer-contents))
-                 (path (substitute-in-file-name input))
-                 (dirlen (length (file-name-directory path)))
-                 (prefixlen (car (completion--sifn-requote dirlen input)))
-                 (prefix (substring input 0 prefixlen)))
-            (concat prefix candidate))))
+          (let ((input (minibuffer-contents)))
+            (if (and selectrum--get-full-prompt-prefix
+                     (string-equal (car selectrum--get-full-prompt-prefix)
+                                   input))
+                (concat (cdr selectrum--get-full-prompt-prefix) candidate)
+              (let* ((path (substitute-in-file-name input))
+                     (dirlen (length (file-name-directory path)))
+                     (prefixlen (car (completion--sifn-requote dirlen input)))
+                     (prefix (substring input 0 prefixlen)))
+                (setq selectrum--get-full-prompt-prefix
+                      (cons input prefix))
+                (concat prefix candidate))))))
       candidate))
 
 (defun selectrum--get-candidate (index)
