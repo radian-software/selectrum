@@ -1613,23 +1613,32 @@ has a face property."
                     cand)))
         (push new res)))))
 
-(defun selectrum--display-string (str)
-  "Return display string of STR.
-Any string display specs in STR are replaced with the string they
-will display as. This avoids prompt bleeding issues that occur
-with display specs used within the after-string overlay."
+(defun selectrum--replace-prop (str prop handler)
+  "Replace STR parts with PROP using HANDLER.
+HANDLER function can return a replacement for the part of string
+which has the property value it receives as argument."
   (let ((len (length str))
         (pos 0)
         (chunks ()))
     (while (not (eq pos len))
-      (let* ((end (next-single-property-change pos 'display str len))
-             (display (get-text-property pos 'display str))
-             (chunk (if (stringp display)
-                        display
+      (let* ((end (next-single-property-change pos prop str len))
+             (val (get-text-property pos prop str))
+             (chunk (if-let ((rep (and val (funcall handler val))))
+                        rep
                       (substring str pos end))))
         (push chunk chunks)
         (setq pos end)))
     (apply #'concat (nreverse chunks))))
+
+(defun selectrum--display-string (str)
+  "Return display string of STR.
+Any string display specs in STR are replaced with the string they
+will display as. This avoids prompt bleeding issues that occur
+with display specs used within the after-string overlay.
+Invisible parts of the display string are removed."
+  (let ((str (selectrum--replace-prop
+              str 'display (lambda (val) (when (stringp val) val)))))
+    (selectrum--replace-prop str 'invisible (lambda (val) (when val "")))))
 
 (defun selectrum--selection-highlight (str)
   "Return copy of STR with selection highlight."
