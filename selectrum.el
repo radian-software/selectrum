@@ -1298,14 +1298,18 @@ the update."
              (or (not selectrum--match-is-required)
                  (selectrum--at-existing-prompt-path-p))))
     -1)
-   (selectrum-move-default-candidate
+   ((or (not selectrum--default-candidate)
+        selectrum-move-default-candidate)
     0)
-   (t
+   (selectrum--is-initializing
+    ;; FIXME: For file completions the default can be relative, also
+    ;; there might be a mismatch because of name abbreviation.
     (or (cl-position selectrum--default-candidate
                      selectrum--refined-candidates
                      :key #'selectrum--get-full
                      :test #'equal)
-        0))))
+        0))
+   (t 0)))
 
 (defun selectrum--format-default ()
   "Format default value using `selectrum-default-value-format'.
