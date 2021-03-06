@@ -1262,7 +1262,8 @@ the update."
   "Compute the index of the current candidate.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
-  ;; Keep the order of the cond clauses!
+  ;; Be careful with reordering of the cond clauses because they are
+  ;; assumed to get checked in this order!
   (cond
    ;; Restore the old index when repeating.
    (selectrum--repeat
