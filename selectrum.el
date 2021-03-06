@@ -659,6 +659,9 @@ This is non-nil during the first call of
 (defvar-local selectrum--virtual-default-file nil
   "If set used as a virtual file to prompt with.")
 
+(defvar-local selectrum--get-full-prompt-prefix nil
+  "Cons of prompt and cached prefix for `selectrum--get-full'.")
+
 (defvar-local selectrum--line-height nil
   "The `line-pixel-height' of current session.")
 
@@ -755,9 +758,6 @@ behavior."
         ;; Skip updates.
         (remove-hook 'post-command-hook #'selectrum--update 'local)))))
 
-(defvar selectrum--get-full-prompt-prefix nil
-  "Cons of prompt and cached prompt prefix.")
-
 (defun selectrum--get-full (candidate)
   "Get full form of CANDIDATE."
   (or (get-text-property 0 'selectrum--candidate-full candidate)
@@ -775,8 +775,8 @@ behavior."
                      (dirlen (length (file-name-directory path)))
                      (prefixlen (car (completion--sifn-requote dirlen input)))
                      (prefix (substring input 0 prefixlen)))
-                (setq selectrum--get-full-prompt-prefix
-                      (cons input prefix))
+                (setq-local selectrum--get-full-prompt-prefix
+                            (cons input prefix))
                 (concat prefix candidate))))))
       candidate))
 
