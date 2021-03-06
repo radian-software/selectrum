@@ -1261,14 +1261,15 @@ the update."
   "Compute the index of the current candidate.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
+  ;; Keep the order of the cond clauses!
   (cond
-   ;; Restore the old index when repeating
+   ;; Restore the old index when repeating.
    (selectrum--repeat
     (setq-local selectrum--repeat nil)
     (and (> (length selectrum--refined-candidates) 0)
          (min (or selectrum--current-candidate-index 0)
               (1- (length selectrum--refined-candidates)))))
-   ;; Check for candidates needs to be first!
+   ;; If there are no candidates the prompt should be selected.
    ((null selectrum--refined-candidates)
     (when (or (not selectrum--match-is-required)
               (selectrum--at-existing-prompt-path-p))
@@ -1279,28 +1280,37 @@ the update."
                      :key #'selectrum--get-full
                      :test #'equal)
         0))
-   ((and selectrum--default-candidate
-         (string-empty-p (minibuffer-contents))
-         (not (member selectrum--default-candidate
-                      selectrum--refined-candidates)))
+   ;; Prompt selection.
+   ((or
+     ;; When the default isn't available via candidate selection, select
+     ;; the prompt.
+     (and selectrum--default-candidate
+          (string-empty-p (minibuffer-contents))
+          (not (member selectrum--default-candidate
+                       selectrum--refined-candidates)))
+     ;; When the prompt contains the the default select it right away.
+     (and selectrum--is-initializing
+          (equal selectrum--default-candidate
+                 (minibuffer-contents)))
+     ;; For history navigation select the prompt as the suggested
+     ;; candidates are inserted there.
+     (and (not (= (minibuffer-prompt-end) (point-max)))
+          (or (and minibuffer-history-position
+                   (not (zerop
+                         minibuffer-history-position))
+                   isearch-mode)
+              (memq this-command
+                    '(next-history-element
+                      previous-history-element)))
+          (or (not selectrum--match-is-required)
+              (selectrum--at-existing-prompt-path-p))))
     -1)
-   ((or (and selectrum--is-initializing
-             (equal selectrum--default-candidate
-                    (minibuffer-contents)))
-        (and (not (= (minibuffer-prompt-end) (point-max)))
-             (or (and minibuffer-history-position
-                      (not (zerop
-                            minibuffer-history-position))
-                      isearch-mode)
-                 (memq this-command
-                       '(next-history-element
-                         previous-history-element)))
-             (or (not selectrum--match-is-required)
-                 (selectrum--at-existing-prompt-path-p))))
-    -1)
+   ;; Select first candidate if the first candidate is known to be the
+   ;; default.
    ((or (not selectrum--default-candidate)
         selectrum-move-default-candidate)
     0)
+   ;; Select the default initially.
    (selectrum--is-initializing
     ;; FIXME: For file completions the default can be relative, also
     ;; there might be a mismatch because of name abbreviation.
