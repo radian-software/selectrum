@@ -338,13 +338,12 @@ used refinement function. The built-in `completion-styles` support the
   `selectrum-completion-in-region-styles`.
 * The option `selectrum-should-sort` controls whether preprocessing
   functions should sort.
-* You can configure the keys for quick candidate insertion/selection
-  using `selectrum-quick-keys`. These are used for an `ivy-avy` like
-  interface, when you use the `selectrum-quick-insert` or
-  `selectrum-quick-select` command, each candidate gets key
-  annotations and when you press the keys the candidate is inserted or
-  selected respectively . To configure faces used for the key
-  annotations configure `selectrum-quick-keys-highlight` and
+* You can configure the keys for quick candidate insertion and
+  selection using `selectrum-quick-keys`. These are used when using
+  the commands `selectrum-quick-select` or `selectrum-quick-insert`
+  which provide you an `ivy-avy` like interface to quickly select a
+  candidate via key annotations. You can configure the appearance of
+  these key annotations with `selectrum-quick-keys-highlight` and
   `selectrum-quick-keys-match` face.
 
 ### Complementary extensions
