@@ -748,8 +748,20 @@ Selectrum eventually.
 
 ### Icicles
 
-[Icicles is maintained on EmacsWiki, enough
-said.](https://github.com/melpa/melpa/pull/5008)
+[Icicles](https://www.emacswiki.org/emacs/Icicles) is a package
+somewhat like Helm, written by [Drew
+Adams](https://www.emacswiki.org/emacs/DrewAdams). Like other packages
+by Drew, Icicles is only available for manual download from EmacsWiki.
+[It has been removed from
+MELPA](https://github.com/melpa/melpa/pull/5008) due to community
+consensus that this distribution mechanism has unacceptable security
+risks, but Drew has declined to migrate to any other distribution
+mechanism.
+
+Because of this situation, I have never attempted to use Icicles, and
+cannot comment on the package on the basis of its features. If you
+would like to submit a pull request explaining the advantages and/or
+disadvantages of Icicles versus Selectrum, we would appreciate it.
 
 ### Snails
 
