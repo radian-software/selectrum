@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog].
   functionality to `ivy-avy`. You can configure the used keys via
   `selectrum-quick-keys` option and their faces via
   `selectrum-quick-keys-highlight` and `selectrum-quick-keys-match`
-  face. ([#16], [#304], [#479]).
+  face ([#16], [#304], [#479]).
 * Add support for `x-group-function` completion metadata. The group
   title formatting is controlled by the customization variable
   `selectrum-group-format` and the faces `selectrum-group-separator`
