@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog].
   ([#313], [#466]).
 
 ### Features
+* You can quickly select and insert a candidate using the commands
+  `selectrum-quick-select` and `selectrum-quick-insert` which are
+  bound to `M-i` and `M-m` (analogue to `C-i` and `C-m` used for
+  normal insertion and selection). These commands are similar in
+  functionality to `ivy-avy`. You can configure the used keys via
+  `selectrum-quick-keys` option and their faces via
+  `selectrum-quick-keys-highlight` and `selectrum-quick-keys-match`
+  face. ([#16], [#304], [#479]).
 * Add support for `x-group-function` completion metadata. The group
   title formatting is controlled by the customization variable
   `selectrum-group-format` and the faces `selectrum-group-separator`
@@ -38,6 +46,8 @@ packages. Users of `selectrum-prescient` can update to configure
   candidate and exiting by pressing `RET` no longer fails when there
   are existing candidates already selected using `TAB` ([#460]).
 
+[#16]: https://github.com/raxod502/selectrum/issues/16
+[#304]: https://github.com/raxod502/selectrum/issues/304
 [#313]: https://github.com/raxod502/selectrum/issues/313
 [#419]: https://github.com/raxod502/selectrum/issues/419
 [#454]: https://github.com/raxod502/selectrum/issues/454
@@ -50,6 +60,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#463]: https://github.com/raxod502/selectrum/pull/463
 [#465]: https://github.com/raxod502/selectrum/pull/465
 [#466]: https://github.com/raxod502/selectrum/pull/466
+[#479]: https://github.com/raxod502/selectrum/pull/479
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
