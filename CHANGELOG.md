@@ -42,6 +42,9 @@ packages. Users of `selectrum-prescient` can update to configure
 
 
 ### Bugs fixed
+* When using `marginalia-mode` there would be an arrow in the fringe
+  for the currently selected candidate which has been fixed ([#450],
+  [#488]).
 * When doing `completing-read-multiple`, selecting an additional
   candidate and exiting by pressing `RET` no longer fails when there
   are existing candidates already selected using `TAB` ([#460]).
@@ -50,6 +53,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#304]: https://github.com/raxod502/selectrum/issues/304
 [#313]: https://github.com/raxod502/selectrum/issues/313
 [#419]: https://github.com/raxod502/selectrum/issues/419
+[#450]: https://github.com/raxod502/selectrum/issues/450
 [#454]: https://github.com/raxod502/selectrum/issues/454
 [#455]: https://github.com/raxod502/selectrum/pull/455
 [#456]: https://github.com/raxod502/selectrum/pull/456
@@ -61,6 +65,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#465]: https://github.com/raxod502/selectrum/pull/465
 [#466]: https://github.com/raxod502/selectrum/pull/466
 [#479]: https://github.com/raxod502/selectrum/pull/479
+[#488]: https://github.com/raxod502/selectrum/pull/488
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
