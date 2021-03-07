@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog].
   bound to `M-i` and `M-m` (analogue to `C-i` and `C-m` used for
   normal insertion and selection). These commands are similar in
   functionality to `ivy-avy`. You can configure the used keys via
-  `selectrum-quick-keys` option and their faces via
+  `selectrum-quick-keys` option and their appearance via
   `selectrum-quick-keys-highlight` and `selectrum-quick-keys-match`
   face ([#16], [#304], [#479]).
 * Add support for `x-group-function` completion metadata. The group
