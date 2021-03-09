@@ -129,7 +129,7 @@ your init-file:
 (prescient-persist-mode +1)
 ```
 
-You can also combine the sorting abilities of
+Another popular choice is to combine the sorting abilities of
 [`prescient.el`](https://github.com/raxod502/prescient.el) with the
 filtering of [`orderless`](https://github.com/oantolin/orderless):
 
