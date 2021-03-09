@@ -546,7 +546,14 @@ For more information, see the respective docstrings.
 ## Contributor guide
 
 Please see [the contributor guide for my
-projects](https://github.com/raxod502/contributor-guide).
+projects](https://github.com/raxod502/contributor-guide). We have some
+[test scripts](https://github.com/raxod502/selectrum/tree/master/test)
+for testing minimal default configurations of common package
+combinations. You can run them using
+
+```sh
+test/run.sh <package-combo>.el
+```
 
 Technical points:
 
