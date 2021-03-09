@@ -100,6 +100,16 @@ list of strings."
 
 ;;; Faces
 
+(defface selectrum-quick-keys-highlight
+  '((t :inherit lazy-highlight))
+  "Face used for `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
+(defface selectrum-quick-keys-match
+  '((t :inherit isearch))
+  "Face used for matches of `selectrum-quick-keys'."
+  :group 'selectrum-faces)
+
 (defface selectrum-group-title
   '((t :inherit shadow :slant italic))
   "Face used for the title text of the candidate group headlines."
@@ -149,6 +159,11 @@ parts of the input."
   (propertize " [default: %s]" 'face 'minibuffer-prompt)
   "Format string for the default value in the minibuffer."
   :type '(choice (const nil) string))
+
+(defcustom selectrum-quick-keys '(?a ?s ?d ?f ?j ?k ?l ?i ?g ?h)
+  "Keys for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'."
+  :type 'character)
 
 (defcustom selectrum-group-format
   (concat
@@ -521,6 +536,8 @@ function and BODY opens the minibuffer."
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
     (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
+    (define-key map (kbd "M-i") 'selectrum-quick-insert)
+    (define-key map (kbd "M-m") 'selectrum-quick-select)
     ;; Return the map.
     map)
   "Keymap used by Selectrum in the minibuffer.")
@@ -532,6 +549,12 @@ at the start of the list.")
 
 (defvar selectrum--display-action-buffer " *selectrum*"
   "Buffer to display candidates using `selectrum-display-action'.")
+
+(defvar selectrum--quick-fun nil
+  "Function for quick selection.
+Used by `selectrum-quick-select' and `selectrum-quick-insert'.
+Receives the display index and candidate and should return the
+new candidate string used for display.")
 
 (defvar selectrum--crm-separator-alist
   '((":\\|,\\|\\s-" . ",")
@@ -1778,6 +1801,10 @@ which is displayed in the UI."
     (when hl
       (setq displayed-candidate
             (selectrum--selection-highlight displayed-candidate)))
+    (when (and selectrum--quick-fun
+               (not hl))
+      (setq displayed-candidate
+            (funcall selectrum--quick-fun display-index displayed-candidate)))
     (when-let (show-indices
                (cond
                 ((functionp selectrum-show-indices) selectrum-show-indices)
@@ -2104,6 +2131,88 @@ Only to be used from `selectrum-select-from-history'"
   (throw 'selectrum-insert-action
          (propertize (selectrum-get-current-candidate 'notfull)
                      'selectum--insert t)))
+
+(defun selectrum--quick-keys (len keys)
+  "Get list of key combinations up to key length LEN.
+KEYS is a list of key strings to combine."
+  (unless (zerop len)
+    (cl-loop with list = keys
+             with olist = keys
+             repeat (1- len)
+             do (setq olist
+                      (cl-loop
+                       for char in list
+                       nconc (cl-loop for ochar in olist
+                                      collect (concat char ochar))))
+             finally return olist)))
+
+(defun selectrum--quick-read ()
+  "Read index interactively using `selectrum-quick-keys'."
+  (unless (cdr selectrum-quick-keys)
+    (user-error "`selectrum-quick-keys' needs at least two keys"))
+  (when (< selectrum--actual-num-candidates-displayed 2)
+    (user-error "No candidates for quick selection"))
+  (let* ((qkeys (mapcar #'char-to-string selectrum-quick-keys))
+         (nkeys (length qkeys))
+         (needed selectrum--actual-num-candidates-displayed)
+         (len (ceiling (log needed nkeys)))
+         (keys (seq-take (selectrum--quick-keys len qkeys) needed))
+         (input nil)
+         (read-char (lambda ()
+                      (let ((char nil))
+                        (unwind-protect
+                            (when (characterp (setq char (read-char)))
+                              char)
+                          (when (or (eq ?\C-g char)
+                                    (not (characterp char)))
+                            (let ((selectrum--quick-fun nil))
+                              (selectrum--update)))))))
+         (selectrum--quick-fun
+          (lambda (i cand)
+            (let ((str (propertize (or (nth i keys) "")
+                                   'face 'selectrum-quick-keys-highlight)))
+              (when (and input (string-match (concat "\\`" input) str))
+                (setq str (copy-sequence str))
+                (add-face-text-property 0 (match-end 0)
+                                        'selectrum-quick-keys-match nil str))
+              (concat str (substring cand (min (length cand)
+                                               (length str))))))))
+    (if-let* ((input
+               (cl-loop with pressed = 0
+                        while (< pressed len)
+                        do (selectrum--update)
+                        for char = (funcall read-char)
+                        for key = (when char
+                                    (char-to-string char))
+                        if (and (not (zerop pressed))
+                                (equal char ?\C-?))
+                        do (setq pressed (1- pressed)
+                                 input (substring
+                                        input 0 (1- (length input))))
+                        else if (not (member key qkeys))
+                        return nil
+                        else
+                        do (setq pressed (1+ pressed)
+                                 input (concat input key))
+                        finally return input))
+              (pos (cl-position input keys :test #'string=)))
+        (+ selectrum--first-index-displayed pos)
+      (prog1 nil
+        (message "No matching key")))))
+
+(defun selectrum-quick-select ()
+  "Select a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (when-let (index (selectrum--quick-read))
+    (let ((selectrum--current-candidate-index index))
+      (selectrum-select-current-candidate))))
+
+(defun selectrum-quick-insert ()
+  "Insert a candidate using `selectrum-quick-keys'."
+  (interactive)
+  (when-let (index (selectrum--quick-read))
+    (let ((selectrum--current-candidate-index index))
+      (selectrum-insert-current-candidate))))
 
 ;;; Main entry points
 

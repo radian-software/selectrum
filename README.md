@@ -162,24 +162,26 @@ how to fix it.
 * *To navigate to a candidate:* use the standard motion commands
   (`<up>`, `<down>`, `C-v`, `M-v`, `M-<`, `M->`). If you prefer, you
   can use `C-p` and `C-n` instead of the arrow keys.
-* *To accept the currently selected candidate:* type `RET`. (With a
-  prefix argument, accept instead the candidate at that point in the
-  list, counting from one. See `selectrum-show-indices`. The value
-  zero means to accept exactly what you've typed, as in the next
+* *To accept the currently selected candidate:* type `RET`/`C-m`.
+  (With a prefix argument, accept instead the candidate at that point
+  in the list, counting from one. See `selectrum-show-indices`. The
+  value zero means to accept exactly what you've typed, as in the next
   bullet point.) You can also click the left mouse button on a
-  candidate to choose it.
+  candidate to choose it or use `M-m` to select one using
+  `selectrum-quick-keys`.
 * *To submit what you've typed, even if it's not a candidate:* you can
   use `<up>` or `C-p` to select the user input just like a regular
   candidate, and type `RET` as usual. (Alternatively, you can type
   `C-j` to submit your exact input without selecting it first.)
 * *To abort:* as per usual, type `C-g`.
 * *To navigate into the currently selected directory while finding a
-  file\:* type `TAB`. (What this actually does is insert the currently
-  selected candidate into the minibuffer, which for `find-file` has
-  the effect of navigating into a directory.) With a positive prefix
-  argument, insert the candidate at that display position (see
-  `selectrum-show-indices`). You can also right click on a candidate
-  to insert it into the minibuffer.
+  file\:* type `TAB`/`C-i`. (What this actually does is insert the
+  currently selected candidate into the minibuffer, which for
+  `find-file` has the effect of navigating into a directory.) With a
+  positive prefix argument, insert the candidate at that display
+  position (see `selectrum-show-indices`). You can also right click on
+  a candidate to insert it into the minibuffer or use `M-i` for
+  inserting one using `selectrum-quick-keys`.
 * *To copy the current candidate:* type `M-w` or what is bound to
   `kill-ring-save`. When there's an active region in your input, this
   still copies the active region. The behavior of `M-w` is not
@@ -353,6 +355,13 @@ used refinement function. The built-in `completion-styles` support the
   `selectrum-completion-in-region-styles`.
 * The option `selectrum-should-sort` controls whether preprocessing
   functions should sort.
+* You can configure the keys for quick candidate insertion and
+  selection using `selectrum-quick-keys`. These are used when using
+  the commands `selectrum-quick-select` or `selectrum-quick-insert`
+  which provide you an `ivy-avy` like interface to quickly select a
+  candidate via key annotations. You can configure the appearance of
+  these key annotations with `selectrum-quick-keys-highlight` and
+  `selectrum-quick-keys-match` face.
 
 ### Complementary extensions
 
