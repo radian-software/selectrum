@@ -2163,7 +2163,8 @@ KEYS is a list of key strings to combine."
                         (unwind-protect
                             (when (characterp (setq char (read-char)))
                               char)
-                          (when (eq ?\C-g char)
+                          (when (or (eq ?\C-g char)
+                                    (not (characterp char)))
                             (let ((selectrum--quick-fun nil))
                               (selectrum--update)))))))
          (selectrum--quick-fun
