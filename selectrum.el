@@ -2156,13 +2156,14 @@ KEYS is a list of key strings to combine."
          (len (ceiling (log needed nkeys)))
          (keys (seq-take (selectrum--quick-keys len qkeys) needed))
          (input nil)
-         (read-key (lambda ()
-                     (unwind-protect
-                         (let ((char (read-char)))
-                           (when (characterp char)
-                             (char-to-string char)))
-                       (let ((selectrum--quick-fun nil))
-                         (selectrum--update)))))
+         (read-char (lambda ()
+                     (let ((char nil))
+                       (unwind-protect
+                           (when (characterp (setq char (read-char)))
+                             char)
+                         (when (eq ?\C-g char)
+                           (let ((selectrum--quick-fun nil))
+                             (selectrum--update)))))))
          (selectrum--quick-fun
           (lambda (i cand)
             (let ((str (propertize (or (nth i keys) "")
@@ -2177,9 +2178,11 @@ KEYS is a list of key strings to combine."
                (cl-loop with pressed = 0
                         while (< pressed len)
                         do (selectrum--update)
-                        for key = (funcall read-key)
+                        for char = (funcall read-char)
+                        for key = (when char
+                                    (char-to-string char))
                         if (and (not (zerop pressed))
-                                (equal key ""))
+                                (equal char ?\C-?))
                         do (setq pressed (1- pressed)
                                  input (substring
                                         input 0 (1- (length input))))
