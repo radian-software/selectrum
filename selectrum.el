@@ -2150,6 +2150,8 @@ KEYS is a list of key strings to combine."
   "Read index interactively using `selectrum-quick-keys'."
   (unless (cdr selectrum-quick-keys)
     (user-error "`selectrum-quick-keys' needs at least two keys"))
+  (when (< selectrum--actual-num-candidates-displayed 2)
+    (user-error "No candidates for quick selection"))
   (let* ((qkeys (mapcar #'char-to-string selectrum-quick-keys))
          (nkeys (length qkeys))
          (needed selectrum--actual-num-candidates-displayed)
