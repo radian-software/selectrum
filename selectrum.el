@@ -2157,7 +2157,10 @@ KEYS is a list of key strings to combine."
          (keys (seq-take (selectrum--quick-keys len qkeys) needed))
          (input nil)
          (read-key (lambda ()
-                     (unwind-protect (char-to-string (read-char))
+                     (unwind-protect
+                         (let ((char (read-char)))
+                           (when (characterp char)
+                             (char-to-string char)))
                        (let ((selectrum--quick-fun nil))
                          (selectrum--update)))))
          (selectrum--quick-fun
@@ -2170,34 +2173,40 @@ KEYS is a list of key strings to combine."
                                         'selectrum-quick-keys-match nil str))
               (concat str (substring cand (min (length cand)
                                                (length str))))))))
-    (when-let* ((input
-                 (cl-loop with pressed = 0
-                          while (< pressed len)
-                          do (selectrum--update)
-                          for key = (funcall read-key)
-                          if (not (member key qkeys))
-                          return nil
-                          do (cl-incf pressed)
-                          do (setq input (concat input key))
-                          finally return input))
-                (pos (cl-position input keys :test #'string=)))
-      (+ selectrum--first-index-displayed pos))))
+    (if-let* ((input
+               (cl-loop with pressed = 0
+                        while (< pressed len)
+                        do (selectrum--update)
+                        for key = (funcall read-key)
+                        if (and (not (zerop pressed))
+                                (equal key ""))
+                        do (setq pressed (1- pressed)
+                                 input (substring
+                                        input 0 (1- (length input))))
+                        else if (not (member key qkeys))
+                        return nil
+                        else
+                        do (setq pressed (1+ pressed)
+                                 input (concat input key))
+                        finally return input))
+              (pos (cl-position input keys :test #'string=)))
+        (+ selectrum--first-index-displayed pos)
+      (prog1 nil
+        (message "No matching key")))))
 
 (defun selectrum-quick-select ()
   "Select a candidate using `selectrum-quick-keys'."
   (interactive)
-  (if-let ((index (selectrum--quick-read)))
-      (let ((selectrum--current-candidate-index index))
-        (selectrum-select-current-candidate))
-    (message "No matching key")))
+  (when-let (index (selectrum--quick-read))
+    (let ((selectrum--current-candidate-index index))
+      (selectrum-select-current-candidate))))
 
 (defun selectrum-quick-insert ()
   "Insert a candidate using `selectrum-quick-keys'."
   (interactive)
-  (if-let ((index (selectrum--quick-read)))
-      (let ((selectrum--current-candidate-index index))
-        (selectrum-insert-current-candidate))
-    (message "No matching key")))
+  (when-let (index (selectrum--quick-read))
+    (let ((selectrum--current-candidate-index index))
+      (selectrum-insert-current-candidate))))
 
 ;;; Main entry points
 
