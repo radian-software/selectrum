@@ -50,8 +50,10 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 
 ## What is it?
 
-Selectrum provides an interface for selecting items from a list. You
-can use it to run a command with `M-x`:
+Selectrum aims to provide a better completion UI using standard Emacs
+APIs. In essence it is an interface for selecting items from a list.
+
+You can use it to run a command with `M-x`:
 
 <p align="center"> <img src="images/commands.png" alt="Picking from a
 list of commands" height="200"/> </p>
@@ -100,17 +102,23 @@ To enable Selectrum, simply add to your init-file:
 (selectrum-mode +1)
 ```
 
-Now all of your favorite Emacs commands will automatically use
-Selectrum. However, the default sorting and filtering is very basic.
-The standard filtering function uses `completion-styles`. You can make
-use of the built-in `substring` and `flex` style to enhance these a
-bit but it is recommended to use packages which improve this further.
-There is [`prescient.el`](https://github.com/raxod502/prescient.el)
-which provides functions for more intelligent sorting and filtering
-and [`orderless`](https://github.com/oantolin/orderless) which
-provides an enhanced and flexible style for `completion-styles`. To
-setup `prescient` simply install `selectrum-prescient` package from
-MELPA and add the following to your init-file:
+Now all completion commands will automatically use Selectrum. The
+default filtering function uses `completion-styles` which only provide
+a few simple filtering methods. You can make use of the built-in
+`substring` and `flex` style which are more advanced but it is
+recommended to use packages which improve this further.
+
+Generally Selectrum doesn't integrate features you might be used to
+from bigger completion frameworks. Instead the focus is on providing
+an enhanced completion UI and compose with [other
+packages](https://github.com/raxod502/selectrum#complementary-extensions)
+which also stay within the constraints of the standard Emacs API.
+
+Because of the composable and modular approach there are several
+possible package combinations. Most important for completions are
+filtering and sorting which can both be improved by installing the
+`selectrum-prescient` package from MELPA and adding the following to
+your init-file:
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -121,14 +129,22 @@ MELPA and add the following to your init-file:
 (prescient-persist-mode +1)
 ```
 
-If you don't want to install additional packages you can setup the
-built-in `completion-styles` to improve things a bit:
+Another popular choice is to combine the sorting abilities of
+[`prescient.el`](https://github.com/raxod502/prescient.el) with the
+filtering of [`orderless`](https://github.com/oantolin/orderless):
 
 ```elisp
-;; In Emacs 27 there is also a flex style which you might like.
-(setq completion-styles '(substring partial-completion))
+(setq selectrum-prescient-enable-filtering nil)
+(selectrum-prescient-mode +1)
+
+(setq completion-styles '(orderless))
+(setq orderless-skip-highlighting (lambda () selectrum-is-active))
+(setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
 ```
 
+For more tips and setup help for integration with other packages see
+our
+[wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
 
 ## User guide
 
@@ -216,7 +232,8 @@ and highlighted using `completion-styles`. This default behavior is
 intended as a lowest common denominator that will definitely work.
 
 However, it is strongly recommended that you customize
-`completion-styles` or set up
+`completion-styles` using
+[orderless](https://github.com/oantolin/orderless) or set up
 [`prescient.el`](https://github.com/raxod502/prescient.el) in order to
 get more intelligent sorting and filtering. (See the "getting started"
 section for how to do this.) With `prescient.el`:
@@ -339,19 +356,10 @@ used refinement function. The built-in `completion-styles` support the
 
 ### Complementary extensions
 
-Selectrum has a
-[wiki](https://github.com/raxod502/selectrum/wiki/Useful-Commands), on
-which people have contributed handy commands for doing things like
-finding buffers and recent files at the same time. Many of the
-commands from the wiki are now maintained in the
-[Consult](https://github.com/minad/consult) package. If you write your
-own commands which are useful for a greater audience, we encourage you
-to either open a PR on the Consult package or add the command to the
-wiki. The wiki also contains
-[configuration tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
-for external packages.
-
-External packages that work well with Selectrum:
+For a fully fledged setup enabling additional features similar to
+those you find in [Helm](https://github.com/emacs-helm/helm) or
+[Ivy](https://github.com/abo-abo/swiper#ivy) we recommend the
+following additional packages:
 
 * Useful commands based on `completing-read` are provided by
   [consult](https://github.com/minad/consult). Consult is designed as
@@ -376,34 +384,16 @@ External packages that work well with Selectrum:
 * You can display completions in a child frame using
   [emacs-mini-frame](https://github.com/muffinmad/emacs-mini-frame).
 
-* If you are not using Consult and `consult-imenu`, Imenu completion
-  can be improved by using
-  [flimenu](https://github.com/IvanMalison/flimenu).
-  Both flimenu and `consult-imenu` turn the tree based item navigation
-  into a flat completion menu. Note that `consult-imenu` is more
-  powerful, since it additionally offers preview and narrowing.
+The above packages work well in combination and we are collaborating
+with each other to ensure an optimal experience while not introducing
+any hard dependencies. Our common denominator is the standard Emacs
+API.
 
-* For searching and manipulating the `kill-ring` there is
-  [browse-kill-ring](https://github.com/browse-kill-ring/browse-kill-ring).
-  Multi-line candidates aren't well suited for minibuffer completion,
-  thus you might prefer a dedicated buffer for this. Alternatively,
-  Consult provides the `consult-yank` command which uses minibuffer
-  completion and previews the text in the buffer at the same time,
-  mitigating the problem with multi-line candidates this way.
-  Note that there is also Embark with its live occur which fits
-  well together with `consult-yank`. For these reasons it is more
-  recommended to use Consult and Embark instead of browse-kill-ring.
-
-* In case you are not using `prescient.el`, an improved `M-x` is
-  provided by [Amx](https://github.com/DarwinAwardWinner/amx). Like
-  `prescient.el` and `orderless.el` it provides as an alternative
-  sorting method. Furthermore it has some extra features specific to
-  `M-x`, like displaying keybindings, ignoring uninteresting commands,
-  and performing alternate actions (such as `C-h f` instead of `RET`
-  to look up docs for a command instead of calling it). Note that
-  Marginalia also provides the keybinding annotation feature and more
-  annotations, and Embark provides more general actions. Therefore it
-  is recommended to use Prescient, Embark and Marginalia instead of Amx.
+For other possibly interesting packages see our
+[wiki](https://github.com/raxod502/selectrum/wiki/) which also
+contains [configuration
+tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
+for many of these.
 
 ### But what is it doing to my Emacs??
 
@@ -493,7 +483,9 @@ constraints of the official API by make use of text properties of
 completion candidates. However it is preferable to use an annotation
 function (or affixation which is introduced in Emacs 28), see `(info
 "(elisp) Programmed Completion") to make the annotations work with any
-compliant completion framework.
+compliant completion framework. We also have some information about
+using annotations on the
+[wiki](https://github.com/raxod502/selectrum/wiki/Tips-for-Creating-Commands#annotating-candidates).
 
 The following text properties can be used, which may be applied to
 candidates using `propertize`:
