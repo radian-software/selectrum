@@ -544,7 +544,7 @@ for testing minimal default configurations of common package
 combinations. You can run them using
 
 ```sh
-test/run.sh <package-combo>.el
+cd test; ./run.sh <package-combo>.el
 ```
 
 Technical points:
