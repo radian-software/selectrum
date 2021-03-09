@@ -2159,13 +2159,13 @@ KEYS is a list of key strings to combine."
          (keys (seq-take (selectrum--quick-keys len qkeys) needed))
          (input nil)
          (read-char (lambda ()
-                     (let ((char nil))
-                       (unwind-protect
-                           (when (characterp (setq char (read-char)))
-                             char)
-                         (when (eq ?\C-g char)
-                           (let ((selectrum--quick-fun nil))
-                             (selectrum--update)))))))
+                      (let ((char nil))
+                        (unwind-protect
+                            (when (characterp (setq char (read-char)))
+                              char)
+                          (when (eq ?\C-g char)
+                            (let ((selectrum--quick-fun nil))
+                              (selectrum--update)))))))
          (selectrum--quick-fun
           (lambda (i cand)
             (let ((str (propertize (or (nth i keys) "")
