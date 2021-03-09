@@ -483,7 +483,9 @@ constraints of the official API by make use of text properties of
 completion candidates. However it is preferable to use an annotation
 function (or affixation which is introduced in Emacs 28), see `(info
 "(elisp) Programmed Completion") to make the annotations work with any
-compliant completion framework.
+compliant completion framework. We also have some information about
+using annotations on the
+[wiki](https://github.com/raxod502/selectrum/wiki/Tips-for-Creating-Commands#annotating-candidates).
 
 The following text properties can be used, which may be applied to
 candidates using `propertize`:
