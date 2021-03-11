@@ -1801,10 +1801,6 @@ which is displayed in the UI."
     (when hl
       (setq displayed-candidate
             (selectrum--selection-highlight displayed-candidate)))
-    (when (and selectrum--quick-fun
-               (not hl))
-      (setq displayed-candidate
-            (funcall selectrum--quick-fun display-index displayed-candidate)))
     (when-let (show-indices
                (cond
                 ((functionp selectrum-show-indices) selectrum-show-indices)
@@ -1814,6 +1810,10 @@ which is displayed in the UI."
              (propertize
               (funcall show-indices (1+ display-index))
               'face 'minibuffer-prompt) displayed-candidate)))
+    (when (and selectrum--quick-fun
+               (not hl))
+      (setq displayed-candidate
+            (funcall selectrum--quick-fun display-index displayed-candidate)))
     displayed-candidate))
 
 (defun selectrum--setup (candidates default buf)
