@@ -560,6 +560,7 @@ new candidate string used for display.")
   '((":\\|,\\|\\s-" . ",")
     ("[ \t]*:[ \t]*" . ":")
     ("[ \t]*,[ \t]*" . ",")
+    ("\\s-*&\\s-*" . " & ")
     (" " . " "))
   "Values of `crm-separator' mapped to separator strings.
 If current `crm-separator' has a mapping the separator gets
