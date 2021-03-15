@@ -33,6 +33,9 @@ packages. Users of `selectrum-prescient` can update to configure
 `selectrum-prescient-secondary-highlight` ([#455]).
 
 ### Enhancements
+* When using `selectrum-insert-current-candidate` in a
+  `completing-read-multiple` session, the input will get selected
+  after candidate insertion ([#494]).
 * File name completions using `selectrum-completion-in-region` have
   been improved. When starting with an empty input the completion
   starts at `default-directory` and file names are quoted in modes
@@ -66,6 +69,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#466]: https://github.com/raxod502/selectrum/pull/466
 [#479]: https://github.com/raxod502/selectrum/pull/479
 [#488]: https://github.com/raxod502/selectrum/pull/488
+[#494]: https://github.com/raxod502/selectrum/pull/494
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
