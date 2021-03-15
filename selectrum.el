@@ -595,7 +595,7 @@ as symbol constituents.")
 ;;; Session state
 
 (defvar-local selectrum--last-buffer nil
-  "The buffer that was current before the active session")
+  "The buffer that was current before the active session.")
 
 (defvar-local selectrum--candidates-overlay nil
   "Overlay used to display current candidates.")
@@ -664,9 +664,9 @@ input that does not match any of the displayed candidates.")
   "Prefix argument given to last interactive command that invoked Selectrum.")
 
 (defvar-local selectrum--last-input nil
-  "Input of last Selectrum session. This is different from
-`selectrum--previous-input-string' which reflects the previous
-input within a session.")
+  "Input of last Selectrum session.
+This is different from `selectrum--previous-input-string' which
+reflects the previous input within a session.")
 
 (defvar-local selectrum--repeat nil
   "Non-nil means try to restore the minibuffer state during setup.
@@ -1884,8 +1884,7 @@ started from."
                     (cond (minibuffer-completing-file-name
                            (not (selectrum--at-existing-prompt-path-p)))
                           (t
-                           (not (string-empty-p
-                                 (minibuffer-contents))))))
+                           (not (string-empty-p selectrum--virtual-input)))))
                0
              -1)
            (1- (length selectrum--refined-candidates))))))
@@ -2001,7 +2000,7 @@ indices."
     (let ((index (selectrum--index-for-arg arg)))
       (if (or (not selectrum--match-is-required)
               (string-empty-p
-               (minibuffer-contents))
+               selectrum--virtual-input)
               (and index (>= index 0))
               (if minibuffer-completing-file-name
                   (selectrum--at-existing-prompt-path-p)
@@ -2051,6 +2050,9 @@ refresh."
                                   (point-max))
                    (insert full))
                   (t
+                   ;; Select input after crm insertion.
+                   (setq-local selectrum--repeat t)
+                   (setq-local selectrum--current-candidate-index -1)
                    (goto-char
                     (if (re-search-backward crm-separator
                                             (minibuffer-prompt-end) t)
