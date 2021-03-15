@@ -1884,8 +1884,7 @@ started from."
                     (cond (minibuffer-completing-file-name
                            (not (selectrum--at-existing-prompt-path-p)))
                           (t
-                           (not (string-empty-p
-                                 (minibuffer-contents))))))
+                           (not (string-empty-p selectrum--virtual-input)))))
                0
              -1)
            (1- (length selectrum--refined-candidates))))))
@@ -2001,7 +2000,7 @@ indices."
     (let ((index (selectrum--index-for-arg arg)))
       (if (or (not selectrum--match-is-required)
               (string-empty-p
-               (minibuffer-contents))
+               selectrum--virtual-input)
               (and index (>= index 0))
               (if minibuffer-completing-file-name
                   (selectrum--at-existing-prompt-path-p)
@@ -2051,6 +2050,9 @@ refresh."
                                   (point-max))
                    (insert full))
                   (t
+                   ;; Select input after crm insertion.
+                   (setq-local selectrum--repeat t)
+                   (setq-local selectrum--current-candidate-index -1)
                    (goto-char
                     (if (re-search-backward crm-separator
                                             (minibuffer-prompt-end) t)
