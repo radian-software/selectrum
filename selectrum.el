@@ -1932,40 +1932,41 @@ Or if there is an active region, save the region to kill ring."
   "Exit minibuffer with given CANDIDATE.
 If `selectrum--is-crm-session' is non-nil exit with the choosen candidates
 plus CANDIDATE."
-  (let* ((result (cond ((and selectrum--is-crm-session
-                             (string-match crm-separator
-                                           selectrum--previous-input-string))
-                        (let* ((previous-input-string
-                                selectrum--previous-input-string)
-                               (separator
-                                crm-separator)
-                               (full-candidate
-                                (selectrum--get-full candidate))
-                               (crm
-                                (if (and selectrum--current-candidate-index
-                                         (< selectrum--current-candidate-index
-                                            0))
-                                    candidate
-                                  (with-temp-buffer
-                                    (insert previous-input-string)
-                                    (goto-char (point-min))
-                                    (while (re-search-forward
-                                            separator nil t))
-                                    (delete-region (point) (point-max))
-                                    (insert full-candidate)
-                                    (buffer-string)))))
-                          (dolist (cand (split-string crm separator t))
-                            (apply #'run-hook-with-args
-                                   'selectrum-candidate-selected-hook
-                                   (selectrum--get-full cand)
-                                   selectrum--read-args))
-                          crm))
-                       (t
-                        (apply #'run-hook-with-args
-                               'selectrum-candidate-selected-hook
-                               candidate
-                               selectrum--read-args)
-                        (selectrum--get-full candidate))))
+  (let* ((result
+          (cond ((and selectrum--is-crm-session
+                      (string-match crm-separator
+                                    selectrum--previous-input-string))
+                 (let* ((previous-input-string
+                         selectrum--previous-input-string)
+                        (separator
+                         crm-separator)
+                        (full-candidate
+                         (selectrum--get-full candidate))
+                        (crm
+                         (if (or (not selectrum--current-candidate-index)
+                                 (< selectrum--current-candidate-index
+                                    0))
+                             candidate
+                           (with-temp-buffer
+                             (insert previous-input-string)
+                             (goto-char (point-min))
+                             (while (re-search-forward
+                                     separator nil t))
+                             (delete-region (point) (point-max))
+                             (insert full-candidate)
+                             (buffer-string)))))
+                   (dolist (cand (split-string crm separator t))
+                     (apply #'run-hook-with-args
+                            'selectrum-candidate-selected-hook
+                            (selectrum--get-full cand)
+                            selectrum--read-args))
+                   crm))
+                (t
+                 (apply #'run-hook-with-args
+                        'selectrum-candidate-selected-hook
+                        candidate
+                        selectrum--read-args)
+                 (selectrum--get-full candidate))))
          (inhibit-read-only t))
     (erase-buffer)
     (insert (if (string-empty-p result)
