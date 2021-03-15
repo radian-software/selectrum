@@ -51,6 +51,9 @@ packages. Users of `selectrum-prescient` can update to configure
 * When doing `completing-read-multiple`, selecting an additional
   candidate and exiting by pressing `RET` no longer fails when there
   are existing candidates already selected using `TAB` ([#460]).
+* When all candidates were selected in a completing-read-multiple
+  session the return value wasn't correct, which has been fixed
+  ([#495]).
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#304]: https://github.com/raxod502/selectrum/issues/304
@@ -70,6 +73,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#479]: https://github.com/raxod502/selectrum/pull/479
 [#488]: https://github.com/raxod502/selectrum/pull/488
 [#494]: https://github.com/raxod502/selectrum/pull/494
+[#495]: https://github.com/raxod502/selectrum/pull/495
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
