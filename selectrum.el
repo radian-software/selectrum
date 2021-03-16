@@ -2208,15 +2208,15 @@ KEYS is a list of key strings to combine."
   "Select a candidate using `selectrum-quick-keys'."
   (interactive)
   (when-let (index (selectrum--quick-read))
-    (let ((selectrum--current-candidate-index index))
-      (selectrum-select-current-candidate))))
+    (setq-local selectrum--current-candidate-index index)
+    (selectrum-select-current-candidate)))
 
 (defun selectrum-quick-insert ()
   "Insert a candidate using `selectrum-quick-keys'."
   (interactive)
   (when-let (index (selectrum--quick-read))
-    (let ((selectrum--current-candidate-index index))
-      (selectrum-insert-current-candidate))))
+    (setq-local selectrum--current-candidate-index index)
+    (selectrum-insert-current-candidate)))
 
 ;;; Main entry points
 
