@@ -2192,8 +2192,10 @@ KEYS is a list of key strings to combine."
                 (setq str (copy-sequence str))
                 (add-face-text-property 0 (match-end 0)
                                         'selectrum-quick-keys-match nil str))
-              (concat str (substring cand (min (length cand)
-                                               (length str))))))))
+              (concat str (if (eq (car selectrum-display-style) 'vertical)
+                              cand
+                            (substring cand (min (length cand)
+                                                 (length str)))))))))
     (if-let* ((input
                (cl-loop with pressed = 0
                         while (< pressed len)
