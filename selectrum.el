@@ -531,8 +531,10 @@ function and BODY opens the minibuffer."
       #'selectrum-kill-ring-save)
     (define-key map [remap previous-matching-history-element]
       #'selectrum-select-from-history)
-    (define-key map (kbd "C-M-DEL") #'backward-kill-sexp)
-    (define-key map (kbd "C-M-<backspace>") #'backward-kill-sexp)
+    (define-key map [remap backward-kill-sexp]
+      #'selectrum-backward-kill-sexp)
+    (define-key map (kbd "C-M-DEL") #'selectrum-backward-kill-sexp)
+    (define-key map (kbd "C-M-<backspace>") #'selectrum-backward-kill-sexp)
     (define-key map (kbd "C-j") #'selectrum-submit-exact-input)
     (define-key map (kbd "TAB") #'selectrum-insert-current-candidate)
     (define-key map (kbd "M-q") 'selectrum-cycle-display-style)
@@ -1918,6 +1920,17 @@ started from."
   (when selectrum--current-candidate-index
     (setq-local selectrum--current-candidate-index
                 (1- (length selectrum--refined-candidates)))))
+
+(defun selectrum-backward-kill-sexp (&optional arg)
+  "Selectrum wrapper for `backward-kill-sexp'.
+Behavior and ARG are the the same as for `backward-kill-sexp'."
+  (interactive "p")
+  ;; For Selectrum file prompts `backward-kill-sexp' would wrongly
+  ;; include trailing (read only) spaces as part of the input (see
+  ;; `selectrum--minibuffer-local-filename-syntax').
+  (save-restriction
+    (narrow-to-region (minibuffer-prompt-end) (point-max))
+    (backward-kill-sexp arg)))
 
 (defun selectrum-kill-ring-save ()
   "Save current candidate to kill ring.
