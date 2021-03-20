@@ -43,8 +43,12 @@ packages. Users of `selectrum-prescient` can update to configure
 * `selectrum-completion-in-region` does support cycling (as configured
   per `completion-cycle-threshold`) now ([#419], [#456]).
 
-
 ### Bugs fixed
+* When using `backward-kill-sexp` for the last part of inputs in file
+  prompts, you would get an error message and the trailing space of
+  the prompt would get included for the killed text. This got fixed by
+  introducing the `selectrum-backward-kill-sexp` command ([#498],
+  [#499]).
 * When using `marginalia-mode` there would be an arrow in the fringe
   for the currently selected candidate which has been fixed ([#450],
   [#488]).
@@ -74,6 +78,8 @@ packages. Users of `selectrum-prescient` can update to configure
 [#488]: https://github.com/raxod502/selectrum/pull/488
 [#494]: https://github.com/raxod502/selectrum/pull/494
 [#495]: https://github.com/raxod502/selectrum/pull/495
+[#498]: https://github.com/raxod502/selectrum/issues/498
+[#499]: https://github.com/raxod502/selectrum/pull/495
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
