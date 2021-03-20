@@ -1923,7 +1923,7 @@ started from."
 
 (defun selectrum-backward-kill-sexp (&optional arg)
   "Selectrum wrapper for `backward-kill-sexp'.
-Behavior and ARG are the the same as for `backward-kill-sexp'."
+ARG is the same as for `backward-kill-sexp'."
   (interactive "p")
   ;; For Selectrum file prompts `backward-kill-sexp' would wrongly
   ;; include trailing (read only) spaces as part of the input (see
