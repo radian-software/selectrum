@@ -287,29 +287,41 @@ nothing to remove.)"
   "Default value of `selectrum-preprocess-candidates-function'.
 Sort first by history position, then by length and then alphabetically.
 CANDIDATES is a list of strings."
-  (if selectrum-should-sort
-      ;; History disabled if `minibuffer-history-variable' eq `t'.
-      (let* ((list (and (not (eq minibuffer-history-variable t))
-                        (symbol-value minibuffer-history-variable)))
-             (hist (make-hash-table :test #'equal
-                                    :size (length list))))
-        ;; Store the history position first in a hashtable in order to
-        ;; keep the sorting fast and the complexity at O(n*log(n)).
-        (seq-do-indexed (lambda (elem idx)
-                          (unless (gethash elem hist)
-                            (puthash elem idx hist)))
-                        list)
-        (sort candidates
-              (lambda (c1 c2)
-                (let ((h1 (gethash c1 hist most-positive-fixnum))
-                      (h2 (gethash c2 hist most-positive-fixnum))
-                      (l1 (length c1))
-                      (l2 (length c2)))
-                  (or (< h1 h2)
-                      (and (= h1 h2)
-                           (or (< l1 l2)
-                               (and (= l1 l2) (string< c1 c2)))))))))
-    candidates))
+  (when selectrum-should-sort
+    ;; History disabled if `minibuffer-history-variable' eq `t'.
+    (let* ((list (and (not (eq minibuffer-history-variable t))
+                      (symbol-value minibuffer-history-variable)))
+           (hist-len (length list))
+           (hist (make-hash-table :test #'equal
+                                  :size hist-len))
+           (hist-idx 0)
+           (cand candidates))
+      ;; Store the history position first in a hashtable in order to
+      ;; allow O(1) history lookup.
+      (dolist (elem list)
+        (unless (gethash elem hist)
+          (puthash elem hist-idx hist))
+        (cl-incf hist-idx))
+      ;; Decorate each candidate with (hist-idx<<13) + length. This
+      ;; way we sort first by hist-idx and then by length. We assume
+      ;; that the candidates are not longer than 2**13 characters.
+      (while cand
+        (setcar cand (cons (car cand)
+                           (+ (lsh (gethash (car cand) hist hist-len) 13)
+                              (length (car cand)))))
+        (setq cand (cdr cand)))
+      (setq candidates
+            (sort candidates
+                  (lambda (c1 c2)
+                    (or (< (cdr c1) (cdr c2))
+                        (and (= (cdr c1) (cdr c2))
+                             (string< (car c1) (car c2))))))
+            cand candidates)
+      ;; Drop decoration from the candidates
+      (while cand
+        (setcar cand (caar cand))
+        (setq cand (cdr cand)))))
+  candidates)
 
 (defcustom selectrum-completion-in-region-styles
   '(basic partial-completion emacs22)
