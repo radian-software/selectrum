@@ -102,23 +102,34 @@ To enable Selectrum, simply add to your init-file:
 (selectrum-mode +1)
 ```
 
-Now all completion commands will automatically use Selectrum. The
-default filtering function uses `completion-styles` which only provide
-a few simple filtering methods. You can make use of the built-in
-`substring` and `flex` style which are more advanced but it is
-recommended to use packages which improve this further.
+Now all completion commands will automatically use Selectrum.
 
-Generally Selectrum doesn't integrate features you might be used to
-from bigger completion frameworks. Instead the focus is on providing
-an enhanced completion UI and compose with [other
+The focus of Selectrum is on providing an enhanced completion UI and
+compose with [other
 packages](https://github.com/raxod502/selectrum#complementary-extensions)
-which also stay within the constraints of the standard Emacs API.
+which stay within the constraints of the standard Emacs API. Because
+of the modular approach there are several possible package
+combinations. Many tips and setup help for integration with other
+packages can be found in our
+[wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
 
-Because of the composable and modular approach there are several
-possible package combinations. Most important for completions are
-filtering and sorting which can both be improved by installing the
+The default sorting method of Selectrum is simple and predictable. The
+candidates are first sorted by their history position, then by length
+and then alphabetically.
+
+The default filtering of Selectrum uses the Emacs `completion-styles`.
+The default setting of the `completion-styles` variable is rather
+"basic" and you may want to adjust this variable for more advanced
+filtering. See for example the built-in `substring` and `flex` styles.
+Instead of using the built-in completion styles we recommended to use
+additional packages. Here we highlight two possible approaches for
+more advanced filtering and sorting: 1. Prescient and 2. Orderless.
+
+##### Alternative 1: Prescient
+
+Filtering and sorting can both be improved by installing the
 `selectrum-prescient` package from MELPA and adding the following to
-your init-file:
+your init-file.
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -129,22 +140,43 @@ your init-file:
 (prescient-persist-mode +1)
 ```
 
-Another popular choice is to combine the sorting abilities of
-[`prescient.el`](https://github.com/raxod502/prescient.el) with the
-filtering of [`orderless`](https://github.com/oantolin/orderless):
+* Your most recent choices are saved, and those are sorted first.
+  After that, your most frequent choices are saved, and those are
+  sorted next. The rest of the candidates are sorted by length. This
+  algorithm turns out to do very well in practice while being fast and
+  not very magical.
+* Your input is split on spaces into subqueries, each of which must
+  match as either a substring, a regexp, or an initialism (e.g. `ffap`
+  matches `find-file-at-point`) in order for a candidate to be
+  included. Again, this algorithm isn't optimal, but it does very well
+  in practice given its simplicity and speed.
+* The part of each candidate that matched your input is highlighted,
+  with the initials of an initialism highlighted in a second color.
+
+##### Alternative 2: Orderless
+
+Another popular choice for filtering is to use the flexible
+[`orderless`](https://github.com/oantolin/orderless) completion style.
 
 ```elisp
-(setq selectrum-prescient-enable-filtering nil)
-(selectrum-prescient-mode +1)
-
 (setq completion-styles '(orderless))
+
+;; Optional performance optimization
+;; by highlighting only the visible candidates.
 (setq orderless-skip-highlighting (lambda () selectrum-is-active))
 (setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
 ```
 
-For more tips and setup help for integration with other packages see
-our
-[wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
+The candidates are sorted using the default sorting method of
+Selectrum. Afterwards they are filtered and highlighted using the
+`completion-styles`, in this case `orderless`. On top of Orderless, it
+is also possible to use Prescient *only for sorting* by adding:
+
+```elisp
+(setq selectrum-prescient-enable-filtering nil)
+(selectrum-prescient-mode +1)
+(prescient-persist-mode +1)
+```
 
 ## User guide
 
@@ -228,38 +260,21 @@ editing bindings. So, for example:
 
 ### Sorting and filtering
 
-The default sorting and filtering in Selectrum is quite simple. First
-candidates are sorted by history position, then by length and then
-alphabetically. Afterwards they are filtered and highlighted using the
-`completion-styles`. This default behavior is intended as a lowest
-common denominator that will definitely work.
+The default sorting and filtering in Selectrum is quite simple and
+predictable. The method is similar to the one employed by Icomplete.
+Candidates are sorted first by history position, then by length and
+then alphabetically. Afterwards they are filtered and highlighted
+using the `completion-styles`. This default behavior is intended as a
+lowest common denominator that will definitely work.
 
-However, it is strongly recommended that you customize
-`completion-styles` using
-[orderless](https://github.com/oantolin/orderless) or set up
-[`prescient.el`](https://github.com/raxod502/prescient.el) in order to
-get more intelligent sorting and filtering. (See the "getting started"
-section for how to do this.) With `prescient.el`:
+It is strongly recommended that you customize `completion-styles`
+using Orderless or install Prescient as described before. It is also
+possible to supply your own sorting, filtering, and highlighting logic
+if you would like. For that, see the developer guide later in this
+documentation.
 
-* Your most recent choices are saved, and those are sorted first.
-  After that, your most frequent choices are saved, and those are
-  sorted next. The rest of the candidates are sorted by length. This
-  algorithm turns out to do very well in practice while being fast and
-  not very magical.
-* Your input is split on spaces into subqueries, each of which must
-  match as either a substring, a regexp, or an initialism (e.g. `ffap`
-  matches `find-file-at-point`) in order for a candidate to be
-  included. Again, this algorithm isn't optimal, but it does very well
-  in practice given its simplicity and speed.
-* The part of each candidate that matched your input is highlighted,
-  with the initials of an initialism highlighted in a second color.
-
-It is also possible to supply your own sorting, filtering, and
-highlighting logic if you would like. For that, see the developer
-guide later in this documentation.
-
-Selectrum adds two special features on top of whatever sorting and
-filtering is selected:
+Independent of the sorting and filtering method, Selectrum adds two
+special features on top:
 
 * If your input matches one of the candidates exactly, then that
   candidate is unconditionally sorted first. (So, if you type in
@@ -377,7 +392,10 @@ following additional packages:
   for Selectrum and Icomplete or more generally any completion system
   based on `completing-read`.
 
-* As an alternative filtering method to `prescient.el`, there is
+* For filtering and sorting there is
+  [Prescient](https://github.com/raxod502/prescient.el).
+
+* As an alternative filtering method, there is
   [orderless](https://github.com/oantolin/orderless). It supports many
   different matching styles and integrates with `completion-styles`.
 
@@ -698,19 +716,6 @@ Selectrum does not support features which break the `completing-read`
 API and works with *every* Emacs command with approximately no special
 cases, specifically because it focuses on doing the common case as
 well as possible.
-
-As a final note, when you're using `selectrum-prescient.el`, there's
-an easy way to simulate Ivy's alternate actions. Suppose you've typed
-`M-x` and found the command you want, but now you realize you want to
-look up the documentation instead. Press `TAB` to insert the
-candidate, which has the side effect of placing it at the top of the
-recency table in `prescient.el`. Then `C-g` out of Selectrum and type
-`C-h f`. The same command will automatically be at the top of the
-list, so you can get the documentation just by pressing `RET`. I
-believe that this sort of idea can be extended to get all of the
-utility out of these extra features without actually implementing
-explicit support for them (with all of the attendant complexity and
-bugs).
 
 ### Icomplete
 
