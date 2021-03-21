@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog].
   title formatting is controlled by the customization variable
   `selectrum-group-format` and the faces `selectrum-group-separator`
   and `selectrum-group-title` ([#458], [#463]).
+* `selectrum-default-candidates-preprocess-function` sorts according
+  to the history now, such that recently used candidates appear first
+  ([#500]).
 
 ### Deprecated
 The faces `selectrum-primary-highlight` and
@@ -79,7 +82,8 @@ packages. Users of `selectrum-prescient` can update to configure
 [#494]: https://github.com/raxod502/selectrum/pull/494
 [#495]: https://github.com/raxod502/selectrum/pull/495
 [#498]: https://github.com/raxod502/selectrum/issues/498
-[#499]: https://github.com/raxod502/selectrum/pull/495
+[#499]: https://github.com/raxod502/selectrum/pull/499
+[#500]: https://github.com/raxod502/selectrum/pull/500
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated

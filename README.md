@@ -228,10 +228,11 @@ editing bindings. So, for example:
 
 ### Sorting and filtering
 
-The default sorting and filtering in Selectrum is quite primitive.
-First candidates are sorted alphabetically, and then they are filtered
-and highlighted using `completion-styles`. This default behavior is
-intended as a lowest common denominator that will definitely work.
+The default sorting and filtering in Selectrum is quite simple. First
+candidates are sorted by history position, then by length and then
+alphabetically. Afterwards they are filtered and highlighted using the
+`completion-styles`. This default behavior is intended as a lowest
+common denominator that will definitely work.
 
 However, it is strongly recommended that you customize
 `completion-styles` using

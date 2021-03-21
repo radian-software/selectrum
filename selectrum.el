@@ -285,17 +285,31 @@ nothing to remove.)"
 
 (defun selectrum-default-candidate-preprocess-function (candidates)
   "Default value of `selectrum-preprocess-candidates-function'.
-Sort first by length and then alphabetically. CANDIDATES is a
-list of strings."
+Sort first by history position, then by length and then alphabetically.
+CANDIDATES is a list of strings."
   (if selectrum-should-sort
-      (sort candidates
-            (lambda (c1 c2)
-              (or (< (length c1)
-                     (length c2))
-                  (and (= (length c1)
-                          (length c2))
-                       (string-lessp c1 c2)))))
-    candidates))
+      ;; History disabled if `minibuffer-history-variable' eq `t'.
+      (let* ((list (and (not (eq minibuffer-history-variable t))
+                        (symbol-value minibuffer-history-variable)))
+             (hist (make-hash-table :test #'equal
+                                    :size (length list))))
+        ;; Store the history position first in a hashtable in order to
+        ;; keep the sorting fast and the complexity at O(n*log(n)).
+        (seq-do-indexed (lambda (elem idx)
+                          (unless (gethash elem hist)
+                            (puthash elem idx hist)))
+                        list)
+        (sort candidates
+              (lambda (c1 c2)
+                (let ((h1 (gethash c1 hist most-positive-fixnum))
+                      (h2 (gethash c2 hist most-positive-fixnum))
+                      (l1 (length c1))
+                      (l2 (length c2)))
+                (or (< h1 h2)
+                    (and (= h1 h2)
+                         (or (< l1 l2)
+                             (and (= l1 l2) (string< c1 c2)))))))))
+  candidates))
 
 (defcustom selectrum-completion-in-region-styles
   '(basic partial-completion emacs22)
