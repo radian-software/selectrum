@@ -305,11 +305,11 @@ CANDIDATES is a list of strings."
                       (h2 (gethash c2 hist most-positive-fixnum))
                       (l1 (length c1))
                       (l2 (length c2)))
-                (or (< h1 h2)
-                    (and (= h1 h2)
-                         (or (< l1 l2)
-                             (and (= l1 l2) (string< c1 c2)))))))))
-  candidates))
+                  (or (< h1 h2)
+                      (and (= h1 h2)
+                           (or (< l1 l2)
+                               (and (= l1 l2) (string< c1 c2)))))))))
+    candidates))
 
 (defcustom selectrum-completion-in-region-styles
   '(basic partial-completion emacs22)
