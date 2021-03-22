@@ -47,6 +47,13 @@ packages. Users of `selectrum-prescient` can update to configure
   per `completion-cycle-threshold`) now ([#419], [#456]).
 
 ### Bugs fixed
+* When completion functions would pass a list as default value,
+  `minibuffer-default` would be set to the first candidate of the
+  list. This has been fixed by also setting it to a list for these
+  cases to match the expected default behavior. Commands like
+  `next-history-element` which use
+  `minibuffer-default-add-completions` by default now act like with
+  default completion ([#314], [#506]).
 * When using `backward-kill-sexp` for the last part of inputs in file
   prompts, you would get an error message and the trailing space of
   the prompt would get included for the killed text. This got fixed by
@@ -65,6 +72,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#304]: https://github.com/raxod502/selectrum/issues/304
 [#313]: https://github.com/raxod502/selectrum/issues/313
+[#314]: https://github.com/raxod502/selectrum/issues/314
 [#419]: https://github.com/raxod502/selectrum/issues/419
 [#450]: https://github.com/raxod502/selectrum/issues/450
 [#454]: https://github.com/raxod502/selectrum/issues/454
@@ -84,6 +92,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#498]: https://github.com/raxod502/selectrum/issues/498
 [#499]: https://github.com/raxod502/selectrum/pull/499
 [#500]: https://github.com/raxod502/selectrum/pull/500
+[#506]: https://github.com/raxod502/selectrum/pull/506
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
