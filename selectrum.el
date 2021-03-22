@@ -2444,7 +2444,7 @@ the prompt."
        (selectrum--read
         prompt
         candidates
-        :require-match require-match
+        :require-match (eq require-match t)
         :initial-input initial-input
         :history hist
         :default-candidate def
