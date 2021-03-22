@@ -147,6 +147,11 @@ parts of the input."
   "Face used to display docsigs of completion tables."
   :group 'selectrum-faces)
 
+(defface selectrum-mouse-highlight
+  '((t :inherit selectrum-current-candidate :underline t))
+  "Face used for candidates during mouse hovering."
+  :group 'selectrum-faces)
+
 ;;; User options
 
 (defgroup selectrum nil
@@ -1814,7 +1819,7 @@ which is displayed in the UI."
     (add-text-properties
      0 (length displayed-candidate)
      (list
-      'mouse-face 'highlight
+      'mouse-face 'selectrum-mouse-highlight
       'keymap
       (let ((keymap (make-sparse-keymap)))
         (define-key keymap [mouse-1]
