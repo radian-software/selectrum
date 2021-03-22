@@ -1847,9 +1847,9 @@ which is displayed in the UI."
 
 (defun selectrum--setup (candidates default buf)
   "Set up minibuffer for interactive candidate selection.
-CANDIDATES is the list of candidate strings. DEFAULT is the default
-value which can be overridden and BUF the buffer the session was
-started from."
+CANDIDATES is the list of candidate strings. DEFAULT is the
+default value, see `minibuffer-default'. BUF is the buffer the
+session was started from."
   (setq-local selectrum--last-buffer buf)
   (cond (selectrum--repeat
          (delete-minibuffer-contents)
@@ -1882,10 +1882,11 @@ started from."
       (selectrum--preprocess candidates)
     (setq-local selectrum--preprocessed-candidates nil)
     (setq-local selectrum--dynamic-candidates-function candidates))
-  (setq-local selectrum--default-candidate
-              (if (and default (symbolp default))
-                  (symbol-name default)
-                default))
+  (let ((default (or (car-safe default) default)))
+    (setq-local selectrum--default-candidate
+                (if (and default (symbolp default))
+                    (symbol-name default)
+                  default)))
   (setq-default selectrum--default-candidate
                 selectrum--default-candidate)
   ;; Make sure to trigger an "user input changed" event, so that
@@ -2287,7 +2288,9 @@ PROMPT should generally end in a colon and space. Additional
 keyword ARGS are accepted.
 
 DEFAULT-CANDIDATE, if provided, is sorted first in the list if
-it's present.
+it's present. If can be a symbol, a string, or a list of those.
+In case of a list the first candidate of the list gets sorted
+first.
 
 INITIAL-INPUT, if provided, is inserted into the user input area
 initially (with point at the end).
@@ -2347,9 +2350,7 @@ semantics of `cl-defun'."
                              (setq-local selectrum-move-default-candidate nil))
                            (selectrum--setup
                             candidates
-                            (or (car-safe minibuffer-default)
-                                minibuffer-default
-                                default-candidate)
+                            (or minibuffer-default default-candidate)
                             buf)))
               (read-from-minibuffer
                prompt initial-input selectrum-minibuffer-map nil
@@ -2379,7 +2380,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
   (selectrum--read
    prompt nil
    :initial-input initial-input
-   :default-candidate (or (car-safe def) def)
+   :default-candidate def
    :require-match (eq require-match t)
    :history hist
    :may-modify-candidates t
@@ -2761,7 +2762,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                     selectrum--minibuffer-local-filename-syntax)))
       (selectrum--read
        prompt coll
-       :default-candidate (or (car-safe def) def)
+       :default-candidate def
        :initial-input (or (car-safe initial-input) initial-input)
        :history hist
        :require-match (eq require-match t)
