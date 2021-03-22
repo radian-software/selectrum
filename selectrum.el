@@ -729,6 +729,12 @@ has been deprecated.")
 
 ;;;; Minibuffer state utility functions
 
+(defun selectrum--match-strictly-required-p ()
+  "Return non-nil if a match is strictly required."
+  (and selectrum--match-is-required
+       (not (memq selectrum--match-is-required
+                  '(confirm confirm-after-completion)))))
+
 (defun selectrum--normalize-collection (collection &optional predicate)
   "Normalize COLLECTION into a list of strings.
 COLLECTION may be a list of strings or symbols or cons cells, an
@@ -1313,7 +1319,7 @@ the update."
               (1- (length selectrum--refined-candidates)))))
    ;; If there are no candidates the prompt should be selected.
    ((null selectrum--refined-candidates)
-    (when (or (not selectrum--match-is-required)
+    (when (or (not (selectrum--match-strictly-required-p))
               (selectrum--at-existing-prompt-path-p))
       -1))
    (keep-selected
@@ -1344,7 +1350,7 @@ the update."
               (memq this-command
                     '(next-history-element
                       previous-history-element)))
-          (or (not selectrum--match-is-required)
+          (or (not (selectrum--match-strictly-required-p))
               (selectrum--at-existing-prompt-path-p))))
     -1)
    ;; Select first candidate if the first candidate is known to be the
@@ -1372,7 +1378,7 @@ part of the candidate set."
              (or
               (and selectrum--current-candidate-index
                    (< selectrum--current-candidate-index 0))
-              (and (not selectrum--match-is-required)
+              (and (not (selectrum--match-strictly-required-p))
                    (not selectrum--refined-candidates))
               (and selectrum--default-candidate
                    (not minibuffer-completing-file-name)
@@ -1910,7 +1916,7 @@ session was started from."
     (setq selectrum--current-candidate-index
           (selectrum--clamp
            (+ selectrum--current-candidate-index (or arg 1))
-           (if (and selectrum--match-is-required
+           (if (and (selectrum--match-strictly-required-p)
                     (cond (minibuffer-completing-file-name
                            (not (selectrum--at-existing-prompt-path-p)))
                           (t
@@ -2039,19 +2045,29 @@ indices."
   (unless selectrum-is-active
     (user-error "Cannot select a candidate when Selectrum is not active"))
   (with-selected-window (active-minibuffer-window)
-    (let ((index (selectrum--index-for-arg arg)))
-      (if (or (not selectrum--match-is-required)
-              (string-empty-p
-               selectrum--virtual-input)
-              (and index (>= index 0))
-              (if minibuffer-completing-file-name
-                  (selectrum--at-existing-prompt-path-p)
-                (member (minibuffer-contents)
-                        selectrum--refined-candidates)))
-          (selectrum--exit-with
-           (selectrum--get-candidate index))
-        (minibuffer-message
-         (propertize "Match required" 'face 'minibuffer-prompt))))))
+    (let* ((index (selectrum--index-for-arg arg))
+           (valid-prompt-selection
+            (and index (< index 0)
+                 (or (string-empty-p selectrum--virtual-input)
+                     (if minibuffer-completing-file-name
+                         (selectrum--at-existing-prompt-path-p)
+                       (member (minibuffer-contents)
+                               selectrum--refined-candidates))))))
+      (cond ((and index (< index 0)
+                  (not valid-prompt-selection)
+                  (memq selectrum--match-is-required
+                        '(confirm confirm-after-completion))
+                  (not (eq last-command this-command)))
+             (minibuffer-message
+              (propertize "Confirm" 'face 'minibuffer-prompt)))
+            ((or (not (selectrum--match-strictly-required-p))
+                 valid-prompt-selection
+                 (and index (>= index 0)))
+             (selectrum--exit-with
+              (selectrum--get-candidate index)))
+            (t
+             (minibuffer-message
+              (propertize "Match required" 'face 'minibuffer-prompt)))))))
 
 (defun selectrum-submit-exact-input ()
   "Exit minibuffer, using the current user input.
@@ -2163,7 +2179,7 @@ history item and exit use `selectrum-select-current-candidate'."
             (delete-minibuffer-contents)
             (insert result)
             (selectrum--reset-minibuffer-history-state))
-        (if (and selectrum--match-is-required
+        (if (and (selectrum--match-strictly-required-p)
                  (not (member result selectrum--refined-candidates)))
             (user-error "That history element is not one of the candidates")
           (selectrum--exit-with result))))))
@@ -2295,9 +2311,10 @@ first.
 INITIAL-INPUT, if provided, is inserted into the user input area
 initially (with point at the end).
 
-REQUIRE-MATCH, if non-nil, means the user must select one of the
-listed candidates (so, for example,
-\\[selectrum-submit-exact-input] has no effect).
+REQUIRE-MATCH, if `confirm' or `confirm-after-completion' the
+user needs to confirm the input if it isn't a member of the
+candidates. Any other non-nil value won't let the user exit in
+this case.
 
 HISTORY is the `minibuffer-history-variable' to use (by default
 `minibuffer-history').
@@ -2381,7 +2398,7 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    prompt nil
    :initial-input initial-input
    :default-candidate def
-   :require-match (eq require-match t)
+   :require-match require-match
    :history hist
    :may-modify-candidates t
    :minibuffer-completion-table collection
@@ -2444,7 +2461,7 @@ the prompt."
        (selectrum--read
         prompt
         candidates
-        :require-match (eq require-match t)
+        :require-match require-match
         :initial-input initial-input
         :history hist
         :default-candidate def
@@ -2581,7 +2598,7 @@ PREDICATE, see `read-buffer'."
       (selectrum--read
        prompt candidates
        :default-candidate def
-       :require-match (eq require-match t)
+       :require-match require-match
        :history 'buffer-name-history
        :may-modify-candidates t
        :minibuffer-completion-table #'internal-complete-buffer
@@ -2765,7 +2782,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
        :default-candidate def
        :initial-input (or (car-safe initial-input) initial-input)
        :history hist
-       :require-match (eq require-match t)
+       :require-match require-match
        :may-modify-candidates t
        :minibuffer-completion-table collection
        :minibuffer-completion-predicate predicate))))
