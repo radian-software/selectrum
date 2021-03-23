@@ -17,6 +17,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 - [What is it?](#what-is-it)
 - [Installation](#installation)
 - [Usage](#usage)
+      - [Alternative 1: Prescient](#alternative-1-prescient)
+      - [Alternative 2: Orderless](#alternative-2-orderless)
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
@@ -613,6 +615,14 @@ Technical points:
   [#425](https://github.com/raxod502/selectrum/issues/425). To work
   around this specific case you can configure the consult option
   `consult-fontify-preserve`.
+* There are a few standard features which aren't implemented in
+  Selectrum, yet. We collect those in
+  ([#481](https://github.com/raxod502/selectrum/issues/481)), most
+  notable ones are:
+  * We don't make use of `completion-boundaries`
+    ([#448](https://github.com/raxod502/selectrum/issues/448)).
+  * Dynamic table support is incomplete
+    ([#114](https://github.com/raxod502/selectrum/issues/114)).
 
 ## Selectrum in comparison to other completion-systems
 
@@ -663,57 +673,43 @@ using software that I have some hope of understanding, which ideally
 means that they don't provide a hugely complex array of features of
 which I only use one or two.
 
-There is also the problem that Helm is [no longer
-maintained](https://github.com/emacs-helm/helm/issues/2386).
-
 See [#203](https://github.com/raxod502/selectrum/issues/203).
 
 ### Ivy
 
-[Ivy](https://github.com/abo-abo/swiper#ivy) is the most promising
-alternative to Selectrum, and it's what I used before developing
-Selectrum. It is marketed as a minimal alternative to Helm which
-provides a simpler interface. The problem with Ivy is that its
-architecture and API have grown organically, and as a result the
-implementation is complex and error prone. Ivy was originally designed
-to be used as a backend to
-[Swiper](https://github.com/abo-abo/swiper#swiper), a buffer search
-package that originally used Helm. When Ivy became a more
-general-purpose interactive selection package, more and more special
-cases were added to try to make various commands work properly, and as
-a result the consistency and correctness of the core functionality
-have suffered. As a result, the `ivy-read` API has around 20 arguments
-and a heap of undocumented special cases for particular values.
-Numerous functions in Ivy,
+[Ivy](https://github.com/abo-abo/swiper#ivy) is a promising
+alternative to Selectrum. It is described as a minimal alternative to
+Helm which provides a simpler interface. The problem with Ivy is that
+its architecture and API have grown organically, and as a result the
+implementation is complex. Ivy was originally designed to be used as a
+backend to [Swiper](https://github.com/abo-abo/swiper#swiper), a
+buffer search package that originally used Helm. When Ivy became a
+more general-purpose interactive selection package, more and more
+special cases were added to try to make various commands work
+properly. As a result, the `ivy-read` API is complex with around 20
+arguments and multiple special cases for particular values. Numerous
+functions in Ivy,
 [Counsel](https://github.com/abo-abo/swiper#counsel), and Swiper have
 special cases hardcoded into them to detect when they're being called
-from specific other functions in the other two packages. As a result
-of all this, Ivy is prone to edge-case bugs.
+from specific other functions in the other two packages.
 
-Fundamentally, selecting an item from a list *is not a complicated
-problem*, and it *does not require a complicated solution*. For
-comparison, Selectrum is around 2,000 lines of code while Ivy is
-around 5,000 lines of code. The full Ivy ecosystem composed of
-tightly-coupled components Ivy, Swiper and Counsel is around 13,000
-lines of code.
+The main differences between Selectrum and Ivy are:
 
-Selectrum achieves more conciseness by:
-
-* working with the existing Emacs APIs for completion, rather than
-  replacing all of them and then reimplementing every Emacs command
-  that uses them (incidentally, this also reduces the number of bugs
-  and inconsistencies)
-* preferring simplicity and consistency over the "best" possible UX
-  for each individual command (which also makes it easier to
-  understand what Selectrum is doing and work around the sharp
-  corners)
-* designing the best possible interface for candidate selection from
-  the ground up, rather than repurposing an API that was used for
-  something else and then just sticking new things onto it every time
-  a bug appears
+* The Selectrum code base is simpler and more concise, since Selectrum
+  provides a more restricted feature set.
+* Selectrum focuses on the standard completion API offered by Emacs
+  and tries to provide the best possible UI for this API. In contrast,
+  Ivy deviates from this API and invents its own API with extra
+  features, sacrificing reuse and composability down the road.
+* The packages centered around the `completing-read` API are more
+  composable, interchangable and modular. Since Selectrum does not offer
+  a public completion API, the decoupling of the components is enforced.
+* By focusing on a single API, the components can be tested against
+  different implementations, e.g., Selectrum, Icomplete or default
+  completion, which improves consistency and helps with correctness.
 
 Selectrum does not support features which break the `completing-read`
-API and works with *every* Emacs command with approximately no special
+API and works with *every* Emacs command with essentially no special
 cases, specifically because it focuses on doing the common case as
 well as possible.
 
@@ -751,14 +747,12 @@ It is worth noting the new [Fido
 mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
 which will be included in Emacs 27. It is basically a variation of
 Icomplete that behaves more like Ido. As such, Fido mode does not
-offer solutions to the problems outlined in the above sections.
+offer solutions to the problems outlined in the above sections.        
 
-To be transparent, there are a few standard Emacs features which are
-not implemented in Selectrum (mostly because I was unaware they
-existed) but which do work in Icomplete: for example, many of the
-`completion-*` user options such as `completion-ignore-case`. I do not
-see any design reason these features cannot all be incorporated into
-Selectrum eventually.
+On the upside, Icomplete is the most API compliant enhanced completion
+UI available. Selectrum also covers the most important aspects of the
+API and strives to achieve full compliance, as well. For the few edge
+cases left, see the Caveats section.
 
 ### Icicles
 

@@ -49,6 +49,11 @@ packages. Users of `selectrum-prescient` can update to configure
   per `completion-cycle-threshold`) now ([#419], [#456]).
 
 ### Bugs fixed
+* Selectrum does now handle the different values of the
+  `require-match` argument which gets passed to the various completion
+  functions. The values `confirm` and `confirm-after-completion` now
+  have an additional confirmation step as in the default UI ([#429],
+  [#510]).
 * When completion functions would pass a list as default value,
   `minibuffer-default` would be set to the first candidate of the
   list. This has been fixed by also setting it to a list for these
@@ -76,6 +81,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#313]: https://github.com/raxod502/selectrum/issues/313
 [#314]: https://github.com/raxod502/selectrum/issues/314
 [#419]: https://github.com/raxod502/selectrum/issues/419
+[#429]: https://github.com/raxod502/selectrum/issues/429
 [#450]: https://github.com/raxod502/selectrum/issues/450
 [#454]: https://github.com/raxod502/selectrum/issues/454
 [#455]: https://github.com/raxod502/selectrum/pull/455
@@ -96,6 +102,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#500]: https://github.com/raxod502/selectrum/pull/500
 [#506]: https://github.com/raxod502/selectrum/pull/506
 [#507]: https://github.com/raxod502/selectrum/pull/507
+[#510]: https://github.com/raxod502/selectrum/pull/510
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
