@@ -27,7 +27,7 @@ The format is based on [Keep a Changelog].
   to the history now, such that recently used candidates appear first
   ([#500]).
 * The face that is used when the mouse hovers over candidates can now
-  be customized through `selectrum-mouse-highlight`.
+  be customized through `selectrum-mouse-highlight` ([#507]).
 
 ### Deprecated
 The faces `selectrum-primary-highlight` and
@@ -95,6 +95,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#499]: https://github.com/raxod502/selectrum/pull/499
 [#500]: https://github.com/raxod502/selectrum/pull/500
 [#506]: https://github.com/raxod502/selectrum/pull/506
+[#507]: https://github.com/raxod502/selectrum/pull/507
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
