@@ -2226,8 +2226,7 @@ KEYS is a list of key strings to combine."
          (read-char (lambda ()
                       (let ((char nil))
                         (unwind-protect
-                            (when (characterp (setq char (read-char)))
-                              char)
+                            (setq char (read-char))
                           (when (or (eq ?\C-g char)
                                     (not (characterp char)))
                             (let ((selectrum--quick-fun nil))
@@ -2249,23 +2248,27 @@ KEYS is a list of key strings to combine."
                         while (< pressed len)
                         do (selectrum--update)
                         for char = (funcall read-char)
-                        for key = (when char
-                                    (char-to-string char))
+                        if (not (characterp char))
+                        return (key-binding (vector char))
+                        for key = (char-to-string char)
                         if (and (not (zerop pressed))
                                 (equal char ?\C-?))
                         do (setq pressed (1- pressed)
                                  input (substring
                                         input 0 (1- (length input))))
                         else if (not (member key qkeys))
-                        return nil
+                        return key
                         else
                         do (setq pressed (1+ pressed)
                                  input (concat input key))
                         finally return input))
-              (pos (cl-position input keys :test #'string=)))
+              (pos (and (stringp input)
+                        (cl-position input keys :test #'string=))))
         (+ selectrum--first-index-displayed pos)
       (prog1 nil
-        (message "No matching key")))))
+        (unless (memq input '(selectrum-quick-select
+                              selectrum-quick-insert))
+          (message "No matching key: %S" input))))))
 
 (defun selectrum-quick-select ()
   "Select a candidate using `selectrum-quick-keys'."
