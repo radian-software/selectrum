@@ -17,6 +17,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 - [What is it?](#what-is-it)
 - [Installation](#installation)
 - [Usage](#usage)
+      - [Alternative 1: Prescient](#alternative-1-prescient)
+      - [Alternative 2: Orderless](#alternative-2-orderless)
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
@@ -613,6 +615,14 @@ Technical points:
   [#425](https://github.com/raxod502/selectrum/issues/425). To work
   around this specific case you can configure the consult option
   `consult-fontify-preserve`.
+* There are a few standard features which aren't implemented in
+  Selectrum, yet. We collect those in
+  ([#481](https://github.com/raxod502/selectrum/issues/481)), most
+  notable ones are:
+  * We don't make use of `completion-boundaries`
+    ([#448](https://github.com/raxod502/selectrum/issues/448)).
+  * Dynamic table support is incomplete
+    ([#114](https://github.com/raxod502/selectrum/issues/114)).
 
 ## Selectrum in comparison to other completion-systems
 
@@ -737,14 +747,12 @@ It is worth noting the new [Fido
 mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
 which will be included in Emacs 27. It is basically a variation of
 Icomplete that behaves more like Ido. As such, Fido mode does not
-offer solutions to the problems outlined in the above sections.
+offer solutions to the problems outlined in the above sections.        
 
-To be transparent, there are a few standard Emacs features which are
-not implemented in Selectrum (mostly because I was unaware they
-existed) but which do work in Icomplete: for example, some of the
-special `completion-*` user options such as
-`completion-ignored-extensions`. I do not see any design reason these
-features cannot all be incorporated into Selectrum eventually.
+On the upside, Icomplete is the most API compliant enhanced completion
+UI available. Selectrum also covers the most important aspects of the
+API and strives to achieve full compliance, as well. For the few edge
+cases left, see the Caveats section.
 
 ### Icicles
 
