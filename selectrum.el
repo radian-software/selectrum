@@ -2249,7 +2249,7 @@ KEYS is a list of key strings to combine."
                         do (selectrum--update)
                         for char = (funcall read-char)
                         if (not (characterp char))
-                        return (key-binding (vector char))
+                        return (vector char)
                         for key = (char-to-string char)
                         if (and (not (zerop pressed))
                                 (equal char ?\C-?))
@@ -2266,9 +2266,11 @@ KEYS is a list of key strings to combine."
                         (cl-position input keys :test #'string=))))
         (+ selectrum--first-index-displayed pos)
       (prog1 nil
-        (unless (memq input '(selectrum-quick-select
-                              selectrum-quick-insert))
-          (message "No matching key: %S" input))))))
+        (unless (and (vectorp input)
+                     (memq (key-binding input)
+                           '(selectrum-quick-select
+                             selectrum-quick-insert)))
+          (message "No matching key: %S" (key-description input)))))))
 
 (defun selectrum-quick-select ()
   "Select a candidate using `selectrum-quick-keys'."
