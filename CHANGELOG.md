@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog].
 * `selectrum-default-candidates-preprocess-function` sorts according
   to the history now, such that recently used candidates appear first
   ([#500]).
+* The face that is used when the mouse hovers over candidates can now
+  be customized through `selectrum-mouse-highlight`.
 
 ### Deprecated
 The faces `selectrum-primary-highlight` and
@@ -45,8 +47,6 @@ packages. Users of `selectrum-prescient` can update to configure
   deriving from `comint-mode` ([#459], [#462]).
 * `selectrum-completion-in-region` does support cycling (as configured
   per `completion-cycle-threshold`) now ([#419], [#456]).
-* The face that is used when the mouse hovers over candidates can now
-  be customized through `selectrum-mouse-highlight`.
 
 ### Bugs fixed
 * When completion functions would pass a list as default value,
