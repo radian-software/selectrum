@@ -2223,14 +2223,6 @@ KEYS is a list of key strings to combine."
          (len (ceiling (log needed nkeys)))
          (keys (seq-take (selectrum--quick-keys len qkeys) needed))
          (input nil)
-         (read-char (lambda ()
-                      (let ((char nil))
-                        (unwind-protect
-                            (setq char (read-char))
-                          (when (or (eq ?\C-g char)
-                                    (not (characterp char)))
-                            (let ((selectrum--quick-fun nil))
-                              (selectrum--update)))))))
          (selectrum--quick-fun
           (lambda (i cand)
             (let ((str (propertize (or (nth i keys) "")
@@ -2247,12 +2239,14 @@ KEYS is a list of key strings to combine."
                (cl-loop with pressed = 0
                         while (< pressed len)
                         do (selectrum--update)
-                        for char = (funcall read-char)
-                        if (not (characterp char))
-                        return (vector char)
-                        for key = (char-to-string char)
+                        for ev = (unwind-protect (read-key)
+                                   (let ((selectrum--quick-fun nil))
+                                     (selectrum--update)))
+                        if (not (characterp ev))
+                        return (vector ev)
+                        for key = (char-to-string ev)
                         if (and (not (zerop pressed))
-                                (equal char ?\C-?))
+                                (equal ev ?\C-?))
                         do (setq pressed (1- pressed)
                                  input (substring
                                         input 0 (1- (length input))))
@@ -2270,7 +2264,12 @@ KEYS is a list of key strings to combine."
                      (memq (key-binding input)
                            '(selectrum-quick-select
                              selectrum-quick-insert)))
-          (message "No matching key: %S" (key-description input)))))))
+          (let* ((desc (key-description input))
+                 (msg (if (equal "C-g" desc)
+                          "Quit"
+                        (format "No matching key: %S" desc))))
+            (minibuffer-message
+             (propertize msg 'face 'minibuffer-prompt))))))))
 
 (defun selectrum-quick-select ()
   "Select a candidate using `selectrum-quick-keys'."
