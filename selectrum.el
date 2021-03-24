@@ -907,6 +907,7 @@ Window will be created by `selectrum-display-action'."
                    (setq buffer-undo-list t)
                    (setq buffer-read-only t)
                    (setq show-trailing-whitespace nil)
+                   (selectrum-candidate-mode)
                    (goto-char (point-min))
                    (current-buffer))))
         (action selectrum-display-action))
@@ -3029,6 +3030,20 @@ ARGS are standard as in all `:around' advice."
                       ov))))
         (apply func args))
     (apply func args)))
+
+(defvar selectrum-candidate-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "q") #'abort-recursive-edit)
+    map)
+  "Keymap for `selectrum-candidate-mode'.")
+
+(define-derived-mode selectrum-candidate-mode fundamental-mode
+  "Selectrum-Candidate"
+  "Major mode in which candidate windows are opened.
+Don't call this mode directly, it is only used to contain features
+related to the candidate windows.
+
+\\{selectrum-candidate-mode-map}")
 
 ;; You may ask why we copy the entire minor-mode definition into the
 ;; autoloads file, and autoload several private functions as well.

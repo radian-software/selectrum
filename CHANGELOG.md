@@ -50,6 +50,9 @@ packages. Users of `selectrum-prescient` can update to configure
   deriving from `comint-mode` ([#459], [#462]).
 * `selectrum-completion-in-region` does support cycling (as configured
   per `completion-cycle-threshold`) now ([#419], [#456]).
+* Add `selectrum-candidate-mode` major mode for candidate windows. By
+  default bind <kbd>q</kbd> to `abort-recursive-edit` in its map
+  ([#518]).
 
 ### Bugs fixed
 * Selectrum does now handle the different values of the
@@ -110,6 +113,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#509]: https://github.com/raxod502/selectrum/issues/509
 [#510]: https://github.com/raxod502/selectrum/pull/510
 [#516]: https://github.com/raxod502/selectrum/pull/516
+[#518]: https://github.com/raxod502/selectrum/pull/518
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
