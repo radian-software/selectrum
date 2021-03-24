@@ -1316,12 +1316,13 @@ the update."
   ;; Be careful with reordering of the cond clauses because they are
   ;; assumed to get checked in this order!
   (cond
-   ;; Restore the old index when repeating.
+   ;; Try to restore the old index when repeating.
    (selectrum--repeat
     (setq-local selectrum--repeat nil)
-    (and (> (length selectrum--refined-candidates) 0)
-         (min (or selectrum--current-candidate-index 0)
-              (1- (length selectrum--refined-candidates)))))
+    (if (and selectrum--refined-candidates
+             selectrum--current-candidate-index)
+        selectrum--current-candidate-index
+      (selectrum--compute-current-candidate-index nil)))
    ;; If there are no candidates the prompt should be selected.
    ((null selectrum--refined-candidates)
     (when (or (not (selectrum--match-strictly-required-p))
