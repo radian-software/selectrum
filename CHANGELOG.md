@@ -11,9 +11,10 @@ The format is based on [Keep a Changelog].
   ([#313], [#466]).
 
 ### Features
-* Using the `selectrum-files-select-input-dirs` option you can
-  configure selection of the input in file completions when it
-  contains a directory name ([#259], [#300], [#509], [#516]).
+* Using the `selectrum-files-select-input-dirs` option you can adjust
+  the selection behavior for file completions. When the option is
+  non-nil the input gets selected whenever it contains a full
+  directory name ([#259], [#300], [#509], [#516]).
 * You can quickly select and insert a candidate using the commands
   `selectrum-quick-select` and `selectrum-quick-insert` which are
   bound to `M-i` and `M-m` (analogue to `C-i` and `C-m` used for
