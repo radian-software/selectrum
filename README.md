@@ -336,7 +336,8 @@ used refinement function. The built-in `completion-styles` support the
   [mini-frame](https://github.com/muffinmad/emacs-mini-frame) package,
   see the
   [wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
-  for setup instructions.
+  for setup instructions. To run additional code when initializing the
+  candidate buffer you can use `selectrum-display-action-hook`.
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
@@ -380,6 +381,10 @@ used refinement function. The built-in `completion-styles` support the
   candidate via key annotations. You can configure the appearance of
   these key annotations with `selectrum-quick-keys-highlight` and
   `selectrum-quick-keys-match` face.
+* Using the `selectrum-files-select-input-dirs` option you can adjust
+  the selection behavior for file completions. When the option is
+  non-nil the input gets selected whenever it contains a full
+  directory name.
 
 ### Complementary extensions
 
