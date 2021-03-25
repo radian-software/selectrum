@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog].
   ([#313], [#466]).
 
 ### Features
+* Add `selectrum-display-action-hook` which can be used to initialize
+  the candidates buffer when using `selectrum-display-action` ([#518],
+  [#519]).
 * Using the `selectrum-files-select-input-dirs` option you can adjust
   the selection behavior for file completions. When the option is
   non-nil the input gets selected whenever it contains a full
@@ -111,6 +114,8 @@ packages. Users of `selectrum-prescient` can update to configure
 [#509]: https://github.com/raxod502/selectrum/issues/509
 [#510]: https://github.com/raxod502/selectrum/pull/510
 [#516]: https://github.com/raxod502/selectrum/pull/516
+[#518]: https://github.com/raxod502/selectrum/pull/518
+[#519]: https://github.com/raxod502/selectrum/pull/519
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
