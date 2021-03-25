@@ -107,6 +107,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#500]: https://github.com/raxod502/selectrum/pull/500
 [#506]: https://github.com/raxod502/selectrum/pull/506
 [#507]: https://github.com/raxod502/selectrum/pull/507
+[#509]: https://github.com/raxod502/selectrum/issues/509
 [#510]: https://github.com/raxod502/selectrum/pull/510
 [#516]: https://github.com/raxod502/selectrum/pull/516
 
