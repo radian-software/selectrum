@@ -244,6 +244,11 @@ frame you can use the provided action function
   :type '(cons (choice function (repeat :tag "Functions" function))
                alist))
 
+(defcustom selectrum-display-action-hook nil
+  "Hook to run when initializing the candidates buffer.
+See `selectrum-display-action'."
+  :type 'hook)
+
 (defcustom selectrum-display-style
   '(vertical)
   "Current display style for candidates.
@@ -908,6 +913,7 @@ Window will be created by `selectrum-display-action'."
                    (setq buffer-read-only t)
                    (setq show-trailing-whitespace nil)
                    (goto-char (point-min))
+                   (run-hooks 'selectrum-display-action-hook)
                    (current-buffer))))
         (action selectrum-display-action))
     (or (get-buffer-window buf 'visible)
