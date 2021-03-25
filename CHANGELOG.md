@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog].
   ([#313], [#466]).
 
 ### Features
+* Using the `selectrum-files-select-input-dirs` option you can
+  configure selection of the input in file completions when it
+  contains a directory name ([#259], [#300], [#509], [#516]).
 * You can quickly select and insert a candidate using the commands
   `selectrum-quick-select` and `selectrum-quick-insert` which are
   bound to `M-i` and `M-m` (analogue to `C-i` and `C-m` used for
@@ -77,6 +80,8 @@ packages. Users of `selectrum-prescient` can update to configure
   ([#495]).
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
+[#259]: https://github.com/raxod502/selectrum/issues/259
+[#300]: https://github.com/raxod502/selectrum/pull/300
 [#304]: https://github.com/raxod502/selectrum/issues/304
 [#313]: https://github.com/raxod502/selectrum/issues/313
 [#314]: https://github.com/raxod502/selectrum/issues/314
@@ -103,6 +108,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#506]: https://github.com/raxod502/selectrum/pull/506
 [#507]: https://github.com/raxod502/selectrum/pull/507
 [#510]: https://github.com/raxod502/selectrum/pull/510
+[#516]: https://github.com/raxod502/selectrum/pull/516
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated

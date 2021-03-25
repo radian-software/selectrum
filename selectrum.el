@@ -480,6 +480,12 @@ highlighting is automatically extended. Any other non-nil value
 means to always extend the highlighting."
   :type '(choice (const :tag "Automatic" auto) boolean))
 
+(defcustom selectrum-files-select-input-dirs nil
+  "Whether to select the input for directories.
+When this is non-nil the input in file completions will get
+selected when it contains a directory name."
+  :type 'boolean)
+
 ;;;###autoload
 (defcustom selectrum-complete-in-buffer t
   "If non-nil, use Selectrum for `completion-in-region'.
@@ -704,7 +710,8 @@ reflects the previous input within a session.")
 
 (defvar-local selectrum--repeat nil
   "Non-nil means try to restore the minibuffer state during setup.
-This is used to implement `selectrum-repeat'.")
+This is used to implement `selectrum-repeat' and also to restore
+a candidate index on next computation.")
 
 (defvar-local selectrum-is-active nil
   "Non-nil means Selectrum is currently active.")
@@ -2771,6 +2778,10 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
                             (if maybe-tramp
                                 (delete-dups files)
                               files))))))))
+              (when (and selectrum-files-select-input-dirs
+                         (directory-name-p path))
+                (setq-local selectrum--repeat t)
+                (setq-local selectrum--current-candidate-index -1))
               (setq last-dir dir)
               `((input . ,matchstr)
                 (candidates . ,cands))))))
