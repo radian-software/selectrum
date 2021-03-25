@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog].
   ([#313], [#466]).
 
 ### Features
-* With the new option `selectrum-files-select-input-dirs` you can
+* Using the `selectrum-files-select-input-dirs` option you can
   configure selection of the input in file completions when it
   contains a directory name ([#259], [#300], [#509], [#516]).
 * You can quickly select and insert a candidate using the commands
