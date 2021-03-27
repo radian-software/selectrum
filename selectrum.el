@@ -2074,8 +2074,9 @@ indices."
                                selectrum--refined-candidates))))))
       (cond ((and index (< index 0)
                   (not valid-prompt-selection)
-                  (memq selectrum--match-is-required
-                        '(confirm confirm-after-completion))
+                  ;; There is no try-completion action in Selectrum,
+                  ;; so `confirm-after-completion' is ignored.
+                  (eq selectrum--match-is-required 'confirm)
                   (not (eq last-command this-command)))
              (minibuffer-message
               (propertize "Confirm" 'face 'minibuffer-prompt)))
