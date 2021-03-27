@@ -10,11 +10,10 @@ The format is based on [Keep a Changelog].
 * The experimental `selectrum-helm.el` package has been removed
   ([#313], [#466]).
 * The faces `selectrum-primary-highlight` and
-  `selectrum-secondary-highlight` have been deprecated and
-  subsequently removed. The match highlighting should be configured
-  via the used filtering/highlighting packages. Users of
-  `selectrum-prescient` can update to configure
-  `selectrum-prescient-primary-highlight` and
+  `selectrum-secondary-highlight` have been removed. The match
+  highlighting should be configured via the used
+  filtering/highlighting packages. Users of `selectrum-prescient` can
+  update to configure `selectrum-prescient-primary-highlight` and
   `selectrum-prescient-secondary-highlight` ([#455]).
 * The following deprecated functions have been removed ([#521):
   * selectrum-read
