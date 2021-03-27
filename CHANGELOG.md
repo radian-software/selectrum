@@ -9,6 +9,20 @@ The format is based on [Keep a Changelog].
   [#465]).
 * The experimental `selectrum-helm.el` package has been removed
   ([#313], [#466]).
+* The faces `selectrum-primary-highlight` and
+  `selectrum-secondary-highlight` have been removed. The match
+  highlighting should be configured via the used
+  filtering/highlighting packages. Users of `selectrum-prescient` can
+  update to configure `selectrum-prescient-primary-highlight` and
+  `selectrum-prescient-secondary-highlight` ([#455]).
+* The following deprecated functions have been removed ([#521):
+  * selectrum-read
+  * selectrum-default-candidate-refine-function
+  * selectrum-default-candidate-highlight-function
+* The following deprecated variables have been removed ([#521):
+  * selectrum-active-p
+  * selectrum-should-sort-p
+  * selectrum-fix-minibuffer-height
 
 ### Features
 * Add `selectrum-display-action-hook` which can be used to initialize
@@ -35,14 +49,6 @@ The format is based on [Keep a Changelog].
   ([#500]).
 * The face that is used when the mouse hovers over candidates can now
   be customized through `selectrum-mouse-highlight` ([#507]).
-
-### Deprecated
-The faces `selectrum-primary-highlight` and
-`selectrum-secondary-highlight` have been deprecated. The match
-highlighting should be configured via the used filtering/highlighting
-packages. Users of `selectrum-prescient` can update to configure
-`selectrum-prescient-primary-highlight` and
-`selectrum-prescient-secondary-highlight` ([#455]).
 
 ### Enhancements
 * When using `selectrum-insert-current-candidate` in a
@@ -116,6 +122,7 @@ packages. Users of `selectrum-prescient` can update to configure
 [#516]: https://github.com/raxod502/selectrum/pull/516
 [#518]: https://github.com/raxod502/selectrum/pull/518
 [#519]: https://github.com/raxod502/selectrum/pull/519
+[#521]: https://github.com/raxod502/selectrum/pull/521
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
