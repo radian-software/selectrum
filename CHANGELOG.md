@@ -62,6 +62,9 @@ The format is based on [Keep a Changelog].
   per `completion-cycle-threshold`) now ([#419], [#456]).
 
 ### Bugs fixed
+* When a match is required one couldn't exit prompts which used a
+  dynamic completion table even if the input was a valid candidate,
+  which has been fixed ([#176], #523).
 * Selectrum does now handle the different values of the
   `require-match` argument which gets passed to the various completion
   functions. The values `confirm` and `confirm-after-completion` now
@@ -90,6 +93,7 @@ The format is based on [Keep a Changelog].
   ([#495]).
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
+[#176]: https://github.com/raxod502/selectrum/issues/176
 [#259]: https://github.com/raxod502/selectrum/issues/259
 [#300]: https://github.com/raxod502/selectrum/pull/300
 [#304]: https://github.com/raxod502/selectrum/issues/304
@@ -123,6 +127,7 @@ The format is based on [Keep a Changelog].
 [#518]: https://github.com/raxod502/selectrum/pull/518
 [#519]: https://github.com/raxod502/selectrum/pull/519
 [#521]: https://github.com/raxod502/selectrum/pull/521
+[#523]: https://github.com/raxod502/selectrum/pull/523
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
