@@ -1971,7 +1971,7 @@ candidate via prefix argument."
        (+ (prefix-numeric-value arg)
           (1- selectrum--first-index-displayed))
        (1- (length selectrum--refined-candidates)))
-    selectrum--current-candidate-index))
+    (or selectrum--current-candidate-index -1)))
 
 (defun selectrum-select-current-candidate (&optional arg)
   "Exit minibuffer, picking the currently selected candidate.
@@ -1988,13 +1988,12 @@ indices."
   (with-selected-window (active-minibuffer-window)
     (let* ((index (selectrum--index-for-arg arg))
            (valid-prompt-selection
-            (and index (< index 0)
-                 (or (string-empty-p selectrum--virtual-input)
-                     (if minibuffer-completing-file-name
-                         (selectrum--at-existing-prompt-path-p)
-                       (member (minibuffer-contents)
-                               selectrum--refined-candidates))))))
-      (cond ((and index (< index 0)
+            (or (string-empty-p selectrum--virtual-input)
+                (if minibuffer-completing-file-name
+                    (selectrum--at-existing-prompt-path-p)
+                  (member (minibuffer-contents)
+                          selectrum--refined-candidates)))))
+      (cond ((and (< index 0)
                   (not valid-prompt-selection)
                   ;; There is no try-completion action in Selectrum,
                   ;; so `confirm-after-completion' is ignored.
@@ -2004,7 +2003,7 @@ indices."
               (propertize "Confirm" 'face 'minibuffer-prompt)))
             ((or (not (selectrum--match-strictly-required-p))
                  valid-prompt-selection
-                 (and index (>= index 0)))
+                 (>= index 0))
              (selectrum--exit-with
               (selectrum--get-candidate index)))
             (t
