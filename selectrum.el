@@ -786,10 +786,13 @@ behavior."
      (point-max))))
 
 (defun selectrum--metadata ()
-  "Get completion metadata."
-  (completion-metadata (minibuffer-contents)
-                       minibuffer-completion-table
-                       minibuffer-completion-predicate))
+  "Get completion metadata.
+Demotes any errors to messages."
+  (condition-case-unless-debug err
+      (completion-metadata (minibuffer-contents)
+                           minibuffer-completion-table
+                           minibuffer-completion-predicate)
+    (error (message (error-message-string err)) nil)))
 
 (defun selectrum--get-meta (setting)
   "Get metadata SETTING from completion table."
