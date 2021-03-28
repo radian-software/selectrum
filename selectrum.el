@@ -2101,28 +2101,35 @@ history item and exit use `selectrum-select-current-candidate'."
     (when (eq history t)
       (user-error "No history is recorded for this command"))
     (let* ((enable-recursive-minibuffers t)
+           (hist-buf nil)
            (result
-            (selectrum--minibuffer-with-setup-hook
-                (lambda ()
-                  (setq-local selectrum-should-sort nil)
-                  (setq-local selectrum-candidate-inserted-hook nil)
-                  (setq-local selectrum-candidate-selected-hook nil)
-                  (use-local-map
-                   (make-composed-keymap nil (current-local-map)))
-                  (define-key (current-local-map)
-                    [remap selectrum-insert-current-candidate]
-                    'selectrum--insert-history)
-                  (let ((inhibit-read-only t))
-                    (goto-char (or (search-backward ":" nil t)
-                                   (1- (minibuffer-prompt-end))))
-                    (insert
-                     (apply
-                      #'propertize
-                      " [history]"
-                      (text-properties-at (point))))))
-              (catch 'selectrum-insert-action
-                (completing-read
-                 (minibuffer-prompt) history nil t nil t)))))
+            (cl-letf* ((orig
+                        (symbol-function #'selectrum-insert-current-candidate))
+                       ((symbol-function #'selectrum-insert-current-candidate)
+                        (lambda (&optional arg)
+                          (interactive "P")
+                          (if (eq hist-buf (current-buffer))
+                              (selectrum--insert-history arg)
+                            (funcall orig arg)))))
+              (selectrum--minibuffer-with-setup-hook
+                  (lambda ()
+                    (setq hist-buf (current-buffer))
+                    (setq-local selectrum-should-sort nil)
+                    (setq-local selectrum-candidate-inserted-hook nil)
+                    (setq-local selectrum-candidate-selected-hook nil)
+                    (use-local-map
+                     (make-composed-keymap nil (current-local-map)))
+                    (let ((inhibit-read-only t))
+                      (goto-char (or (search-backward ":" nil t)
+                                     (1- (minibuffer-prompt-end))))
+                      (insert
+                       (apply
+                        #'propertize
+                        " [history]"
+                        (text-properties-at (point))))))
+                (catch 'selectrum-insert-action
+                  (completing-read
+                   (minibuffer-prompt) history nil t nil t))))))
       (if (get-text-property 0 'selectum--insert result)
           (progn
             (delete-minibuffer-contents)
@@ -2133,13 +2140,18 @@ history item and exit use `selectrum-select-current-candidate'."
             (user-error "That history element is not one of the candidates")
           (selectrum--exit-with result))))))
 
-(defun selectrum--insert-history ()
+(defun selectrum--insert-history (&optional arg)
   "Insert history item.
-Only to be used from `selectrum-select-from-history'"
-  (interactive)
-  (throw 'selectrum-insert-action
-         (propertize (selectrum-get-current-candidate 'notfull)
-                     'selectum--insert t)))
+Only to be used from `selectrum-select-from-history'. Give a
+prefix argument ARG to select the nth displayed candidate. Zero
+means to select the current user input."
+  (interactive "P")
+  (let* ((index (selectrum--index-for-arg arg))
+         (cand
+          (selectrum--get-full
+           (selectrum--get-candidate index))))
+    (throw 'selectrum-insert-action
+           (propertize cand 'selectum--insert t))))
 
 (defun selectrum--quick-keys (len keys)
   "Get list of key combinations up to key length LEN.
