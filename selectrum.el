@@ -2007,6 +2007,14 @@ indices."
                  (>= index 0))
              (selectrum--exit-with
               (selectrum--get-candidate index)))
+            ;; For dynamic tables we currently don't update the
+            ;; candidates after each input. The following clause
+            ;; ensures one can still exit out of such a prompt when a
+            ;; valid candidate is in the input.
+            ((and (functionp minibuffer-completion-table)
+                  (eq t (test-completion (minibuffer-contents)
+                                         minibuffer-completion-table)))
+             (selectrum--exit-with (minibuffer-contents)))
             (t
              (minibuffer-message
               (propertize "Match required" 'face 'minibuffer-prompt)))))))
