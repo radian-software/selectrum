@@ -65,9 +65,9 @@ The format is based on [Keep a Changelog].
 * `selectrum-completion-in-region-styles` now defaults to `nil`. In
   this case the initial filtering is done by `all-completions`, if
   that doesn't reveal any matches the completion is retried using your
-  regularly configured `completion-styles`, respecting adjustments
-  accoring to `completion-category-overrides` or
-  `completion-category-defaults`.
+  regularly configured `completion-styles`, honoring adjustments
+  according to `completion-category-overrides` or
+  `completion-category-defaults` ([#524]).
 
 ### Bugs fixed
 * When a match is required one couldn't exit prompts which used a
@@ -136,6 +136,7 @@ The format is based on [Keep a Changelog].
 [#519]: https://github.com/raxod502/selectrum/pull/519
 [#521]: https://github.com/raxod502/selectrum/pull/521
 [#523]: https://github.com/raxod502/selectrum/pull/523
+[#524]: https://github.com/raxod502/selectrum/pull/524
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
