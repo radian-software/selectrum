@@ -2117,8 +2117,6 @@ history item and exit use `selectrum-select-current-candidate'."
                     (setq-local selectrum-should-sort nil)
                     (setq-local selectrum-candidate-inserted-hook nil)
                     (setq-local selectrum-candidate-selected-hook nil)
-                    (use-local-map
-                     (make-composed-keymap nil (current-local-map)))
                     (let ((inhibit-read-only t))
                       (goto-char (or (search-backward ":" nil t)
                                      (1- (minibuffer-prompt-end))))
