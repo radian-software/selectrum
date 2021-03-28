@@ -1988,11 +1988,12 @@ indices."
   (with-selected-window (active-minibuffer-window)
     (let* ((index (selectrum--index-for-arg arg))
            (valid-prompt-selection
-            (or (string-empty-p selectrum--virtual-input)
-                (if minibuffer-completing-file-name
-                    (selectrum--at-existing-prompt-path-p)
-                  (member (minibuffer-contents)
-                          selectrum--refined-candidates)))))
+            (and (< index 0)
+                 (or (string-empty-p selectrum--virtual-input)
+                     (if minibuffer-completing-file-name
+                         (selectrum--at-existing-prompt-path-p)
+                       (member (minibuffer-contents)
+                               selectrum--refined-candidates))))))
       (cond ((and (< index 0)
                   (not valid-prompt-selection)
                   ;; There is no try-completion action in Selectrum,
