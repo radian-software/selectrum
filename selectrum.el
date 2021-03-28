@@ -268,7 +268,9 @@ completion in region might generally differ from the styles you
 want to use for usual completion. If this option is nil the
 candidates will be filtered by `all-completions' first and if
 that doesn't reveal any matches the completion is retried using
-`completion-styles'."
+`completion-styles', honoring adjustments according to
+`completion-category-overrides' and
+`completion-category-defaults'."
   :type completion--styles-type)
 
 (defcustom selectrum-preprocess-candidates-function

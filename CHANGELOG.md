@@ -66,7 +66,7 @@ The format is based on [Keep a Changelog].
   this case the initial filtering is done by `all-completions`, if
   that doesn't reveal any matches the completion is retried using your
   regularly configured `completion-styles`, honoring adjustments
-  according to `completion-category-overrides` or
+  according to `completion-category-overrides` and
   `completion-category-defaults` ([#524]).
 
 ### Bugs fixed
