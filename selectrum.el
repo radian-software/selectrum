@@ -260,14 +260,17 @@ CANDIDATES is a list of strings."
         (setq cand (cdr cand)))))
   candidates)
 
-(defcustom selectrum-completion-in-region-styles
-  '(basic partial-completion emacs22)
+(defcustom selectrum-completion-in-region-styles nil
   "The `completion-styles' used by `selectrum-completion-in-region'.
 These are used for the initial filtering of candidates according
 to the text around point. The initial filtering styles for
 completion in region might generally differ from the styles you
 want to use for usual completion. If this option is nil the
-candidates will be filtered by `all-completions'."
+candidates will be filtered by `all-completions' first and if
+that doesn't reveal any matches the completion is retried using
+`completion-styles', honoring adjustments according to
+`completion-category-overrides' and
+`completion-category-defaults'."
   :type completion--styles-type)
 
 (defcustom selectrum-preprocess-candidates-function
@@ -2418,6 +2421,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          (meta (completion-metadata input collection predicate))
          (threshold (completion--cycle-threshold meta))
          (category (completion-metadata-get meta 'category))
+         (styles (completion--styles meta))
          (bound (pcase category
                   ('file start)
                   (_ (+ start (car (completion-boundaries
@@ -2425,8 +2429,14 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
          (exit-func (plist-get completion-extra-properties
                                :exit-function))
          (cands (if (not selectrum-completion-in-region-styles)
-                    (let ((completion-regexp-list nil))
-                      (all-completions input collection predicate))
+                    (or (let ((completion-regexp-list nil))
+                          (all-completions input collection predicate))
+                        (nconc
+                         (let ((completion-styles styles))
+                           (completion-all-completions
+                            input collection predicate
+                            (- end start) meta))
+                         nil))
                   (nconc
                    (let ((completion-styles
                           selectrum-completion-in-region-styles))
