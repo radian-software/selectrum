@@ -2324,7 +2324,8 @@ semantics of `cl-defun'."
              (if (and exit-string
                       (string-empty-p exit-string)
                       (equal res default))
-                 default-candidate
+                 (or (car-safe default-candidate)
+                     default-candidate)
                (substring-no-properties res))))
           (t res))))
 
