@@ -70,6 +70,8 @@ The format is based on [Keep a Changelog].
   `completion-category-defaults` ([#524]).
 
 ### Bugs fixed
+* When passing a cons as INITIAL-INPUT argument to `completing-read`
+  the point was off by one, which has been fixed ([#528], [#530]).
 * When a match is required one couldn't exit prompts which used a
   dynamic completion table even if the input was a valid candidate,
   which has been fixed ([#176], #523).
@@ -137,6 +139,8 @@ The format is based on [Keep a Changelog].
 [#521]: https://github.com/raxod502/selectrum/pull/521
 [#523]: https://github.com/raxod502/selectrum/pull/523
 [#524]: https://github.com/raxod502/selectrum/pull/524
+[#528]: https://github.com/raxod502/selectrum/issues/528
+[#530]: https://github.com/raxod502/selectrum/pull/530
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
