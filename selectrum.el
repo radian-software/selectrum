@@ -465,6 +465,17 @@ function and BODY opens the minibuffer."
              ,@body)
          (remove-hook 'minibuffer-setup-hook ,hook)))))
 
+(defmacro selectrum--while-no-input (&rest body)
+  "Wrap BODY in `while-no-input' unless selectrum is initilizing.
+If input arrives and body is aborted return nil."
+  `(if selectrum--is-initializing
+       ,@body
+     ;; Without ignoring this event editing the input with M-DEL will
+     ;; not update the UI.
+     (let* ((while-no-input-ignore-events '(selection-request))
+            (res (while-no-input ,@body)))
+       (unless (eq t res) res))))
+
 ;;; Variables
 
 (defvar selectrum-minibuffer-map
@@ -1150,15 +1161,12 @@ defaults to the current one and MAX which defaults to
       n)))
 
 (defun selectrum--preprocess (candidates)
-  "Preprocess CANDIDATES list.
-The preprocessing applies the `selectrum-preprocess-candidates-function'
-and the `x-group-function'."
+  "Preprocess CANDIDATES list."
   (setq-local selectrum--preprocessed-candidates
-              (funcall selectrum-preprocess-candidates-function
-                       candidates))
-  ;; Empty candidates are removed in default completion, as well.
-  (setq-local selectrum--preprocessed-candidates
-              (delete "" selectrum--preprocessed-candidates)))
+              ;; Empty candidates are removed in default completion,
+              ;; as well.
+              (delete "" (funcall selectrum-preprocess-candidates-function
+                                  candidates))))
 
 (defun selectrum--update-dynamic-candidates (input)
   "Update dynamic candidate set with new INPUT."
@@ -1168,9 +1176,8 @@ and the `x-group-function'."
            ;; Ensure dynamic functions won't
            ;; break in post command hook.
            (condition-case-unless-debug err
-               (funcall
-                selectrum--dynamic-candidates-function
-                input)
+               (funcall selectrum--dynamic-candidates-function
+                        input)
              (error (message (error-message-string err))
                     nil))))
       ;; Avoid modifying the returned
@@ -1271,7 +1278,9 @@ the update."
       (setq-local selectrum--last-input input)))
   (setq-local selectrum--previous-input-string input)
   (setq-local selectrum--virtual-input
-              (selectrum--update-dynamic-candidates input))
+              (or (selectrum--while-no-input
+                   (selectrum--update-dynamic-candidates input))
+                  input))
   (selectrum--update-refined-candidates selectrum--virtual-input)
   (setq-local selectrum--first-index-displayed nil)
   (setq-local selectrum--actual-num-candidates-displayed nil)
