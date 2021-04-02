@@ -201,14 +201,6 @@ after the displayed candidates."
 Use `selectrum-cycle-display-style' to cycle through these."
   :type 'list)
 
-(defun selectrum-refine-candidates-using-completions-styles (input candidates)
-  "Use INPUT to filter and highlight CANDIDATES.
-Uses `completion-styles'."
-  (nconc
-   (completion-all-completions
-    input candidates nil (length input))
-   nil))
-
 (defcustom selectrum-refine-candidates-function
   #'selectrum-refine-candidates-using-completions-styles
   "Function used to decide which candidates should be displayed.
@@ -219,54 +211,6 @@ may be modified by Selectrum, so a copy of the input should be
 made. (Beware that `cl-remove-if' doesn't make a copy if there's
 nothing to remove.)"
   :type 'function)
-
-(defun selectrum--pred (x y)
-  "Compare X and Y."
-  (or (< (cdr x) (cdr y))
-      (and (= (cdr x) (cdr y))
-           (string< (car x) (car y)))))
-
-(defvar-local selectrum--history-hash nil
-  "History hash table.")
-
-(defun selectrum-default-candidate-preprocess-function (candidates)
-  "Sort CANDIDATES by history position, length and alphabetically.
-See `selectrum-preprocess-candidates-function'."
-  (when selectrum-should-sort
-    (unless selectrum--history-hash
-      ;; History disabled if `minibuffer-history-variable' eq `t'.
-      (let ((list (and (not (eq minibuffer-history-variable t))
-                       (symbol-value minibuffer-history-variable)))
-            (hist-idx 0))
-        (setq-local selectrum--history-hash
-                    (make-hash-table :test #'equal
-                                     :size (length list)))
-        ;; Store the history position first in a hashtable in order to
-        ;; allow O(1) history lookup.
-        (dolist (elem list)
-          (unless (gethash elem selectrum--history-hash)
-            (puthash elem hist-idx selectrum--history-hash))
-          (setq hist-idx (1+ hist-idx)))))
-    ;; Decorate each candidate with (hist-idx<<13) + length. This way we
-    ;; sort first by hist-idx and then by length. We assume that the
-    ;; candidates are shorter than 2**13 characters and that the history
-    ;; is shorter than 2**16 entries.
-    (let ((cand candidates))
-      (while cand
-        (setcar cand
-                (cons (car cand)
-                      (+ (lsh (gethash (car cand)
-                                       selectrum--history-hash #xFFFF)
-                              13)
-                         (length (car cand)))))
-        (setq cand (cdr cand))))
-    (setq candidates (sort candidates #'selectrum--pred))
-    ;; Drop decoration from the candidates
-    (let ((cand candidates))
-      (while cand
-        (setcar cand (caar cand))
-        (setq cand (cdr cand)))))
-  candidates)
 
 (defcustom selectrum-completion-in-region-styles nil
   "The `completion-styles' used by `selectrum-completion-in-region'.
@@ -436,43 +380,6 @@ This option needs to be set before activating `selectrum-mode'."
   :type 'boolean
   :group 'selectrum)
 
-;;; Utility functions
-
-(defun selectrum--clamp (x lower upper)
-  "Constrain X to be between LOWER and UPPER inclusive.
-If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
-return X."
-  (min (max x lower) upper))
-
-(defun selectrum--move-to-front-destructive (elt lst)
-  "Move ELT to front of LST, if present.
-Make comparisons using `equal'. Modify the input list
-destructively and return the modified list."
-  (if-let ((rest (member elt lst)))
-      (nconc (list (car rest)) (delete elt lst))
-    lst))
-
-(defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
-  "Variant of `minibuffer-with-setup-hook' using a symbol and `fset'.
-This macro is only needed to prevent memory leaking issues with
-the upstream `minibuffer-with-setup-hook' macro. FUN is the hook
-function and BODY opens the minibuffer."
-  ;; Copied from https://github.com/minad/consult/commit/27e055e.
-  (declare (indent 1) (debug ([&or (":append" form) [&or symbolp form]] body)))
-  (let ((hook (make-symbol "hook"))
-        (append))
-    (when (eq (car-safe fun) :append)
-      (setq append '(t) fun (cadr fun)))
-    `(let ((,hook (make-symbol "selectrum--minibuffer-setup")))
-       (fset ,hook (lambda ()
-                     (remove-hook 'minibuffer-setup-hook ,hook)
-                     (funcall ,fun)))
-       (unwind-protect
-           (progn
-             (add-hook 'minibuffer-setup-hook ,hook ,@append)
-             ,@body)
-         (remove-hook 'minibuffer-setup-hook ,hook)))))
-
 ;;; Variables
 
 (defvar selectrum-minibuffer-map
@@ -577,6 +484,9 @@ as symbol constituents.")
 
 ;;; Session state
 
+(defvar-local selectrum--history-hash nil
+  "History hash table.")
+
 (defvar-local selectrum--last-buffer nil
   "The buffer that was current before the active session.")
 
@@ -676,7 +586,95 @@ This is non-nil during the first call of
 (defvar-local selectrum--inserted-file-completion nil
   "Non-nil when command should trigger refresh.")
 
-;;;; Minibuffer state utility functions
+;;; Utility functions
+
+(defun selectrum-refine-candidates-using-completions-styles (input candidates)
+  "Use INPUT to filter and highlight CANDIDATES.
+Uses `completion-styles'."
+  (nconc
+   (completion-all-completions
+    input candidates nil (length input))
+   nil))
+
+(defun selectrum--pred (x y)
+  "Compare X and Y."
+  (or (< (cdr x) (cdr y))
+      (and (= (cdr x) (cdr y))
+           (string< (car x) (car y)))))
+
+(defun selectrum-default-candidate-preprocess-function (candidates)
+  "Sort CANDIDATES by history position, length and alphabetically.
+See `selectrum-preprocess-candidates-function'."
+  (when selectrum-should-sort
+    (unless selectrum--history-hash
+      ;; History disabled if `minibuffer-history-variable' eq `t'.
+      (let ((list (and (not (eq minibuffer-history-variable t))
+                       (symbol-value minibuffer-history-variable)))
+            (hist-idx 0))
+        (setq-local selectrum--history-hash
+                    (make-hash-table :test #'equal
+                                     :size (length list)))
+        ;; Store the history position first in a hashtable in order to
+        ;; allow O(1) history lookup.
+        (dolist (elem list)
+          (unless (gethash elem selectrum--history-hash)
+            (puthash elem hist-idx selectrum--history-hash))
+          (setq hist-idx (1+ hist-idx)))))
+    ;; Decorate each candidate with (hist-idx<<13) + length. This way we
+    ;; sort first by hist-idx and then by length. We assume that the
+    ;; candidates are shorter than 2**13 characters and that the history
+    ;; is shorter than 2**16 entries.
+    (let ((cand candidates))
+      (while cand
+        (setcar cand
+                (cons (car cand)
+                      (+ (lsh (gethash (car cand)
+                                       selectrum--history-hash #xFFFF)
+                              13)
+                         (length (car cand)))))
+        (setq cand (cdr cand))))
+    (setq candidates (sort candidates #'selectrum--pred))
+    ;; Drop decoration from the candidates
+    (let ((cand candidates))
+      (while cand
+        (setcar cand (caar cand))
+        (setq cand (cdr cand)))))
+  candidates)
+
+(defun selectrum--clamp (x lower upper)
+  "Constrain X to be between LOWER and UPPER inclusive.
+If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
+return X."
+  (min (max x lower) upper))
+
+(defun selectrum--move-to-front-destructive (elt lst)
+  "Move ELT to front of LST, if present.
+Make comparisons using `equal'. Modify the input list
+destructively and return the modified list."
+  (if-let ((rest (member elt lst)))
+      (nconc (list (car rest)) (delete elt lst))
+    lst))
+
+(defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
+  "Variant of `minibuffer-with-setup-hook' using a symbol and `fset'.
+This macro is only needed to prevent memory leaking issues with
+the upstream `minibuffer-with-setup-hook' macro. FUN is the hook
+function and BODY opens the minibuffer."
+  ;; Copied from https://github.com/minad/consult/commit/27e055e.
+  (declare (indent 1) (debug ([&or (":append" form) [&or symbolp form]] body)))
+  (let ((hook (make-symbol "hook"))
+        (append))
+    (when (eq (car-safe fun) :append)
+      (setq append '(t) fun (cadr fun)))
+    `(let ((,hook (make-symbol "selectrum--minibuffer-setup")))
+       (fset ,hook (lambda ()
+                     (remove-hook 'minibuffer-setup-hook ,hook)
+                     (funcall ,fun)))
+       (unwind-protect
+           (progn
+             (add-hook 'minibuffer-setup-hook ,hook ,@append)
+             ,@body)
+         (remove-hook 'minibuffer-setup-hook ,hook)))))
 
 (defun selectrum--match-strictly-required-p ()
   "Return non-nil if a match is strictly required."
