@@ -220,41 +220,49 @@ made. (Beware that `cl-remove-if' doesn't make a copy if there's
 nothing to remove.)"
   :type 'function)
 
+(defun selectrum--pred (x y)
+  "Compare X and Y."
+  (or (< (cdr x) (cdr y))
+      (and (= (cdr x) (cdr y))
+           (string< (car x) (car y)))))
+
+(defvar-local selectrum--history-hash nil
+  "History hash table.")
+
 (defun selectrum-default-candidate-preprocess-function (candidates)
-  "Default value of `selectrum-preprocess-candidates-function'.
-Sort first by history position, then by length and then alphabetically.
-CANDIDATES is a list of strings."
+  "Sort CANDIDATES by history position, length and alphabetically.
+See `selectrum-preprocess-candidates-function'."
   (when selectrum-should-sort
-    ;; History disabled if `minibuffer-history-variable' eq `t'.
-    (let* ((list (and (not (eq minibuffer-history-variable t))
-                      (symbol-value minibuffer-history-variable)))
-           (hist-len (length list))
-           (hist (make-hash-table :test #'equal
-                                  :size hist-len))
-           (hist-idx 0)
-           (cand candidates))
-      ;; Store the history position first in a hashtable in order to
-      ;; allow O(1) history lookup.
-      (dolist (elem list)
-        (unless (gethash elem hist)
-          (puthash elem hist-idx hist))
-        (cl-incf hist-idx))
-      ;; Decorate each candidate with (hist-idx<<13) + length. This
-      ;; way we sort first by hist-idx and then by length. We assume
-      ;; that the candidates are not longer than 2**13 characters.
+    (unless selectrum--history-hash
+      ;; History disabled if `minibuffer-history-variable' eq `t'.
+      (let ((list (and (not (eq minibuffer-history-variable t))
+                       (symbol-value minibuffer-history-variable)))
+            (hist-idx 0))
+        (setq-local selectrum--history-hash
+                    (make-hash-table :test #'equal
+                                     :size (length list)))
+        ;; Store the history position first in a hashtable in order to
+        ;; allow O(1) history lookup.
+        (dolist (elem list)
+          (unless (gethash elem selectrum--history-hash)
+            (puthash elem hist-idx selectrum--history-hash))
+          (setq hist-idx (1+ hist-idx)))))
+    ;; Decorate each candidate with (hist-idx<<13) + length. This way we
+    ;; sort first by hist-idx and then by length. We assume that the
+    ;; candidates are shorter than 2**13 characters and that the history
+    ;; is shorter than 2**16 entries.
+    (let ((cand candidates))
       (while cand
-        (setcar cand (cons (car cand)
-                           (+ (lsh (gethash (car cand) hist hist-len) 13)
-                              (length (car cand)))))
-        (setq cand (cdr cand)))
-      (setq candidates
-            (sort candidates
-                  (lambda (c1 c2)
-                    (or (< (cdr c1) (cdr c2))
-                        (and (= (cdr c1) (cdr c2))
-                             (string< (car c1) (car c2))))))
-            cand candidates)
-      ;; Drop decoration from the candidates
+        (setcar cand
+                (cons (car cand)
+                      (+ (lsh (gethash (car cand)
+                                       selectrum--history-hash #xFFFF)
+                              13)
+                         (length (car cand)))))
+        (setq cand (cdr cand))))
+    (setq candidates (sort candidates #'selectrum--pred))
+    ;; Drop decoration from the candidates
+    (let ((cand candidates))
       (while cand
         (setcar cand (caar cand))
         (setq cand (cdr cand)))))
