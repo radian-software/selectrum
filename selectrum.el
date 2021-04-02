@@ -598,7 +598,7 @@ This is non-nil during the first call of
 ;;; Utility functions
 
 (defmacro selectrum--while-no-input (&rest body)
-  "Wrap BODY in `while-no-input' unless selectrum is initilizing.
+  "Wrap BODY in `while-no-input' unless Selectrum is initializing.
 If input arrives and body is aborted return nil."
   `(if selectrum--is-initializing
        ,@body
