@@ -1,7 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
 ;; Use a temporary emacs.d directory for testing
-(delete-directory "/tmp/test-emacs.d")
 (setq user-emacs-directory "/tmp/test-emacs.d/")
 
 ;; Setup package archive
@@ -18,3 +17,5 @@
 (package-install 'orderless)
 (package-install 'selectrum)
 (package-install 'selectrum-prescient)
+
+(message "packages are installed in tmp/test-emacs.d ...")
