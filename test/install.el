@@ -18,4 +18,4 @@
 (package-install 'selectrum)
 (package-install 'selectrum-prescient)
 
-(message "packages are installed in tmp/test-emacs.d ...")
+(message "packages are installed in /tmp/test-emacs.d ...")
