@@ -95,7 +95,7 @@
 (defcustom selectrum-quick-keys '(?a ?s ?d ?f ?j ?k ?l ?i ?g ?h)
   "Keys for quick selection.
 Used by `selectrum-quick-select' and `selectrum-quick-insert'."
-  :type 'character)
+  :type '(repeat character))
 
 (defcustom selectrum-group-format
   (concat
