@@ -1133,7 +1133,8 @@ and the `x-group-function'."
   (setq-local selectrum--preprocessed-candidates
               (funcall selectrum-preprocess-candidates-function
                        candidates))
-  ;; Empty candidates are removed in default completion, as well.
+  ;; Empty candidates aren't indicated or can be selected in the
+  ;; default UI so we ignore them to avoid display issues.
   (setq-local selectrum--preprocessed-candidates
               (delete "" selectrum--preprocessed-candidates)))
 
