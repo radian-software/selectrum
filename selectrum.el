@@ -746,6 +746,7 @@ candidate and return the candidate as displayed."
   (when selectrum-is-active
     (with-selected-window (active-minibuffer-window)
       (minibuffer-contents))))
+(make-obsolete 'selectrum-get-current-input nil "3.1")
 
 (defun selectrum-set-selected-candidate (&optional string)
   "Set currently selected candidate to STRING.

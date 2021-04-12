@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
 ## Unreleased
+### Deprecated
+* The function `selectrum-get-current-input` is deprecated ([#537]).
+
 ### Breaking changes
 * Support for Emacs versions older than 26.1 has been removed ([#454],
   [#465]).
@@ -141,6 +144,7 @@ The format is based on [Keep a Changelog].
 [#524]: https://github.com/raxod502/selectrum/pull/524
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
+[#537]: https://github.com/raxod502/selectrum/pull/537
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
