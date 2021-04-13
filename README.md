@@ -142,11 +142,11 @@ your init-file.
 (prescient-persist-mode +1)
 ```
 
-* Your most recent choices are saved, and those are sorted first.
-  After that, your most frequent choices are saved, and those are
-  sorted next. The rest of the candidates are sorted by length. This
-  algorithm turns out to do very well in practice while being fast and
-  not very magical.
+* Your candidates are sorted by *frecency*. Your most recent choices
+  are saved, and those are sorted first. After that, your most
+  frequent choices are saved, and those are sorted next. The rest of
+  the candidates are sorted by length. This algorithm turns out to do
+  very well in practice while being fast and not very magical.
 * Your input is split on spaces into subqueries, each of which must
   match as either a substring, a regexp, or an initialism (e.g. `ffap`
   matches `find-file-at-point`) in order for a candidate to be
@@ -163,6 +163,9 @@ Another popular choice for filtering is to use the flexible
 ```elisp
 (setq completion-styles '(orderless))
 
+;; Persist history over Emacs restarts
+(savehist-mode)
+
 ;; Optional performance optimization
 ;; by highlighting only the visible candidates.
 (setq orderless-skip-highlighting (lambda () selectrum-is-active))
@@ -170,9 +173,13 @@ Another popular choice for filtering is to use the flexible
 ```
 
 The candidates are sorted using the default sorting method of
-Selectrum. Afterwards they are filtered and highlighted using the
-`completion-styles`, in this case `orderless`. On top of Orderless, it
-is also possible to use Prescient *only for sorting* by adding:
+Selectrum (by *recency*). The history is persisted using the Emacs
+built-in `savehist-mode`. Afterwards the candidates are filtered and
+highlighted using the `completion-styles`, in this case `orderless`.
+
+In some cases you may want to consider to use Prescient on top of
+Orderless. Prescient can be used to provide *frecency*-based sorting and
+history persistence by adding the following.
 
 ```elisp
 (setq selectrum-prescient-enable-filtering nil)
@@ -264,10 +271,10 @@ editing bindings. So, for example:
 
 The default sorting and filtering in Selectrum is quite simple and
 predictable. The method is similar to the one employed by Icomplete.
-Candidates are sorted first by history position, then by length and
-then alphabetically. Afterwards they are filtered and highlighted
-using the `completion-styles`. This default behavior is intended as a
-lowest common denominator that will definitely work.
+Candidates are sorted first by history position (by *recency*), then
+by length and then alphabetically. Afterwards they are filtered and
+highlighted using the `completion-styles`. This default behavior is
+intended as a lowest common denominator that will definitely work.
 
 It is strongly recommended that you customize `completion-styles`
 using Orderless or install Prescient as described before. It is also
@@ -399,7 +406,7 @@ following additional packages:
   for Selectrum and Icomplete or more generally any completion system
   based on `completing-read`.
 
-* For filtering and sorting there is
+* For filtering and frecency-based sorting there is
   [Prescient](https://github.com/raxod502/prescient.el).
 
 * As an alternative filtering method, there is
@@ -752,7 +759,7 @@ It is worth noting the new [Fido
 mode](https://github.com/emacs-mirror/emacs/commit/213643a890913f10bac710ca8537e8b1125941d6)
 which will be included in Emacs 27. It is basically a variation of
 Icomplete that behaves more like Ido. As such, Fido mode does not
-offer solutions to the problems outlined in the above sections.        
+offer solutions to the problems outlined in the above sections.
 
 On the upside, Icomplete is the most API compliant enhanced completion
 UI available. Selectrum also covers the most important aspects of the
