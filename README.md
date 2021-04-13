@@ -40,6 +40,7 @@ replacing [Helm](https://github.com/emacs-helm/helm),
   * [Helm](#helm)
   * [Ivy](#ivy)
   * [Icomplete](#icomplete)
+  * [Vertico](#vertico)
   * [Icicles](#icicles)
   * [Snails](#snails)
   * [Sallet](#sallet)
@@ -765,6 +766,26 @@ On the upside, Icomplete is the most API compliant enhanced completion
 UI available. Selectrum also covers the most important aspects of the
 API and strives to achieve full compliance, as well. For the few edge
 cases left, see the Caveats section.
+
+### Vertico
+
+[Vertico](https://github.com/minad/vertico) is a new minimalistic
+completion system based on the Emacs default completion offering a
+similar UI as Selectrum. It uses a different implementation approach -
+it extends the default completion system in a similar way as Icomplete
+and is therefore fully compliant with all features of the
+`completing-read` API. Overall Vertico follows a similar philosophy as
+Selectrum, relying on default components and [complementary
+packages](#complementary-extensions). Many of the complementary
+packages work well with both Selectrum and Vertico. However Selectrum
+and Vertico differ in their priorities. Selectrum focuses on offering
+a flexible UI which optimizes completions in some cases, e.g., it
+supports both a horizontal and a vertical display. It optimizes
+completions of remote files (caching) and multiple selections
+(`completing-read-multiple`). Furthermore it provides advanced
+features like quick keys and display actions, to show the completions
+in a buffer. Vertico instead aims for a minimal code base and avoids
+inventing additional features.
 
 ### Icicles
 
