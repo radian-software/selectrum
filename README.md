@@ -131,8 +131,8 @@ more advanced filtering and sorting: 1. Prescient and 2. Orderless.
 ##### Alternative 1: Prescient
 
 Filtering and sorting can both be improved by installing the
-`selectrum-prescient` package from MELPA and adding the following to
-your init-file.
+[`selectrum-prescient`](https://github.com/raxod502/prescient.el)
+package from MELPA and adding the following to your init-file.
 
 ```elisp
 ;; to make sorting and filtering more intelligent
@@ -149,12 +149,20 @@ your init-file.
   the candidates are sorted by length. This algorithm turns out to do
   very well in practice while being fast and not very magical.
 * Your input is split on spaces into subqueries, each of which must
-  match as either a substring, a regexp, or an initialism (e.g. `ffap`
-  matches `find-file-at-point`) in order for a candidate to be
-  included. Again, this algorithm isn't optimal, but it does very well
-  in practice given its simplicity and speed.
-* The part of each candidate that matched your input is highlighted,
-  with the initials of an initialism highlighted in a second color.
+  (by default) match as either a substring, a regexp, or an initialism
+  (e.g. `ffap` matches `find-file-at-point`). The subqueries can match
+  a candidate in any order, but a candidate must match all subqueries
+  in order to remain in the filtered list of candidates.
+  * Other matching styles are available in addition to the default
+    three, and custom styles can be added by users.
+  * Filtering features can be toggled on the fly, such as whether to
+    use character/case folding or which matching styles are active.
+  * Optionally, fully matched candidates can be listed before
+    partially matched candidates while keeping the frecency-based
+    sorting.
+* The parts of each candidate that matched your input are highlighted,
+  with important sections within each part (such as the initials of an
+  initialism) highlighted in a second color.
 
 ##### Alternative 2: Orderless
 
