@@ -904,9 +904,7 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
                   (plist-get completion-extra-properties
                              :affixation-function)))
          (docsigf (plist-get completion-extra-properties :company-docsig))
-         (groupf (or (completion-metadata-get metadata 'x-group-function)
-                     (plist-get completion-extra-properties
-                                :x-group-function)))
+         (groupf (completion-metadata-get metadata 'x-group-function))
          (candidates (cond (aff
                             (selectrum--affixate aff highlighted-candidates))
                            ((or annotf docsigf)
@@ -1192,9 +1190,7 @@ and the `x-group-function'."
                          input cands)))
   ;; Group candidates. This has to be done after refinement, since
   ;; refinement can reorder the candidates.
-  (when-let (groupf (or (selectrum--get-meta 'x-group-function)
-                        (plist-get completion-extra-properties
-                                   :x-group-function)))
+  (when-let (groupf (selectrum--get-meta 'x-group-function))
     ;; Ensure that default candidate appears at the top if
     ;; `selectrum-move-default-candidate' is set. It is redundant to
     ;; do this here, since we move the default candidate also
