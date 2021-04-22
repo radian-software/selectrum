@@ -915,11 +915,12 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
          (lines ()))
     (dolist (cand candidates)
       (when groupf
-        (when-let (title (and selectrum-group-format
-                              (caar (funcall groupf (list cand)))))
-          (unless (equal title last-title)
-            (setq last-title title)
-            (push (format selectrum-group-format title) lines)
+        (when-let (group-result (and selectrum-group-format
+                                     (funcall groupf cand)))
+          (setq cand (car group-result))
+          (unless (equal (cdr group-result) last-title)
+            (setq last-title (cdr group-result))
+            (push (format selectrum-group-format last-title) lines)
             (push "\n" lines))))
       (let* ((formatting-current-candidate
               (eq i index))
