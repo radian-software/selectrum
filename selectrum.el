@@ -926,11 +926,10 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
          (last-title nil)
          (lines ()))
     (dolist (cand candidates)
-      (when titlef
-        (let ((new-title (funcall titlef cand nil)))
-          (unless (equal last-title new-title)
-            (push (format selectrum-group-format (setq last-title new-title)) lines)
-            (push "\n" lines)))
+      (when-let (new-title (and titlef (funcall titlef cand nil)))
+        (unless (equal last-title new-title)
+          (push (format selectrum-group-format (setq last-title new-title)) lines)
+          (push "\n" lines))
         (setq cand (funcall titlef cand 'transform)))
       (let* ((formatting-current-candidate
               (eq i index))
