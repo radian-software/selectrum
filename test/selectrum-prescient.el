@@ -6,7 +6,8 @@
 (marginalia-mode)
 
 ;; Use completing-read prompter and set binding for Embark context menu
-(setq embark-prompter #'embark-completing-read-prompter)
+(setq embark-prompter #'embark-completing-read-prompter
+      prefix-help-command #'embark-prefix-help-command)
 (global-set-key (kbd "M-o") #'embark-act)
 
 ;; Keybindings for Consult
