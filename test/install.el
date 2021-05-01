@@ -17,5 +17,6 @@
 (package-install 'orderless)
 (package-install 'selectrum)
 (package-install 'selectrum-prescient)
+(package-install 'vertico)
 
 (message "Installed packages to /tmp/test-emacs.d/")
