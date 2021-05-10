@@ -2258,9 +2258,7 @@ KEYS is a list of key strings to combine."
 (cl-defun selectrum--read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history
-            minibuffer-completion-table
-            minibuffer-completion-predicate)
+            history mc-table mc-predicate)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -2295,12 +2293,10 @@ this case.
 HISTORY is the `minibuffer-history-variable' to use (by default
 `minibuffer-history').
 
-For MINIBUFFER-COMPLETION-TABLE and
-MINIBUFFER-COMPLETION-PREDICATE see `minibuffer-completion-table'
+For MC-TABLE and MC-PREDICATE see `minibuffer-completion-table'
 and `minibuffer-completion-predicate'. They are used for internal
-purposes and compatibility to Emacs completion API. By passing
-these as keyword arguments they will be dynamically bound as per
-semantics of `cl-defun'."
+purposes and compatibility to Emacs completion API. They will be
+locally in the minibuffer."
   (let* ((minibuffer-allow-text-properties t)
          (resize-mini-windows 'grow-only)
          (prompt (selectrum--remove-default-from-prompt prompt))
@@ -2313,7 +2309,9 @@ semantics of `cl-defun'."
                 ;; Already set the active flag as early as possible
                 ;; so client setup hooks can use it to detect if
                 ;; they are running in a Selectrum session.
-                (setq-local selectrum-is-active t))
+                (setq-local selectrum-is-active t
+                            minibuffer-completion-table mc-table
+                            minibuffer-completion-predicate mc-predicate))
             (selectrum--minibuffer-with-setup-hook
                 (:append (lambda ()
                            (setq-local selectrum--match-is-required
@@ -2361,8 +2359,8 @@ HIST, DEF, and INHERIT-INPUT-METHOD, see `completing-read'."
    :default-candidate def
    :require-match require-match
    :history hist
-   :minibuffer-completion-table collection
-   :minibuffer-completion-predicate predicate))
+   :mc-table collection
+   :mc-predicate predicate))
 
 ;;;###autoload
 (defun selectrum-completing-read-multiple
@@ -2425,8 +2423,8 @@ the prompt."
         :initial-input initial-input
         :history hist
         :default-candidate def
-        :minibuffer-completion-table table
-        :minibuffer-completion-predicate predicate)))
+        :mc-table table
+        :mc-predicate predicate)))
     (split-string res crm-separator t)))
 
 ;;;###autoload
@@ -2516,8 +2514,8 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                           (car cands)
                         (selectrum--read
                          "Completion: " cands
-                         :minibuffer-completion-table collection
-                         :minibuffer-completion-predicate predicate))
+                         :mc-table collection
+                         :mc-predicate predicate))
                       exit-status (cond ((not (member result cands)) 'sole)
                                         (t 'finished)))))
              (delete-region bound end)
@@ -2566,8 +2564,8 @@ PREDICATE, see `read-buffer'."
        :default-candidate def
        :require-match require-match
        :history 'buffer-name-history
-       :minibuffer-completion-table #'internal-complete-buffer
-       :minibuffer-completion-predicate predicate))))
+       :mc-table #'internal-complete-buffer
+       :mc-predicate predicate))))
 
 (defun selectrum--partial-file-completions
     (path collection predicate &optional raw)
@@ -2752,8 +2750,8 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
        :initial-input (or (car-safe initial-input) initial-input)
        :history hist
        :require-match require-match
-       :minibuffer-completion-table collection
-       :minibuffer-completion-predicate predicate))))
+       :mc-table collection
+       :mc-predicate predicate))))
 
 ;;;###autoload
 (defun selectrum-read-file-name
