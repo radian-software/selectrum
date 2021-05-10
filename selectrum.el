@@ -2309,9 +2309,9 @@ locally in the minibuffer."
                 ;; Already set the active flag as early as possible
                 ;; so client setup hooks can use it to detect if
                 ;; they are running in a Selectrum session.
-                (setq-local selectrum-is-active t
-                            minibuffer-completion-table mc-table
-                            minibuffer-completion-predicate mc-predicate))
+                (setq-local selectrum-is-active t)
+                (setq-local minibuffer-completion-table mc-table)
+                (setq-local minibuffer-completion-predicate mc-predicate))
             (selectrum--minibuffer-with-setup-hook
                 (:append (lambda ()
                            (setq-local selectrum--match-is-required
