@@ -869,14 +869,21 @@ content height is greater than the window height."
 
 (defun selectrum--group-by (fun elems)
   "Group ELEMS by FUN."
-  (let ((groups))
-    (dolist (cand elems)
-      (let* ((key (funcall fun cand nil))
-             (group (assoc key groups)))
-        (if group
-            (setcdr group (cons cand (cdr group)))
-          (push (list key cand) groups))))
-    (mapcan (lambda (x) (nreverse (cdr x))) (nreverse groups))))
+  (when elems
+    (let ((groups))
+      (while elems
+        (let* ((key (funcall fun (car elems) nil))
+               (group (cdr (assoc key groups))))
+          (if group
+              (setcdr group (setcdr (cdr group) elems)) ;; Append to tail of group
+            (push `(,key ,elems . ,elems) groups)) ;; New group (key head . tail)
+          (setq elems (cdr elems))))
+      (setcdr (cddar groups) nil) ;; Unlink last tail
+      (setq groups (nreverse groups))
+      (prog1 (cadar groups)
+        (while (cdr groups)
+          (setcdr (cddar groups) (cadadr groups)) ;; Link groups
+          (setq groups (cdr groups)))))))
 
 (defun selectrum--vertical-display-style
     (win input nrows _ncols index
