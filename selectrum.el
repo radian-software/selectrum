@@ -2334,7 +2334,7 @@ locally in the minibuffer."
               (read-from-minibuffer
                prompt initial-input selectrum-minibuffer-map nil
                (or history 'minibuffer-history) default-candidate)))))
-    (cond (minibuffer-completion-table
+    (cond (mc-table
            ;; Behave like completing-read-default which strips the
            ;; text properties but leaves the default unchanged
            ;; when submitting the empty prompt to get it (see
