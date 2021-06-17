@@ -1367,17 +1367,21 @@ part of the candidate set."
                 0 'face
                 selectrum-default-value-format))))))
 
+(defun selectrum--hscroll-step (width)
+  "Step to scroll when scrolling horizontally automatically."
+  (cond ((and (integerp hscroll-step)
+              (> hscroll-step 0))
+         hscroll-step)
+        ((floatp hscroll-step)
+         (ceiling (* width hscroll-step)))
+        (t (ceiling (/ width 2)))))
+
 (defun selectrum--update (&optional keep-selected)
   "Update state.
 KEEP-SELECTED can be a candidate which should stay selected after
 the update."
   ;; Stay within input area.
   (goto-char (max (point) (minibuffer-prompt-end)))
-  ;; Scroll the minibuffer when current prompt exceeds window width.
-  (let* ((width (window-width)))
-    (if (< (point) (- width (/ width 3)))
-        (set-window-hscroll nil 0)
-      (set-window-hscroll nil (- (point) (/ width 3)))))
   ;; For some reason this resets and thus can't be set in setup hook.
   (setq-local truncate-lines t)
   (let ((inhibit-read-only t)
@@ -1415,6 +1419,15 @@ the update."
              (length count-info)))
            (horizp (car inserted-res))
            (inserted-string (cadddr inserted-res)))
+      ;; Scroll the minibuffer when current prompt exceeds window width.
+      (let* ((width (window-width))
+             (pos (+ (point) (length count-info))))
+        (cond ((< (+ pos hscroll-margin) width)
+               (set-window-hscroll nil 0))
+              ((> (+ pos hscroll-margin) (+ width (window-hscroll)))
+               (set-window-hscroll nil (- (+ pos (selectrum--hscroll-step width)) width)))
+              ((<= (- pos hscroll-margin 1) (window-hscroll))
+               (set-window-hscroll nil (- pos (selectrum--hscroll-step width) 1)))))
       (setq-local selectrum--actual-num-candidates-displayed
                   (cadr inserted-res))
       (setq-local selectrum--first-index-displayed
