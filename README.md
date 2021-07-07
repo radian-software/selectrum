@@ -785,15 +785,12 @@ and is therefore fully compliant with all features of the
 `completing-read` API. Overall Vertico follows a similar philosophy as
 Selectrum, relying on default components and [complementary
 packages](#complementary-extensions). Many of the complementary
-packages work well with both Selectrum and Vertico. However Selectrum
-and Vertico differ in their priorities. Selectrum focuses on offering
-a flexible UI which optimizes completions in some cases, e.g., it
-supports both a horizontal and a vertical display. It optimizes
-completions of remote files (caching) and multiple selections
-(`completing-read-multiple`). Furthermore it provides advanced
-features like quick keys and display actions, to show the completions
-in a buffer. Vertico instead aims for a minimal code base and avoids
-inventing additional features.
+packages, notably Consult, work well with both Selectrum and Vertico.
+Selectrum offers a flexible UI, e.g., it supports both a horizontal
+and a vertical display. Furthermore it provides Avy-style quick keys
+and display actions, to show the completions in a buffer. On the other
+hand, Vertico additionally supports cycling over candidates and
+provides more commands for grouping support.
 
 ### Icicles
 
