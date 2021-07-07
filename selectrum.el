@@ -1981,7 +1981,7 @@ plus CANDIDATE."
                   candidate)
                  (selectrum--get-full candidate))))
          (inhibit-read-only t))
-    (erase-buffer)
+    (delete-minibuffer-contents)
     (insert (if (string-empty-p result)
                 (or selectrum--default-candidate result)
               result))
