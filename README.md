@@ -415,7 +415,7 @@ following additional packages:
   for Selectrum and Icomplete or more generally any completion system
   based on `completing-read`.
 
-* For filtering and frecency-based sorting there is
+* For filtering and frequency-based sorting there is
   [Prescient](https://github.com/raxod502/prescient.el).
 
 * As an alternative filtering method, there is
