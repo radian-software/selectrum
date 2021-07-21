@@ -17,8 +17,8 @@ replacing [Helm](https://github.com/emacs-helm/helm),
 - [What is it?](#what-is-it)
 - [Installation](#installation)
 - [Usage](#usage)
-      - [Alternative 1: Prescient](#alternative-1-prescient)
-      - [Alternative 2: Orderless](#alternative-2-orderless)
+  * [Alternative 1: Prescient](#alternative-1-prescient)
+  * [Alternative 2: Orderless](#alternative-2-orderless)
 - [User guide](#user-guide)
   * [Keybindings](#keybindings)
   * [Sorting and filtering](#sorting-and-filtering)
@@ -143,16 +143,17 @@ package from MELPA and adding the following to your init-file.
 (prescient-persist-mode +1)
 ```
 
-* Your candidates are sorted by *frecency*. Your most recent choices
-  are saved, and those are sorted first. After that, your most
-  frequent choices are saved, and those are sorted next. The rest of
-  the candidates are sorted by length. This algorithm turns out to do
-  very well in practice while being fast and not very magical.
+* Your candidates are sorted by
+  [*frecency*](https://en.wikipedia.org/wiki/Frecency) (a combination
+  of *frequency* and *recency*). Recently used candidates are sorted
+  first, then frequently used candidates. The remaining candidates are
+  sorted by length. This algorithm turns out to do very well in
+  practice while being fast and not very magical.
 * Your input is split on spaces into subqueries, each of which must
   (by default) match as either a substring, a regexp, or an initialism
   (e.g. `ffap` matches `find-file-at-point`). The subqueries can match
   a candidate in any order, but a candidate must match all subqueries
-  in order to remain in the filtered list of candidates.
+  to remain in the list of filtered candidates.
   * Other matching styles are available in addition to the default
     three, and custom styles can be added by users.
   * Filtering features can be toggled on the fly, such as whether to
@@ -187,8 +188,9 @@ built-in `savehist-mode`. Afterwards the candidates are filtered and
 highlighted using the `completion-styles`, in this case `orderless`.
 
 In some cases you may want to consider to use Prescient on top of
-Orderless. Prescient can be used to provide *frecency*-based sorting and
-history persistence by adding the following.
+Orderless. Prescient can be used to provide *frecency*-based sorting
+(a combination of *frequency* and *recency*) and history persistence
+by adding the following.
 
 ```elisp
 (setq selectrum-prescient-enable-filtering nil)
@@ -415,7 +417,8 @@ following additional packages:
   for Selectrum and Icomplete or more generally any completion system
   based on `completing-read`.
 
-* For filtering and frecency-based sorting there is
+* For filtering and *frecency*-based sorting (a combination of
+  *frequency* and *recency*) there is
   [Prescient](https://github.com/raxod502/prescient.el).
 
 * As an alternative filtering method, there is
