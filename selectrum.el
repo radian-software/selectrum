@@ -1401,8 +1401,7 @@ the update."
        '(face selectrum-current-candidate)))
     (let* ((count-info (selectrum--count-info))
            (window (if selectrum-display-action
-                       (and selectrum--refined-candidates
-                            (selectrum--get-display-window))
+                       (selectrum--get-display-window)
                      (active-minibuffer-window)))
            (minibuf-after-string (or (selectrum--format-default) " "))
            (inserted-res
