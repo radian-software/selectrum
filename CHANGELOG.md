@@ -108,6 +108,10 @@ The format is based on [Keep a Changelog].
   previously deleted multiple instances of the moved candidate.  It
   now correctly moves all instances to the front, maintaining their
   relative order.  This was first mentioned in [#580].  See [#581].
+* Using `selectrum-submit-exact-input` when completing library names
+  with `selectrum-read-library-name` will cause the first matching
+  library name in the list of unfiltered candidates to be
+  selected. ([#577], [#580])
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#176]: https://github.com/raxod502/selectrum/issues/176
@@ -149,6 +153,7 @@ The format is based on [Keep a Changelog].
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
+[#577]: https://github.com/raxod502/selectrum/issues/577
 [#580]: https://github.com/raxod502/selectrum/pull/580
 [#581]: https://github.com/raxod502/selectrum/pull/581
 
