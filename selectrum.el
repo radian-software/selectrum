@@ -651,9 +651,16 @@ return X."
   "Move ELT to front of LST, if present.
 Make comparisons using `equal'. Modify the input list
 destructively and return the modified list."
-  (if-let ((rest (member elt lst)))
-      (nconc (list (car rest)) (delete elt lst))
-    lst))
+  ;; We can't use something like "(cons elt (filter elt lst))"
+  ;; in case there are multiple instances of `elt' in `lst'.
+  (let ((matches)
+        (others))
+    (dolist (i lst)
+      (if (equal i elt)
+          (push i matches)
+        (push i others)))
+    ;; Maintain the order of the list.
+    (nconc (nreverse matches) (nreverse others))))
 
 (defmacro selectrum--minibuffer-with-setup-hook (fun &rest body)
   "Variant of `minibuffer-with-setup-hook' using a symbol and `fset'.

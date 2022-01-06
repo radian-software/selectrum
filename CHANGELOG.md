@@ -104,6 +104,10 @@ The format is based on [Keep a Changelog].
 * When all candidates were selected in a completing-read-multiple
   session the return value wasn't correct, which has been fixed
   ([#495]).
+* Fix `selectrum--move-to-front-destructive`.  This function
+  previously deleted multiple instances of the moved candidate.  It
+  now correctly moves all instances to the front, maintaining their
+  relative order.  This was first mentioned in [#580].  See [#581].
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#176]: https://github.com/raxod502/selectrum/issues/176
@@ -145,6 +149,8 @@ The format is based on [Keep a Changelog].
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
+[#580]: https://github.com/raxod502/selectrum/pull/580
+[#581]: https://github.com/raxod502/selectrum/pull/581
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
