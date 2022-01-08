@@ -2276,7 +2276,7 @@ KEYS is a list of key strings to combine."
 (cl-defun selectrum--read
     (prompt candidates &rest args &key
             default-candidate initial-input require-match
-            history mc-table mc-predicate)
+            history mc-table mc-predicate mc-allow-text-properties)
   "Prompt user with PROMPT to select one of CANDIDATES.
 Return the selected string.
 
@@ -2314,7 +2314,14 @@ HISTORY is the `minibuffer-history-variable' to use (by default
 For MC-TABLE and MC-PREDICATE see `minibuffer-completion-table'
 and `minibuffer-completion-predicate'. They are used for internal
 purposes and compatibility to Emacs completion API. They will be
-locally in the minibuffer."
+locally in the minibuffer.
+
+If MC-ALLOW-TEXT-PROPERTIES is non-nil, candidates selected from
+function completion tables will always keep their text
+properties. This argument is for internal purposes. The default
+behavior, complying with that of `completing-read-default', is to
+strip text properties from candidates except when selecting the
+default candidate by submitting empty input."
   (let* ((minibuffer-allow-text-properties t)
          (resize-mini-windows 'grow-only)
          (prompt (selectrum--remove-default-from-prompt prompt))
@@ -2353,7 +2360,9 @@ locally in the minibuffer."
                       (equal res default))
                  (or (car-safe default-candidate)
                      default-candidate)
-               (substring-no-properties res))))
+               (if mc-allow-text-properties
+                   res
+                 (substring-no-properties res)))))
           (t res))))
 
 ;;;###autoload
@@ -2885,48 +2894,114 @@ For large enough N, return PATH unchanged."
       (string-match regexp path)
       (match-string 0 path))))
 
+;; In Emacs 28.1, `find-function-source-path' was renamed to
+;; `find-library-source-path'.
+(defvar find-library-source-path)
+(defvar find-function-source-path)
+
 ;;;###autoload
 (defun selectrum-read-library-name ()
   "Read and return a library name.
+
 Similar to `read-library-name' except it handles `load-path'
-shadows correctly."
+shadows correctly. Interactively, this function assumes that a
+directory does not contain multiple versions of the same library.
+
+While only library names are displayed interactively, file names
+will be used as fallback candidates to accept the same input as
+the built-in `read-library-name'."
   (eval-and-compile
     (require 'find-func))
-  (let ((suffix-regexp (concat (regexp-opt (find-library-suffixes)) "\\'"))
+  (let ((suffix-regexp
+         ;; "elc" is excluded by `find-library-suffixes', but we want
+         ;; to include it for candidates like `map.elc'.  Normal
+         ;; completion doesn't seem to have that issue.
+         (concat (regexp-opt (cons ".elc" (find-library-suffixes)))
+                 "\\'"))
         (table (make-hash-table :test #'equal))
-        (lst nil))
-    (dolist (dir (or find-function-source-path load-path))
+        (lib-name-cands nil)      ; Cleaned-up and disambiguated cands
+        (file-name-cands nil))    ; Other candidates
+    (dolist (dir (or (if (boundp 'find-library-source-path)
+                         ;; In Emacs 28.1, `find-function-source-path'
+                         ;; was renamed to `find-library-source-path'.
+                         find-library-source-path
+                       find-function-source-path)
+                     load-path))
       (condition-case _
-          (mapc
-           (lambda (entry)
-             (unless (string-match-p "^\\.\\.?$" entry)
-               (let ((base (file-name-base entry)))
-                 (puthash base (cons entry (gethash base table)) table))))
-           (directory-files dir 'full suffix-regexp 'nosort))
+          (let ((found-libs))
+            (mapc
+             (lambda (entry)
+               (unless (string-match-p "^\\.\\.?$" entry)
+                 (let* ((file-name (file-name-nondirectory entry))
+                        (base (string-trim-right
+                               file-name suffix-regexp)))
+                   ;; We want to visually disambiguate libraries
+                   ;; for which there are multiple versions in the
+                   ;; load path.  In normal Selectrum completion,
+                   ;; we only want to display a single candidate
+                   ;; for each directory in the load path in which the
+                   ;; library is located.
+                   ;;
+                   ;; For whatever reason, returning a path to an ELC
+                   ;; file always opens the loaded version of the
+                   ;; library, regardless of where the ELC file is
+                   ;; located, so we ignore them for these lib-name
+                   ;; candidates.
+                   (unless (or (member base found-libs)
+                               (string-match-p "\\.elc\\'" file-name))
+                     (push entry (gethash base table))
+                     (push base found-libs))
+                   ;; Besides the bare library name (e.g., "cl-lib"),
+                   ;; default completion also shows the actual file
+                   ;; names (e.g., "cl-lib.el.gz" and "cl-lib.elc").
+                   ;;
+                   ;; We don't really need to show these for
+                   ;; normal interactive use, but we must support them
+                   ;; for libraries like Embark (see #577, #580).
+                   (unless (member file-name file-name-cands)
+                     (push (propertize file-name
+                                       'fixedcase 'literal
+                                       'selectrum--lib-path entry)
+                           file-name-cands)))))
+             (directory-files dir 'full suffix-regexp 'nosort)))
         (file-error)))
+    ;; Now that we have a table of symbols and lists of files, we want
+    ;; to create candidates with minimally unique display prefixes,
+    ;; such as "folder1/library-symbol" and "folder2/library-symbol".
+    ;;
+    ;; The prefixes are made from the final components of the full
+    ;; path to each found file, and we keep adding components from
+    ;; earlier in the file path to the prefix until we have as many
+    ;; unique prefixes as there are entries in `paths' (or until the
+    ;; maximum number of components has been used).
+    ;;
+    ;; This approach assumes that each directory containing a version
+    ;; of `lib-name' is only represented once in `paths', which we
+    ;; ensured earlier while processing the found file names.
     (maphash
-     (lambda (_ paths)
-       (setq paths (nreverse (seq-uniq paths)))
+     (lambda (lib-name paths)
+       (setq paths (nreverse paths)) ; Move shadowed paths to end.
        (cl-block nil
          (let ((num-components 1)
-               (max-components (apply #'max (mapcar (lambda (path)
-                                                      (1+ (cl-count ?/ path)))
-                                                    paths))))
+               (max-components
+                (apply #'max (mapcar (lambda (path)
+                                       (1+ (cl-count ?/ path)))
+                                     paths))))
            (while t
              (let ((abbrev-paths
                     (seq-uniq
                      (mapcar (lambda (path)
-                               (file-name-sans-extension
+                               (string-trim-right
                                 (selectrum--trailing-components
-                                 num-components path)))
+                                 num-components path)
+                                suffix-regexp))
                              paths))))
                (when (or (= num-components max-components)
                          (= (length paths) (length abbrev-paths)))
                  (let ((candidate-paths
                         (mapcar (lambda (path)
                                   (propertize
-                                   (file-name-base
-                                    (file-name-sans-extension path))
+                                   lib-name
                                    'selectrum-candidate-display-prefix
                                    (file-name-directory
                                     (file-name-sans-extension
@@ -2935,14 +3010,31 @@ shadows correctly."
                                    'fixedcase 'literal
                                    'selectrum--lib-path path))
                                 paths)))
-                   (setq lst (nconc candidate-paths lst)))
+                   (setq lib-name-cands
+                         (nconc candidate-paths lib-name-cands)))
                  (cl-return)))
              (cl-incf num-components)))))
      table)
-    (get-text-property
-     0 'selectrum--lib-path
-     (selectrum--read
-      "Library name: " lst :require-match t))))
+    ;; If the user chooses a matching candidate with
+    ;; `selectrum-submit-exact-input', then the returned candidate
+    ;; won't have the needed property. In that case, we select the
+    ;; first item in the list of propertized candidates that is
+    ;; `equal' to the selected candidate. See issue #577.
+    (let* ((all-cands (append lib-name-cands file-name-cands))
+           (chosen-cand
+            (selectrum--read "Library name: "  nil
+                             :require-match t
+                             :mc-allow-text-properties t
+                             :mc-table (completion-table-in-turn
+                                        lib-name-cands
+                                        file-name-cands))))
+      (or (get-text-property 0 'selectrum--lib-path chosen-cand)
+          ;; Find the first candidate in `all-cands' that equals
+          ;; the chosen candidate output.
+          (cl-loop for lib-cand in all-cands
+                   when (equal chosen-cand lib-cand)
+                   return (get-text-property 0 'selectrum--lib-path
+                                             lib-cand))))))
 
 (defun selectrum-repeat ()
   "Repeat the last command that used Selectrum, and try to restore state."
