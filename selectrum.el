@@ -2547,6 +2547,7 @@ COLLECTION, and PREDICATE, see `completion-in-region'."
                           (car cands)
                         (selectrum--read
                          "Completion: " cands
+                         :initial-input input
                          :mc-table collection
                          :mc-predicate predicate))
                       exit-status (cond ((not (member result cands)) 'sole)
