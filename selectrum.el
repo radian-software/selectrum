@@ -386,11 +386,17 @@ This option needs to be set before activating `selectrum-mode'."
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map minibuffer-local-map)
 
-    (define-key map [remap keyboard-quit] #'abort-recursive-edit)
-    ;; This is bound in `minibuffer-local-map' by loading `delsel', so
-    ;; we have to account for it too.
-    (define-key map [remap minibuffer-keyboard-quit]
-      #'abort-recursive-edit)
+    ;; Previously, we needed to explicitly bind `abort-recursive-edit'
+    ;; to handle recursive minibuffers, but the new function
+    ;; `abort-minibuffers' already handles them.
+    ;; `minibuffer-keyboard-quit' now uses this function.
+    (unless (fboundp 'abort-minibuffers)
+      (define-key map [remap keyboard-quit] #'abort-recursive-edit)
+      ;; This is bound in `minibuffer-local-map' by loading `delsel', so
+      ;; we have to account for it too.
+      (define-key map [remap minibuffer-keyboard-quit]
+        #'abort-recursive-edit))
+
     ;; Override both the arrow keys and C-n/C-p.
     (define-key map [remap previous-line]
       #'selectrum-previous-candidate)

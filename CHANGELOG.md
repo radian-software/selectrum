@@ -112,6 +112,10 @@ The format is based on [Keep a Changelog].
   with `selectrum-read-library-name` will cause the first matching
   library name in the list of unfiltered candidates to be
   selected. ([#577], [#580])
+* Selectrum no longer remaps `C-g` when the function
+  `abort-minibuffers` is available.  Previously, this was done to
+  better support recursive minibuffers, but default Emacs now handles
+  this better. See [#569].
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#176]: https://github.com/raxod502/selectrum/issues/176
@@ -153,6 +157,7 @@ The format is based on [Keep a Changelog].
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
+[#537]: https://github.com/raxod502/selectrum/pull/569
 [#577]: https://github.com/raxod502/selectrum/issues/577
 [#580]: https://github.com/raxod502/selectrum/pull/580
 [#581]: https://github.com/raxod502/selectrum/pull/581
