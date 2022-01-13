@@ -3102,6 +3102,7 @@ ARGS are standard as in all `:around' advice."
   (define-minor-mode selectrum-mode
     "Minor mode to use Selectrum for `completing-read'."
     :global t
+    :group 'selectrum
     (if selectrum-mode
         (progn
           ;; Make sure not to blow away saved variable values if mode
