@@ -157,7 +157,7 @@ The format is based on [Keep a Changelog].
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
-[#537]: https://github.com/raxod502/selectrum/pull/569
+[#569]: https://github.com/raxod502/selectrum/pull/569
 [#577]: https://github.com/raxod502/selectrum/issues/577
 [#580]: https://github.com/raxod502/selectrum/pull/580
 [#581]: https://github.com/raxod502/selectrum/pull/581
