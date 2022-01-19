@@ -63,6 +63,9 @@ The format is based on [Keep a Changelog].
   deriving from `comint-mode` ([#459], [#462]).
 * `selectrum-completion-in-region` does support cycling (as configured
   per `completion-cycle-threshold`) now ([#419], [#456]).
+* `selectrum-completion-in-region` includes the prefix in the input
+  line in the minibuffer for non-file completions.  This is already
+  done for file completions.  See [#576], [#583].
 
 ### Changed defaults
 * `selectrum-completion-in-region-styles` now defaults to `nil`. In
@@ -158,9 +161,11 @@ The format is based on [Keep a Changelog].
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
 [#569]: https://github.com/raxod502/selectrum/pull/569
+[#576]: https://github.com/raxod502/selectrum/issues/576
 [#577]: https://github.com/raxod502/selectrum/issues/577
 [#580]: https://github.com/raxod502/selectrum/pull/580
 [#581]: https://github.com/raxod502/selectrum/pull/581
+[#583]: https://github.com/raxod502/selectrum/pull/583
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
