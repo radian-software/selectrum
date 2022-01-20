@@ -593,6 +593,15 @@ This is non-nil during the first call of
   "Non-nil when command should trigger refresh.")
 
 ;;; Utility functions
+(defun selectrum--select-active-minibuffer-window ()
+  "Select the active minibuffer window.
+
+This function is added locally to `pre-command-hook' in buffers
+displayed via `selectrum-display-action'. This is important for
+using the mouse in such displayed buffers, since otherwise focus
+would move away from the minibuffer window when clicking on
+candidates."
+  (select-window (active-minibuffer-window)))
 
 (defun selectrum-refine-candidates-using-completions-styles (input candidates)
   "Use INPUT to filter and highlight CANDIDATES.
@@ -851,6 +860,8 @@ when possible (it is still a member of the candidate set)."
 
 Window will be created by `selectrum-display-action'."
   (let ((buf (or (get-buffer selectrum--display-action-buffer)
+                 ;; NOTE: This buffer is re-used.  We only create it
+                 ;; once.
                  (with-current-buffer
                      (get-buffer-create selectrum--display-action-buffer)
                    (setq cursor-type nil)
@@ -861,6 +872,15 @@ Window will be created by `selectrum-display-action'."
                    (setq show-trailing-whitespace nil)
                    (goto-char (point-min))
                    (run-hooks 'selectrum-display-action-hook)
+                   ;; We want to prevent interacting with the buffer.
+                   ;; Ideally, users only interact with the
+                   ;; minibuffer, but we need to reselect the
+                   ;; minibuffer window in case the user clicks on a
+                   ;; candidate.
+                   (add-hook
+                    'pre-command-hook
+                    #'selectrum--select-active-minibuffer-window
+                    nil t)
                    (current-buffer))))
         (action selectrum-display-action))
     (or (get-buffer-window buf 'visible)
