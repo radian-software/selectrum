@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog].
   * selectrum-active-p
   * selectrum-should-sort-p
   * selectrum-fix-minibuffer-height
+* Running commands in buffers displayed via `selectrum-display-action`
+  now automatically reselects the minibuffer ([#585], [#586]).
 
 ### Features
 * Add `selectrum-display-action-hook` which can be used to initialize
@@ -119,6 +121,10 @@ The format is based on [Keep a Changelog].
   `abort-minibuffers` is available.  Previously, this was done to
   better support recursive minibuffers, but default Emacs now handles
   this better. See [#569].
+* Candidates selected via the mouse are now selected correctly in
+  buffers created by `selectrum-display-action`.  The active
+  minibuffer window is now automatically re-selected when clicking on
+  the buffer. ([#585], [#586])
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#176]: https://github.com/raxod502/selectrum/issues/176
@@ -166,6 +172,8 @@ The format is based on [Keep a Changelog].
 [#580]: https://github.com/raxod502/selectrum/pull/580
 [#581]: https://github.com/raxod502/selectrum/pull/581
 [#583]: https://github.com/raxod502/selectrum/pull/583
+[#585]: https://github.com/raxod502/selectrum/issues/585
+[#586]: https://github.com/raxod502/selectrum/pull/586
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
