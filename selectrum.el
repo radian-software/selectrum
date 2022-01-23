@@ -855,33 +855,34 @@ when possible (it is still a member of the candidate set)."
       ('current/matches (format "%-6s " (format "%d/%d" current total)))
       (_                ""))))
 
+(defun selectrum--create-display-buffer ()
+  "Create and return a buffer named by `selectrum--display-action-buffer'."
+  (with-current-buffer
+      (get-buffer-create selectrum--display-action-buffer)
+    (setq cursor-type nil)
+    (setq-local cursor-in-non-selected-windows nil)
+    (setq display-line-numbers nil)
+    (setq buffer-undo-list t)
+    (setq buffer-read-only t)
+    (setq show-trailing-whitespace nil)
+    (goto-char (point-min))
+    (run-hooks 'selectrum-display-action-hook)
+    ;; We want to prevent interacting with the buffer.
+    ;; Ideally, users only interact with the
+    ;; minibuffer, but we need to reselect the
+    ;; minibuffer window in case the user clicks on a
+    ;; candidate.
+    (add-hook
+     'pre-command-hook
+     #'selectrum--select-active-minibuffer-window
+     nil t)
+    (current-buffer)))
+
 (defun selectrum--get-display-window ()
   "Get candidate display window.
 
 Window will be created by `selectrum-display-action'."
-  (let ((buf (or (get-buffer selectrum--display-action-buffer)
-                 ;; NOTE: This buffer is re-used.  We only create it
-                 ;; once.
-                 (with-current-buffer
-                     (get-buffer-create selectrum--display-action-buffer)
-                   (setq cursor-type nil)
-                   (setq-local cursor-in-non-selected-windows nil)
-                   (setq display-line-numbers nil)
-                   (setq buffer-undo-list t)
-                   (setq buffer-read-only t)
-                   (setq show-trailing-whitespace nil)
-                   (goto-char (point-min))
-                   (run-hooks 'selectrum-display-action-hook)
-                   ;; We want to prevent interacting with the buffer.
-                   ;; Ideally, users only interact with the
-                   ;; minibuffer, but we need to reselect the
-                   ;; minibuffer window in case the user clicks on a
-                   ;; candidate.
-                   (add-hook
-                    'pre-command-hook
-                    #'selectrum--select-active-minibuffer-window
-                    nil t)
-                   (current-buffer))))
+  (let ((buf (get-buffer selectrum--display-action-buffer))
         (action selectrum-display-action))
     (or (get-buffer-window buf 'visible)
         (with-selected-window (minibuffer-selected-window)
@@ -1434,8 +1435,18 @@ the update."
        '(face selectrum-current-candidate)))
     (let* ((count-info (selectrum--count-info))
            (window (if selectrum-display-action
-                       (and selectrum--refined-candidates
-                            (selectrum--get-display-window))
+                       (progn
+                         ;; We want the buffer to exist even if we
+                         ;; don't get the window. While we currently
+                         ;; don't display the buffer unless there are
+                         ;; candidates, we still need the buffer to
+                         ;; insert new candidates later, such as
+                         ;; moving up from an empty directory. See
+                         ;; #571.
+                         (unless (get-buffer selectrum--display-action-buffer)
+                           (selectrum--create-display-buffer))
+                         (when selectrum--refined-candidates
+                           (selectrum--get-display-window)))
                      (active-minibuffer-window)))
            (minibuf-after-string (or (selectrum--format-default) " "))
            (inserted-res

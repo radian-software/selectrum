@@ -125,6 +125,9 @@ The format is based on [Keep a Changelog].
   buffers created by `selectrum-display-action`.  The active
   minibuffer window is now automatically re-selected when clicking on
   the buffer. ([#585], [#586])
+* Ensure that the buffer displayed with `selectrum-display-action`
+  always exists, even if we don't try to show it immediately.  See
+  [#571], [#587].
 
 [#16]: https://github.com/raxod502/selectrum/issues/16
 [#176]: https://github.com/raxod502/selectrum/issues/176
@@ -167,6 +170,7 @@ The format is based on [Keep a Changelog].
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
 [#569]: https://github.com/raxod502/selectrum/pull/569
+[#571]: https://github.com/raxod502/selectrum/issues/571
 [#576]: https://github.com/raxod502/selectrum/issues/576
 [#577]: https://github.com/raxod502/selectrum/issues/577
 [#580]: https://github.com/raxod502/selectrum/pull/580
@@ -174,6 +178,7 @@ The format is based on [Keep a Changelog].
 [#583]: https://github.com/raxod502/selectrum/pull/583
 [#585]: https://github.com/raxod502/selectrum/issues/585
 [#586]: https://github.com/raxod502/selectrum/pull/586
+[#587]: https://github.com/raxod502/selectrum/pull/587
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
