@@ -214,6 +214,10 @@ how to fix it.
 * *To navigate to a candidate:* use the standard motion commands
   (`<up>`, `<down>`, `C-v`, `M-v`, `M-<`, `M->`). If you prefer, you
   can use `C-p` and `C-n` instead of the arrow keys.
+* *To navigate to a group of candidates*: use `M-{` (remapped from
+  `backward-paragraph`) and `M-}` (remapped from `forward-paragraph`)
+  to move to the previous and next group, respectively. You can also
+  use `C-M-p` and `C-M-n`.
 * *To accept the currently selected candidate:* type `RET`/`C-m`.
   (With a prefix argument, accept instead the candidate at that point
   in the list, counting from one. See `selectrum-show-indices`. The

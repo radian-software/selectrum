@@ -380,6 +380,14 @@ This option needs to be set before activating `selectrum-mode'."
   :type 'boolean
   :group 'selectrum)
 
+(defcustom selectrum-cycle-movement nil
+  "Whether commands that move past the last candidate move to the first.
+
+See also the user option `selectrum-count-style' for displaying
+the position of the currently selected candidate."
+  :type 'boolean
+  :group 'selectrum)
+
 ;;; Variables
 
 (defvar selectrum-minibuffer-map
@@ -397,6 +405,7 @@ This option needs to be set before activating `selectrum-mode'."
       (define-key map [remap minibuffer-keyboard-quit]
         #'abort-recursive-edit))
 
+    ;; Next/prev cand:
     ;; Override both the arrow keys and C-n/C-p.
     (define-key map [remap previous-line]
       #'selectrum-previous-candidate)
@@ -406,12 +415,14 @@ This option needs to be set before activating `selectrum-mode'."
       #'selectrum-previous-candidate)
     (define-key map [remap next-line-or-history-element]
       #'selectrum-next-candidate)
-    (define-key map [remap exit-minibuffer]
-      #'selectrum-select-current-candidate)
+
+    ;; Next/prev page:
     (define-key map [remap scroll-down-command]
       #'selectrum-previous-page)
     (define-key map [remap scroll-up-command]
       #'selectrum-next-page)
+
+    ;; First/last cand:
     ;; Use `minibuffer-beginning-of-buffer' for Emacs >=27 and
     ;; `beginning-of-buffer' for Emacs <=26.
     (define-key map [remap minibuffer-beginning-of-buffer]
@@ -420,6 +431,20 @@ This option needs to be set before activating `selectrum-mode'."
       #'selectrum-goto-beginning)
     (define-key map [remap end-of-buffer]
       #'selectrum-goto-end)
+
+    ;; Next/prev group:
+    (define-key map (kbd "C-M-n")
+      #'selectrum-next-group)
+    (define-key map (kbd "C-M-p")
+      #'selectrum-previous-group)
+    (define-key map [remap forward-paragraph]
+      #'selectrum-next-group)
+    (define-key map [remap backward-paragraph]
+      #'selectrum-previous-group)
+
+    ;; Other:
+    (define-key map [remap exit-minibuffer]
+      #'selectrum-select-current-candidate)
     (define-key map [remap kill-ring-save]
       #'selectrum-kill-ring-save)
     (define-key map [remap previous-matching-history-element]
@@ -659,8 +684,50 @@ See `selectrum-preprocess-candidates-function'."
 (defun selectrum--clamp (x lower upper)
   "Constrain X to be between LOWER and UPPER inclusive.
 If X < LOWER, return LOWER. If X > UPPER, return UPPER. Else
-return X."
+return X.
+
+See the function `selectrum--cycle' for a wrapping version of
+this function."
   (min (max x lower) upper))
+
+(defun selectrum--cycle (x max-index selectable-prompt)
+  "Wrap around index X to be inclusively between the min and MAX-INDEX.
+
+If SELECTABLE-PROMPT is non-nil, the min is -1.  Otherwise, it is 0.
+
+For example:
+    (selectrum--cycle 8 6 nil)  ; => 1
+    (selectrum--cycle -3 6 nil) ; => 4
+    (selectrum--cycle -14 4 t)  ; => 4
+    (selectrum--cycle 12 4 t)   ; => 0
+
+See the function `selectrum--clamp' for a non-wrapping version of
+this function."
+  (let ((step) (min))
+    (if selectable-prompt
+        (setq step (+ 2 max-index)
+              min -1)
+      (setq step (1+ max-index)
+            min 0))
+    (cond
+     ;; If no candidates, stay on prompt.
+     ((= max-index -1) -1)
+     ;; If only one candidate, move to that or input line.
+     ((zerop max-index)
+      (cond ((not selectable-prompt) 0)
+            ((cl-oddp x) -1)
+            (t 0)))
+     ;; If past the limits, wrap around. Maybe include the input line.
+     ((> x max-index)
+      (while (> x max-index)
+        (cl-decf x step))
+      x)
+     ((< x min)
+      (while (< x min)
+        (cl-incf x step))
+      x)
+     ;; Otherwise, if within limits, return x.
+     (t x))))
 
 (defun selectrum--move-to-front-destructive (elt lst)
   "Move ELT to front of LST, if present.
@@ -1915,43 +1982,278 @@ session was started from."
   (add-hook 'post-command-hook #'selectrum--update nil 'local))
 
 ;;; Minibuffer commands
-
 (defun selectrum-previous-candidate (&optional arg)
-  "Move selection ARG candidates up, stopping at the beginning."
+  "Move selection ARG candidates up.
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+end. Otherwise, loop back around."
   (interactive "p")
   (selectrum-next-candidate (- (or arg 1))))
 
 (defun selectrum-next-candidate (&optional arg)
-  "Move selection ARG candidates down, stopping at the end."
+  "Move selection ARG candidates down.
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+end. Otherwise, loop back around.
+
+If ARG is negative, move up instead of down."
   (interactive "p")
   (when selectrum--current-candidate-index
-    (setq selectrum--current-candidate-index
-          (selectrum--clamp
-           (+ selectrum--current-candidate-index (or arg 1))
-           (if (and (selectrum--match-strictly-required-p)
-                    (cond (minibuffer-completing-file-name
-                           (not (selectrum--at-existing-prompt-path-p)))
-                          (t
-                           (not (string-empty-p selectrum--virtual-input)))))
-               0
-             -1)
-           (1- (length selectrum--refined-candidates))))))
+    (let ((new-pos (+ selectrum--current-candidate-index (or arg 1)))
+          (max-index (1- (length (selectrum-get-current-candidates t))))
+          (unselectable-input-line
+           (and (selectrum--match-strictly-required-p)
+                (cond (minibuffer-completing-file-name
+                       (not (selectrum--at-existing-prompt-path-p)))
+                      (t
+                       (not (string-empty-p selectrum--virtual-input)))))))
+      (setq selectrum--current-candidate-index
+            (if (not selectrum-cycle-movement)
+                ;; If we can't submit arbitrary input, prevent
+                ;; moving to the input line.
+                (selectrum--clamp new-pos
+                                  (if unselectable-input-line 0 -1)
+                                  max-index)
+              (selectrum--cycle new-pos max-index
+                                (not unselectable-input-line)))))))
 
 (defun selectrum-previous-page (&optional arg)
-  "Move selection upwards by ARG pages, stopping at the beginning."
+  "Move selection upwards by ARG pages.
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+beginning. Otherwise, loop back around."
   (interactive "p")
   (selectrum-next-page (- (or arg 1))))
 
 (defun selectrum-next-page (&optional arg)
-  "Move selection downwards by ARG pages, stopping at the end."
+  "Move selection downwards by ARG pages.
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+end. Otherwise, loop back around."
   (interactive "p")
   (when selectrum--current-candidate-index
-    (setq-local selectrum--current-candidate-index
-                (selectrum--clamp
-                 (+ selectrum--current-candidate-index
-                    (* (or arg 1) selectrum--actual-num-candidates-displayed))
-                 0
-                 (1- (length selectrum--refined-candidates))))))
+    (let ((new-pos (+ selectrum--current-candidate-index
+                      (* (or arg 1) selectrum--actual-num-candidates-displayed)))
+          (max-index (1- (length (selectrum-get-current-candidates t)))))
+      ;; Paging commands cannot select the input line.
+      (setq selectrum--current-candidate-index
+            (if (not selectrum-cycle-movement)
+                (selectrum--clamp new-pos 0 max-index)
+              (selectrum--cycle new-pos max-index nil))))))
+
+(defun selectrum-next-group (&optional arg)
+  "Move selection downwards by ARG group(s).
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+last group. Otherwise, loop back around."
+  (interactive "p")
+  (unless arg (setq arg 1))
+  (if (cl-minusp arg)
+      (selectrum-previous-group (abs arg))
+    (when-let ((group-fn (selectrum--get-meta 'group-function)))
+      (let* ((candidates (selectrum-get-current-candidates))
+             (start-index selectrum--current-candidate-index)
+             ;; These values updated in the loop:
+             (group (funcall group-fn (nth start-index candidates) nil))
+             (index (1+ start-index))
+             (remaining-cands (nthcdr index candidates)))
+
+        ;; If at the end and cycling, move to the beginning.
+        (when (and (null remaining-cands)
+                   selectrum-cycle-movement)
+          (setq index 0
+                remaining-cands candidates))
+
+        (cl-block block
+          ;; The common case of just moving to the immediate next group
+          ;; can be done more simply then the general case of moving to
+          ;; the ARG-th next group, so we add a special branch for it.
+          (if (= arg 1)
+              ;; Prevent infinite loop if we go through
+              ;; completely.
+              (while (and remaining-cands (/= index start-index))
+                ;; When the found group is not equal to the starting
+                ;; group
+                (when (not (equal (funcall group-fn (car remaining-cands)
+                                           nil)
+                                  group ))
+                  ;; then use the current index.
+                  (setq selectrum--current-candidate-index index)
+                  (cl-return-from block))
+                (setq remaining-cands (cdr remaining-cands)
+                      index (1+ index))
+                (when (and (null remaining-cands)
+                           selectrum-cycle-movement)
+                  (setq remaining-cands candidates
+                        index 0)))
+            ;; In the general case, we need to check that the tested
+            ;; candidate's is group is not equal to the previous
+            ;; candidate's group. In this case, we must count how many
+            ;; times we enter a new group, which may equal the starting
+            ;; group if we've cycled around.
+            ;;
+            ;; If we can't cycle around, then we need to stop at the
+            ;; last found group, similar to the effects of
+            ;; `selectrum--clamp' as used in commands like
+            ;; `selectrum-next-candidate'.
+            (let ((prev-group nil)
+                  (group-count 0)
+                  (last-found-index nil))
+              (while (and remaining-cands
+                          ;; Prevent infinite loop if we go through
+                          ;; completely.
+                          (not (and (= index start-index)
+                                    (zerop group-count))))
+                (setq prev-group group
+                      group (funcall group-fn (car remaining-cands) nil))
+                ;; When the found group is not equal to the previous
+                ;; group (i.e., we have reached the next group)
+                (when (not (equal group prev-group))
+                  ;; Increase the count of found groups.
+                  (cl-incf group-count)
+                  ;; Note the position of the new group.
+                  (setq last-found-index index)
+                  ;; And if the count of found groups equals arg,
+                  ;; use the current index.
+                  (when (= group-count arg)
+                    (setq selectrum--current-candidate-index index)
+                    (cl-return-from block)))
+                (setq remaining-cands (cdr remaining-cands)
+                      index (1+ index))
+                ;; When we run out of candidates
+                (when (null remaining-cands)
+                  (cond
+                   ;; Reset the loop if cycling
+                   (selectrum-cycle-movement
+                    (setq remaining-cands candidates
+                          index 0))
+                   ;; or use the last found group, if we found another
+                   ;; group.
+                   (last-found-index
+                    (setq selectrum--current-candidate-index
+                          last-found-index))))))))))))
+
+(defun selectrum-previous-group (&optional arg)
+  "Move selection upwards by ARG group(s).
+
+If `selectrum-cycle-movement' is nil (the default), stop at the
+first group. Otherwise, loop back around."
+  (interactive "p")
+  (unless arg (setq arg 1))
+  (if (cl-minusp arg)
+      (selectrum-next-group (abs arg))
+    (when-let ((group-fn (selectrum--get-meta 'group-function)))
+      (let* ((candidates (selectrum-get-current-candidates))
+             (start-index selectrum--current-candidate-index)
+             (max-index (1- (length candidates)))
+             ;; These values updated in the loop:
+             (group (funcall group-fn (nth start-index candidates) nil))
+             (candidates (reverse candidates))
+             (index (1- start-index))
+             (remaining-cands (last candidates start-index)))
+
+        ;; If at the start and cycling, move to the end.
+        (when (and (null remaining-cands)
+                   selectrum-cycle-movement)
+          (setq index max-index
+                remaining-cands candidates))
+
+        (cl-block block
+          ;; The common case of just moving to the immediate previous group
+          ;; can be done more simply then the general case of moving to
+          ;; the ARG-th next group, so we add a special branch for it.
+          (if (= arg 1)
+              ;; Prevent infinite loop if we go through
+              ;; completely.
+              (while (and remaining-cands (/= index start-index))
+                ;; When the found group is not equal to the starting
+                ;; group
+                (let ((test-group (funcall group-fn (car remaining-cands)
+                                           nil)))
+                  (when (not (equal test-group group))
+                    ;; We have reached the end of the previous group.
+                    ;; We now must move to the start of this group.
+                    (setq remaining-cands (cdr remaining-cands)
+                          index (1- index))
+                    ;; Either we reach the end of the 2nd previous group
+                    ;; (one after the start of the current group), or we
+                    ;; run out of candidates.
+                    (while (and remaining-cands
+                                (equal test-group
+                                       (funcall group-fn (car remaining-cands)
+                                                nil)))
+                      (setq remaining-cands (cdr remaining-cands)
+                            index (1- index)))
+                    ;; Either way, the start of `test-group' will be one
+                    ;; more than the current index.
+                    (setq selectrum--current-candidate-index (1+ index))
+                    (cl-return-from block)))
+                (setq remaining-cands (cdr remaining-cands)
+                      index (1- index))
+                (when (and (null remaining-cands)
+                           selectrum-cycle-movement)
+                  (setq remaining-cands candidates
+                        index max-index)))
+            ;; In the general case, we need to check that the tested
+            ;; candidate's is group is not equal to the previous
+            ;; candidate's group. In this case, we must count how many
+            ;; times we enter a new group, which may equal the starting
+            ;; group if we've cycled around.
+            ;;
+            ;; If we can't cycle around, then we need to stop at the
+            ;; beginning of the last found group, similar to the effects
+            ;; of `selectrum--clamp' as used in commands like
+            ;; `selectrum-next-candidate'. If we find any group, then we
+            ;; assume that the beginning of the first group is just the
+            ;; first candidate. An "ungrouped" group, of sorts.
+            (let ((prev-group nil)
+                  (group-count 0)
+                  (group-found nil))
+              (while (and remaining-cands
+                          ;; Prevent infinite loop if we go through
+                          ;; completely.
+                          (not (and (= index start-index)
+                                    (zerop group-count))))
+                (setq prev-group group
+                      group (funcall group-fn (car remaining-cands) nil))
+                ;; When the found group is not equal to the previous
+                ;; group (i.e., we have reached the next group)
+                (when (not (equal group prev-group))
+                  ;; Increase the count of found groups.
+                  (cl-incf group-count)
+                  ;; Note that we found a group.
+                  (setq group-found t)
+                  ;; And if the count of found groups equals arg, we have
+                  ;; reached the end of the desired previous group. We now
+                  ;; must move to the start of this group.
+                  (when (= group-count arg)
+                    ;; Either we reach the end of the (ARG+1)-th previous
+                    ;; group (one after the start of the current group),
+                    ;; or we run out of candidates.
+                    (setq remaining-cands (cdr remaining-cands)
+                          index (1- index))
+                    (while (and remaining-cands
+                                (equal group
+                                       (funcall group-fn (car remaining-cands)
+                                                nil)))
+                      (setq remaining-cands (cdr remaining-cands)
+                            index (1- index)))
+                    ;; Either way, the start of `test-group' will be one
+                    ;; more than the current index.
+                    (setq selectrum--current-candidate-index (1+ index))
+                    (cl-return-from block)))
+                (setq remaining-cands (cdr remaining-cands)
+                      index (1- index))
+                ;; When we run out of candidates
+                (when (null remaining-cands)
+                  (cond
+                   ;; Reset the loop if cycling
+                   (selectrum-cycle-movement
+                    (setq remaining-cands candidates
+                          index max-index))
+                   ;; or, if we found a group, go to the first candidate.
+                   (group-found
+                    (setq selectrum--current-candidate-index 0))))))))))))
 
 (defun selectrum-goto-beginning ()
   "Move selection to first candidate."
