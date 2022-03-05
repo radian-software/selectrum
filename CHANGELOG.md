@@ -54,6 +54,10 @@ The format is based on [Keep a Changelog].
   ([#500]).
 * The face that is used when the mouse hovers over candidates can now
   be customized through `selectrum-mouse-highlight` ([#507]).
+* Add commands `selectrum-next-group` and `selectrum-previous-group`
+  ([#554] , [#588]).
+* Add cycling to navigation commands ([#570], [#588]) with user option
+  `selectrum-cycle-movement`.
 
 ### Enhancements
 * When using `selectrum-insert-current-candidate` in a
@@ -169,7 +173,9 @@ The format is based on [Keep a Changelog].
 [#528]: https://github.com/raxod502/selectrum/issues/528
 [#530]: https://github.com/raxod502/selectrum/pull/530
 [#537]: https://github.com/raxod502/selectrum/pull/537
+[#554]: https://github.com/raxod502/selectrum/issues/554
 [#569]: https://github.com/raxod502/selectrum/pull/569
+[#570]: https://github.com/raxod502/selectrum/issues/570
 [#571]: https://github.com/raxod502/selectrum/issues/571
 [#576]: https://github.com/raxod502/selectrum/issues/576
 [#577]: https://github.com/raxod502/selectrum/issues/577
@@ -179,6 +185,7 @@ The format is based on [Keep a Changelog].
 [#585]: https://github.com/raxod502/selectrum/issues/585
 [#586]: https://github.com/raxod502/selectrum/pull/586
 [#587]: https://github.com/raxod502/selectrum/pull/587
+[#588]: https://github.com/raxod502/selectrum/pull/588
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated
