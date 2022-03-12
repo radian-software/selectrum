@@ -58,6 +58,11 @@ The format is based on [Keep a Changelog].
   ([#554] , [#588]).
 * Add cycling to navigation commands ([#570], [#588]) with user option
   `selectrum-cycle-movement`.
+* Add `selectrum-prefix-current-candidate` ([#591], [#593]). This is a
+  single character, such as `?→`, used to denote the current
+  candidate. This option is intended for when the highlighting of the
+  current candidate with the face `selectrum-current-candidate` is
+  insufficient.
 
 ### Enhancements
 * When using `selectrum-insert-current-candidate` in a
@@ -186,6 +191,8 @@ The format is based on [Keep a Changelog].
 [#586]: https://github.com/raxod502/selectrum/pull/586
 [#587]: https://github.com/raxod502/selectrum/pull/587
 [#588]: https://github.com/raxod502/selectrum/pull/588
+[#591]: https://github.com/raxod502/selectrum/issues/591
+[#593]: https://github.com/raxod502/selectrum/pull/593
 
 ## 3.1 (released 2021-02-21)
 ### Deprecated

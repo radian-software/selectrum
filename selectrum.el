@@ -79,6 +79,11 @@
   "Face used for candidates during mouse hovering."
   :group 'selectrum-faces)
 
+(defface selectrum-prefix-current-candidate
+  '((t :inherit hi-yellow))
+  "Face used for highlighting using `selectrum-prefix-current-candidate'."
+  :group 'selectrum-faces)
+
 ;;; User options
 
 (defgroup selectrum nil
@@ -283,6 +288,22 @@ should return the string to be displayed representing the index
 of the candidate. If this is some other non-nil value, it is
 treated as if it were (lambda (i) (format \"%2d \" i))."
   :type '(choice function boolean))
+
+(defcustom selectrum-prefix-current-candidate nil
+  "Whether to prefix the current candidate with a character.
+
+This is meant for those who would like an extra indicator of the
+current candidate beyond what is done by the face
+`selectrum-current-candidate'.
+
+If t, the character \"→\" is used. Otherwise, this value should
+be a single character or nil.
+
+See also the face `selectrum-prefix-current-candidate'."
+  :type '(choice
+          (const :tag "Default character (→)" t)
+          (const :tag "No prefix" nil)
+          (character :tag "Some other character")))
 
 (defcustom selectrum-completing-read-multiple-show-help t
   "Non-nil means to show help for `selectrum-completing-read-multiple'.
@@ -1915,15 +1936,24 @@ which is displayed in the UI."
     (when hl
       (setq displayed-candidate
             (selectrum--selection-highlight displayed-candidate)))
+    (when selectrum-prefix-current-candidate
+      (cl-callf2 concat
+          (cond ((not hl) " ")
+                ((eq t selectrum-prefix-current-candidate)
+                 #("→" 0 1 (face selectrum-prefix-current-candidate)))
+                (t
+                 (propertize (char-to-string
+                              selectrum-prefix-current-candidate)
+                             'face 'selectrum-prefix-current-candidate)))
+          displayed-candidate))
     (when-let (show-indices
                (cond
                 ((functionp selectrum-show-indices) selectrum-show-indices)
                 (selectrum-show-indices (lambda (i) (format "%2d " i)))))
       (setq displayed-candidate
-            (concat
-             (propertize
-              (funcall show-indices (1+ display-index))
-              'face 'minibuffer-prompt) displayed-candidate)))
+            (concat (propertize (funcall show-indices (1+ display-index))
+                                'face 'minibuffer-prompt)
+                    displayed-candidate)))
     (when (and selectrum--quick-fun
                (not hl))
       (setq displayed-candidate
