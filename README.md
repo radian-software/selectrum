@@ -472,6 +472,21 @@ The autoloads of Selectrum are set up so that you can enable
 loaded once you use some of its functionality in an interactive
 command.
 
+If you want to enable `selectrum-mode` for everything except a few
+commands, you can advise those commands to temporarily
+deactivate `selectrum-mode`. For example, below is how one could
+disable Selectrum for `org-set-tags-command`. Note that such advice
+also affects recursive minibuffers.
+
+```elisp
+(defun exclude-from-selectrum (orig-fun &rest args)
+    (selectrum-mode -1)
+    (apply orig-fun args)
+    (selectrum-mode +1))
+
+(advice-add 'org-set-tags-command :around #'exclude-from-selectrum)
+```
+
 ### News
 
 We document changes for users in the
