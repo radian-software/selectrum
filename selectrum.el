@@ -1040,7 +1040,8 @@ displayed first and LAST-INDEX-DISPLAYED the index of the last one."
     (dolist (cand candidates)
       (when-let (new-title (and groupf (funcall groupf cand nil)))
         (unless (equal last-title new-title)
-          (push (format selectrum-group-format (setq last-title new-title)) lines)
+          (push (format selectrum-group-format (setq last-title new-title))
+                lines)
           (push "\n" lines))
         (setq cand (funcall groupf cand 'transform)))
       (let* ((formatting-current-candidate
@@ -2033,7 +2034,8 @@ end. Otherwise, loop back around."
   (interactive "p")
   (when selectrum--current-candidate-index
     (let ((new-pos (+ selectrum--current-candidate-index
-                      (* (or arg 1) selectrum--actual-num-candidates-displayed)))
+                      (* (or arg 1)
+                         selectrum--actual-num-candidates-displayed)))
           (max-index (1- (length (selectrum-get-current-candidates t)))))
       ;; Paging commands cannot select the input line.
       (setq selectrum--current-candidate-index
