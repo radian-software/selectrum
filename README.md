@@ -363,9 +363,13 @@ used refinement function. The built-in `completion-styles` support the
 * The currently selected candidate is highlighted with the face
   `selectrum-current-candidate`. If you don't like the color, you can
   adjust it to taste.
-  * By default, only the displayed text is highlighted. If you wish to
-    extend the highlight until the margin, you can set
-    `selectrum-extend-current-candidate-highlight` to `t`.
+  * By default, only the displayed text is highlighted.  If
+    annotations are being used, then the highlighting is extended
+    until the margin. If you wish to always extend the highlighting,
+    you can set `selectrum-extend-current-candidate-highlight` to `t`.
+    Note that in Emacs 27 and greater, the face
+    `selectrum-current-candidate` must have the `:extend` attribute
+    set to `t` for this feature to work.
 * By default, the total number of matches are shown before the prompt.
   This behavior can be customized using `selectrum-count-style`.
 * You can show the indices of displayed candidates by customizing
