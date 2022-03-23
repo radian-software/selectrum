@@ -332,91 +332,129 @@ used refinement function. The built-in `completion-styles` support the
 
 ### Customization
 
-* By default, ten candidates are shown in the minibuffer at any given
-  time. You can customize that by changing
-  `selectrum-max-window-height`.
-    * Normally `selectrum-max-window-height` acts as just a maximum
-      for the height a window will expand to, if there isn't enough
-      space for the current candidates. For vertically displayed
-      candidates you might prefer to *always* have that height, even
-      if there are fewer candidates. This behavior may be achieved by
-      setting `selectrum-fix-vertical-window-height` to a non-nil
-      value.
-* The variable `selectrum-num-candidates-displayed` controls how many
-  candidates are displayed in total. The default value `auto` will
-  automatically use as many candidates as are possible to display by
-  given space and height settings.
-* The option `selectrum-display-style` controls how candidates are
-  displayed, settings for vertical and horizontal display are included
-  and you can cycle through display styles using the command
-  `selectrum-cycle-display-style` which uses
-  `selectrum-display-style-cycle-list` for cycling.
-* You can use `selectrum-display-action` to display candidates in a
-  window or frame outside the minibuffer. If you want to display the
-  whole minibuffer (including the input line) in a separate frame you
-  can use the
-  [mini-frame](https://github.com/muffinmad/emacs-mini-frame) package,
-  see the
-  [wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
-  for setup instructions. To run additional code when initializing the
-  candidate buffer you can use `selectrum-display-action-hook`.
-* The currently selected candidate is highlighted with the face
-  `selectrum-current-candidate`. If you don't like the color, you can
-  adjust it to taste.
-  * By default, only the displayed text is highlighted.  If
-    annotations are being used, then the highlighting is extended
-    until the margin. If you wish to always extend the highlighting,
-    you can set `selectrum-extend-current-candidate-highlight` to `t`.
+User options can be configured via `M-x customize-group RET selectrum RET`.
+Faces can be customized via `M-x customize-group RET selectrum-faces RET`.
+
+* Faces:
+  * `selectrum-completion-annotation`: How annotations are shown next
+    to candidates.
+  * `selectrum-completion-docsig`: How function signatures are shown
+    in `completion-in-region`.
+  * `selectrum-current-candidate`: How the current candidate is
+    highlighted. If you don't like the color, you can adjust it to
+    taste.
+  * `selectrum-group-title`: How the titles of candidate groups (such
+    as those used by [Consult](https://github.com/minad/consult)) are
+    displayed. See the user option `selectrum-group-format` for how
+    this face is used.
+  * `selectrum-group-separator`: By default, group titles are
+    surrounded by struck-through blank space. See the user option
+    `selectrum-group-format` for how this face is used.
+  * `selectrum-mouse-highlight`: How candidates are shown when the
+    mouse pointer hovers above them.
+  * `selectrum-quick-keys-highlight`: How the keys are shown when
+    using `selectrum-quick-select` (`M-m`) and
+    `selectrum-quick-insert` (`M-i`).
+  * `selectrum-quick-keys-match`: How pressed quick keys are shown
+    when more than one key is needed.
+  * You might also be interested in the face `completions-common-part`
+    for `completion-in-region`.
+
+* Window configuration and candidate display:
+  * By default, 10 candidates at most are shown in the minibuffer at
+    any given time.  `selectrum-max-window-height` sets the maximum
+    height the window can expand to.
+  * By default, the window is only as tall as it needs to be to
+    display the candidates, which can be less than the maximum height.
+    `selectrum-fix-vertical-window-height` determines whether
+    the window should *always* be as tall as the maximum height, even
+    when less space is needed.
+  * The variable `selectrum-num-candidates-displayed` controls how
+    many candidates are displayed in total. The default value `auto`
+    will automatically use as many candidates as are possible to
+    display given the space and height settings.
+  * Candidates can be displayed vertically (like Ivy and Helm) or
+    horizontally (like Icomplete). This is determined by
+    `selectrum-display-style`. Display styles can be cycled using the
+    command `selectrum-cycle-display-style` (`M-q`) and the user
+    option `selectrum-display-style-cycle-list`.
+  * Candidates can also be displayed outside of the minibuffer, such
+    as in another window or frame as determined by the user option
+    `selectrum-display-action`. If you want to display the whole
+    minibuffer (including the input line) in a separate frame you can
+    use the
+    [mini-frame](https://github.com/muffinmad/emacs-mini-frame)
+    package, see the
+    [wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
+    for setup instructions.
+
+    To run additional code when initializing the candidate buffer, you
+    can use `selectrum-display-action-hook`.
+  * Selectrum collapses multi-line candidates into a single line.
+    `selectrum-multiline-display-settings` controls how this is done.
+  * `selectrum-group-format` controls how candidate-group titles are
+    displayed. This option makes use of the faces
+    `selectrum-group-title` and `selectrum-group-separator`.
+
+* Additional info and highlighting:
+  * By default, the total number of matches are shown before the
+    prompt. `selectrum-count-style` controls how the count is
+    displayed, if at all.  The value `current/matches` can be helpful
+    when `selectrum-cycle-movement` is enabled.
+  * You can show the indices of displayed candidates by customizing
+    `selectrum-show-indices`. If `t`, the index shown is the prefix
+    argument that you should pass to
+    `selectrum-select-current-candidate` and
+    `selectrum-insert-current-candidate` in order to choose that
+    candidate.
+
+    To display a custom index (e.g. letters instead of indices, roman
+    numerals, etc.), you can set `selectrum-show-indices` to a
+    function that takes in the relative index of a candidate and
+    returns the string you want to display.
+  * By default, only the displayed text is highlighted, with the
+    highlighting being extended when annotations are used.  If you
+    wish to always extend the highlighting, you can set
+    `selectrum-extend-current-candidate-highlight` to `t`.
+
     Note that in Emacs 27 and greater, the face
     `selectrum-current-candidate` must have the `:extend` attribute
     set to `t` for this feature to work.
-* By default, the total number of matches are shown before the prompt.
-  This behavior can be customized using `selectrum-count-style`.
-* You can show the indices of displayed candidates by customizing
-  `selectrum-show-indices`. This may be helpful in telling you what
-  prefix argument you should pass to
-  `selectrum-select-current-candidate` and
-  `selectrum-insert-current-candidate` in order to choose a candidate.
-  Furthermore, if you want do display a custom index (e.g. letters
-  instead of indices, roman numerals, etc.) you can set the
-  `selectrum-show-indices` to a function that takes in the relative
-  index of a candidate and returns the string you want to display.
-* By default, Selectrum does also handle in buffer completion via
-  `completion-in-region`. If you would like to disable that you can
-  unset `selectrum-complete-in-buffer` before activating
-  `selectrum-mode`.
-* The `selectrum-completion-in-region` function can display
-  annotations if the `completion-in-region-function` backend offers
-  them. Customize the face `selectrum-completion-annotation` to change
-  their appearance.
-    * Customize the face `selectrum-completion-docsig` to change the
-      appearance of function signatures show by
-      `completion-in-region`.
-    * Customize the face `completions-common-part` to change the
-      appearance of the common prefix in `completion-in-region`
-      candidates.
-* You can configure the initial filtering of
-  `selectrum-completion-in-region` using
-  `selectrum-completion-in-region-styles`.
-* The option `selectrum-should-sort` controls whether preprocessing
-  functions should sort.
-* You can configure the keys for quick candidate insertion and
-  selection using `selectrum-quick-keys`. These are used when using
-  the commands `selectrum-quick-select` or `selectrum-quick-insert`
-  which provide you an `ivy-avy` like interface to quickly select a
-  candidate via key annotations. You can configure the appearance of
-  these key annotations with `selectrum-quick-keys-highlight` and
-  `selectrum-quick-keys-match` face.
-* Using the `selectrum-files-select-input-dirs` option you can adjust
-  the selection behavior for file completions. When the option is
-  non-nil the input gets selected whenever it contains a full
-  directory name.
+
+* Completion settings:
+  * By default, Selectrum also handles in-buffer completion via
+    `completion-in-region`. To disable this, you can set
+    `selectrum-complete-in-buffer` to nil before activating
+    `selectrum-mode`.
+    * You can configure the initial filtering of
+      `selectrum-completion-in-region` using
+      `selectrum-completion-in-region-styles`.
+  * The option `selectrum-should-sort` controls whether preprocessing
+    functions should sort.
+
+* Candidate selection and prompt selection:
+  * Selectrum provides an `ivy-avy`-like interface to quickly select a
+    candidate via key annotations using the commands
+    `selectrum-quick-select` (`M-m`) or `selectrum-quick-insert`
+    (`M-i`).
+    * You can configure these keys in the user option
+      `selectrum-quick-keys`.
+    * You can configure the appearance of these key annotations with
+      `selectrum-quick-keys-highlight` and `selectrum-quick-keys-match`
+      face.
+  * Using the `selectrum-files-select-input-dirs` option you can
+    adjust the selection behavior for file completions. When non-nil,
+    the input gets selected whenever it contains a full directory
+    name.
+  * You set `selectrum-cycle-movement` to `t` to wrap around to the
+    other end of the candidate list when moving past the first or last
+    candidate.
 
 ### Complementary extensions
 
 For a fully fledged setup enabling additional features similar to
 those you find in [Helm](https://github.com/emacs-helm/helm) or
-[Ivy](https://github.com/abo-abo/swiper#ivy) we recommend the
+[Ivy](https://github.com/abo-abo/swiper#ivy), we recommend the
 following additional packages:
 
 * Useful commands based on `completing-read` are provided by
@@ -439,7 +477,7 @@ following additional packages:
 
 * Helpful minibuffer annotations for `M-x`, `describe-*` functions and
   completions in general are provided by
-  [marginalia](https://github.com/minad/marginalia) which is similar
+  [marginalia](https://github.com/minad/marginalia), which is similar
   to ivy-rich but works with any framework implementing the default
   API for completion annotations.
 
@@ -451,7 +489,7 @@ with each other to ensure an optimal experience while not introducing
 any hard dependencies. Our common denominator is the standard Emacs
 API.
 
-For other possibly interesting packages see our
+For other possibly interesting packages, see our
 [wiki](https://github.com/raxod502/selectrum/wiki/) which also
 contains [configuration
 tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
@@ -645,7 +683,7 @@ Technical points:
 ## Caveats
 
 * There is no built-in support for alternate actions on minibuffer
-  candidates but you can add those using
+  candidates, but you can add those using
   [embark](https://github.com/oantolin/embark/).
 * In Emacs 26 and earlier, the way that messages are displayed while
   the minibuffer is active is unworkably bad: they block out the
