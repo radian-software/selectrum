@@ -48,6 +48,7 @@ checkindent: ## Ensure that indentation is correct
 	@tmpdir="$$(mktemp -d)"; for file in $(for_checkindent); do \
 	    echo "[checkindent] $$file" >&2; \
 	    emacs -Q --batch \
+		-l scripts/selectrum-indent.el \
 	        --eval "(setq inhibit-message t)" \
 	        --eval "(load (expand-file-name \"selectrum.el\") nil t)" \
 	        --eval "(find-file \"$$file\")" \

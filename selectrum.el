@@ -3155,7 +3155,10 @@ PREDICATE, see `read-file-name'."
                                 default-filename))
                      (df (expand-file-name default))
                      (dd (expand-file-name default-directory))
-                     (default-in-prompt-dir
+                     ;; Weird indentation to make things indent the
+                     ;; same in both Emacs 28 and Emacs 29, because
+                     ;; apparently something changed?
+                     ( default-in-prompt-dir
                        (equal (file-name-directory
                                (directory-file-name df))
                               (file-name-directory dd)))
@@ -3208,14 +3211,13 @@ PREDICATE, see `read-file-name'."
 
 ;;;###autoload
 (defun selectrum--fix-dired-read-dir-and-switches (func &rest args)
-  "Make \\[dired] do the \"right thing\" with its default candidate.
-By default \\[dired] uses `read-file-name' internally, which
-causes Selectrum to provide you with the first file inside the
-working directory as the default candidate. However, it would
-arguably be more semantically appropriate to use
-`read-directory-name', and this is especially important for
-Selectrum since this causes it to select the working directory
-initially.
+  "Make Dired do the \"right thing\" with its default candidate.
+By default Dired uses `read-file-name' internally, which causes
+Selectrum to provide you with the first file inside the working
+directory as the default candidate. However, it would arguably be
+more semantically appropriate to use `read-directory-name', and
+this is especially important for Selectrum since this causes it
+to select the working directory initially.
 
 To test that this advice is working correctly, type \\[dired] and
 accept the default candidate. You should have opened the working
@@ -3271,11 +3273,12 @@ the built-in `read-library-name'."
         (table (make-hash-table :test #'equal))
         (lib-name-cands nil)      ; Cleaned-up and disambiguated cands
         (file-name-cands nil))    ; Other candidates
-    (dolist (dir (or (if (boundp 'find-library-source-path)
-                         ;; In Emacs 28.1, `find-function-source-path'
-                         ;; was renamed to `find-library-source-path'.
-                         find-library-source-path
-                       find-function-source-path)
+    (dolist (dir (or (symbol-value
+                      (if (boundp 'find-library-source-path)
+                          ;; In Emacs 28.1, `find-function-source-path'
+                          ;; was renamed to `find-library-source-path'.
+                          'find-library-source-path
+                        'find-function-source-path))
                      load-path))
       (condition-case _
           (let ((found-libs))
