@@ -3,7 +3,7 @@
 
 # Selectrum
 
-[News feed](https://github.com/raxod502/selectrum/commits/master/CHANGELOG.md.atom)
+[News feed](https://github.com/radian-software/selectrum/commits/master/CHANGELOG.md.atom)
 
 *Selectrum is a better solution for incremental narrowing in Emacs,
 replacing [Helm](https://github.com/emacs-helm/helm),
@@ -88,7 +88,7 @@ libraries, with load-path shadows" height="200"/> </p>
 Selectrum is [available as a package on
 MELPA](https://melpa.org/#/selectrum). The easiest way to install this
 package is using
-[`straight.el`](https://github.com/raxod502/straight.el):
+[`straight.el`](https://github.com/radian-software/straight.el):
 
 ```elisp
 (straight-use-package 'selectrum)
@@ -109,12 +109,12 @@ Now all completion commands will automatically use Selectrum.
 
 The focus of Selectrum is on providing an enhanced completion UI and
 compose with [other
-packages](https://github.com/raxod502/selectrum#complementary-extensions)
+packages](https://github.com/radian-software/selectrum#complementary-extensions)
 which stay within the constraints of the standard Emacs API. Because
 of the modular approach there are several possible package
 combinations. Many tips and setup help for integration with other
 packages can be found in our
-[wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration).
+[wiki](https://github.com/radian-software/selectrum/wiki/Additional-Configuration).
 
 The default sorting method of Selectrum is simple and predictable. The
 candidates are first sorted by their history position, then by length
@@ -131,7 +131,7 @@ more advanced filtering and sorting: 1. Prescient and 2. Orderless.
 ##### Alternative 1: Prescient
 
 Filtering and sorting can both be improved by installing the
-[`selectrum-prescient`](https://github.com/raxod502/prescient.el)
+[`selectrum-prescient`](https://github.com/radian-software/prescient.el)
 package from MELPA and adding the following to your init-file.
 
 ```elisp
@@ -385,7 +385,7 @@ Faces can be customized via `M-x customize-group RET selectrum-faces RET`.
     use the
     [mini-frame](https://github.com/muffinmad/emacs-mini-frame)
     package, see the
-    [wiki](https://github.com/raxod502/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
+    [wiki](https://github.com/radian-software/selectrum/wiki/Additional-Configuration#display-minibuffer-in-a-child-frame-with-mini-frame)
     for setup instructions.
 
     To run additional code when initializing the candidate buffer, you
@@ -465,7 +465,7 @@ following additional packages:
 
 * For filtering and *frecency*-based sorting (a combination of
   *frequency* and *recency*) there is
-  [Prescient](https://github.com/raxod502/prescient.el).
+  [Prescient](https://github.com/radian-software/prescient.el).
 
 * As an alternative filtering method, there is
   [orderless](https://github.com/oantolin/orderless). It supports many
@@ -490,9 +490,9 @@ any hard dependencies. Our common denominator is the standard Emacs
 API.
 
 For other possibly interesting packages, see our
-[wiki](https://github.com/raxod502/selectrum/wiki/) which also
+[wiki](https://github.com/radian-software/selectrum/wiki/) which also
 contains [configuration
-tips](https://github.com/raxod502/selectrum/wiki/Additional-Configuration)
+tips](https://github.com/radian-software/selectrum/wiki/Additional-Configuration)
 for many of these.
 
 ### But what is it doing to my Emacs??
@@ -532,9 +532,9 @@ also affects recursive minibuffers.
 ### News
 
 We document changes for users in the
-[CHANGELOG](https://github.com/raxod502/selectrum/blob/master/CHANGELOG.md).
+[CHANGELOG](https://github.com/radian-software/selectrum/blob/master/CHANGELOG.md).
 To keep up with latest changes and features you can subscribe to the
-[feed](https://github.com/raxod502/selectrum/commits/master/CHANGELOG.md.atom).
+[feed](https://github.com/radian-software/selectrum/commits/master/CHANGELOG.md.atom).
 
 ## Developer guide
 
@@ -600,7 +600,7 @@ function (or affixation which is introduced in Emacs 28), see `(info
 "(elisp) Programmed Completion") to make the annotations work with any
 compliant completion framework. We also have some information about
 using annotations on the
-[wiki](https://github.com/raxod502/selectrum/wiki/Tips-for-Creating-Commands#annotating-candidates).
+[wiki](https://github.com/radian-software/selectrum/wiki/Tips-for-Creating-Commands#annotating-candidates).
 
 The following text properties can be used, which may be applied to
 candidates using `propertize`:
@@ -653,8 +653,8 @@ For more information, see the respective docstrings.
 ## Contributor guide
 
 Please see [the contributor guide for my
-projects](https://github.com/raxod502/contributor-guide). We have some
-[test scripts](https://github.com/raxod502/selectrum/tree/master/test)
+projects](https://github.com/radian-software/contributor-guide). We have some
+[test scripts](https://github.com/radian-software/selectrum/tree/master/test)
 for testing minimal default configurations of common package
 combinations. You can run them using
 
@@ -697,17 +697,17 @@ Technical points:
   selection indication and faces used for match highlighting. This can
   become apparent when candidates use the `:background` property for
   example when matching org block lines using `consult-line`, see
-  [#425](https://github.com/raxod502/selectrum/issues/425). To work
+  [#425](https://github.com/radian-software/selectrum/issues/425). To work
   around this specific case you can configure the consult option
   `consult-fontify-preserve`.
 * There are a few standard features which aren't implemented in
   Selectrum, yet. We collect those in
-  ([#481](https://github.com/raxod502/selectrum/issues/481)), most
+  ([#481](https://github.com/radian-software/selectrum/issues/481)), most
   notable ones are:
   * We don't make use of `completion-boundaries`
-    ([#448](https://github.com/raxod502/selectrum/issues/448)).
+    ([#448](https://github.com/radian-software/selectrum/issues/448)).
   * Dynamic table support is incomplete
-    ([#114](https://github.com/raxod502/selectrum/issues/114)).
+    ([#114](https://github.com/radian-software/selectrum/issues/114)).
 
 ## Selectrum in comparison to other completion-systems
 
@@ -718,7 +718,7 @@ I have not used many of these packages extensively. So, if you think
 I've overlooked an important part or I've written something mean or
 unfair, **please** feel free to contribute a correction.
 
-See [#23](https://github.com/raxod502/selectrum/issues/23) for
+See [#23](https://github.com/radian-software/selectrum/issues/23) for
 discussion.
 
 ### Ido
@@ -758,7 +758,7 @@ using software that I have some hope of understanding, which ideally
 means that they don't provide a hugely complex array of features of
 which I only use one or two.
 
-See [#203](https://github.com/raxod502/selectrum/issues/203).
+See [#203](https://github.com/radian-software/selectrum/issues/203).
 
 ### Ivy
 
@@ -924,7 +924,7 @@ to Ivy and Counsel?
 The answer is no - such functionality will not be part of Selectrum
 itself, but there are two alternatives available.
 
-* [CTRLF](https://github.com/raxod502/ctrlf) is a from scratch
+* [CTRLF](https://github.com/radian-software/ctrlf) is a from scratch
 redesigned buffer-search interface. During the design process, I
 realized that a Selectrum-like interface is not the best way to
 present buffer search. Instead, I decided on an improved variant of

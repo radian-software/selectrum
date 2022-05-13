@@ -1,10 +1,10 @@
 ;;; selectrum.el --- Easily select item from list -*- lexical-binding: t -*-
 
-;; Copyright (C) 2019 Radon Rosborough
+;; Copyright (C) 2019-2022 Radian LLC and contributors
 
-;; Author: Radon Rosborough <radon.neon@gmail.com>
+;; Author: Radian LLC <contact+selectrum@radian.codes>
 ;; Created: 8 Dec 2019
-;; Homepage: https://github.com/raxod502/selectrum
+;; Homepage: https://github.com/radian-software/selectrum
 ;; Keywords: extensions
 ;; Package-Requires: ((emacs "26.1"))
 ;; SPDX-License-Identifier: MIT
@@ -25,7 +25,7 @@
 ;; `selectrum-mode', which enhances `completing-read' and all related
 ;; functions automatically without the need for further configuration.
 
-;; Please see https://github.com/raxod502/selectrum for more
+;; Please see https://github.com/radian-software/selectrum for more
 ;; information.
 
 ;;; Code:
@@ -90,7 +90,7 @@ In Emacs 27 and greater, this face is assumed to have the
   "Simple incremental narrowing framework with sane API."
   :group 'convenience
   :prefix "selectrum-"
-  :link '(url-link "https://github.com/raxod502/selectrum"))
+  :link '(url-link "https://github.com/radian-software/selectrum"))
 
 (defcustom selectrum-default-value-format
   (propertize " [default: %s]" 'face 'minibuffer-prompt)
@@ -1493,7 +1493,7 @@ the update."
   (let ((inhibit-read-only t)
         ;; Don't record undo information while messing with the
         ;; minibuffer, as per
-        ;; <https://github.com/raxod502/selectrum/issues/31>.
+        ;; <https://github.com/radian-software/selectrum/issues/31>.
         (buffer-undo-list t)
         (input (buffer-substring (minibuffer-prompt-end)
                                  (point-max)))
@@ -1801,9 +1801,9 @@ Invisible parts of the display string are removed."
   ;; scratch.
   ;;
   ;; See:
-  ;; <https://github.com/raxod502/selectrum/issues/21>
-  ;; <https://github.com/raxod502/selectrum/issues/58>
-  ;; <https://github.com/raxod502/selectrum/pull/76>
+  ;; <https://github.com/radian-software/selectrum/issues/21>
+  ;; <https://github.com/radian-software/selectrum/issues/58>
+  ;; <https://github.com/radian-software/selectrum/pull/76>
   (let ((str (copy-sequence str))
         (face 'selectrum-current-candidate))
     (if (version< emacs-version "27")
@@ -2674,7 +2674,7 @@ default candidate by submitting empty input."
   (let* ((minibuffer-allow-text-properties t)
          (resize-mini-windows 'grow-only)
          (prompt (selectrum--remove-default-from-prompt prompt))
-         ;; <https://github.com/raxod502/selectrum/issues/99>
+         ;; <https://github.com/radian-software/selectrum/issues/99>
          (icomplete-mode nil)
          (buf (current-buffer))
          (res
@@ -3137,7 +3137,7 @@ For PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH, INITIAL-INPUT,
 For PROMPT, DIR, DEFAULT-FILENAME, MUSTMATCH, INITIAL, and
 PREDICATE, see `read-file-name'."
   (let* ((crf completing-read-function)
-         ;; See <https://github.com/raxod502/selectrum/issues/61>.
+         ;; See <https://github.com/radian-software/selectrum/issues/61>.
          ;; When you invoke another `completing-read' command
          ;; recursively then it inherits the
          ;; `completing-read-function' binding, and unless it's
