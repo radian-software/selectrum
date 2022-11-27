@@ -1,7 +1,33 @@
 [![MELPA](https://melpa.org/packages/selectrum-badge.svg)](https://melpa.org/#/selectrum)
 [![MELPA Stable](https://stable.melpa.org/packages/selectrum-badge.svg)](https://stable.melpa.org/#/selectrum)
 
-# Selectrum
+# Selectrum... is replaced
+
+Selectrum has been replaced by
+[Vertico](https://github.com/minad/vertico), a package which provides
+essentially the same features in a simpler way, and integrates more
+effectively with other packages.
+
+The original author of Selectrum,
+[**@raxod502**](https://github.com/raxod502), now uses Vertico instead
+in his Emacs configuration,
+[Radian](https://github.com/radian-software/radian).
+
+There is a [guide to migrate from Selectrum to
+Vertico](https://github.com/minad/vertico/wiki/Migrating-from-Selectrum-to-Vertico).
+
+Over time, we will improve this guide and ensure that it is possible
+to achieve feature parity for all existing configurations of Selectrum
+in the Vertico ecosystem (possibly with the use of one or more Vertico
+extension packages, of which there are many already).
+
+It's always annoying to change from one thing to another, but we (the
+Selectrum development team) think the replacement will be a benefit to
+everyone pretty soon, because Vertico is a lot simpler and easier to
+maintain and integrate, meaning the end result is likely to be more
+robust and likely to stick around for longer.
+
+## Documentation
 
 [News feed](https://github.com/radian-software/selectrum/commits/master/CHANGELOG.md.atom)
 
