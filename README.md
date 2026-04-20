@@ -10,7 +10,7 @@ effectively with other packages.
 
 The original author of Selectrum,
 [**@raxod502**](https://github.com/raxod502), now uses Vertico instead
-in his Emacs configuration,
+in their Emacs configuration,
 [Radian](https://github.com/radian-software/radian).
 
 There is a [guide to migrate from Selectrum to
